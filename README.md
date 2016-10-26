@@ -1,3 +1,5 @@
+[![Documentation Status](https://readthedocs.org/projects/tsfresh/badge/?version=latest)](http://tsfresh.readthedocs.io/en/latest/?badge=latest)
+
 # tsfresh
 
 This repository contains the *TSFRESH* python package. The abbreviation stands for
