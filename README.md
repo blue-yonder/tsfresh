@@ -39,7 +39,7 @@ The algorithm is described in the following paper
 
 Christ, M., Kempa-Liehr, A.W. and Feindt, M. (2016).
 *Distributed and parallel time series feature extraction for industrial big data applications.*
-ArXiv e-prints: 1610.07717 URL: [link](http://adsabs.harvard.edu/abs/2016arXiv161007717C)
+ArXiv e-print 1610.07717,  [https://arxiv.org/abs/1610.07717](https://arxiv.org/abs/1610.07717)
 
 
 ### Advantages of tsfresh
@@ -55,6 +55,6 @@ ArXiv e-prints: 1610.07717 URL: [link](http://adsabs.harvard.edu/abs/2016arXiv16
 
 ### Futher Reading
 
-If you are interested in the technical workings, go to see our comprehensive Read-The-Docs documentation at [link]().
+If you are interested in the technical workings, go to see our comprehensive Read-The-Docs documentation at [http://tsfresh.readthedocs.io](http://tsfresh.readthedocs.io).
 
 The algorithm, especially the filtering part are also described in the paper mentioned above.
