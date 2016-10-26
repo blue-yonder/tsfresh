@@ -1,4 +1,4 @@
-[![Documentation Status](https://readthedocs.org/projects/tsfresh/badge/?version=latest)](http://tsfresh.readthedocs.io/en/latest/?badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/tsfresh/badge/?version=latest)](http://tsfresh.readthedocs.io/en/latest/?badge=latest) [![Build Status](https://travis-ci.org/blue-yonder/tsfresh.svg?branch=master)](https://travis-ci.org/blue-yonder/tsfresh)
 
 # tsfresh
 
