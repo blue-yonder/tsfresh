@@ -1,4 +1,4 @@
-[![Documentation Status](https://readthedocs.org/projects/tsfresh/badge/?version=latest)](http://tsfresh.readthedocs.io/en/latest/?badge=latest) [![Build Status](https://travis-ci.org/blue-yonder/tsfresh.svg?branch=master)](https://travis-ci.org/blue-yonder/tsfresh)
+[![Documentation Status](https://readthedocs.org/projects/tsfresh/badge/?version=latest)](http://tsfresh.readthedocs.io/en/latest/?badge=latest) [![Build Status](https://travis-ci.org/blue-yonder/tsfresh.svg?branch=master)](https://travis-ci.org/blue-yonder/tsfresh) [![Coverage Status](https://coveralls.io/repos/github/blue-yonder/tsfresh/badge.svg?branch=master)](https://coveralls.io/github/blue-yonder/tsfresh?branch=master)
 
 # tsfresh
 
