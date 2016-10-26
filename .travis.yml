@@ -2,6 +2,9 @@ language: python
 python:
 - '2.7'
 install:
+- pip install --upgrade pip
+- pip install numpy
+- pip install scipy
 - pip install .
 - pip install -r requirements.txt
 - pip install -r test-requirements.txt
