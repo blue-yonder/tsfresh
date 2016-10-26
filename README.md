@@ -11,7 +11,7 @@ This repository contains the *TSFRESH* python package. The abbreviation stands f
 
 The package contains many feature extraction methods and a robust feature selection algorithm.
 
-### Spend less time on feature engineering
+## Spend less time on feature engineering
 
 Data Scientists often spend most of their time either cleaning data or building features.
 While we cannot change the first thing, the second can be automated.
@@ -19,7 +19,7 @@ While we cannot change the first thing, the second can be automated.
 Hence, you have more time to study the newest deep learning paper, read hacker news or build better models.
 
 
-### Automatic extraction of 100s of features
+## Automatic extraction of 100s of features
 
 *TSFRESH* automatically extracts 100s of features from time series.
 Those features describe basic characteristics of the time series such as the number of peaks, the average or maximal value or more complex features such as the time reversal symmetry statistic.
@@ -29,7 +29,7 @@ Those features describe basic characteristics of the time series such as the num
 The set of features can then be used to construct statistical or machine learning models on the time series to be used for example in regression or
 classification tasks.
 
-### Forget irrelevant features
+## Forget irrelevant features
 
 Time series often contain noise, redundancies or irrelevant information.
 As a result most of the extracted features will not be useful for the machine learning task at hand.
@@ -42,12 +42,11 @@ As a result the filtering process mathematically controls the percentage of irre
 
 The algorithm is described in the following paper
 
-Christ, M., Kempa-Liehr, A.W. and Feindt, M. (2016).
-*Distributed and parallel time series feature extraction for industrial big data applications.*
-ArXiv e-print 1610.07717,  [https://arxiv.org/abs/1610.07717](https://arxiv.org/abs/1610.07717)
+* Christ, M., Kempa-Liehr, A.W. and Feindt, M. (2016).  
+    _Distributed and parallel time series feature extraction for industrial big data applications._  
+    ArXiv e-print 1610.07717,  [https://arxiv.org/abs/1610.07717](https://arxiv.org/abs/1610.07717).     
 
-
-### Advantages of tsfresh
+## Advantages of tsfresh
 
 *TSFRESH* has several selling points, for example
 
@@ -58,7 +57,7 @@ ArXiv e-print 1610.07717,  [https://arxiv.org/abs/1610.07717](https://arxiv.org/
 5. it is compatible with sklearn, pandas and numpy
 6. it allows anyone to easily add his own favorite features
 
-### Futher Reading
+## Futher Reading
 
 If you are interested in the technical workings, go to see our comprehensive Read-The-Docs documentation at [http://tsfresh.readthedocs.io](http://tsfresh.readthedocs.io).
 
