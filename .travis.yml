@@ -19,3 +19,5 @@ deploy:
     tags: true
     distributions: sdist bdist_wheel
     repo: blue-yonder/tsfresh
+after_success:
+- coveralls
