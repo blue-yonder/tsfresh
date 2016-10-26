@@ -1,0 +1,18 @@
+language: python
+python:
+- '2.7'
+install:
+- pip install .
+- pip install -r requirements.txt
+- pip install -r test-requirements.txt
+script:
+- python setup.py test
+deploy:
+  provider: pypi
+  user: MaxChrist
+  password:
+    secure: Jh0Z69Mh+esOpegXyXoecFOkpMhaQaiJbQVEvVvQ2K1rCmCE20a19/TGfPUrynpqOYXZvvb5Ok6CtlzAi9J5huA3MRSf4iYPsUe8i7n0FK4JU5BP7VqM3/7cQZMdD5SeYFV3e3JURDcKYfoG7N+DNb+LfluYK5MBkRLhdEVRqSeHocPY4QRzzhJi1ljX99ThdRPrsQqYaD3tpZxJhbJDgHLtvMr39+407uQSDnubvFz3iu90DZiN2fIP5bEN6PDuaGXNZMA1p40DjSkGc7epg0U4vHn6CSya1nXlqjXUqXYJY5Ha2kbMAN7hfmU+gId09+FSHQRuanKJkRqSBksVgATCAeSAiqAe3EPAsG75ewhXDeusQZMzRy7DxQzjOJG9oIyWMVmZFlIoNlpg2eifN9uUc7FfyGHiVfWwUDslszpc/81hQViMPP0NoMAop4zcWR3ChCMnHMycPQEmWuV65WfL7yN6SuTokxSmepubPtFs+4UIlI0rgZWCHVIgGZqI8LFn958pLtpQ+32Ew8HGU3IiOfao9HbGreQ2Lgqo2L2EyNDWiHfJ3oZ1+6BP/1GqI6j7x7oPdwoE1jvY4CSC7iMAiieZNnrvywvmJpZB69CGefxQJzWcm+yD03QwNBFFaabCbKwbn+q3eUOUrPRuvTkhVLRWDxQNH/zaZyuZQ+Q=
+  on:
+    tags: true
+    distributions: sdist bdist_wheel
+    repo: blue-yonder/tsfresh
