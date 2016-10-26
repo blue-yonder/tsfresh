@@ -58,8 +58,10 @@ The algorithm is described in the following paper
 5. it is compatible with sklearn, pandas and numpy
 6. it allows anyone to easily add his own favorite features
 
-## Futher Reading
+## Next steps
 
 If you are interested in the technical workings, go to see our comprehensive Read-The-Docs documentation at [http://tsfresh.readthedocs.io](http://tsfresh.readthedocs.io).
 
 The algorithm, especially the filtering part are also described in the paper mentioned above.
+
+If you have some questions or feedback you can find the developers in the [gitter chatroom.](https://gitter.im/tsfresh/Lobby?utm_source=share-link&utm_medium=link&utm_campaign=share-link) 
