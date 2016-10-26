@@ -2,6 +2,7 @@
 [![Build Status](https://travis-ci.org/blue-yonder/tsfresh.svg?branch=master)](https://travis-ci.org/blue-yonder/tsfresh)
 [![Coverage Status](https://coveralls.io/repos/github/blue-yonder/tsfresh/badge.svg?branch=master)](https://coveralls.io/github/blue-yonder/tsfresh?branch=master)
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/blue-yonder/tsfresh/blob/master/LICENSE.txt)
+[![Gitter chat](https://badges.gitter.im/tsfresh/Lobby.svg)](https://gitter.im/tsfresh/Lobby?utm_source=share-link&utm_medium=link&utm_campaign=share-link)
 
 # tsfresh
 
