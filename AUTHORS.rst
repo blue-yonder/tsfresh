@@ -5,7 +5,7 @@ Authors
 Development Lead
 ----------------
 
-- Maximilian Christ (`maximilianchrist.com <maximilianchrist.com>`_)
+- Maximilian Christ (`maximilianchrist.com <http://maximilianchrist.com>`_)
 
 Contributions
 -------------

@@ -51,8 +51,8 @@ def impute(df_impute):
 
     :param df_impute: DataFrame to impute
     :type df_impute: pandas.DataFrame
-    :return : None
-    :rtype : None
+    :return: None
+    :rtype: None
     """
     col_to_max, col_to_min, col_to_median = get_range_values_per_column(df_impute)
     impute_dataframe_range(df_impute, col_to_max, col_to_min, col_to_median)
