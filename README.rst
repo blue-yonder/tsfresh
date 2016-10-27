@@ -29,7 +29,7 @@ Those features describe basic characteristics of the time series such as
 the number of peaks, the average or maximal value or more complex
 features such as the time reversal symmetry statistic.
 
-.. figure:: docs/images/introduction_ts_exa_features.png
+.. figure:: https://raw.githubusercontent.com/blue-yonder/tsfresh/master/docs/images/introduction_ts_exa_features.png
    :alt: The features extracted from a exemplary time series
 
    The features extracted from a exemplary time series
