@@ -31,7 +31,9 @@ import logging
 _logger = logging.getLogger(__name__)
 
 
-UCI_MLD_REF_MSG = """The example data could not be found. You need to download the Robot Execution Failures LP1 Data Set from the UCI Machine Learning Repository. To do so, you can call the function tsfresh.examples.robot_execution_failures.download_robot_execution_failures"""
+UCI_MLD_REF_MSG = ("The example data could not be found. You need to download the Robot Execution Failures "
+                   "LP1 Data Set from the UCI Machine Learning Repository. To do so, you can call the function "
+                  "tsfresh.examples.robot_execution_failures.download_robot_execution_failures")
 UCI_MLD_REF_URL = "http://archive.ics.uci.edu/ml/machine-learning-databases/robotfailure-mld/lp1.data"
 
 
@@ -55,14 +57,17 @@ def download_robot_execution_failures():
         return
     
     if not os.access(module_path, os.W_OK):
-        raise RuntimeError("You don't have the necessary permissions to download the Robot Execution Failures LP1 Data Set into the module path. Consider installing the module in a virtualenv virtualenv you own or run this function with appropriate permissions.")
+        raise RuntimeError("You don't have the necessary permissions to download the Robot Execution Failures LP1 Data "
+                           "Set into the module path. Consider installing the module in a virtualenv virtualenv you "
+                           "own or run this function with appropriate permissions.")
 
     os.makedirs(os.path.dirname(data_file_name))
 
     r = requests.get(UCI_MLD_REF_URL)
 
     if r.status_code != 200:
-        raise RuntimeError("Could not download the Robot Execution Failures LP1 Data Set from the UCI Machine Learning Repository. HTTP status code: {}".format(r.status_code))
+        raise RuntimeError("Could not download the Robot Execution Failures LP1 Data Set from the UCI Machine Learning "
+                           "Repository. HTTP status code: {}".format(r.status_code))
 
     with open(data_file_name, "w") as f:
         f.write(r.text)
