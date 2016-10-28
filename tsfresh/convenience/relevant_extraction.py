@@ -8,7 +8,7 @@ from tsfresh.feature_extraction import extract_features, FeatureExtractionSettin
 from tsfresh.feature_selection import select_features
 from tsfresh.utilities.dataframe_functions import restrict_input_to_index, impute
 
-# todo: add unit test
+
 def extract_relevant_features(timeseries_container, y, X=None,
                               feature_extraction_settings=None,
                               feature_selection_settings=None,
