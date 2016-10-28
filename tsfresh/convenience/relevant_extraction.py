@@ -4,9 +4,9 @@
 
 from __future__ import absolute_import
 import pandas as pd
-from tsfresh.feature_extraction import extract_features
+from tsfresh.feature_extraction import extract_features, FeatureExtractionSettings
 from tsfresh.feature_selection import select_features
-from tsfresh.utilities.dataframe_functions import restrict_input_to_index
+from tsfresh.utilities.dataframe_functions import restrict_input_to_index, impute
 
 # todo: add unit test
 def extract_relevant_features(timeseries_container, y, X=None,
@@ -42,6 +42,10 @@ def extract_relevant_features(timeseries_container, y, X=None,
     """
     if X is not None:
         timeseries_container = restrict_input_to_index(timeseries_container, column_id, X.index)
+
+    if feature_extraction_settings is None:
+        feature_extraction_settings = FeatureExtractionSettings()
+        feature_extraction_settings.IMPUTE = impute
 
     X_ext = extract_features(timeseries_container, feature_extraction_settings=feature_extraction_settings,
                              column_id=column_id, column_sort=column_sort,
