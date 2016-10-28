@@ -32,3 +32,16 @@ class DataTestCase(TestCase):
         cval = [1.0, 5.0, 6.0]
         df = pd.DataFrame({"id": cid, "kind": ckind, "sort": csort, "val": cval})
         return df
+
+
+    def create_test_data_sample_with_target(self):
+        """
+        Small test data set with target.
+        :return:
+        """
+        cid = np.repeat(range(50), 3)
+        csort = range(3) * 50
+        cval = [1, 2, 3] * 30 + [4, 5, 6] * 20
+        df = pd.DataFrame({'id': cid, 'kind': 'a', 'sort': csort, 'val': cval})
+        y = pd.Series([2] * 30 + [5] * 20)
+        return df, y
