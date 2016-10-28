@@ -37,7 +37,8 @@ class DataTestCase(TestCase):
     def create_test_data_sample_with_target(self):
         """
         Small test data set with target.
-        :return:
+        :return: timeseries df
+        :return: target y which is the mean of each sample's timeseries
         """
         cid = np.repeat(range(50), 3)
         csort = range(3) * 50
