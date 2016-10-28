@@ -53,6 +53,9 @@ def download_robot_execution_failures():
     if os.path.exists(data_file_name):
         _logger.warning("You have already downloaded the Robot Execution Failures LP1 Data Set.")
         return
+    
+    if not os.access(module_path, os.W_OK):
+        raise RuntimeError("You don't have the necessary permissions to download the Robot Execution Failures LP1 Data Set into the module path. Consider installing the module in a virtualenv virtualenv you own or run this function with appropriate permissions.")
 
     os.makedirs(os.path.dirname(data_file_name))
 
