@@ -99,7 +99,7 @@ We will now remove all ``NaN`` values and select only the relevant features
 
 .. code-block:: python
 
-    from tsfresh import select features
+    from tsfresh import select_features
     from tsfresh.utilities.dataframe_functions import impute
 
     impute(extracted_features)
@@ -115,12 +115,13 @@ Further, you can even perform the extraction, imputing and filtering at the same
 
     from tsfresh import extract_relevant_features
 
-    X_filtered = extract_relevant_features(df, y, column_id='id', column_sort='time')
+    features_filtered_direct = extract_relevant_features(timeseries, y, column_id='id', column_sort='time')
 
 
-You can now use these features `features_filtered` in conjunction with `y` to train your model.
-Please see the `robot_failure_example.ipynb` Jupyter Notebook in the folder named notebook.
-In this notebook a RandomForestClassifier is trained on the extracted features.
+You can now use the features contained in the Data Frame `features_filtered` (which is equal to
+`features_filtered_direct`) in conjunction with `y` to train your model. Please see the `robot_failure_example.ipynb`
+ Jupyter Notebook in the folder named notebook. In this notebook a RandomForestClassifier is trained on the extracted
+ features.
 
 References
 
