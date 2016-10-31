@@ -71,7 +71,7 @@ Advantages of tsfresh
 3. the filtering process is statistically/mathematically correct
 4. it has a comprehensive documentation
 5. it is compatible with sklearn, pandas and numpy
-6. it allows anyone to easily add his own favorite features
+6. it allows anyone to easily add their favorite features
 
 Futher Reading
 --------------
