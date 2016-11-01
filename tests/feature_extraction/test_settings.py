@@ -36,7 +36,7 @@ class TestSettingsObject(TestCase):
 
         cset = fset.from_columns(feature_names)
 
-        self.assertItemsEqual(cset.kind_to_calculation_settings_mapping[tsn].keys(),
+        self.assertItemsEqual(list(cset.kind_to_calculation_settings_mapping[tsn].keys()),
                               ["sum_values", "median", "length", "quantile", "number_peaks", "ar_coefficient",
                                "value_count"])
 

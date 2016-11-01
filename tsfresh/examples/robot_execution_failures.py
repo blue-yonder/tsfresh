@@ -111,7 +111,7 @@ def load_robot_execution_failures():
                     id_to_target[cur_id] = 1
             # Data row --> split and convert values, create complete df row
             elif line[0] == '\t':
-                values = map(int, line.split('\t')[1:])
+                values = list(map(int, line.split('\t')[1:]))
                 df_rows.append([cur_id, time] + values)
                 time += 1
 
