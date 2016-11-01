@@ -15,6 +15,7 @@ can be used with pandas apply.
 """
 
 from __future__ import absolute_import, division
+from builtins import range
 import itertools
 import numpy as np
 from numpy.linalg import LinAlgError

@@ -4,6 +4,7 @@
 
 from __future__ import absolute_import, division
 from __future__ import print_function
+from builtins import range
 from random import shuffle
 from unittest import TestCase
 from tsfresh.feature_extraction.feature_calculators import *

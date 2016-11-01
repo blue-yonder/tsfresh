@@ -8,6 +8,7 @@ For the naming of the features, see :ref:`feature-naming-label`.
 """
 
 from __future__ import absolute_import
+from builtins import range
 import ast
 from functools import partial
 
