@@ -144,8 +144,8 @@ class FeatureExtractionSettings:
 
         for col in columns:
 
-            if not isinstance(col, str):
-                raise TypeError("Column name {} should be a string".format(col))
+            if not isinstance(col, basestring):
+                raise TypeError("Column name {} should be a string or unicode".format(col))
 
             # Split according to our separator into <col_name>, <feature_name>, <feature_params>
             parts = col.split('__')
