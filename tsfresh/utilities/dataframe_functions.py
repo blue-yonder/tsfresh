@@ -179,7 +179,7 @@ def restrict_input_to_index(df_or_dict, column_id, index):
         df_or_dict_restricted = df_or_dict[df_or_dict[column_id].isin(index)]
     elif isinstance(df_or_dict, dict):
         df_or_dict_restricted = {kind: df[df[column_id].isin(index)]
-                                  for kind, df in df_or_dict.iteritems()}
+                                  for kind, df in df_or_dict.items()}
     else:
         raise TypeError("df_or_dict should be of type dict or pandas.DataFrame")
 
@@ -228,7 +228,7 @@ def normalize_input_to_internal_representation(df_or_dict, column_id, column_sor
     if isinstance(df_or_dict, dict):
         if column_kind:
             raise ValueError("You passed in a dictionary and gave a column name for the kind. Both is not possible.")
-        kind_to_df_map = {key: df.copy() for key, df in df_or_dict.iteritems()}
+        kind_to_df_map = {key: df.copy() for key, df in df_or_dict.items()}
     else:
         if column_kind:
             kind_to_df_map = {key: group.copy().drop(column_kind, axis=1) for key, group in df_or_dict.groupby(column_kind)}

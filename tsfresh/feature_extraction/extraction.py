@@ -79,12 +79,12 @@ def extract_features(timeseries_container, feature_extraction_settings=None,
         profiler = profiling.start_profiling()
 
     # Extract the time series features for every type of time series and concatenate them together.
-    all_possible_unique_id_values = set(id_value for kind, df in kind_to_df_map.iteritems()
+    all_possible_unique_id_values = set(id_value for kind, df in kind_to_df_map.items()
                                         for id_value in df[column_id])
     df_with_ids = pd.DataFrame(index=all_possible_unique_id_values)
     extracted_features = [_extract_features_for_one_time_series(relevant_time_series, str(kind),
                                                                 column_id, column_value, feature_extraction_settings)
-                          for kind, relevant_time_series in kind_to_df_map.iteritems()]
+                          for kind, relevant_time_series in kind_to_df_map.items()]
 
     # Add time series features to result
     result = pd.concat([df_with_ids] + extracted_features, axis=1, join='outer', join_axes=[df_with_ids.index]).astype(np.float64)

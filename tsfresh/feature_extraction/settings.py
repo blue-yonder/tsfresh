@@ -79,7 +79,7 @@ class FeatureExtractionSettings(object):
         :return:
         """
         name_to_param = {}
-        for name, func in feature_calculators.__dict__.iteritems():
+        for name, func in feature_calculators.__dict__.items():
             if callable(func):
                 if hasattr(func, "fctype"):
                     name_to_param[name] = None
@@ -246,7 +246,7 @@ class FeatureExtractionSettings(object):
         if kind not in self.kind_to_calculation_settings_mapping:
             return aggregate_functions
 
-        for name, param in self.kind_to_calculation_settings_mapping[kind].iteritems():
+        for name, param in self.kind_to_calculation_settings_mapping[kind].items():
 
             func = getattr(feature_calculators, name)
 
@@ -266,7 +266,7 @@ class FeatureExtractionSettings(object):
 
                     # if there are several params, create a feature for each one
                     c = '{}__{}'.format(kind, name)
-                    for arg, p in config.iteritems():
+                    for arg, p in config.items():
                         c += "__" + arg + "_" + str(p)
                     aggregate_functions[c] = partial(func, **config)
 
@@ -293,7 +293,7 @@ class FeatureExtractionSettings(object):
         if column_prefix not in self.kind_to_calculation_settings_mapping:
             return apply_functions
 
-        for name, param in self.kind_to_calculation_settings_mapping[column_prefix].iteritems():
+        for name, param in self.kind_to_calculation_settings_mapping[column_prefix].items():
 
             func = getattr(feature_calculators, name)
 
