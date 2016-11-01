@@ -27,6 +27,7 @@ References
 
 
 from __future__ import absolute_import, division
+from builtins import str
 import numpy as np
 import pandas as pd
 from scipy import stats

@@ -6,6 +6,7 @@ This module contains the main function to interact with tsfresh: extract feature
 """
 
 from __future__ import absolute_import, division
+from builtins import str
 import pandas as pd
 import numpy as np
 from tsfresh.utilities import dataframe_functions, profiling
