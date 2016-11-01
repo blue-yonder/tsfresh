@@ -25,6 +25,7 @@ import pandas as pd
 from scipy.signal import welch, cwt, ricker, find_peaks_cwt
 from statsmodels.tsa.ar_model import AR
 from statsmodels.tsa.stattools import adfuller
+from functools import reduce
 
 
 # todo: make sure '_' works in parameter names in all cases, add a warning if not
