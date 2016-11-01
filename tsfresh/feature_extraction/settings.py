@@ -23,7 +23,7 @@ from tsfresh.utilities.dataframe_functions import impute_dataframe_zero
 
 
 # todo: this classes' docstrings are not completely up-to-date
-class FeatureExtractionSettings:
+class FeatureExtractionSettings(object):
     """
     This class defines the behaviour of feature extraction, in particular which feature and parameter combinations are calculated.
     If you do not specify any user settings, all features will be extracted with default arguments defined in this class.
