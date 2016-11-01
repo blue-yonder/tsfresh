@@ -690,7 +690,7 @@ def number_cwt_peaks(x, n):
     :return: the value of this feature
     :return type: int
     """
-    return len(find_peaks_cwt(vector=x, widths=np.array(range(1, n + 1)), wavelet=ricker))
+    return len(find_peaks_cwt(vector=x, widths=np.array(list(range(1, n + 1))), wavelet=ricker))
 
 
 @set_property("fctype", "apply")

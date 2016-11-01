@@ -26,7 +26,7 @@ class FeatureSelectorTestCase(TestCase):
         selector = FeatureSelector()
 
         y = pd.Series(np.random.binomial(1, 0.5, 1000))
-        X = pd.DataFrame(index=range(1000))
+        X = pd.DataFrame(index=list(range(1000)))
 
         z = y - np.random.binomial(1, 0.1, 1000) + np.random.binomial(1, 0.1, 1000)
         z[z == -1] = 0
@@ -65,7 +65,7 @@ class FeatureSelectorTestCase(TestCase):
         selector = FeatureSelector()
 
         y = pd.Series(np.random.binomial(1, 0.5, 1000))
-        X = pd.DataFrame(index=range(1000))
+        X = pd.DataFrame(index=list(range(1000)))
 
         X["irr1"] = np.random.normal(0, 1, 1000)
         X["irr2"] = np.random.normal(2, 1, 1000)
@@ -81,7 +81,7 @@ class FeatureSelectorTestCase(TestCase):
         selector = FeatureSelector()
 
         y = pd.Series(np.random.binomial(1, 0.5, 1000))
-        X = pd.DataFrame(index=range(1000))
+        X = pd.DataFrame(index=list(range(1000)))
 
         X["irr1"] = np.random.normal(0, 1, 1000)
         X["rel1"] = y

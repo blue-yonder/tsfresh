@@ -154,7 +154,7 @@ class FeatureCalculationTestCase(TestCase):
         self.assertEqualOnAllArrayTypes(mean_change, [1, 2, -1], -1)
 
     def test_mean_second_derivate_central(self):
-        self.assertEqualOnAllArrayTypes(mean_second_derivate_central, range(10), 0)
+        self.assertEqualOnAllArrayTypes(mean_second_derivate_central, list(range(10)), 0)
         self.assertEqualOnAllArrayTypes(mean_second_derivate_central, [1, 3, 5], 0)
         self.assertEqualOnAllArrayTypes(mean_second_derivate_central, [1, 3, 7, -3], -3)
 
@@ -381,8 +381,8 @@ class FeatureCalculationTestCase(TestCase):
                                                                                   1 / 11 * np.math.log(1 / 11)), 10)
         self.assertAlmostEqualOnAllArrayTypes(binned_entropy, [10] * 10 + [1], - (10 / 11 * np.math.log(10 / 11) +
                                                                                   1 / 11 * np.math.log(1 / 11)), 100)
-        self.assertAlmostEqualOnAllArrayTypes(binned_entropy, range(10), - np.math.log(1 / 10), 100)
-        self.assertAlmostEqualOnAllArrayTypes(binned_entropy, range(100), - np.math.log(1 / 2), 2)
+        self.assertAlmostEqualOnAllArrayTypes(binned_entropy, list(range(10)), - np.math.log(1 / 10), 100)
+        self.assertAlmostEqualOnAllArrayTypes(binned_entropy, list(range(100)), - np.math.log(1 / 2), 2)
 
     def test_autocorrelation(self):
         self.assertAlmostEqualOnAllArrayTypes(autocorrelation, [1, 2, 1, 2, 1, 2], -1, 1)
@@ -400,8 +400,8 @@ class FeatureCalculationTestCase(TestCase):
 
     def test_mean_abs_change_quantiles(self):
 
-        self.assertAlmostEqualOnAllArrayTypes(mean_abs_change_quantiles, range(10), 1, ql=0.1, qh=0.9)
-        self.assertAlmostEqualOnAllArrayTypes(mean_abs_change_quantiles, range(10), 0, ql=0.15, qh=0.18)
+        self.assertAlmostEqualOnAllArrayTypes(mean_abs_change_quantiles, list(range(10)), 1, ql=0.1, qh=0.9)
+        self.assertAlmostEqualOnAllArrayTypes(mean_abs_change_quantiles, list(range(10)), 0, ql=0.15, qh=0.18)
         self.assertAlmostEqualOnAllArrayTypes(mean_abs_change_quantiles, [0, 1, 0, 0, 0], 0.5, ql=0, qh=1)
         self.assertAlmostEqualOnAllArrayTypes(mean_abs_change_quantiles, [0, 1, 0, 0, 0], 0.5, ql=0.1, qh=1)
         self.assertAlmostEqualOnAllArrayTypes(mean_abs_change_quantiles, [0, 1, 0, 0, 0], 0, ql=0.1, qh=0.6)
@@ -411,7 +411,7 @@ class FeatureCalculationTestCase(TestCase):
 
     def test_value_count(self):
         self.assertEqualPandasSeriesWrapper(value_count, [1] * 10, 10, value=1)
-        self.assertEqualPandasSeriesWrapper(value_count, range(10), 1, value=0)
+        self.assertEqualPandasSeriesWrapper(value_count, list(range(10)), 1, value=0)
         self.assertEqualPandasSeriesWrapper(value_count, [1] * 10, 0, value=0)
         self.assertEqualPandasSeriesWrapper(value_count, [np.NaN, 0, 1] * 3, 3, value=0)
         self.assertEqualPandasSeriesWrapper(value_count, [np.NINF, 0, 1] * 3, 3, value=0)
@@ -425,7 +425,7 @@ class FeatureCalculationTestCase(TestCase):
         self.assertEqualPandasSeriesWrapper(range_count, [1] * 10, 0, min=1, max=1)
         self.assertEqualPandasSeriesWrapper(range_count, [1] * 10, 0, min=0.9, max=1)
         self.assertEqualPandasSeriesWrapper(range_count, [1] * 10, 10, min=1, max=1.1)
-        self.assertEqualPandasSeriesWrapper(range_count, range(10), 9, min=0, max=9)
-        self.assertEqualPandasSeriesWrapper(range_count, range(10), 10, min=0, max=10)
-        self.assertEqualPandasSeriesWrapper(range_count, range(0, -10, -1), 9, min=-10, max=0)
-        self.assertEqualPandasSeriesWrapper(range_count, [np.NaN, np.PINF, np.NINF] + range(10), 10, min=0, max=10)
+        self.assertEqualPandasSeriesWrapper(range_count, list(range(10)), 9, min=0, max=9)
+        self.assertEqualPandasSeriesWrapper(range_count, list(range(10)), 10, min=0, max=10)
+        self.assertEqualPandasSeriesWrapper(range_count, list(range(0, -10, -1)), 9, min=-10, max=0)
+        self.assertEqualPandasSeriesWrapper(range_count, [np.NaN, np.PINF, np.NINF] + list(range(10)), 10, min=0, max=10)

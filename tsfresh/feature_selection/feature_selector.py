@@ -193,7 +193,7 @@ def benjamini_hochberg_test(df_pvalues, settings):
     # Get auxiliary variables and vectors
     df_pvalues = df_pvalues.sort_values(by="p_value")
     m = len(df_pvalues)
-    K = range(1, m + 1)
+    K = list(range(1, m + 1))
 
     # Calculate the weight vector C
     if settings.hypotheses_independent:
