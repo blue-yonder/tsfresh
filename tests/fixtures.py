@@ -41,7 +41,11 @@ class DataTestCase(TestCase):
         :return: target y which is the mean of each sample's timeseries
         """
         cid = np.repeat(range(50), 3)
-        csort = range(3) * 50
+        # The csort was changed for Python 3 support
+        # https://github.com/blue-yonder/tsfresh/issues/8
+        # range has changed type in py3 from list to class
+        # csort = range(3) * 50
+        csort = list(range(3)) * 50
         cval = [1, 2, 3] * 30 + [4, 5, 6] * 20
         df = pd.DataFrame({'id': cid, 'kind': 'a', 'sort': csort, 'val': cval})
         y = pd.Series([2] * 30 + [5] * 20)
