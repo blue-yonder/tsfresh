@@ -120,8 +120,8 @@ Further, you can even perform the extraction, imputing and filtering at the same
 
 You can now use the features contained in the Data Frame `features_filtered` (which is equal to
 `features_filtered_direct`) in conjunction with `y` to train your model. Please see the `robot_failure_example.ipynb`
- Jupyter Notebook in the folder named notebook. In this notebook a RandomForestClassifier is trained on the extracted
- features.
+Jupyter Notebook in the folder named notebook. In this notebook a RandomForestClassifier is trained on the extracted
+features.
 
 References
 
