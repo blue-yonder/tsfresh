@@ -66,6 +66,9 @@ class FeatureExtractionSettings:
         self.IMPUTE = None
         self.set_default = True
 
+        # default None means one process per cpu
+        self.processes = None
+
     def set_default_parameters(self, kind):
         """
         Will calculate

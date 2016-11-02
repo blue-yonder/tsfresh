@@ -6,6 +6,8 @@ This module contains the main function to interact with tsfresh: extract feature
 """
 
 from __future__ import absolute_import, division
+from multiprocessing import Pool
+from functools import partial
 import pandas as pd
 import numpy as np
 from tsfresh.utilities import dataframe_functions, profiling
@@ -81,12 +83,15 @@ def extract_features(timeseries_container, feature_extraction_settings=None,
     all_possible_unique_id_values = set(id_value for kind, df in kind_to_df_map.iteritems()
                                         for id_value in df[column_id])
     df_with_ids = pd.DataFrame(index=all_possible_unique_id_values)
-    extracted_features = [_extract_features_for_one_time_series(relevant_time_series, str(kind),
-                                                                column_id, column_value, feature_extraction_settings)
-                          for kind, relevant_time_series in kind_to_df_map.iteritems()]
+
+    pool = Pool(feature_extraction_settings.processes)
+    partial_extract_features_for_one_time_series = partial(_extract_features_for_one_time_series, column_id=column_id,
+                              column_value=column_value, settings=feature_extraction_settings)
+    extracted_features = pool.map(partial_extract_features_for_one_time_series, kind_to_df_map.iteritems())
 
     # Add time series features to result
-    result = pd.concat([df_with_ids] + extracted_features, axis=1, join='outer', join_axes=[df_with_ids.index]).astype(np.float64)
+    result = pd.concat([df_with_ids] + extracted_features, axis=1, join='outer', join_axes=[df_with_ids.index])\
+        .astype(np.float64)
 
     # Impute the result if requested
     if feature_extraction_settings.IMPUTE is not None:
@@ -100,7 +105,7 @@ def extract_features(timeseries_container, feature_extraction_settings=None,
     return result
 
 
-def _extract_features_for_one_time_series(dataframe, column_prefix, column_id, column_value, settings):
+def _extract_features_for_one_time_series(prefix_and_dataframe, column_id, column_value, settings):
     """
     Extract time series features for a given data frame based on the passed settings.
 
@@ -149,17 +154,19 @@ def _extract_features_for_one_time_series(dataframe, column_prefix, column_id, c
     The parameter `dataframe` is not allowed to have any NaN value in it. It is possible to have different numbers
     of values for different ids.
 
-    :param dataframe: The dataframe with at least the columns column_id and column_value to extract the time
+    :param prefix_and_dataframe: Tuple of column_prefix and dataframe
+        column_prefix is the string that each extracted feature will be prefixed with (for better separation)
+        dataframe with at least the columns column_id and column_value to extract the time
         series features for.
-    :type dataframe: pandas.DataFrame
-
-    :param column_prefix: The string that each extracted feature will be prefixed with (for better separation)
+    :type prefix_and_dataframe: (str, DataFrame)
     :param column_id: The name of the column with the ids.
     :param column_value: The name of the column with the values.
     :param settings: The settings to control, which features will be extracted.
     :return: A dataframe with the extracted features as the columns (prefixed with column_prefix) and as many
         rows as their are unique values in the id column.
     """
+    column_prefix, dataframe = prefix_and_dataframe
+    column_prefix = str(column_prefix)
 
     if settings.set_default and column_prefix not in settings.kind_to_calculation_settings_mapping:
         settings.set_default_parameters(column_prefix)
