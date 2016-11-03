@@ -9,6 +9,8 @@ from unittest import TestCase
 import numpy as np
 
 from tsfresh.feature_extraction.settings import FeatureExtractionSettings
+from sys import version_info
+
 
 class TestSettingsObject(TestCase):
 
@@ -36,9 +38,14 @@ class TestSettingsObject(TestCase):
 
         cset = fset.from_columns(feature_names)
 
-        self.assertItemsEqual(list(cset.kind_to_calculation_settings_mapping[tsn].keys()),
-                              ["sum_values", "median", "length", "quantile", "number_peaks", "ar_coefficient",
-                               "value_count"])
+        if int(version_info[0]) == 2:
+            self.assertItemsEqual(list(cset.kind_to_calculation_settings_mapping[tsn].keys()),
+                                  ["sum_values", "median", "length", "quantile", "number_peaks", "ar_coefficient",
+                                  "value_count"])
+        else:
+            self.assertCountEqual(list(cset.kind_to_calculation_settings_mapping[tsn].keys()),
+                                  ["sum_values", "median", "length", "quantile", "number_peaks", "ar_coefficient",
+                                  "value_count"])
 
         self.assertEqual(cset.kind_to_calculation_settings_mapping[tsn]["sum_values"], None)
         self.assertEqual(cset.kind_to_calculation_settings_mapping[tsn]["ar_coefficient"],
