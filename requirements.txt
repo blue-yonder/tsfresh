@@ -5,4 +5,4 @@ scipy>=0.17.0
 statsmodels>=0.6.1
 patsy>=0.4.1
 scikit-learn>=0.17.1
-future
+future>=0.16.0
