@@ -2,6 +2,7 @@
 # This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
+from builtins import range
 from unittest import TestCase
 import pandas as pd
 
@@ -25,7 +26,7 @@ class FeatureSelectorTestCase(TestCase):
         selector = FeatureSelector()
 
         y = pd.Series(np.random.binomial(1, 0.5, 1000))
-        X = pd.DataFrame(index=range(1000))
+        X = pd.DataFrame(index=list(range(1000)))
 
         z = y - np.random.binomial(1, 0.1, 1000) + np.random.binomial(1, 0.1, 1000)
         z[z == -1] = 0
@@ -64,7 +65,7 @@ class FeatureSelectorTestCase(TestCase):
         selector = FeatureSelector()
 
         y = pd.Series(np.random.binomial(1, 0.5, 1000))
-        X = pd.DataFrame(index=range(1000))
+        X = pd.DataFrame(index=list(range(1000)))
 
         X["irr1"] = np.random.normal(0, 1, 1000)
         X["irr2"] = np.random.normal(2, 1, 1000)
@@ -80,7 +81,7 @@ class FeatureSelectorTestCase(TestCase):
         selector = FeatureSelector()
 
         y = pd.Series(np.random.binomial(1, 0.5, 1000))
-        X = pd.DataFrame(index=range(1000))
+        X = pd.DataFrame(index=list(range(1000)))
 
         X["irr1"] = np.random.normal(0, 1, 1000)
         X["rel1"] = y

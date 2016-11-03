@@ -2,6 +2,7 @@
 # This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
+from __future__ import print_function
 import pandas as pd
 from tests.fixtures import DataTestCase
 from tsfresh.feature_extraction.settings import FeatureExtractionSettings
@@ -24,6 +25,29 @@ class FeatureAugmenterTestCase(DataTestCase):
 
         # Fit should do nothing
         returned_df = augmenter.fit()
+        # Changed for py3 as unittest.assertEqual has changed a little
+        # TODO in progress
+        # Tried patterns, back at the original for now so can commit the
+        # assertItemsEqual assertCountEqual fix
+        # self.assertEqual(returned_df, augmenter)
+#>       self.assertEqual(list(X_transformed.columns), ["feature_1", "a__length", "b__length"])
+#E       AssertionError: Lists differ: ['feature_1', 'b__length', 'a__length'] != ['feature_1', 'a__length', 'b__length']
+#E
+#E       First differing element 1:
+#E       'b__length'
+#E       'a__length'
+#E
+#E       - ['feature_1', 'b__length', 'a__length']
+#E       + ['feature_1', 'a__length', 'b__length']
+
+#        self.assertEqual(sorted(returned_df), sorted((augmenter))
+#>       self.assertEqual(sorted(returned_df), sorted(augmenter))
+#E       TypeError: 'FeatureAugmenter' object is not iterable
+
+#        self.assertEqual(sorted(returned_df), sorted(list(augmenter)))
+#>       self.assertEqual(sorted(returned_df), sorted(list(augmenter)))
+#E       TypeError: 'FeatureAugmenter' object is not iterable
+
         self.assertEqual(returned_df, augmenter)
 
         self.assertRaises(RuntimeError, augmenter.transform, None)
@@ -48,7 +72,7 @@ class FeatureAugmenterTestCase(DataTestCase):
 
         # Features are not allowed to be NaN
         for index, row in X_transformed.iterrows():
-            print(index, row)
+            print((index, row))
             self.assertFalse(np.isnan(row["a__length"]))
             self.assertFalse(np.isnan(row["b__length"]))
 
@@ -72,6 +96,6 @@ class FeatureAugmenterTestCase(DataTestCase):
 
         # Features are not allowed to be NaN
         for index, row in X_transformed.iterrows():
-            print(index, row)
+            print((index, row))
             self.assertFalse(np.isnan(row["a__length"]))
             self.assertFalse(np.isnan(row["b__length"]))

@@ -2,7 +2,8 @@
 # This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
-class FeatureSignificanceTestsSettings:
+from builtins import object
+class FeatureSignificanceTestsSettings(object):
     """
     The settings object for controlling the feature significance tests.
     Normally, you do not have to handle these settings on your own, as the chosen defaults are quite sensible.

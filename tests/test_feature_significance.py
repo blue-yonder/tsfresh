@@ -55,7 +55,7 @@ class FeatureSignificanceTestCase(TestCase):
         self.assertGreater(len(feat_rej), 0)
 
         # Test type outputs
-        for i in xrange(1, 6):
+        for i in range(1, 6):
             row = df_bh.loc["rel{}".format(i)]
             self.assertEqual(row.Feature, "rel{}".format(i))
             if i == 1:
@@ -63,7 +63,7 @@ class FeatureSignificanceTestCase(TestCase):
             else:
                 self.assertEqual(row.type, "real")
 
-        for i in xrange(1, 10):
+        for i in range(1, 10):
             row = df_bh.loc["irr{}".format(i)]
             self.assertEqual(row.Feature, "irr{}".format(i))
             if i not in [3, 6, 9]:
@@ -123,12 +123,12 @@ class FeatureSignificanceTestCase(TestCase):
         self.assertGreater(len(feat_rej), 0)
 
         # Test type outputs
-        for i in xrange(1, 6):
+        for i in range(1, 6):
             row = df_bh.loc["rel{}".format(i)]
             self.assertEqual(row.Feature, "rel{}".format(i))
             self.assertEqual(row.type, "binary")
 
-        for i in xrange(1, 20):
+        for i in range(1, 20):
             row = df_bh.loc["irr{}".format(i)]
             self.assertEqual(row.Feature, "irr{}".format(i))
             self.assertEqual(row.type, "binary")
@@ -164,12 +164,12 @@ class FeatureSignificanceTestCase(TestCase):
         self.assertGreater(len(feat_rej), 0)
 
         # Test type outputs
-        for i in xrange(1, 5):
+        for i in range(1, 5):
             row = df_bh.loc["rel{}".format(i)]
             self.assertEqual(row.Feature, "rel{}".format(i))
             self.assertEqual(row.type, "real")
 
-        for i in xrange(1, 30):
+        for i in range(1, 30):
             row = df_bh.loc["irr{}".format(i)]
             self.assertEqual(row.Feature, "irr{}".format(i))
             self.assertEqual(row.type, "real")
@@ -210,7 +210,7 @@ class FeatureSignificanceTestCase(TestCase):
         self.assertGreater(len(feat_rej), 0)
 
         # Test type outputs
-        for i in xrange(1, 5):
+        for i in range(1, 5):
             row = df_bh.loc["rel{}".format(i)]
             self.assertEqual(row.Feature, "rel{}".format(i))
             if i == 1:
@@ -218,7 +218,7 @@ class FeatureSignificanceTestCase(TestCase):
             else:
                 self.assertEqual(row.type, "real")
 
-        for i in xrange(1, 10):
+        for i in range(1, 10):
             row = df_bh.loc["irr{}".format(i)]
             self.assertEqual(row.Feature, "irr{}".format(i))
             if i in [3, 6, 9]:
