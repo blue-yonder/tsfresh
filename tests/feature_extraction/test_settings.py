@@ -5,9 +5,7 @@
 from __future__ import absolute_import, division
 
 from unittest import TestCase
-
 import numpy as np
-
 from tsfresh.feature_extraction.settings import FeatureExtractionSettings
 import six
 
