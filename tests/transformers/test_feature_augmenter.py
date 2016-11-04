@@ -44,7 +44,7 @@ class FeatureAugmenterTestCase(DataTestCase):
         self.assertEqual(X_transformed.shape, (2, 3))
 
         # Preserve old features
-        self.assertEqual(list(X_transformed.columns), ["feature_1", "a__length", "b__length"])
+        six.assertCountEqual(self, list(X_transformed.columns), ["feature_1", "a__length", "b__length"])
 
         # Features are not allowed to be NaN
         for index, row in X_transformed.iterrows():
