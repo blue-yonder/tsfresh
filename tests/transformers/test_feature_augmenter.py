@@ -7,7 +7,7 @@ import pandas as pd
 from tests.fixtures import DataTestCase
 from tsfresh.feature_extraction.settings import FeatureExtractionSettings
 from tsfresh.transformers import FeatureAugmenter
-
+import six
 import numpy as np
 
 class FeatureAugmenterTestCase(DataTestCase):
@@ -25,31 +25,7 @@ class FeatureAugmenterTestCase(DataTestCase):
 
         # Fit should do nothing
         returned_df = augmenter.fit()
-        # Changed for py3 as unittest.assertEqual has changed a little
-        # TODO in progress
-        # Tried patterns, back at the original for now so can commit the
-        # assertItemsEqual assertCountEqual fix
-        # self.assertEqual(returned_df, augmenter)
-#>       self.assertEqual(list(X_transformed.columns), ["feature_1", "a__length", "b__length"])
-#E       AssertionError: Lists differ: ['feature_1', 'b__length', 'a__length'] != ['feature_1', 'a__length', 'b__length']
-#E
-#E       First differing element 1:
-#E       'b__length'
-#E       'a__length'
-#E
-#E       - ['feature_1', 'b__length', 'a__length']
-#E       + ['feature_1', 'a__length', 'b__length']
-
-#        self.assertEqual(sorted(returned_df), sorted((augmenter))
-#>       self.assertEqual(sorted(returned_df), sorted(augmenter))
-#E       TypeError: 'FeatureAugmenter' object is not iterable
-
-#        self.assertEqual(sorted(returned_df), sorted(list(augmenter)))
-#>       self.assertEqual(sorted(returned_df), sorted(list(augmenter)))
-#E       TypeError: 'FeatureAugmenter' object is not iterable
-
-        self.assertEqual(returned_df, augmenter)
-
+        six.assertCountEqual(self, returned_df.__dict__, augmenter.__dict__)
         self.assertRaises(RuntimeError, augmenter.transform, None)
 
         augmenter.set_timeseries_container(self.test_df)
