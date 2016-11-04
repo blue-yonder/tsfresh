@@ -28,7 +28,7 @@ class NormalizeTestCase(TestCase):
             dataframe_functions.normalize_input_to_internal_representation(test_dict, "id", None, None, "value")
         self.assertEqual(column_value, "value")
         self.assertEqual(column_id, "id")
-        self.assertEqual(test_dict.keys(), result_dict.keys())
+        self.assertEqual(list(test_dict.keys()), list(result_dict.keys()))
         self.assertEqual(result_dict["a"].iloc[0].to_dict(), {"value": 1, "id": "id_1"})
 
         # The algo should choose the correct value column

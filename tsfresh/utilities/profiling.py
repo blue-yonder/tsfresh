@@ -5,7 +5,9 @@
 Contains methods to start and stop the profiler that checks the runtime of the different feature calculators
 """
 
-import cProfile, pstats, StringIO
+from future import standard_library
+standard_library.install_aliases()
+import cProfile, pstats, io
 import logging
 
 
@@ -55,7 +57,7 @@ def end_profiling(profiler, sorting, filename):
     >>> end_profiling(profiler, "cumulative", "out.txt")
     """
     profiler.disable()
-    s = StringIO.StringIO()
+    s = io.StringIO()
     ps = pstats.Stats(profiler, stream=s).sort_stats(sorting)
     ps.print_stats()
 

@@ -15,6 +15,7 @@ can be used with pandas apply.
 """
 
 from __future__ import absolute_import, division
+from builtins import range
 import itertools
 import numpy as np
 from numpy.linalg import LinAlgError
@@ -25,6 +26,7 @@ import pandas as pd
 from scipy.signal import welch, cwt, ricker, find_peaks_cwt
 from statsmodels.tsa.ar_model import AR
 from statsmodels.tsa.stattools import adfuller
+from functools import reduce
 
 
 # todo: make sure '_' works in parameter names in all cases, add a warning if not
@@ -688,7 +690,7 @@ def number_cwt_peaks(x, n):
     :return: the value of this feature
     :return type: int
     """
-    return len(find_peaks_cwt(vector=x, widths=np.array(range(1, n + 1)), wavelet=ricker))
+    return len(find_peaks_cwt(vector=x, widths=np.array(list(range(1, n + 1))), wavelet=ricker))
 
 
 @set_property("fctype", "apply")
