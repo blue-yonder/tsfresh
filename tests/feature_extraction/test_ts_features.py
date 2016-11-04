@@ -8,6 +8,7 @@ import pandas as pd
 from tests.fixtures import DataTestCase
 from tsfresh.feature_extraction.extraction import extract_features
 from tsfresh.feature_extraction.settings import FeatureExtractionSettings
+import six
 
 
 class FeatureExtractorTestCase(DataTestCase):
@@ -48,7 +49,8 @@ class FeatureExtractorTestCase(DataTestCase):
         extracted_features_from_random = extract_features(df_random, self.settings,
                                                           "id", "sort", "kind", "val").sort_index()
 
-        self.assertItemsEqual(extracted_features.columns, extracted_features_from_random.columns)
+
+        six.assertCountEqual(self, extracted_features.columns, extracted_features_from_random.columns)
 
         for col in extracted_features:
             self.assertIsNone(np.testing.assert_array_almost_equal(extracted_features[col],

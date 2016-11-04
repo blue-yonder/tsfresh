@@ -8,6 +8,11 @@ For the naming of the features, see :ref:`feature-naming-label`.
 """
 
 from __future__ import absolute_import
+from builtins import zip
+from builtins import str
+from builtins import range
+from past.builtins import basestring
+from builtins import object
 import ast
 from functools import partial
 
@@ -18,7 +23,7 @@ from tsfresh.utilities.dataframe_functions import impute_dataframe_zero
 
 
 # todo: this classes' docstrings are not completely up-to-date
-class FeatureExtractionSettings:
+class FeatureExtractionSettings(object):
     """
     This class defines the behaviour of feature extraction, in particular which feature and parameter combinations are calculated.
     If you do not specify any user settings, all features will be extracted with default arguments defined in this class.
@@ -74,7 +79,7 @@ class FeatureExtractionSettings:
         :return:
         """
         name_to_param = {}
-        for name, func in feature_calculators.__dict__.iteritems():
+        for name, func in feature_calculators.__dict__.items():
             if callable(func):
                 if hasattr(func, "fctype"):
                     name_to_param[name] = None
@@ -144,8 +149,8 @@ class FeatureExtractionSettings:
 
         for col in columns:
 
-            if not isinstance(col, str):
-                raise TypeError("Column name {} should be a string".format(col))
+            if not isinstance(col, basestring):
+                raise TypeError("Column name {} should be a string or unicode".format(col))
 
             # Split according to our separator into <col_name>, <feature_name>, <feature_params>
             parts = col.split('__')
@@ -241,7 +246,7 @@ class FeatureExtractionSettings:
         if kind not in self.kind_to_calculation_settings_mapping:
             return aggregate_functions
 
-        for name, param in self.kind_to_calculation_settings_mapping[kind].iteritems():
+        for name, param in self.kind_to_calculation_settings_mapping[kind].items():
 
             func = getattr(feature_calculators, name)
 
@@ -261,7 +266,7 @@ class FeatureExtractionSettings:
 
                     # if there are several params, create a feature for each one
                     c = '{}__{}'.format(kind, name)
-                    for arg, p in config.iteritems():
+                    for arg, p in sorted(config.items()):
                         c += "__" + arg + "_" + str(p)
                     aggregate_functions[c] = partial(func, **config)
 
@@ -288,7 +293,7 @@ class FeatureExtractionSettings:
         if column_prefix not in self.kind_to_calculation_settings_mapping:
             return apply_functions
 
-        for name, param in self.kind_to_calculation_settings_mapping[column_prefix].iteritems():
+        for name, param in self.kind_to_calculation_settings_mapping[column_prefix].items():
 
             func = getattr(feature_calculators, name)
 

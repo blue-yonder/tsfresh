@@ -5,10 +5,9 @@
 from __future__ import absolute_import, division
 
 from unittest import TestCase
-
 import numpy as np
-
 from tsfresh.feature_extraction.settings import FeatureExtractionSettings
+import six
 
 class TestSettingsObject(TestCase):
 
@@ -36,9 +35,9 @@ class TestSettingsObject(TestCase):
 
         cset = fset.from_columns(feature_names)
 
-        self.assertItemsEqual(cset.kind_to_calculation_settings_mapping[tsn].keys(),
-                              ["sum_values", "median", "length", "quantile", "number_peaks", "ar_coefficient",
-                               "value_count"])
+        six.assertCountEqual(self, list(cset.kind_to_calculation_settings_mapping[tsn].keys()),
+                                  ["sum_values", "median", "length", "quantile", "number_peaks", "ar_coefficient",
+                                  "value_count"])
 
         self.assertEqual(cset.kind_to_calculation_settings_mapping[tsn]["sum_values"], None)
         self.assertEqual(cset.kind_to_calculation_settings_mapping[tsn]["ar_coefficient"],
