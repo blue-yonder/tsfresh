@@ -4,7 +4,7 @@
 
 # todo: complement this docstring and reference to christ paper
 """
-Contains the methods from the following paper about FRESH [1]
+Contains the methods from the following paper about FRESH [2]
 
 Fresh is based on hypothesis tests that individually check the significance of every generated feature on the target.
 It makes sure that only features are kept, that are relevant for the regression or classification task at hand. FRESH
@@ -19,9 +19,12 @@ The four functions are named
 
 References
 ----------
-.. [1] Christ, M., Kempa-Liehr, A.W. and Feindt, M. (2016).
-    Distributed and parallel time series feature extraction for industrial big data applications.
-    ArXiv e-prints: 1610.07717 URL: http://adsabs.harvard.edu/abs/2016arXiv161007717C
+
+.. [2] Christ, M., Kempa-Liehr, A.W. and Feindt, M. (2016).
+     Distributed and parallel time series feature extraction for industrial big data applications.
+     ArXiv e-prints: 1610.07717
+     https://arxiv.org/abs/1610.07717
+
 
 """
 
