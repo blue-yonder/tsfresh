@@ -266,7 +266,7 @@ class FeatureExtractionSettings(object):
 
                     # if there are several params, create a feature for each one
                     c = '{}__{}'.format(kind, name)
-                    for arg, p in config.items():
+                    for arg, p in sorted(config.items()):
                         c += "__" + arg + "_" + str(p)
                     aggregate_functions[c] = partial(func, **config)
 
