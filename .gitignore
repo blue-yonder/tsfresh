@@ -48,3 +48,6 @@ activate
 
 # examples data directory
 tsfresh/examples/data
+
+# ds_store
+*.DS_Store
