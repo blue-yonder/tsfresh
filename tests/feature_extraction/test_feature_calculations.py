@@ -9,8 +9,7 @@ from random import shuffle
 from unittest import TestCase
 from tsfresh.feature_extraction.feature_calculators import *
 from tsfresh.feature_extraction.feature_calculators import _get_length_sequences_where
-from sys import version_info
-
+import six
 
 class FeatureCalculationTestCase(TestCase):
 
@@ -280,10 +279,7 @@ class FeatureCalculationTestCase(TestCase):
         expected_index = ["TEST__index_mass_quantile__q_0.5"]
         res = index_mass_quantile(x, c, param)
         self.assertIsInstance(res, pd.Series)
-        if int(version_info[0]) == 2:
-            self.assertItemsEqual(list(res.index), expected_index)
-        else:
-            self.assertCountEqual(list(res.index), expected_index)
+        six.assertCountEqual(self, list(res.index), expected_index)
         self.assertAlmostEqual(res["TEST__index_mass_quantile__q_0.5"], 0.5, places=1)
 
         x = [0] * 1000 + [1]
@@ -292,10 +288,7 @@ class FeatureCalculationTestCase(TestCase):
         expected_index = ["TEST__index_mass_quantile__q_0.5", "TEST__index_mass_quantile__q_0.99"]
         res = index_mass_quantile(x, c, param)
         self.assertIsInstance(res, pd.Series)
-        if int(version_info[0]) == 2:
-            self.assertItemsEqual(list(res.index), expected_index)
-        else:
-            self.assertCountEqual(list(res.index), expected_index)
+        six.assertCountEqual(self, list(res.index), expected_index)
         self.assertAlmostEqual(res["TEST__index_mass_quantile__q_0.5"], 1, places=1)
         self.assertAlmostEqual(res["TEST__index_mass_quantile__q_0.99"], 1, places=1)
 
@@ -307,10 +300,7 @@ class FeatureCalculationTestCase(TestCase):
         res = index_mass_quantile(x, c, param)
         self.assertIsInstance(res, pd.Series)
 
-        if int(version_info[0]) == 2:
-            self.assertItemsEqual(list(res.index), expected_index)
-        else:
-            self.assertCountEqual(list(res.index), expected_index)
+        six.assertCountEqual(self, list(res.index), expected_index)
         self.assertAlmostEqual(res["TEST__index_mass_quantile__q_0.3"], 0.25, places=1)
         self.assertAlmostEqual(res["TEST__index_mass_quantile__q_0.6"], 0.375, places=1)
         self.assertAlmostEqual(res["TEST__index_mass_quantile__q_0.9"], 0.75, places=1)
@@ -342,10 +332,7 @@ class FeatureCalculationTestCase(TestCase):
         expected_index = ["TEST__ar_coefficient__k_1__coeff_0", "TEST__ar_coefficient__k_1__coeff_1"]
 
         self.assertIsInstance(res, pd.Series)
-        if int(version_info[0]) == 2:
-            self.assertItemsEqual(list(res.index), expected_index)
-        else:
-            self.assertCountEqual(list(res.index), expected_index)
+        six.assertCountEqual(self, list(res.index), expected_index)
         self.assertAlmostEqual(res["TEST__ar_coefficient__k_1__coeff_0"], 1, places=2)
         self.assertAlmostEqual(res["TEST__ar_coefficient__k_1__coeff_1"], 2.5, places=2)
 
@@ -366,10 +353,7 @@ class FeatureCalculationTestCase(TestCase):
 
         print(res.sort_index())
         self.assertIsInstance(res, pd.Series)
-        if int(version_info[0]) == 2:
-            self.assertItemsEqual(list(res.index), expected_index)
-        else:
-            self.assertCountEqual(list(res.index), expected_index)
+        six.assertCountEqual(self, list(res.index), expected_index)
         self.assertAlmostEqual(res["TEST__ar_coefficient__k_2__coeff_0"], 1, places=2)
         self.assertAlmostEqual(res["TEST__ar_coefficient__k_2__coeff_1"], 3.5, places=2)
         self.assertAlmostEqual(res["TEST__ar_coefficient__k_2__coeff_2"], -2, places=2)
