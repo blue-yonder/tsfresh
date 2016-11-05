@@ -36,3 +36,8 @@ def download_har_dataset():
 def load_har_dataset():
 
     return pd.read_csv('data/UCI HAR Dataset/train/Inertial Signals/body_acc_x_train.txt', delim_whitespace=True, header=None)
+
+
+def load_har_classes():
+
+    return pd.read_csv('data/UCI HAR Dataset/train/y_train.txt', delim_whitespace=True, header=None)
