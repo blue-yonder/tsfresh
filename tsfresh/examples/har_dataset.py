@@ -16,7 +16,7 @@ import pandas as pd
 
 def download_har_dataset():
     """
-    Download the human activity recognition dataset from the UCI Machine Learning Repository and store it locally.
+    Download human activity recognition dataset from UCI ML Repository and store it in /tsfresh/notebooks/data.
     
     Examples
     ========
@@ -34,10 +34,10 @@ def download_har_dataset():
 
 
 def load_har_dataset():
-
-    return pd.read_csv('data/UCI HAR Dataset/train/Inertial Signals/body_acc_x_train.txt', delim_whitespace=True, header=None)
+    return pd.read_csv('data/UCI HAR Dataset/train/Inertial Signals/body_acc_x_train.txt', 
+        delim_whitespace=True, header=None)
 
 
 def load_har_classes():
-
-    return pd.read_csv('data/UCI HAR Dataset/train/y_train.txt', delim_whitespace=True, header=None)
+    return pd.read_csv('data/UCI HAR Dataset/train/y_train.txt', 
+        delim_whitespace=True, header=None)
