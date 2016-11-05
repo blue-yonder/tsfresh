@@ -11,13 +11,13 @@ https://archive.ics.uci.edu/ml/datasets/Human+Activity+Recognition+Using+Smartph
 from io import BytesIO
 from urllib.request import urlopen
 from zipfile import ZipFile
+import pandas as pd
 
 
 def download_har_dataset():
     """
-    Download the Robot Execution Failures LP1 Data Set[1] from the UCI Machine Learning Repository[2] and store it locally.
-    :return:
-
+    Download the human activity recognition dataset from the UCI Machine Learning Repository and store it locally.
+    
     Examples
     ========
 
@@ -31,3 +31,8 @@ def download_har_dataset():
         with ZipFile(BytesIO(zipresp.read())) as zfile:
             zfile.extractall('data')
         zfile.close()
+
+
+def load_har_dataset():
+
+    return pd.read_csv('data/UCI HAR Dataset/train/Inertial Signals/body_acc_x_train.txt', delim_whitespace=True, header=None)
