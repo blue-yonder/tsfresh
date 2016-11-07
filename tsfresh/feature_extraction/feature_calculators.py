@@ -1057,19 +1057,21 @@ def approximate_entropy(x, m, r):
     :return: Approximate entropy
     :return type: float
     """
-
+    x = np.asarray(x)
+    N = len(x)
+    r *= np.std(x)
     if r < 0:
         raise ValueError("Parameter r must be positive.")
+    if N <= m+1:
+        return 0
 
     def _phi(m):
         # Construct an array with (N-m+1) arrays of size m from array x.
         # Not sure if this can also be vectorized
-        x_re = np.array([[x[j] for j in range(i, i + m - 1 + 1)]
+        x_re = np.array([[x[j] for j in range(i, i + m)]
                          for i in range(N - m + 1)])
         C = np.sum(np.max(np.abs(x_re[:, np.newaxis] - x_re[np.newaxis, :]),
                           axis=2) <= r, axis=0) / (N-m+1)
         return np.sum(np.log(C)) / (N - m + 1.0)
-    N = len(x)
-    r *= np.std(x)
 
     return np.abs(_phi(m) - _phi(m + 1))
