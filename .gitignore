@@ -47,4 +47,7 @@ activate
 .ipynb_checkpoints
 
 # examples data directory
-tsfresh/examples/data
+tsfresh/examples/data/
+tsfresh/notebooks/data/
+# ds_store
+*.DS_Store
