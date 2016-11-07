@@ -9,7 +9,7 @@ want to add one or two interesting feature calculators, implement a new feature 
 your help is appreciated.
 
 If you want to help, just create a pull request on our github page. To the new user, working with Git can sometimes be
-confusing and frustrating. If you are not familiar with Git you can also contact us by email.
+confusing and frustrating. If you are not familiar with Git you can also contact us by :ref:`email <authors>`.
 
 
 Guidelines
