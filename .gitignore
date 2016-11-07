@@ -40,7 +40,7 @@ cover/*
 MANIFEST
 
 # Virtual environment
-venv
+venv*
 activate
 
 # IPython notebooks

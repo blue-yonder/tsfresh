@@ -69,3 +69,5 @@ If you are interested in the technical workings, go to see our comprehensive Rea
 The algorithm, especially the filtering part are also described in the paper mentioned above.
 
 If you have some questions or feedback you can find the developers in the [gitter chatroom.](https://gitter.im/tsfresh/Lobby?utm_source=share-link&utm_medium=link&utm_campaign=share-link) 
+
+We appreciate any contributions, if you are interested in helping us to make *TSFRESH* the biggest archive of feature extraction methods in python, just head over to our [How-To-Contribute](http://tsfresh.readthedocs.io/en/latest/text/how_to_contribute.html) instructions.
