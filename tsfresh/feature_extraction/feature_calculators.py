@@ -1035,7 +1035,7 @@ def range_count(x, min, max):
 
 
 @set_property("fctype", "aggregate_with_parameters")
-def aproximate_entropy(x, m, r):
+def approximate_entropy(x, m, r):
     """
     Implements a vectorized Approximate entropy algorithm.
     --> https://en.wikipedia.org/wiki/Approximate_entropy
