@@ -1032,3 +1032,44 @@ def range_count(x, min, max):
     """
 
     return x[(x >= min) & (x < max)].count()
+
+
+@set_property("fctype", "aggregate_with_parameters")
+def aproximate_entropy(x, m, r):
+    """
+    Implements a vectorized Approximate entropy algorithm.
+    --> https://en.wikipedia.org/wiki/Approximate_entropy
+
+    For short time-series this method is highly dependent on the parameters,
+    but should be stable for N > 2000, see:
+    --> The Appropriate Use of Approximate Entropy and Sample Entropy with Short Data Sets - Yentes et al. 2012
+
+    Other shortcomings and alternatives discussed in:
+    --> Physiological time-series analysis using approximate entropy and sample entropy - Richman & Moorman 2000
+
+    :param x: the time series to calculate the feature of
+    :type x: pandas.Series
+    :param m: Length of compared run of data
+    :type m: int
+    :param r: Filtering level, must be positive
+    :type r: float
+
+    :return: Approximate entropy
+    :return type: float
+    """
+
+    if r < 0:
+        raise ValueError("Parameter r must be positive.")
+
+    def _phi(m):
+        # Construct an array with (N-m+1) arrays of size m from array x.
+        # Not sure if this can also be vectorized
+        x_re = np.array([[x[j] for j in range(i, i + m - 1 + 1)]
+                         for i in range(N - m + 1)])
+        C = np.sum(np.max(np.abs(x_re[:, np.newaxis] - x_re[np.newaxis, :]),
+                          axis=2) <= r, axis=0) / (N-m+1)
+        return np.sum(np.log(C)) / (N - m + 1.0)
+    N = len(x)
+    r *= np.std(x)
+
+    return np.abs(_phi(m) - _phi(m + 1))

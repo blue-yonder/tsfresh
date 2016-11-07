@@ -102,7 +102,8 @@ class FeatureExtractionSettings(object):
                                           for ql in [0., .2, .4, .6, .8] for qh in [.2, .4, .6, .8, 1.]],
             "fft_coefficient": [{"coeff": coeff} for coeff in range(0, 10)],
             "value_count": [{"value": value} for value in [0, 1, np.NaN, np.PINF, np.NINF]],
-            "range_count": [{"min": -1, "max": 1}]
+            "range_count": [{"min": -1, "max": 1}],
+            "aproximate_entropy": [{"m": 2, "r": r} for r in [.1, .3, .5, .7, .9]]
         })
         self.kind_to_calculation_settings_mapping[kind] = name_to_param.copy()
 
