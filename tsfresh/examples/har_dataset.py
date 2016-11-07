@@ -23,7 +23,13 @@ from io import BytesIO
 from urllib.request import urlopen
 from zipfile import ZipFile
 import pandas as pd
+import os
 
+module_path = os.path.dirname(__file__)
+data_file_name = os.path.join(module_path, 'data')
+data_file_name_dataset = os.path.join(module_path, 'data', 'UCI HAR Dataset', 'train', 'Inertial Signals',
+                                      'body_acc_x_train.txt')
+data_file_name_classes = os.path.join(module_path, 'data','UCI HAR Dataset', 'train', 'y_train.txt')
 
 def download_har_dataset():
     """
@@ -40,15 +46,21 @@ def download_har_dataset():
     
     with urlopen(zipurl) as zipresp:
         with ZipFile(BytesIO(zipresp.read())) as zfile:
-            zfile.extractall('data')
+            zfile.extractall(path=data_file_name)
         zfile.close()
 
 
 def load_har_dataset():
-    return pd.read_csv('data/UCI HAR Dataset/train/Inertial Signals/body_acc_x_train.txt', 
-        delim_whitespace=True, header=None)
+    try:
+        return pd.read_csv(data_file_name_dataset, delim_whitespace=True, header=None)
+    except IOError:
+        raise IOError('File {} was not found. Have you downloaded the dataset with download_har_dataset() '
+                       'before?'.format(data_file_name_dataset))
 
 
 def load_har_classes():
-    return pd.read_csv('data/UCI HAR Dataset/train/y_train.txt', 
-        delim_whitespace=True, header=None)
+    try:
+        return pd.read_csv(data_file_name_classes, delim_whitespace=True, header=None)
+    except IOError:
+        raise IOError('File {} was not found. Have you downloaded the dataset with download_har_dataset() '
+                       'before?'.format(data_file_name_classes))
