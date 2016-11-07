@@ -429,3 +429,10 @@ class FeatureCalculationTestCase(TestCase):
         self.assertEqualPandasSeriesWrapper(range_count, list(range(10)), 10, min=0, max=10)
         self.assertEqualPandasSeriesWrapper(range_count, list(range(0, -10, -1)), 9, min=-10, max=0)
         self.assertEqualPandasSeriesWrapper(range_count, [np.NaN, np.PINF, np.NINF] + list(range(10)), 10, min=0, max=10)
+
+    def test_approximate_entropy(self):
+        self.assertEqualOnAllArrayTypes(approximate_entropy, [1], 0, m=2, r=0.5)
+        self.assertEqualOnAllArrayTypes(approximate_entropy, [1, 2], 0, m=2, r=0.5)
+        self.assertEqualOnAllArrayTypes(approximate_entropy, [1, 2, 3], 0, m=2, r=0.5)
+        self.assertEqualOnAllArrayTypes(approximate_entropy, [1, 2, 3], 0, m=2, r=0.5)
+        self.assertAlmostEqualOnAllArrayTypes(approximate_entropy, [12,13,15,16,17]*10, 0.282456191, m=2, r=0.9)
