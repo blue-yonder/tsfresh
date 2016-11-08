@@ -81,7 +81,7 @@ class FeatureExtractionSettings(object):
         name_to_param = {}
         for name, func in feature_calculators.__dict__.items():
             if callable(func):
-                if hasattr(func, "fctype"):
+                if hasattr(func, "fctype") and getattr(func, "fctype") == "aggregate":
                     name_to_param[name] = None
         name_to_param.update({
             "time_reversal_asymmetry_statistic": [{"lag": lag} for lag in range(1, 4)],
