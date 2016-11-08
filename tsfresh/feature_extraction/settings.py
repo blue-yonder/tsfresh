@@ -107,7 +107,7 @@ class FeatureExtractionSettings(object):
         :param kind: str, the type of the time series
         :return:
         """
-<<<<<<< HEAD
+
         name_to_param = {}
         for name, func in feature_calculators.__dict__.items():
             if callable(func):
@@ -136,9 +136,9 @@ class FeatureExtractionSettings(object):
             "approximate_entropy": [{"m": 2, "r": r} for r in [.1, .3, .5, .7, .9]]
         })
         self.kind_to_calculation_settings_mapping[kind] = name_to_param.copy()
-=======
+
         self.kind_to_calculation_settings_mapping[kind] = self.name_to_param.copy()
->>>>>>> upstream/master
+
 
     def do_not_calculate(self, kind, identifier):
         """
