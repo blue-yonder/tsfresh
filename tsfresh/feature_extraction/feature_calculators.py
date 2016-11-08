@@ -1038,14 +1038,20 @@ def range_count(x, min, max):
 def approximate_entropy(x, m, r):
     """
     Implements a vectorized Approximate entropy algorithm.
-    --> https://en.wikipedia.org/wiki/Approximate_entropy
+
+        https://en.wikipedia.org/wiki/Approximate_entropy
 
     For short time-series this method is highly dependent on the parameters,
     but should be stable for N > 2000, see:
-    --> The Appropriate Use of Approximate Entropy and Sample Entropy with Short Data Sets - Yentes et al. 2012
+
+        Yentes et al. (2012) - 
+        *The Appropriate Use of Approximate Entropy and Sample Entropy with Short Data Sets*
+
 
     Other shortcomings and alternatives discussed in:
-    --> Physiological time-series analysis using approximate entropy and sample entropy - Richman & Moorman 2000
+
+        Richman & Moorman (2000) -
+        *Physiological time-series analysis using approximate entropy and sample entropy*
 
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
