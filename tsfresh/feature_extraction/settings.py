@@ -101,7 +101,7 @@ class FeatureExtractionSettings(object):
 
     def set_default_parameters(self, kind):
         """
-        Will calculate
+        Setup the feature calculations for kind as defined in `self.name_to_param`
 
         :param kind: str, the type of the time series
         :return:
