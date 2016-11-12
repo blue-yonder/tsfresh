@@ -12,7 +12,7 @@ install:
 - pip install -r test-requirements.txt
 script:
 # hack to set xdist to use only 2 nodes instead of 32
-- sed -i 's/\-n auto/\-n 2/g' setup.cfg
+- sed -i 's/\-n auto/\-n 1/g' setup.cfg
 - python setup.py test
 deploy:
   provider: pypi
