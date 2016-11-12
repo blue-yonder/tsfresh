@@ -1,5 +1,5 @@
 |Documentation Status| |Build Status| |Coverage Status| |license|
-|Gitter chat|
+|Gitter chat| |py27 status| |py352 status|
 
 tsfresh
 =======
@@ -29,7 +29,7 @@ Those features describe basic characteristics of the time series such as
 the number of peaks, the average or maximal value or more complex
 features such as the time reversal symmetry statistic.
 
-.. figure:: https://raw.githubusercontent.com/blue-yonder/tsfresh/master/docs/images/introduction_ts_exa_features.png
+.. figure:: docs/images/introduction_ts_exa_features.png
    :alt: The features extracted from a exemplary time series
 
    The features extracted from a exemplary time series
@@ -73,8 +73,8 @@ Advantages of tsfresh
 5. it is compatible with sklearn, pandas and numpy
 6. it allows anyone to easily add their favorite features
 
-Futher Reading
---------------
+Next steps
+----------
 
 If you are interested in the technical workings, go to see our
 comprehensive Read-The-Docs documentation at
@@ -82,6 +82,10 @@ http://tsfresh.readthedocs.io.
 
 The algorithm, especially the filtering part are also described in the
 paper mentioned above.
+
+If you have some questions or feedback you can find the developers in
+the `gitter
+chatroom. <https://gitter.im/tsfresh/Lobby?utm_source=share-link&utm_medium=link&utm_campaign=share-link>`__
 
 .. |Documentation Status| image:: https://readthedocs.org/projects/tsfresh/badge/?version=latest
    :target: http://tsfresh.readthedocs.io/en/latest/?badge=latest
@@ -93,3 +97,6 @@ paper mentioned above.
    :target: https://github.com/blue-yonder/tsfresh/blob/master/LICENSE.txt
 .. |Gitter chat| image:: https://badges.gitter.im/tsfresh/Lobby.svg
    :target: https://gitter.im/tsfresh/Lobby?utm_source=share-link&utm_medium=link&utm_campaign=share-link
+.. |py27 status| image:: https://img.shields.io/badge/python2.7-supported-green.svg
+.. |py352 status| image:: https://img.shields.io/badge/python3.5.2-supported-green.svg
+   :target: https://github.com/blue-yonder/tsfresh/issues/8

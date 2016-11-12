@@ -40,11 +40,14 @@ cover/*
 MANIFEST
 
 # Virtual environment
-venv
+venv*
 activate
 
 # IPython notebooks
 .ipynb_checkpoints
 
 # examples data directory
-tsfresh/examples/data
+tsfresh/examples/data/
+tsfresh/notebooks/data/
+# ds_store
+*.DS_Store

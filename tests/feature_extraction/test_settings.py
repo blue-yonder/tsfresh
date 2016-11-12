@@ -5,10 +5,10 @@
 from __future__ import absolute_import, division
 
 from unittest import TestCase
-
 import numpy as np
-
 from tsfresh.feature_extraction.settings import FeatureExtractionSettings
+import six
+from tsfresh.feature_extraction import feature_calculators
 
 class TestSettingsObject(TestCase):
 
@@ -36,9 +36,9 @@ class TestSettingsObject(TestCase):
 
         cset = fset.from_columns(feature_names)
 
-        self.assertItemsEqual(cset.kind_to_calculation_settings_mapping[tsn].keys(),
-                              ["sum_values", "median", "length", "quantile", "number_peaks", "ar_coefficient",
-                               "value_count"])
+        six.assertCountEqual(self, list(cset.kind_to_calculation_settings_mapping[tsn].keys()),
+                                  ["sum_values", "median", "length", "quantile", "number_peaks", "ar_coefficient",
+                                  "value_count"])
 
         self.assertEqual(cset.kind_to_calculation_settings_mapping[tsn]["sum_values"], None)
         self.assertEqual(cset.kind_to_calculation_settings_mapping[tsn]["ar_coefficient"],
@@ -46,3 +46,19 @@ class TestSettingsObject(TestCase):
 
         self.assertEqual(cset.kind_to_calculation_settings_mapping[tsn]["value_count"],
                          [{"value": np.PINF}, {"value": np.NINF}, {"value": np.NaN}])
+
+    def test_default_calculates_all_features(self):
+        """
+        Test that by default a FeatureExtractionSettings object should be set up to calculate all features defined
+        in tsfresh.feature_extraction.feature_calculators
+        :param self:
+        :return:
+        """
+        settings = FeatureExtractionSettings()
+        all_feature_calculators = [name for name, func in feature_calculators.__dict__.items()
+                                   if hasattr(func, "fctype")]
+
+        for calculator in all_feature_calculators:
+            self.assertIn(calculator, settings.name_to_param,
+                          msg='Default FeatureExtractionSettings object does not setup calculation of {}'
+                          .format(calculator))

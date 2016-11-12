@@ -4,7 +4,7 @@
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/blue-yonder/tsfresh/blob/master/LICENSE.txt)
 [![Gitter chat](https://badges.gitter.im/tsfresh/Lobby.svg)](https://gitter.im/tsfresh/Lobby?utm_source=share-link&utm_medium=link&utm_campaign=share-link)
 ![py27 status](https://img.shields.io/badge/python2.7-supported-green.svg)
-[![py352 status](https://img.shields.io/badge/python3.5.2-under development-yellow.svg)](https://github.com/blue-yonder/tsfresh/issues/8)
+[![py352 status](https://img.shields.io/badge/python3.5.2-supported-green.svg)](https://github.com/blue-yonder/tsfresh/issues/8)
 
 
 
@@ -69,3 +69,5 @@ If you are interested in the technical workings, go to see our comprehensive Rea
 The algorithm, especially the filtering part are also described in the paper mentioned above.
 
 If you have some questions or feedback you can find the developers in the [gitter chatroom.](https://gitter.im/tsfresh/Lobby?utm_source=share-link&utm_medium=link&utm_campaign=share-link) 
+
+We appreciate any contributions, if you are interested in helping us to make *TSFRESH* the biggest archive of feature extraction methods in python, just head over to our [How-To-Contribute](http://tsfresh.readthedocs.io/en/latest/text/how_to_contribute.html) instructions.

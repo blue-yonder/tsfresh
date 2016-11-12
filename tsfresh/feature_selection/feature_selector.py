@@ -12,6 +12,8 @@ which to cut off (solely based on the p-values).
 
 from __future__ import absolute_import, division, print_function
 
+from builtins import zip
+from builtins import range
 import os
 import numpy as np
 import pandas as pd
@@ -192,7 +194,7 @@ def benjamini_hochberg_test(df_pvalues, settings):
     # Get auxiliary variables and vectors
     df_pvalues = df_pvalues.sort_values(by="p_value")
     m = len(df_pvalues)
-    K = range(1, m + 1)
+    K = list(range(1, m + 1))
 
     # Calculate the weight vector C
     if settings.hypotheses_independent:
