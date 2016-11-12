@@ -101,7 +101,7 @@ class FeatureExtractionSettings(object):
             })
 
         # default None means one process per cpu
-        self.processes = None
+        self.n_processes = None
 
     def set_default_parameters(self, kind):
         """

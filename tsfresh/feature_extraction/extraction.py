@@ -85,7 +85,7 @@ def extract_features(timeseries_container, feature_extraction_settings=None,
                                         for id_value in df[column_id])
     df_with_ids = pd.DataFrame(index=all_possible_unique_id_values)
 
-    pool = Pool(feature_extraction_settings.processes)
+    pool = Pool(feature_extraction_settings.n_processes)
     partial_extract_features_for_one_time_series = partial(_extract_features_for_one_time_series, column_id=column_id,
                               column_value=column_value, settings=feature_extraction_settings)
     extracted_features = pool.map(partial_extract_features_for_one_time_series, kind_to_df_map.items())
