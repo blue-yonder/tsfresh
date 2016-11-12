@@ -17,6 +17,7 @@ class FeatureExtractorTestCase(DataTestCase):
     def setUp(self):
         self.settings = FeatureExtractionSettings()
         self.settings.PROFILING = False
+        self.settings.n_processes = 1
 
     def test_calculate_ts_features(self):
         # todo: implement more methods and test more aspects
