@@ -1,7 +1,13 @@
 '''
 Run the script with:
 ```
-python run_tsfresh.py path_to_your_csv.csv
+python run_tsfresh.py your_csv.csv
+
+- Currently this only samples to first 50 values.
+- Your csv must be in the scripts directory as the script will save to the input
+  filename as feature_your_csv.csv paths are not handled.
+- Your csv must be space delimited.
+
 ```
 e.g.:
 ```
