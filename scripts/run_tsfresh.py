@@ -55,5 +55,5 @@ if __name__ == '__main__':
 	df_features.index = df_features.index.astype('int')
 
 	# write to disk
-	fname_out = fname_in + 'features' 
+	fname_out = fname_in + 'features.csv' 
 	df_features.to_csv(fname_out)
