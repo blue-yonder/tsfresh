@@ -2,6 +2,11 @@
 Run the script with:
 ```
 python run_tsfresh.py path_to_your_csv.csv
+
+- Currently this only samples to first 50 values.
+- Your csv must be space delimited.
+- Output is saved as path_to_your_csv.features.csv
+
 ```
 e.g.:
 ```
@@ -50,5 +55,5 @@ if __name__ == '__main__':
 	df_features.index = df_features.index.astype('int')
 
 	# write to disk
-	fname_out = 'features_' + fname_in
+	fname_out = fname_in + 'features' 
 	df_features.to_csv(fname_out)
