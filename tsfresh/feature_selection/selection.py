@@ -70,7 +70,7 @@ def select_features(X, y, feature_selection_settings=None):
     :type X: pandas.DataFrame
 
     :param y: Target vector which is needed to test, which features are relevant. Can be binary or real-valued.
-    :type y: pandas.Series or numpy.array
+    :type y: pandas.Series or numpy.ndarray
 
     :param feature_selection_settings: The settings to control the feature selection algorithms. See
            :class:`~tsfresh.feature_selection.settings.py` for more information. If none is passed, the defaults
@@ -86,6 +86,9 @@ def select_features(X, y, feature_selection_settings=None):
 
     if feature_selection_settings is None:
         feature_selection_settings = FeatureSignificanceTestsSettings()
+
+    if not isinstance(y, (pd.Series, np.ndarray)):
+        raise TypeError("The type of target vector y must be one of: pandas.Series, numpy.ndarray")
 
     if len(X) < 2:
         raise ValueError("X must contain at least two samples.")

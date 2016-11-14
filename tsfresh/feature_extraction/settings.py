@@ -58,7 +58,7 @@ class FeatureExtractionSettings(object):
     `None` and can be set to one of the impute functions in :mod:`~tsfresh.utilities.dataframe_functions`.
     """
 
-    def __init__(self):
+    def __init__(self, calculate_all_features=True):
         """
         Create a new FeatureExtractionSettings instance. You have to pass this instance to the
         extract_feature instance.
@@ -70,41 +70,46 @@ class FeatureExtractionSettings(object):
         self.PROFILING_FILENAME = "profile.txt"
         self.IMPUTE = None
         self.set_default = True
+        self.name_to_param = {}
+
+        if calculate_all_features is True:
+            for name, func in feature_calculators.__dict__.items():
+                if callable(func):
+                    if hasattr(func, "fctype") and getattr(func, "fctype") == "aggregate":
+                        self.name_to_param[name] = None
+            self.name_to_param.update({
+                "time_reversal_asymmetry_statistic": [{"lag": lag} for lag in range(1, 4)],
+                "symmetry_looking": [{"r": r * 0.05} for r in range(20)],
+                "large_standard_deviation": [{"r": r * 0.05} for r in range(10)],
+                "quantile": [{"q": q} for q in [.1, .2, .3, .4, .6, .7, .8, .9]],
+                "autocorrelation": [{"lag": lag} for lag in range(10)],
+                "number_cwt_peaks": [{"n": n} for n in [1, 5]],
+                "number_peaks": [{"n": n} for n in [1, 3, 5]],
+                "large_number_of_peaks": [{"n": n} for n in [1, 3, 5]],
+                "binned_entropy": [{"max_bins": max_bins} for max_bins in [10]],
+                "index_mass_quantile": [{"q": q} for q in [.1, .2, .3, .4, .6, .7, .8, .9]],
+                "cwt_coefficients": [{"widths": width, "coeff": coeff, "w": w} for
+                                     width in [(2, 5, 10, 20)] for coeff in range(15) for w in (2, 5, 10, 20)],
+                "spkt_welch_density": [{"coeff": coeff} for coeff in [2, 5, 8]],
+                "ar_coefficient": [{"coeff": coeff, "k": k} for coeff in range(5) for k in [10]],
+                "mean_abs_change_quantiles": [{"ql": ql, "qh": qh}
+                                              for ql in [0., .2, .4, .6, .8] for qh in [.2, .4, .6, .8, 1.]],
+                "fft_coefficient": [{"coeff": coeff} for coeff in range(0, 10)],
+                "value_count": [{"value": value} for value in [0, 1, np.NaN, np.PINF, np.NINF]],
+                "range_count": [{"min": -1, "max": 1}],
+                "approximate_entropy": [{"m": 2, "r": r} for r in [.1, .3, .5, .7, .9]]
+            })
 
     def set_default_parameters(self, kind):
         """
-        Will calculate
+        Setup the feature calculations for kind as defined in `self.name_to_param`
 
         :param kind: str, the type of the time series
         :return:
         """
-        name_to_param = {}
-        for name, func in feature_calculators.__dict__.items():
-            if callable(func):
-                if hasattr(func, "fctype"):
-                    name_to_param[name] = None
-        name_to_param.update({
-            "time_reversal_asymmetry_statistic": [{"lag": lag} for lag in range(1, 4)],
-            "symmetry_looking": [{"r": r * 0.05} for r in range(20)],
-            "large_standard_deviation": [{"r": r * 0.05} for r in range(10)],
-            "quantile": [{"q": q} for q in [.1, .2, .3, .4, .6, .7, .8, .9]],
-            "autocorrelation": [{"lag": lag} for lag in range(10)],
-            "number_cwt_peaks": [{"n": n} for n in [1, 5]],
-            "number_peaks": [{"n": n} for n in [1, 3, 5]],
-            "large_number_of_peaks": [{"n": n} for n in [1, 3, 5]],
-            "binned_entropy": [{"max_bins": max_bins} for max_bins in [10]],
-            "index_mass_quantile": [{"q": q} for q in [.1, .2, .3, .4, .6, .7, .8, .9]],
-            "cwt_coefficients": [{"widths": width, "coeff": coeff, "w": w} for
-                                 width in [(2, 5, 10, 20)] for coeff in range(15) for w in (2, 5, 10, 20)],
-            "spkt_welch_density": [{"coeff": coeff} for coeff in [2, 5, 8]],
-            "ar_coefficient": [{"coeff": coeff, "k": k} for coeff in range(5) for k in [10]],
-            "mean_abs_change_quantiles": [{"ql": ql, "qh": qh}
-                                          for ql in [0., .2, .4, .6, .8] for qh in [.2, .4, .6, .8, 1.]],
-            "fft_coefficient": [{"coeff": coeff} for coeff in range(0, 10)],
-            "value_count": [{"value": value} for value in [0, 1, np.NaN, np.PINF, np.NINF]],
-            "range_count": [{"min": -1, "max": 1}]
-        })
-        self.kind_to_calculation_settings_mapping[kind] = name_to_param.copy()
+
+        self.kind_to_calculation_settings_mapping[kind] = self.name_to_param.copy()
+
 
     def do_not_calculate(self, kind, identifier):
         """
