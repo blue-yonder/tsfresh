@@ -939,6 +939,61 @@ def binned_entropy(x, max_bins):
 
 @set_property("fctype", "aggregate_with_parameters")
 @not_apply_to_raw_numbers
+def sample_entropy(x, tolerance=None):
+    """
+    Calculate and return sample entropy of x.
+
+    References:
+    ----------
+    [1] http://en.wikipedia.org/wiki/Sample_Entropy
+    [2] http://physionet.incor.usp.br/physiotools/sampen/
+    [3] Madalena Costa, Ary Goldberger, CK Peng. Multiscale entropy analysis of biological signals
+    
+    :param x: the time series to calculate the feature of
+    :type x: pandas.Series
+    :param tolerance: normalization factor; equivalent to the common practice of expressing the tolerance as r times the standard deviation
+    :type tolerance: float
+    :return: the value of this feature
+    :return type: float
+    """
+    sample_length = 1 # number of sequential points of the time series
+
+    if tolerance is None:
+        tolerance = 0.1 * np.std(time_series)
+
+    n = len(time_series)
+    prev = np.zeros((1, n))
+    curr = np.zeros((1, n))
+    A = np.zeros((sample_length, 1))  # number of matches for m = [1,...,template_length - 1]
+    B = np.zeros((sample_length, 1))  # number of matches for m = [1,...,template_length]
+
+    for i in xrange(n - 1):
+        nj = n - i - 1
+        ts1 = time_series[i]
+        for jj in xrange(nj):
+            j = jj + i + 1
+            if abs(time_series[j] - ts1) < tolerance:  # distance between two vectors
+                curr[0, jj] = prev[0, jj] + 1
+                temp_ts_length = min(sample_length, curr[0, jj])
+                for m in xrange(int(temp_ts_length)):
+                    A[m] += 1
+                    if j < n - 1:
+                        B[m] += 1
+            else:
+                curr[0, jj] = 0
+        for j in xrange(nj):
+            prev[0, j] = curr[0, j]
+
+    N = n * (n - 1) / 2
+    B = np.vstack(([N], B[:sample_length - 1]))
+    similarity_ratio = A / B  # np.divide(A, B)
+    se = - np.log(similarity_ratio)
+    se = np.reshape(se, -1)
+    return se[0]
+
+
+@set_property("fctype", "aggregate_with_parameters")
+@not_apply_to_raw_numbers
 def autocorrelation(x, lag):
     """
     Calculates the lag autocorrelation of a lag value of lag.
