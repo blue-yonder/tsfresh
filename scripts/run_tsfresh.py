@@ -3,7 +3,6 @@ Run the script with:
 ```
 python run_tsfresh.py path_to_your_csv.csv
 
-- Currently this only samples to first 50 values.
 - Your csv must be space delimited.
 - Output is saved as path_to_your_csv.features.csv
 
@@ -14,7 +13,7 @@ python run_tsfresh.py data.txt
 ```
 
 A corresponding csv containing time series features will be 
-saved as features_path_to_your_csv.csv
+saved as path_to_your_csv.features.csv
 '''
 
 import sys
@@ -32,12 +31,12 @@ def _preprocess(df):
 	# transpose since tsfresh reads times series data column-wise, not row-wise
 	df_t = df.transpose()
 	
-	# grab first 50 readings to save time
 	master_df = pd.DataFrame(df_t[0])
 	master_df['id'] = 0
 
-	for i in range(1, 50):
-	    temp_df = pd.DataFrame(df_t[i])
+	df_range = (len(list(df)) - 1)
+	for i in range(0, df_range):
+	    temp_df = pd.DataFrame(df_t.iloc[i])
 	    temp_df['id'] = i
 	    master_df = pd.DataFrame(np.vstack([master_df, temp_df]))
 	return master_df
