@@ -28,7 +28,8 @@ To start, we load the data into python
 
 .. code:: python
 
-    from tsfresh.examples import load_robot_execution_failures
+    from tsfresh.examples.robot_execution_failures import download_robot_execution_failures, load_robot_execution_failures
+    download_robot_execution_failures()
     timeseries, y = load_robot_execution_failures()
 
 and end up with a pandas.DataFrame `timeseries` having the following shape
