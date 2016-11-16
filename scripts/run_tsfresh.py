@@ -34,8 +34,7 @@ def _preprocess(df):
 	master_df = pd.DataFrame(df_t[0])
 	master_df['id'] = 0
 
-	df_range = (len(list(df)) - 1)
-	for i in range(0, df_range):
+	for i in range(len(df.columns)):
 	    temp_df = pd.DataFrame(df_t.iloc[i])
 	    temp_df['id'] = i
 	    master_df = pd.DataFrame(np.vstack([master_df, temp_df]))
