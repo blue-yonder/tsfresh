@@ -723,12 +723,12 @@ def cwt_coefficients(x, c, param):
 
     for widths in df_cfg["widths"].unique():
 
-        coeff = df_cfg[df_cfg["widths"] == widths]["coeff"].unique()
         # the calculated_cwt will shape (len(widths), len(x)).
         calculated_cwt = cwt(x, ricker, widths)
 
         for w in df_cfg[df_cfg["widths"] == widths]["w"].unique():
 
+            coeff = df_cfg[(df_cfg["widths"] == widths) & (df_cfg["w"] == w)]["coeff"].unique()
             i = widths.index(w)
 
             if calculated_cwt.shape[1] < len(coeff):  # There are less data points than requested model coefficients
