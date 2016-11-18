@@ -612,12 +612,12 @@ def percentage_of_reoccurring_datapoints_to_all_datapoints(x):
 @not_apply_to_raw_numbers
 def percentage_of_reoccurring_values_to_all_values(x):
     """
-    Returns the ratio of unique value, that are present in the time series
+    Returns the ratio of unique values, that are present in the time series
     more than once.
 
-        # of rows occuring more than once / # of all rows
+        # of data points occurring more than once / # of all data points
 
-    This means the ratio is normalized to the number of rows in the time series,
+    This means the ratio is normalized to the number of data points in the time series,
     in contrast to the percentage_of_reoccurring_datapoints_to_all_datapoints.
 
     :param x: the time series to calculate the feature of
@@ -638,7 +638,7 @@ def percentage_of_reoccurring_values_to_all_values(x):
 @not_apply_to_raw_numbers
 def sum_of_reoccurring_values(x):
     """
-    Returns the sum of all values (not datapoints), that are present in the time series
+    Returns the sum of all values, that are present in the time series
     more than once.
 
     :param x: the time series to calculate the feature of
