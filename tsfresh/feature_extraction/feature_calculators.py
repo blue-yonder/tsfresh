@@ -696,7 +696,7 @@ def fft_coefficient(x, c, param):
         if coeff < 0:
             raise ValueError("Coefficients must be positive or zero.")
 
-    maximum_coefficient = max(coefficients + [1])
+    maximum_coefficient = max(max(coefficients), 1)
     fft = np.fft.rfft(x, min(len(x), 2 * maximum_coefficient))
 
     res = [fft[q] if q < len(fft) else 0 for q in coefficients]
