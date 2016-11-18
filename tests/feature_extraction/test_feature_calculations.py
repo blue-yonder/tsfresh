@@ -259,32 +259,32 @@ class FeatureCalculationTestCase(TestCase):
         self.assertIsNanOnAllArrayTypes(first_location_of_minimum, [])
 
     def test_percentage_of_doubled_datapoints(self):
-        self.assertAlmostEqualOnAllArrayTypes(percentage_of_doubled_datapoints, [1, 1, 2, 3, 4], 0.25)
-        self.assertAlmostEqualOnAllArrayTypes(percentage_of_doubled_datapoints, [1, 1.5, 2, 3], 0)
-        self.assertAlmostEqualOnAllArrayTypes(percentage_of_doubled_datapoints, [1], 0)
-        self.assertAlmostEqualOnAllArrayTypes(percentage_of_doubled_datapoints, [1.111, -2.45, 1.111, 2.45], 1.0/3.0)
-        self.assertIsNanOnAllArrayTypes(percentage_of_doubled_datapoints, [])
+        self.assertAlmostEqualOnAllArrayTypes(percentage_of_reoccurring_datapoints_to_all_datapoints, [1, 1, 2, 3, 4], 0.25)
+        self.assertAlmostEqualOnAllArrayTypes(percentage_of_reoccurring_datapoints_to_all_datapoints, [1, 1.5, 2, 3], 0)
+        self.assertAlmostEqualOnAllArrayTypes(percentage_of_reoccurring_datapoints_to_all_datapoints, [1], 0)
+        self.assertAlmostEqualOnAllArrayTypes(percentage_of_reoccurring_datapoints_to_all_datapoints, [1.111, -2.45, 1.111, 2.45], 1.0 / 3.0)
+        self.assertIsNanOnAllArrayTypes(percentage_of_reoccurring_datapoints_to_all_datapoints, [])
 
     def test_ratio_of_doubled_values(self):
-        self.assertAlmostEqualOnAllArrayTypes(ratio_of_doubled_values, [1, 1, 2, 3, 4], 0.4)
-        self.assertAlmostEqualOnAllArrayTypes(ratio_of_doubled_values, [1, 1.5, 2, 3], 0)
-        self.assertAlmostEqualOnAllArrayTypes(ratio_of_doubled_values, [1], 0)
-        self.assertAlmostEqualOnAllArrayTypes(ratio_of_doubled_values, [1.111, -2.45, 1.111, 2.45], 0.5)
-        self.assertIsNanOnAllArrayTypes(ratio_of_doubled_values, [])
+        self.assertAlmostEqualOnAllArrayTypes(percentage_of_reoccurring_values_to_all_values, [1, 1, 2, 3, 4], 0.4)
+        self.assertAlmostEqualOnAllArrayTypes(percentage_of_reoccurring_values_to_all_values, [1, 1.5, 2, 3], 0)
+        self.assertAlmostEqualOnAllArrayTypes(percentage_of_reoccurring_values_to_all_values, [1], 0)
+        self.assertAlmostEqualOnAllArrayTypes(percentage_of_reoccurring_values_to_all_values, [1.111, -2.45, 1.111, 2.45], 0.5)
+        self.assertIsNanOnAllArrayTypes(percentage_of_reoccurring_values_to_all_values, [])
 
     def test_sum_of_doubled_values(self):
-        self.assertAlmostEqualOnAllArrayTypes(sum_of_doubled_values, [1, 1, 2, 3, 4], 2)
-        self.assertAlmostEqualOnAllArrayTypes(sum_of_doubled_values, [1, 1.5, 2, 3], 0)
-        self.assertAlmostEqualOnAllArrayTypes(sum_of_doubled_values, [1], 0)
-        self.assertAlmostEqualOnAllArrayTypes(sum_of_doubled_values, [1.111, -2.45, 1.111, 2.45], 2.222)
-        self.assertAlmostEqualOnAllArrayTypes(sum_of_doubled_values, [], 0)
+        self.assertAlmostEqualOnAllArrayTypes(sum_of_reoccurring_values, [1, 1, 2, 3, 4], 2)
+        self.assertAlmostEqualOnAllArrayTypes(sum_of_reoccurring_values, [1, 1.5, 2, 3], 0)
+        self.assertAlmostEqualOnAllArrayTypes(sum_of_reoccurring_values, [1], 0)
+        self.assertAlmostEqualOnAllArrayTypes(sum_of_reoccurring_values, [1.111, -2.45, 1.111, 2.45], 2.222)
+        self.assertAlmostEqualOnAllArrayTypes(sum_of_reoccurring_values, [], 0)
 
     def test_uniqueness_factor(self):
-        self.assertAlmostEqualOnAllArrayTypes(uniqueness_factor, [1, 1, 2, 3, 4], 0.8)
-        self.assertAlmostEqualOnAllArrayTypes(uniqueness_factor, [1, 1.5, 2, 3], 1)
-        self.assertAlmostEqualOnAllArrayTypes(uniqueness_factor, [1], 1)
-        self.assertAlmostEqualOnAllArrayTypes(uniqueness_factor, [1.111, -2.45, 1.111, 2.45], 0.75)
-        self.assertIsNanOnAllArrayTypes(uniqueness_factor, [])
+        self.assertAlmostEqualOnAllArrayTypes(ratio_value_number_to_time_series_length, [1, 1, 2, 3, 4], 0.8)
+        self.assertAlmostEqualOnAllArrayTypes(ratio_value_number_to_time_series_length, [1, 1.5, 2, 3], 1)
+        self.assertAlmostEqualOnAllArrayTypes(ratio_value_number_to_time_series_length, [1], 1)
+        self.assertAlmostEqualOnAllArrayTypes(ratio_value_number_to_time_series_length, [1.111, -2.45, 1.111, 2.45], 0.75)
+        self.assertIsNanOnAllArrayTypes(ratio_value_number_to_time_series_length, [])
 
     def test_fft_coefficient(self):
         pass

@@ -589,15 +589,15 @@ def first_location_of_minimum(x):
 
 @set_property("fctype", "aggregate")
 @not_apply_to_raw_numbers
-def percentage_of_doubled_datapoints(x):
+def percentage_of_reoccurring_datapoints_to_all_datapoints(x):
     """
-    Returns the percentage of unique value, that are present in the dataset
+    Returns the percentage of unique values, that are present in the time series
     more than once.
 
         len(different values occurring more than once) / len(different values)
 
     This means the percentage is normalized to the number of unique values,
-    in contrast to the ratio_of_doubled_values.
+    in contrast to the percentage_of_reoccurring_values_to_all_values.
 
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
@@ -610,15 +610,15 @@ def percentage_of_doubled_datapoints(x):
 
 @set_property("fctype", "aggregate")
 @not_apply_to_raw_numbers
-def ratio_of_doubled_values(x):
+def percentage_of_reoccurring_values_to_all_values(x):
     """
-    Returns the ratio of unique value, that are present in the dataset
+    Returns the ratio of unique value, that are present in the time series
     more than once.
 
         # of rows occuring more than once / # of all rows
 
-    This means the ratio is normalized to the number of rows in the dataset,
-    in contrast to the percentage_of_doubled_datapoints.
+    This means the ratio is normalized to the number of rows in the time series,
+    in contrast to the percentage_of_reoccurring_datapoints_to_all_datapoints.
 
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
@@ -636,9 +636,9 @@ def ratio_of_doubled_values(x):
 
 @set_property("fctype", "aggregate")
 @not_apply_to_raw_numbers
-def sum_of_doubled_values(x):
+def sum_of_reoccurring_values(x):
     """
-    Returns the sum of all values not datapoints), that are present in the dataset
+    Returns the sum of all values (not datapoints), that are present in the time series
     more than once.
 
     :param x: the time series to calculate the feature of
@@ -654,9 +654,9 @@ def sum_of_doubled_values(x):
 
 @set_property("fctype", "aggregate")
 @not_apply_to_raw_numbers
-def uniqueness_factor(x):
+def ratio_value_number_to_time_series_length(x):
     """
-    Returns a factor which is 1 if all values in the dataset occur only once, and below one if this is not the
+    Returns a factor which is 1 if all values in the time series occur only once, and below one if this is not the
     case. In principle, it just returns
 
         # unique values / # values
