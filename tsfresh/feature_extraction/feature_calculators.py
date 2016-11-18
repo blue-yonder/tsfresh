@@ -587,6 +587,92 @@ def first_location_of_minimum(x):
     return np.argmin(x) / len(x) if len(x) > 0 else np.NaN
 
 
+@set_property("fctype", "aggregate")
+@not_apply_to_raw_numbers
+def percentage_of_reoccurring_datapoints_to_all_datapoints(x):
+    """
+    Returns the percentage of unique values, that are present in the time series
+    more than once.
+
+        len(different values occurring more than once) / len(different values)
+
+    This means the percentage is normalized to the number of unique values,
+    in contrast to the percentage_of_reoccurring_values_to_all_values.
+
+    :param x: the time series to calculate the feature of
+    :type x: pandas.Series
+    :return: the value of this feature
+    :return type: float
+    """
+    x = pd.Series(x)
+    return (x.value_counts() > 1).mean()
+
+
+@set_property("fctype", "aggregate")
+@not_apply_to_raw_numbers
+def percentage_of_reoccurring_values_to_all_values(x):
+    """
+    Returns the ratio of unique values, that are present in the time series
+    more than once.
+
+        # of data points occurring more than once / # of all data points
+
+    This means the ratio is normalized to the number of data points in the time series,
+    in contrast to the percentage_of_reoccurring_datapoints_to_all_datapoints.
+
+    :param x: the time series to calculate the feature of
+    :type x: pandas.Series
+    :return: the value of this feature
+    :return type: float
+    """
+    x = pd.Series(x)
+
+    if len(x) == 0:
+        return np.nan
+
+    value_counts = x.value_counts()
+    return 1.0 * value_counts[value_counts > 1].sum() / len(x)
+
+
+@set_property("fctype", "aggregate")
+@not_apply_to_raw_numbers
+def sum_of_reoccurring_values(x):
+    """
+    Returns the sum of all values, that are present in the time series
+    more than once.
+
+    :param x: the time series to calculate the feature of
+    :type x: pandas.Series
+    :return: the value of this feature
+    :return type: float
+    """
+    x = pd.Series(x)
+    value_counts = x.value_counts()
+    doubled_values = value_counts[value_counts > 1]
+    return sum(doubled_values.index * doubled_values)
+
+
+@set_property("fctype", "aggregate")
+@not_apply_to_raw_numbers
+def ratio_value_number_to_time_series_length(x):
+    """
+    Returns a factor which is 1 if all values in the time series occur only once, and below one if this is not the
+    case. In principle, it just returns
+
+        # unique values / # values
+
+    :param x: the time series to calculate the feature of
+    :type x: pandas.Series
+    :return: the value of this feature
+    :return type: float
+    """
+
+    if len(x) == 0:
+        return np.nan
+
+    return 1.0 * len(set(x))/len(x)
+
+
 @set_property("fctype", "apply")
 @not_apply_to_raw_numbers
 def fft_coefficient(x, c, param):
