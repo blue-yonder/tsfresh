@@ -50,7 +50,7 @@ you have to install all the relevant python packages with
 
     cd /path/to/tsfresh
     pip install -r requirements.txt
-    pip install -r docs-requirements.txt
+    pip install -r rdocs-requirements.txt
     pip install -r test-requirements.txt
     pip install -e .
 
@@ -63,7 +63,7 @@ Then, if you have everything installed, you can run the tests with
 
 .. code::
 
-    python setupy.py test
+    python setup.py test
 
 
 or build the documentation with
@@ -71,7 +71,7 @@ or build the documentation with
 
 .. code::
 
-    python setupy.py docs
+    python setup.py docs
 
 
 
