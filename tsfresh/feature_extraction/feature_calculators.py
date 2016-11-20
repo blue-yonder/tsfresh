@@ -192,6 +192,7 @@ def has_duplicate(x):
 
 
 @set_property("fctype", "aggregate")
+@set_property("minimal", True)
 def sum_values(x):
     """
     Calculates the sum over the time series values
@@ -350,6 +351,7 @@ def mean_second_derivate_central(x):
 
 
 @set_property("fctype", "aggregate")
+@set_property("minimal", True)
 def median(x):
     """
     Returns the median of x
@@ -363,6 +365,7 @@ def median(x):
 
 
 @set_property("fctype", "aggregate")
+@set_property("minimal", True)
 def mean(x):
     """
     Returns the mean of x
@@ -376,6 +379,7 @@ def mean(x):
 
 
 @set_property("fctype", "aggregate")
+@set_property("minimal", True)
 @not_apply_to_raw_numbers
 def length(x):
     """
@@ -390,6 +394,7 @@ def length(x):
 
 
 @set_property("fctype", "aggregate")
+@set_property("minimal", True)
 @not_apply_to_raw_numbers
 def standard_deviation(x):
     """
@@ -404,6 +409,7 @@ def standard_deviation(x):
 
 
 @set_property("fctype", "aggregate")
+@set_property("minimal", True)
 @not_apply_to_raw_numbers
 def variance(x):
     """
@@ -972,6 +978,7 @@ def quantile(x, q):
 
 
 @set_property("fctype", "aggregate")
+@set_property("minimal", True)
 def maximum(x):
     """
     Calculates the highest value of the time series x.
@@ -985,6 +992,7 @@ def maximum(x):
 
 
 @set_property("fctype", "aggregate")
+@set_property("minimal", True)
 def minimum(x):
     """
     Calculates the lowest value of the time series x.
