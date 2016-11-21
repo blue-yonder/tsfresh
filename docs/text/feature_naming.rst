@@ -3,7 +3,8 @@
 Feature naming
 ==============
 
-tsfresh enforces a strict naming of the created features.
+tsfresh enforces a strict naming of the created features, which you have to follow whenever you create new feature
+calculators.
 This is due to the :func:`tsfresh.feature_extraction.FeatureExtractionSettings.from_columns` method which needs to
 deduce the following information from the feature name
 

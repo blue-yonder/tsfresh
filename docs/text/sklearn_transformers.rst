@@ -14,7 +14,7 @@ Our tsfresh transformer allows you to extract and filter the time series feature
 The first two estimator contained in tsfresh are the :class:`~tsfresh.transformers.feature_augmenter.FeatureAugmenter`,
 which extracts the features, and the :class:`~tsfresh.transformers.feature_selector.FeatureSelector`, which only
 performs the feature selection algorithm.
-Is preferable to combine extracting and filtering of the features in a single step to avoid unnecessary feature
+It is preferable to combine extracting and filtering of the features in a single step to avoid unnecessary feature
 calculations.
 Hence, we have the :class:`~tsfresh.transformers.feature_augmenter.RelevantFeatureAugmenter`, which combines both the
 extraction and filtering of the features in a single step.

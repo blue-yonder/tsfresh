@@ -22,10 +22,10 @@ The following chapters will explain the tsfresh package in detail:
    Quick Start <text/quick_start>
    Module Reference <api/modules>
    Data Formats <text/data_formats>
-   Feature Naming <text/feature_naming>
    scikit-learn Transformers <text/sklearn_transformers>
    Feature Filtering <text/feature_filtering>
    How to write custom Feature Calculators <text/how_to_add_custom_feature>
+   Feature Naming <text/feature_naming>
    FAQ <text/faq>
    Authors <authors>
    License <license>
