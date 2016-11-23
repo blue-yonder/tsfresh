@@ -1023,9 +1023,7 @@ def binned_entropy(x, max_bins):
     return - np.sum(p * np.math.log(p) for p in probs if p != 0)
 
 # todo - include latex formula
-
 @set_property("fctype", "aggregate")
-# @not_apply_to_raw_numbers
 def sample_entropy(x):
     """
     Calculate and return sample entropy of x.
