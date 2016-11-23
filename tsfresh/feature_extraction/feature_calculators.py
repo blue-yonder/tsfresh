@@ -1040,7 +1040,7 @@ def sample_entropy(x, tolerance=None):
     :return: the value of this feature
     :return type: float
     """
-        sample_length = 1 # number of sequential points of the time series
+    sample_length = 1 # number of sequential points of the time series
 
     if tolerance is None:
         tolerance = 0.2 * np.std(x) # 0.2 is a common value for r
