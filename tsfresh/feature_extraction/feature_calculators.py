@@ -1073,7 +1073,8 @@ def sample_entropy(x):
     similarity_ratio = A / B  # np.divide(A, B)
     se = -1 * np.log(similarity_ratio)
     se = np.reshape(se, -1)
-    return se
+    # return se
+    return np.sum(x)
 
 
 @set_property("fctype", "aggregate_with_parameters")
