@@ -117,7 +117,11 @@ def check_fs_sig_bh(X, y, settings=None):
 
     # Process the features
     for feature in df_features['Feature']:
-        if target_is_binary:
+        if len(set(X[feature].values)) == 1:
+            # Do not process constant features
+            df_features.loc[df_features.Feature == feature, "type"] = "const"
+            df_features.loc[df_features.Feature == feature, "rejected"] = True
+        elif target_is_binary:
             # Decide if the current feature is binary or not
             if len(set(X[feature].values)) == 2:
                 df_features.loc[df_features.Feature == feature, "type"] = "binary"
@@ -137,14 +141,13 @@ def check_fs_sig_bh(X, y, settings=None):
         # Add p_values to df_features
         df_features.loc[df_features['Feature'] == feature, "p_value"] = p_value
 
-    # Check for constant features
-    for feature in list(set(X.columns)):
-        if len(pd.unique(X[feature])) == 1:
-            df_features.loc[feature, "type"] = "const"
-            df_features.loc[feature, "rejected"] = True
-
     # Perform the real feature rejection
-    df_features = benjamini_hochberg_test(df_features, settings)
+    if "const" in set(df_features.type):
+        df_features_bh = benjamini_hochberg_test(df_features.loc[~(df_features.type == "const")], settings)
+        df_features = pd.concat([df_features_bh, df_features.loc[df_features.type == "const"]])
+        df_features.rejected = df_features.astype("bool")
+    else:
+        df_features = benjamini_hochberg_test(df_features, settings)
 
     if settings.write_selection_report:
         # Write results of BH - Test to file
