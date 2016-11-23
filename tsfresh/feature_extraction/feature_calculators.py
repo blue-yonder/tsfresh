@@ -1023,9 +1023,9 @@ def binned_entropy(x, max_bins):
     return - np.sum(p * np.math.log(p) for p in probs if p != 0)
 
 # todo - include latex formula
-@set_property("fctype", "aggregate_with_parameters")
+@set_property("fctype", "aggregate")
 @not_apply_to_raw_numbers
-def sample_entropy(x, tolerance=None):
+def sample_entropy(x):
     """
     Calculate and return sample entropy of x.
     References:
@@ -1042,8 +1042,8 @@ def sample_entropy(x, tolerance=None):
     """
     sample_length = 1 # number of sequential points of the time series
 
-    if tolerance is None:
-        tolerance = 0.2 * np.std(x) # 0.2 is a common value for r
+    sample_length = 1 # number of sequential points of the time series
+    tolerance = 0.2 * np.std(x) # 0.2 is a common value for r - why?
 
     n = len(x)
     prev = np.zeros(n)
@@ -1071,13 +1071,12 @@ def sample_entropy(x, tolerance=None):
     N = n * (n - 1) / 2
     B = np.vstack(([N], B[:sample_length - 1]))
     
-    if (B[0][0] != 0):
-        similarity_ratio = A / B  # np.divide(A, B)
-        se = -1 * np.log(similarity_ratio)
-        se = np.reshape(se, -1)
-        return se[0]
-    else:
-        return 0
+    # sample entropy = -1 * (log (A/B))
+    similarity_ratio = A / B  # np.divide(A, B)
+    se = -1 * np.log(similarity_ratio)
+    se = np.reshape(se, -1)
+    
+    return se[0]
 
 
 @set_property("fctype", "aggregate_with_parameters")
