@@ -1071,11 +1071,13 @@ def sample_entropy(x, tolerance=None):
     N = n * (n - 1) / 2
     B = np.vstack(([N], B[:sample_length - 1]))
     
-    # sample entropy = -1 * (log (A/B))
-    similarity_ratio = A / B  # np.divide(A, B)
-    se = - np.log(similarity_ratio)
-    se = np.reshape(se, -1)
-    return se[0]
+    if (B[0][0] != 0):
+        similarity_ratio = A / B  # np.divide(A, B)
+        se = -1 * np.log(similarity_ratio)
+        se = np.reshape(se, -1)
+        return se[0]
+    else:
+        return 0
 
 
 @set_property("fctype", "aggregate_with_parameters")
