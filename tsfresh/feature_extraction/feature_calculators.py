@@ -1041,8 +1041,6 @@ def sample_entropy(x):
     :return type: float
     """
     sample_length = 1 # number of sequential points of the time series
-
-    sample_length = 1 # number of sequential points of the time series
     tolerance = 0.2 * np.std(x) # 0.2 is a common value for r - why?
 
     n = len(x)
@@ -1075,8 +1073,7 @@ def sample_entropy(x):
     similarity_ratio = A / B  # np.divide(A, B)
     se = -1 * np.log(similarity_ratio)
     se = np.reshape(se, -1)
-    
-    return se[0]
+    return se
 
 
 @set_property("fctype", "aggregate_with_parameters")
