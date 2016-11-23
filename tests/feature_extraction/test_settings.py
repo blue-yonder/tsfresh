@@ -24,7 +24,7 @@ class TestSettingsObject(TestCase):
         self.assertRaises(ValueError, fset.from_columns, ["This__also__not"])
 
         # Aggregate functions
-        feature_names = [tsn + '__sum_values', tsn + "__median", tsn + "__length"]
+        feature_names = [tsn + '__sum_values', tsn + "__median", tsn + "__length", tsn + "__sample_entropy"]
 
         # Aggregate functions with params
         feature_names += [tsn + '__quantile__q_10', tsn + '__quantile__q_70', tsn + '__number_peaks__n_30',
