@@ -87,6 +87,7 @@ class FeatureExtractionSettings(object):
                 "number_peaks": [{"n": n} for n in [1, 3, 5]],
                 "large_number_of_peaks": [{"n": n} for n in [1, 3, 5]],
                 "binned_entropy": [{"max_bins": max_bins} for max_bins in [10]],
+                "sample_entropy": [{"tolerance": tolerance} for r in [.2]],
                 "index_mass_quantile": [{"q": q} for q in [.1, .2, .3, .4, .6, .7, .8, .9]],
                 "cwt_coefficients": [{"widths": width, "coeff": coeff, "w": w} for
                                      width in [(2, 5, 10, 20)] for coeff in range(15) for w in (2, 5, 10, 20)],
