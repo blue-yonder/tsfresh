@@ -117,23 +117,7 @@ def check_fs_sig_bh(X, y, settings=None):
 
     # Process the features
     for feature in df_features['Feature']:
-        if target_is_binary:
-            # Decide if the current feature is binary or not
-            if len(set(X[feature].values)) == 2:
-                df_features.loc[df_features.Feature == feature, "type"] = "binary"
-                p_value = target_binary_feature_binary_test(X[feature], y, settings)
-            else:
-                df_features.loc[df_features.Feature == feature, "type"] = "real"
-                p_value = target_binary_feature_real_test(X[feature], y, settings)
-        else:
-            # Decide if the current feature is binary or not
-            if len(set(X[feature].values)) == 2:
-                df_features.loc[df_features.Feature == feature, "type"] = "binary"
-                p_value = target_real_feature_binary_test(X[feature], y, settings)
-            else:
-                df_features.loc[df_features.Feature == feature, "type"] = "real"
-                p_value = target_real_feature_real_test(X[feature], y, settings)
-
+        p_value = _calculate_p_value(X, y, df_features, feature, settings, target_is_binary)
         # Add p_values to df_features
         df_features.loc[df_features['Feature'] == feature, "p_value"] = p_value
 
@@ -158,6 +142,53 @@ def check_fs_sig_bh(X, y, settings=None):
             df_features.to_csv(index=False, path_or_buf=file_out, sep=';', float_format='%.4f')
 
     return df_features
+
+
+def _calculate_p_value(X, y, df_features, feature, settings, target_is_binary):
+    """
+    Internal helper function to calculate the p-value of a given feature in df_features using one of the dedicated
+    functions target_*_feature_*_test. It uses the data in X and the target in y.
+
+    :param X: the data with a column named after feature.
+    :type X: pandas.DataFrame
+
+    :param y: the binary target vector
+    :type y: pandas.Series
+
+    :param df_features: a data frame containing information on the features. Must include a column "type" and a row
+           with an index named after the feature.
+    :type df_features: pd.DataFrame
+
+    :param feature: The feature for which the p-value should be calculated.
+    :type feature: basestring
+
+    :param settings: The settings object to control how the significance is calculated.
+    :type settings: FeatureSignificanceTestsSettings
+
+    :param target_is_binary: Whether the target is binary or not
+    :type target_is_binary: bool
+
+    :return: the p-value of the feature significance test. Lower p-values indicate a higher feature significance
+    :rtype: float
+    """
+    if target_is_binary:
+        # Decide if the current feature is binary or not
+        if len(set(X[feature].values)) == 2:
+            df_features.loc[df_features.Feature == feature, "type"] = "binary"
+            p_value = target_binary_feature_binary_test(X[feature], y, settings)
+        else:
+            df_features.loc[df_features.Feature == feature, "type"] = "real"
+            p_value = target_binary_feature_real_test(X[feature], y, settings)
+    else:
+        # Decide if the current feature is binary or not
+        if len(set(X[feature].values)) == 2:
+            df_features.loc[df_features.Feature == feature, "type"] = "binary"
+            p_value = target_real_feature_binary_test(X[feature], y, settings)
+        else:
+            df_features.loc[df_features.Feature == feature, "type"] = "real"
+            p_value = target_real_feature_real_test(X[feature], y, settings)
+
+    return p_value
 
 
 def benjamini_hochberg_test(df_pvalues, settings):
