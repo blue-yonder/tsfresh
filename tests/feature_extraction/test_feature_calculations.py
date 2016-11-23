@@ -418,7 +418,7 @@ class FeatureCalculationTestCase(TestCase):
                      5, 1, 3, 8, 1, 5, 3, 8, 4, 1, 2, 2, 1, 6, 5, 3, 6, 5, 4, 8, 9, 6, 7, 5, 3, 2, 5, 4, 2, 5, 1, 6, 5,
                      3, 5, 6, 7, 8, 5, 2, 8, 6, 3, 8, 2, 7, 1, 7, 3, 5, 6, 2, 1, 3, 7, 3, 5, 3, 7, 6, 7, 7, 2, 3, 1, 7,
                      8])
-        self.assertAlmostEqualOnAllArrayTypes(sample_entropy, (ts, .2 * np.std(ts)), 2.21187685)
+        self.assertAlmostEqualOnAllArrayTypes(sample_entropy, ts, 2.21187685)
 
     def test_autocorrelation(self):
         self.assertAlmostEqualOnAllArrayTypes(autocorrelation, [1, 2, 1, 2, 1, 2], -1, 1)
