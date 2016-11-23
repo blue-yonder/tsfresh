@@ -1023,8 +1023,9 @@ def binned_entropy(x, max_bins):
     return - np.sum(p * np.math.log(p) for p in probs if p != 0)
 
 # todo - include latex formula
+
 @set_property("fctype", "aggregate")
-@not_apply_to_raw_numbers
+# @not_apply_to_raw_numbers
 def sample_entropy(x):
     """
     Calculate and return sample entropy of x.
@@ -1039,20 +1040,22 @@ def sample_entropy(x):
     :type tolerance: float
     :return: the value of this feature
     :return type: float
-    """
+    """ 
+    x = np.array(x)
+    
     sample_length = 1 # number of sequential points of the time series
     tolerance = 0.2 * np.std(x) # 0.2 is a common value for r - why?
 
     n = len(x)
     prev = np.zeros(n)
     curr = np.zeros(n)
-    A = np.zeros((sample_length, 1))  # number of matches for m = [1,...,template_length - 1]
-    B = np.zeros((sample_length, 1))  # number of matches for m = [1,...,template_length]
+    A = np.zeros((1, 1))  # number of matches for m = [1,...,template_length - 1]
+    B = np.zeros((1, 1))  # number of matches for m = [1,...,template_length]
 
     for i in range(n - 1):
         nj = n - i - 1
         ts1 = x[i]
-        for jj in range(nj):
+        for jj in xrange(nj):
             j = jj + i + 1
             if abs(x[j] - ts1) < tolerance:  # distance between two vectors
                 curr[jj] = prev[jj] + 1
@@ -1065,16 +1068,16 @@ def sample_entropy(x):
                 curr[jj] = 0
         for j in range(nj):
             prev[j] = curr[j]
-
+            
     N = n * (n - 1) / 2
-    B = np.vstack(([N], B[:sample_length - 1]))
+    B = np.vstack(([N], B[0]))
     
     # sample entropy = -1 * (log (A/B))
-    similarity_ratio = A / B  # np.divide(A, B)
+    similarity_ratio = A / B 
     se = -1 * np.log(similarity_ratio)
     se = np.reshape(se, -1)
-    # return se
-    return np.sum(x)
+    return se[0]
+    
 
 
 @set_property("fctype", "aggregate_with_parameters")

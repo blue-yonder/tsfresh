@@ -26,6 +26,7 @@ class TestSettingsObject(TestCase):
         # Aggregate functions
         feature_names = [tsn + '__sum_values', tsn + "__median", tsn + "__length", tsn + "__sample_entropy"]
 
+
         # Aggregate functions with params
         feature_names += [tsn + '__quantile__q_10', tsn + '__quantile__q_70', tsn + '__number_peaks__n_30',
                           tsn + '__value_count__value_inf', tsn + '__value_count__value_-inf',
