@@ -1053,7 +1053,7 @@ def sample_entropy(x):
     for i in range(n - 1):
         nj = n - i - 1
         ts1 = x[i]
-        for jj in xrange(nj):
+        for jj in range(nj):
             j = jj + i + 1
             if abs(x[j] - ts1) < tolerance:  # distance between two vectors
                 curr[jj] = prev[jj] + 1
