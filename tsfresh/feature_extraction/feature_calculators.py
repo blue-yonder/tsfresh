@@ -1022,6 +1022,61 @@ def binned_entropy(x, max_bins):
     probs = hist * 1.0 / len(x)
     return - np.sum(p * np.math.log(p) for p in probs if p != 0)
 
+# todo - include latex formula
+@set_property("fctype", "aggregate_with_parameters")
+@not_apply_to_raw_numbers
+def sample_entropy(x, tolerance=None):
+    """
+    Calculate and return sample entropy of x.
+    References:
+    ----------
+    [1] http://en.wikipedia.org/wiki/Sample_Entropy
+    [2] https://www.ncbi.nlm.nih.gov/pubmed/10843903?dopt=Abstract
+    
+    :param x: the time series to calculate the feature of
+    :type x: pandas.Series
+    :param tolerance: normalization factor; equivalent to the common practice of expressing the tolerance as r times the standard deviation
+    :type tolerance: float
+    :return: the value of this feature
+    :return type: float
+    """
+        sample_length = 1 # number of sequential points of the time series
+
+    if tolerance is None:
+        tolerance = 0.2 * np.std(x) # 0.2 is a common value for r
+
+    n = len(x)
+    prev = np.zeros(n)
+    curr = np.zeros(n)
+    A = np.zeros((sample_length, 1))  # number of matches for m = [1,...,template_length - 1]
+    B = np.zeros((sample_length, 1))  # number of matches for m = [1,...,template_length]
+
+    for i in range(n - 1):
+        nj = n - i - 1
+        ts1 = x[i]
+        for jj in range(nj):
+            j = jj + i + 1
+            if abs(x[j] - ts1) < tolerance:  # distance between two vectors
+                curr[jj] = prev[jj] + 1
+                temp_ts_length = min(sample_length, curr[jj])
+                for m in range(int(temp_ts_length)):
+                    A[m] += 1
+                    if j < n - 1:
+                        B[m] += 1
+            else:
+                curr[jj] = 0
+        for j in range(nj):
+            prev[j] = curr[j]
+
+    N = n * (n - 1) / 2
+    B = np.vstack(([N], B[:sample_length - 1]))
+    
+    # sample entropy = -1 * (log (A/B))
+    similarity_ratio = A / B  # np.divide(A, B)
+    se = - np.log(similarity_ratio)
+    se = np.reshape(se, -1)
+    return se[0]
+
 
 @set_property("fctype", "aggregate_with_parameters")
 @not_apply_to_raw_numbers
