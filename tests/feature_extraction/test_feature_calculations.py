@@ -344,8 +344,11 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqual(res["TEST__index_mass_quantile__q_0.9"], 0.75, places=1)
 
     def test_number_cwt_peaks(self):
-        pass
-        # todo: add unit test
+        # generate a sine wave with three peaks
+        xs = np.arange(0, 5* np.pi, 0.05)
+        data = np.sin(xs)
+        self.assertEqualOnAllArrayTypes(number_cwt_peaks, (data, 10), 3)
+
 
     def test_spkt_welch_density(self):
         pass
