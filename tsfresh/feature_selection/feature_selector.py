@@ -100,15 +100,8 @@ def check_fs_sig_bh(X, y, settings=None):
     # Every row contains information over one feature column from X
     df_features = pd.DataFrame()
 
-    # Don't process features from the ignore-list
     df_features['Feature'] = list(set(X.columns))
     df_features = df_features.set_index('Feature', drop=False)
-
-    # Don't process constant features
-    for feature in df_features['Feature']:
-        if len(pd.unique(X[feature])) == 1:
-            df_features = df_features.drop(feature)
-            _logger.warning("[test_feature_significance] Feature {} is constant".format(feature))
 
     # Add relevant columns to df_features
     df_features["type"] = np.nan
@@ -117,35 +110,40 @@ def check_fs_sig_bh(X, y, settings=None):
 
     # Process the features
     for feature in df_features['Feature']:
-        if len(set(X[feature].values)) == 1:
+
+        if len(pd.unique(X[feature].values)) == 1:
+
             # Do not process constant features
             df_features.loc[df_features.Feature == feature, "type"] = "const"
-            df_features.loc[df_features.Feature == feature, "rejected"] = True
-        elif target_is_binary:
-            # Decide if the current feature is binary or not
-            if len(set(X[feature].values)) == 2:
-                df_features.loc[df_features.Feature == feature, "type"] = "binary"
-                p_value = target_binary_feature_binary_test(X[feature], y, settings)
-            else:
-                df_features.loc[df_features.Feature == feature, "type"] = "real"
-                p_value = target_binary_feature_real_test(X[feature], y, settings)
-        else:
-            # Decide if the current feature is binary or not
-            if len(set(X[feature].values)) == 2:
-                df_features.loc[df_features.Feature == feature, "type"] = "binary"
-                p_value = target_real_feature_binary_test(X[feature], y, settings)
-            else:
-                df_features.loc[df_features.Feature == feature, "type"] = "real"
-                p_value = target_real_feature_real_test(X[feature], y, settings)
+            df_features.loc[df_features.Feature == feature, "rejected"] = False
+            _logger.warning("[test_feature_significance] Feature {} is constant".format(feature))
 
-        # Add p_values to df_features
-        df_features.loc[df_features['Feature'] == feature, "p_value"] = p_value
+        else:
+
+            if target_is_binary:
+                # Decide if the current feature is binary or not
+                if len(set(X[feature].values)) == 2:
+                    df_features.loc[df_features.Feature == feature, "type"] = "binary"
+                    p_value = target_binary_feature_binary_test(X[feature], y, settings)
+                else:
+                    df_features.loc[df_features.Feature == feature, "type"] = "real"
+                    p_value = target_binary_feature_real_test(X[feature], y, settings)
+            else:
+                # Decide if the current feature is binary or not
+                if len(set(X[feature].values)) == 2:
+                    df_features.loc[df_features.Feature == feature, "type"] = "binary"
+                    p_value = target_real_feature_binary_test(X[feature], y, settings)
+                else:
+                    df_features.loc[df_features.Feature == feature, "type"] = "real"
+                    p_value = target_real_feature_real_test(X[feature], y, settings)
+
+            # Add p_values to df_features
+            df_features.loc[df_features['Feature'] == feature, "p_value"] = p_value
 
     # Perform the real feature rejection
     if "const" in set(df_features.type):
         df_features_bh = benjamini_hochberg_test(df_features.loc[~(df_features.type == "const")], settings)
         df_features = pd.concat([df_features_bh, df_features.loc[df_features.type == "const"]])
-        df_features.rejected = df_features.astype("bool")
     else:
         df_features = benjamini_hochberg_test(df_features, settings)
 
