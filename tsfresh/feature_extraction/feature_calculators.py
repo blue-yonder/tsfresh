@@ -266,8 +266,10 @@ def augmented_dickey_fuller(x):
     :return type: float
     """
 
+    maxlag = 1 # by default maxlag is set to None, when it should be set to integer.
     try:
-        return adfuller(x, 1)[0] # By default maxlag is set to None, while it should be set to integer.
+
+        return adfuller(x, maxlag)[0] # 0th element refers to test statistic
     except LinAlgError:
         return np.NaN
     except ValueError:  # occurs if sample size is too small

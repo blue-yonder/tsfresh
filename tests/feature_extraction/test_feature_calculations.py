@@ -116,6 +116,8 @@ class FeatureCalculationTestCase(TestCase):
         self.assertEqualOnAllArrayTypes(sum_values, [-1.2, -2, -3, -4], -10.2)
         self.assertEqualOnAllArrayTypes(sum_values, [], 0)
 
+        
+        # should we use diverse datasets for unit testing?
         TS_FLOATS = [2.0912, 2.4, 5.09, 1.2, 1.5, 1.9]
         # TS_NAN = [1, 2, 4, 5, float('nan'), 23]
         TS_SMALL= [1]
@@ -146,7 +148,7 @@ class FeatureCalculationTestCase(TestCase):
 
     def test_augmented_dickey_fuller(self):
         x = [1,2,3,4,3,4,2,3]
-        self.assertAlmostEqualOnAllArrayTypes(augmented_dickey_fuller, x, -2.6825663173365015) 
+        self.assertAlmostEqualOnAllArrayTypes(augmented_dickey_fuller, x, -2.6825663173365015) # func params should be (f, input_to_f, result)
 
     def test_abs_energy(self):
         self.assertEqualOnAllArrayTypes(abs_energy, [1, 1, 1], 3)
@@ -344,9 +346,8 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqual(res["TEST__index_mass_quantile__q_0.9"], 0.75, places=1)
 
     def test_number_cwt_peaks(self):
-        # generate a sine wave with three peaks
         t = np.arange(0, 5* np.pi, 0.05)
-        x = np.sin(t).tolist()
+        x = np.sin(t).tolist() # generate a sine wave with three peaks
         self.assertEqualOnAllArrayTypes(number_cwt_peaks, x, 3, 10) # use a 10 unit window
 
 
