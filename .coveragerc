@@ -9,6 +9,8 @@ omit = tsfresh/utilities/profiling.py
        tsfresh/utilities/__init__.py
        tsfresh/transformers/__init__.py
        tsfresh/convenience/__init__.py
+       tsfresh/examples/har_dataset.py
+       tsfresh/examples/robot_execution_failures.py
 
 [report]
 # Regexes for lines to exclude from consideration
