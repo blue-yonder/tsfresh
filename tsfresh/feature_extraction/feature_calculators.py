@@ -267,7 +267,7 @@ def augmented_dickey_fuller(x):
     """
 
     try:
-        return adfuller(x)[0]
+        return adfuller(x, 1)[0] # By default maxlag is set to None, while it should be set to integer.
     except LinAlgError:
         return np.NaN
     except ValueError:  # occurs if sample size is too small
