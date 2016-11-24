@@ -122,7 +122,7 @@ class FeatureCalculationTestCase(TestCase):
         TS_UNIFORM = [6] * 60
 
         self.assertAlmostEqualOnAllArrayTypes(sum_values, TS_FLOATS, 14.181199999999999)
-        self.assertIsNanOnAllArrayTypes(sum_values, TS_NAN)
+        self.assertTrue(np.isnan(sum_values, TS_NAN))
         self.assertEqualOnAllArrayTypes(sum_values, TS_SMALL, 1)
         self.assertEqualOnAllArrayTypes(sum_values, TS_UNIFORM, 360)        
 
