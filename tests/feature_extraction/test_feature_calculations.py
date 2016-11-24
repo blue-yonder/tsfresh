@@ -347,7 +347,7 @@ class FeatureCalculationTestCase(TestCase):
         # generate a sine wave with three peaks
         t = np.arange(0, 5* np.pi, 0.05)
         x = np.sin(t).tolist()
-        self.assertEqualOnAllArrayTypes(number_cwt_peaks, x, 3, 10)
+        self.assertEqualOnAllArrayTypes(number_cwt_peaks, x, 3, 10) # use a 10 unit window
 
 
     def test_spkt_welch_density(self):
