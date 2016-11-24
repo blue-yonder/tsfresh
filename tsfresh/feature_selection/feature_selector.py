@@ -12,12 +12,15 @@ which to cut off (solely based on the p-values).
 
 from __future__ import absolute_import, division, print_function
 
+from functools import partial
+
 from builtins import zip
 from builtins import range
 import os
 import numpy as np
 import pandas as pd
 import logging
+from multiprocessing import Pool
 from tsfresh.feature_selection.significance_tests import target_binary_feature_real_test, \
     target_real_feature_binary_test, target_real_feature_real_test, target_binary_feature_binary_test
 
@@ -111,15 +114,17 @@ def check_fs_sig_bh(X, y, settings=None):
             _logger.warning("[test_feature_significance] Feature {} is constant".format(feature))
 
     # Add relevant columns to df_features
+    df_features["rejected"] = np.nan
     df_features["type"] = np.nan
     df_features["p_value"] = np.nan
-    df_features["rejected"] = np.nan
 
-    # Process the features
-    for feature in df_features['Feature']:
-        p_value = _calculate_p_value(X, y, df_features, feature, settings, target_is_binary)
-        # Add p_values to df_features
-        df_features.loc[df_features['Feature'] == feature, "p_value"] = p_value
+    # Calculate the feature significance in parallel
+    pool = Pool(settings.n_processes)
+
+    # Helper function which wrapps the _calculate_p_value with many arguments already set
+    f = partial(_calculate_p_value, X=X, y=y, settings=settings, target_is_binary=target_is_binary)
+    p_values_of_features = pd.DataFrame(pool.map(f, df_features['Feature']))
+    df_features.update(p_values_of_features)
 
     # Check for constant features
     for feature in list(set(X.columns)):
@@ -144,7 +149,7 @@ def check_fs_sig_bh(X, y, settings=None):
     return df_features
 
 
-def _calculate_p_value(X, y, df_features, feature, settings, target_is_binary):
+def _calculate_p_value(feature, X, y, settings, target_is_binary):
     """
     Internal helper function to calculate the p-value of a given feature in df_features using one of the dedicated
     functions target_*_feature_*_test. It uses the data in X and the target in y.
@@ -155,10 +160,6 @@ def _calculate_p_value(X, y, df_features, feature, settings, target_is_binary):
     :param y: the binary target vector
     :type y: pandas.Series
 
-    :param df_features: a data frame containing information on the features. Must include a column "type" and a row
-           with an index named after the feature.
-    :type df_features: pd.DataFrame
-
     :param feature: The feature for which the p-value should be calculated.
     :type feature: basestring
 
@@ -168,27 +169,28 @@ def _calculate_p_value(X, y, df_features, feature, settings, target_is_binary):
     :param target_is_binary: Whether the target is binary or not
     :type target_is_binary: bool
 
-    :return: the p-value of the feature significance test. Lower p-values indicate a higher feature significance
-    :rtype: float
+    :return: the p-value of the feature significance test and the type of the tested feature as a Series.
+             Lower p-values indicate a higher feature significance.
+    :rtype: pd.Series
     """
     if target_is_binary:
         # Decide if the current feature is binary or not
         if len(set(X[feature].values)) == 2:
-            df_features.loc[df_features.Feature == feature, "type"] = "binary"
+            type = "binary"
             p_value = target_binary_feature_binary_test(X[feature], y, settings)
         else:
-            df_features.loc[df_features.Feature == feature, "type"] = "real"
+            type = "real"
             p_value = target_binary_feature_real_test(X[feature], y, settings)
     else:
         # Decide if the current feature is binary or not
         if len(set(X[feature].values)) == 2:
-            df_features.loc[df_features.Feature == feature, "type"] = "binary"
+            type = "binary"
             p_value = target_real_feature_binary_test(X[feature], y, settings)
         else:
-            df_features.loc[df_features.Feature == feature, "type"] = "real"
+            type = "real"
             p_value = target_real_feature_real_test(X[feature], y, settings)
 
-    return p_value
+    return pd.Series({"p_value": p_value, "type": type}, name=feature)
 
 
 def benjamini_hochberg_test(df_pvalues, settings):
