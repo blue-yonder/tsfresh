@@ -49,3 +49,6 @@ class FeatureSignificanceTestsSettings(object):
 
         #: Where to store the selection import
         self.result_dir = "logging"
+
+        #: Number of processes to use during the p-value calculation
+        self.n_processes = 2
