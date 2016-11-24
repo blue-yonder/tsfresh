@@ -46,7 +46,7 @@ class FeatureSignificanceTestCase(TestCase):
         X["irr9"] = np.random.binomial(1, 0.3, 1000)
 
         df_bh = tsfresh.feature_selection.feature_selector.check_fs_sig_bh(X, y, self.settings)
-        feat_rej = df_bh[df_bh.rejected].Feature
+        feat_rej = df_bh.loc[df_bh.rejected].Feature
 
         # Make sure all selected variables are relevant
         for kept_feature in feat_rej:
@@ -114,7 +114,7 @@ class FeatureSignificanceTestCase(TestCase):
         X["rel5"] = z
 
         df_bh = tsfresh.feature_selection.feature_selector.check_fs_sig_bh(X, y, self.settings)
-        feat_rej = df_bh[df_bh.rejected].Feature
+        feat_rej = df_bh.loc[df_bh.rejected].Feature
 
         # Make sure all selected variables are relevant
         for kept_feature in feat_rej:
@@ -155,7 +155,7 @@ class FeatureSignificanceTestCase(TestCase):
         X["rel4"] = np.sqrt(y) + np.random.binomial(2, 0.1, 5000)
 
         df_bh = tsfresh.feature_selection.feature_selector.check_fs_sig_bh(X, y, self.settings)
-        feat_rej = df_bh[df_bh.rejected].Feature
+        feat_rej = df_bh.loc[df_bh.rejected].Feature
 
         # Make sure all selected variables are relevant
         for kept_feature in feat_rej:
@@ -201,7 +201,7 @@ class FeatureSignificanceTestCase(TestCase):
         X["irr9"] = np.random.binomial(1, 0.2, 5000)
 
         df_bh = tsfresh.feature_selection.feature_selector.check_fs_sig_bh(X, y, self.settings)
-        feat_rej = df_bh[df_bh.rejected].Feature
+        feat_rej = df_bh.loc[df_bh.rejected].Feature
 
         # Make sure all selected variables are relevant
         for kept_feature in feat_rej:
@@ -251,7 +251,7 @@ class FeatureSignificanceTestCase(TestCase):
         X["irr6"] = np.random.binomial(0, 0.01, 1000)
 
         df_bh = tsfresh.feature_selection.feature_selector.check_fs_sig_bh(X, y, self.settings)
-        feat_rej = df_bh[df_bh.rejected].Feature
+        feat_rej = df_bh.loc[df_bh.rejected].Feature
 
         # Make sure all selected variables are relevant
         for kept_feature in feat_rej:
@@ -275,7 +275,7 @@ class FeatureSignificanceTestCase(TestCase):
         X["rel2"] = z
 
         df_bh = tsfresh.feature_selection.feature_selector.check_fs_sig_bh(X, y, self.settings)
-        feat_rej = df_bh[df_bh.rejected].Feature
+        feat_rej = df_bh.loc[df_bh.rejected].Feature
 
         # Make sure all selected variables are relevant
         for kept_feature in feat_rej:
@@ -296,7 +296,7 @@ class FeatureSignificanceTestCase(TestCase):
         X["irr6"] = np.random.binomial(0, 0.01, 1000)
 
         df_bh = tsfresh.feature_selection.feature_selector.check_fs_sig_bh(X, y, self.settings)
-        feat_rej = df_bh[df_bh.rejected].Feature
+        feat_rej = df_bh.loc[df_bh.rejected].Feature
 
         self.assertEqual(len(feat_rej), 0)
 
