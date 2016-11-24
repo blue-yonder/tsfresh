@@ -20,6 +20,7 @@ class FeatureSignificanceTestCase(TestCase):
 
     def test_binary_target_mixed_case(self):
         # Mixed case with binomial target
+        np.random.seed(42)
         y = pd.Series(np.random.binomial(1, 0.5, 1000))
         X = pd.DataFrame(index=range(1000))
 
@@ -28,7 +29,7 @@ class FeatureSignificanceTestCase(TestCase):
         z[z == 2] = 1
 
         X["rel1"] = z
-        X["rel2"] = y * np.random.normal(0, 1, 1000) + np.random.normal(0, 1, 1000)
+        X["rel2"] = y * np.abs(np.random.normal(0, 1, 1000)) + np.random.normal(0, 1, 1000)
         X["rel3"] = y + np.random.normal(0, 0.3, 1000)
         X["rel4"] = y ** 2 + np.random.normal(0, 1, 1000)
         X["rel5"] = np.sqrt(y) + np.random.binomial(2, 0.1, 1000)
@@ -44,7 +45,6 @@ class FeatureSignificanceTestCase(TestCase):
         X["irr7"] = np.random.normal(0, 1, 1000)
         X["irr8"] = np.random.poisson(1, 1000)
         X["irr9"] = np.random.binomial(1, 0.3, 1000)
-        X["irr10"] = np.random.binomial(1, 0.3, 1000)
 
         df_bh = tsfresh.feature_selection.feature_selector.check_fs_sig_bh(X, y, self.settings)
         feat_rej = df_bh.loc[df_bh.rejected].Feature
