@@ -92,7 +92,7 @@ def select_features(X, y, feature_selection_settings=None):
 
     if len(X) < 2:
         raise ValueError("X must contain at least two samples.")
-    elif isinstance(y, pd.Series) and not X.index.isin(y.index).any():
+    elif isinstance(y, pd.Series) and not X.index.isin(y.index).all():
         raise ValueError("Index of X must be a subset of y's index")
     elif isinstance(y, np.ndarray):
         if not len(y) >= len(X):
