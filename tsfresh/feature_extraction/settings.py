@@ -113,7 +113,6 @@ class FeatureExtractionSettings(object):
 
         self.kind_to_calculation_settings_mapping[kind] = self.name_to_param.copy()
 
-
     def do_not_calculate(self, kind, identifier):
         """
         Delete the all features of type identifier for time series of type kind.
@@ -318,3 +317,32 @@ class FeatureExtractionSettings(object):
                 raise ValueError("Do not know fctype {}".format(func.fctype))
 
         return apply_functions
+
+
+class MinimalFeatureExtractionSettings(FeatureExtractionSettings):
+    """
+    This class is a parent class of the FeatureExtractionSettings class
+    and has the same functionality as its base class. The only difference is,
+    that most of the feature calculators are disabled and only a small
+    subset of calculators will be calculated at all.
+
+    Use this class for quick tests of your setup before calculating all
+    features which could take some time depending of your data set size.
+
+    You should use this object when calling the extract function, like so:
+
+    >>> from tsfresh.feature_extraction import extract_features, MinimalFeatureExtractionSettings
+    >>> extract_features(df, feature_extraction_settings=MinimalFeatureExtractionSettings)
+    """
+    def __init__(self):
+        FeatureExtractionSettings.__init__(self, True)
+
+        name_to_param_copy = {}
+
+        for feature_calculator in self.name_to_param:
+            function = feature_calculators.__dict__[feature_calculator]
+
+            if hasattr(function, "minimal") and getattr(function, "minimal"):
+                name_to_param_copy[feature_calculator] = self.name_to_param[feature_calculator]
+
+        self.name_to_param = name_to_param_copy

@@ -18,11 +18,11 @@ In tsfresh we differentiate between three types of feature calculation methods
 So if you want to add a singular feature with out any parameters, stick with *1.*, the aggregate feature without
 parameters.
 
-Then, if your features can be calculated independently for each parameter, stick with type *2.*, the
+Then, if your features can be calculated independently for each possible parameter set, stick with type *2.*, the
 aggregate features with parameters.
 
 
-If both cases from above do not apply, so it is beneficial to calculate the features for the different
+If both cases from above do not apply, because it is beneficial to calculate the features for the different
 parameter settings at the same time (to e.g. perform auxiliary calculations only once for all features), stick with
 type *3.*, the apply features with parameters.
 
@@ -99,8 +99,8 @@ Depending on which type of feature you are implementing, you can use the followi
         return s
 
 
-After implementing the feature calculator, please add it to the :mod:`tsfresh.feature_extraction.extraction` submodule.
-tsfresh will only find feature calculators that are in this submodule.
+After implementing the feature calculator, please add it to the :mod:`tsfresh.feature_extraction.feature_calculators`
+submodule. tsfresh will only find feature calculators that are in this submodule.
 
 
 Step 3. Add custom settings for your feature
@@ -108,7 +108,7 @@ Step 3. Add custom settings for your feature
 
 Finally, you have to add custom settings if your feature is a apply or aggregate feature with parameters. To do so,
 just append your parameters to the ``name_to_param`` dictionary inside the
-:func:`tsfresh.feature_extraction.settings.set_default_parameters` method:
+:class:`tsfresh.feature_extraction.settings.FeatureExtractionSettings` constructor:
 
 .. code:: python
 
