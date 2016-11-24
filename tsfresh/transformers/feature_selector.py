@@ -82,7 +82,7 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
             y = pd.Series(y.copy())
 
         df_bh = check_fs_sig_bh(X, y, self.settings)
-        self.relevant_features = df_bh[df_bh.rejected].Feature
+        self.relevant_features = df_bh.loc[df_bh.rejected].Feature
 
         return self
 
