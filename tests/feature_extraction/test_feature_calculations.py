@@ -346,8 +346,8 @@ class FeatureCalculationTestCase(TestCase):
     def test_number_cwt_peaks(self):
         # generate a sine wave with three peaks
         t = np.arange(0, 5* np.pi, 0.05)
-        x = np.sin(t)
-        self.assertEqualPandasSeriesWrapper(number_cwt_peaks, x, 10, value = 3)
+        x = np.sin(t).tolist()
+        self.assertAlmostEqualOnAllArrayTypes(number_cwt_peaks, x, 10, 3)
 
 
     def test_spkt_welch_density(self):
