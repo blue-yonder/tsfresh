@@ -6,14 +6,15 @@ from __future__ import absolute_import, division
 
 from unittest import TestCase
 import numpy as np
-from tsfresh.feature_extraction.settings import FeatureExtractionSettings
+import pandas as pd
+from tsfresh.feature_extraction.extraction import extract_features
+from tsfresh.feature_extraction.settings import FeatureExtractionSettings, MinimalFeatureExtractionSettings
 import six
 from tsfresh.feature_extraction import feature_calculators
 
+
 class TestSettingsObject(TestCase):
-
     def test_from_columns(self):
-
         tsn = "TEST_TIME_SERIES"
 
         fset = FeatureExtractionSettings()
@@ -37,10 +38,10 @@ class TestSettingsObject(TestCase):
 
         cset = fset.from_columns(feature_names)
 
-        six.assertCountEqual(self, list(cset.kind_to_calculation_settings_mapping[tsn].keys()),
-                                  ["sum_values", "median", "length", "sample_entropy", "quantile", "number_peaks", "ar_coefficient",
+        six.assertCountEqual(self, list(cset.kind_to_calculation_settings_mapping[tsn].keys()), 
+          ["sum_values", "median", "length", "sample_entropy", "quantile", "number_peaks", "ar_coefficient",
                                   "value_count"])
-
+        
         self.assertEqual(cset.kind_to_calculation_settings_mapping[tsn]["sum_values"], None)
         self.assertEqual(cset.kind_to_calculation_settings_mapping[tsn]["ar_coefficient"],
                          [{"k": 20, "coeff": 4}, {"k": -1, "coeff": 10}])
@@ -63,3 +64,31 @@ class TestSettingsObject(TestCase):
             self.assertIn(calculator, settings.name_to_param,
                           msg='Default FeatureExtractionSettings object does not setup calculation of {}'
                           .format(calculator))
+
+
+class TestMinimalSettingsObject(TestCase):
+    def test_all_minimal_features_in(self):
+        mfs = MinimalFeatureExtractionSettings()
+
+        self.assertIn("mean", mfs.name_to_param)
+        self.assertIn("median", mfs.name_to_param)
+        self.assertIn("minimum", mfs.name_to_param)
+        self.assertIn("maximum", mfs.name_to_param)
+        self.assertIn("length", mfs.name_to_param)
+        self.assertIn("sum_values", mfs.name_to_param)
+        self.assertIn("standard_deviation", mfs.name_to_param)
+        self.assertIn("variance", mfs.name_to_param)
+
+    def test_extraction_runs_through(self):
+        mfs = MinimalFeatureExtractionSettings()
+
+        data = pd.DataFrame([[0, 0, 0, 0], [1, 0, 0, 0]], columns=["id", "time", "kind", "value"])
+
+        extracted_features = extract_features(data, feature_extraction_settings=mfs,
+                                              column_kind="kind", column_value="value",
+                                              column_sort="time", column_id="id")
+
+        six.assertCountEqual(self, extracted_features.columns, ["0__median", "0__standard_deviation", "0__sum_values", "0__maximum", "0__variance",
+                                                      "0__minimum", "0__mean", "0__length"])
+
+        six.assertCountEqual(self, extracted_features.index, [0, 1])

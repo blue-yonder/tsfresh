@@ -24,7 +24,7 @@ class FeatureSelectorTestCase(TestCase):
 
     def test_extract_relevant_features(self):
         selector = FeatureSelector()
-
+        np.random.seed(42)
         y = pd.Series(np.random.binomial(1, 0.5, 1000))
         X = pd.DataFrame(index=list(range(1000)))
 
@@ -33,7 +33,7 @@ class FeatureSelectorTestCase(TestCase):
         z[z == 2] = 1
 
         X["rel1"] = z
-        X["rel2"] = y * np.random.normal(0, 1, 1000) + np.random.normal(0, 1, 1000)
+        X["rel2"] = y * np.abs(np.random.normal(0, 1, 1000)) + np.random.normal(0, 0.1, 1000)
         X["rel3"] = y + np.random.normal(0, 1, 1000)
         X["rel4"] = y ** 2 + np.random.normal(0, 1, 1000)
         X["rel5"] = np.sqrt(y) + np.random.binomial(2, 0.1, 1000)
@@ -50,10 +50,10 @@ class FeatureSelectorTestCase(TestCase):
         X["irr8"] = np.random.poisson(1, 1000)
         X["irr9"] = np.random.binomial(1, 0.3, 1000)
 
-        returned_seelctor = selector.fit(X, y)
-        self.assertIs(returned_seelctor, selector)
+        returned_selector = selector.fit(X, y)
+        self.assertIs(returned_selector, selector)
 
-        self.assertEqual(sorted(list(selector.relevant_features.index)), ["rel1", "rel3", "rel4", "rel5"])
+        self.assertEqual(sorted(list(selector.relevant_features.index)), ["rel1", "rel2", "rel3", "rel4", "rel5"])
 
         new_X = X.copy()
 
