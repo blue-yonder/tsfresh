@@ -10,7 +10,7 @@ A description of the data set can be found in [5].
 References
 ----------
 
-.. [4] https://mlr.cs.umass.edu/ml/datasets/Human+Activity+Recognition+Using+Smartphones
+.. [4] http://mlr.cs.umass.edu/ml/datasets/Human+Activity+Recognition+Using+Smartphones
 .. [5] Davide Anguita, Alessandro Ghio, Luca Oneto, Xavier Parra and Jorge L. Reyes-Ortiz. (2013)
      A Public Domain Dataset for Human Activity Recognition Using Smartphones.
      21th European Symposium on Artificial Neural Networks,
@@ -24,6 +24,9 @@ from urllib.request import urlopen
 from zipfile import ZipFile
 import pandas as pd
 import os
+import logging
+
+_logger = logging.getLogger(__name__)
 
 module_path = os.path.dirname(__file__)
 data_file_name = os.path.join(module_path, 'data')
@@ -43,7 +46,11 @@ def download_har_dataset():
     """
     
     zipurl = 'https://mlr.cs.umass.edu/ml/machine-learning-databases/00240/UCI%20HAR%20Dataset.zip'
-    
+
+    if os.path.exists(data_file_name):
+        _logger.warning("You have already downloaded the Human Activity Data Set.")
+        return
+
     with urlopen(zipurl) as zipresp:
         with ZipFile(BytesIO(zipresp.read())) as zfile:
             zfile.extractall(path=data_file_name)
