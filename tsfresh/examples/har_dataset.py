@@ -67,7 +67,7 @@ def load_har_dataset():
 
 def load_har_classes():
     try:
-        return pd.read_csv(data_file_name_classes, delim_whitespace=True, header=None)
+        return pd.read_csv(data_file_name_classes, delim_whitespace=True, header=None, squeeze=True)
     except IOError:
         raise IOError('File {} was not found. Have you downloaded the dataset with download_har_dataset() '
                        'before?'.format(data_file_name_classes))
