@@ -1,6 +1,6 @@
 language: python
 python:
-- '2.7'
+- '2.7.11'
 - '3.5.2'
 install:
 - pip install --upgrade pip
@@ -11,6 +11,8 @@ install:
 - pip install -r requirements.txt
 - pip install -r test-requirements.txt
 script:
+# hack to set xdist to use only 1 node instead of 32
+- sed -i 's/\-n 4/\-n 1/g' setup.cfg
 - python setup.py test
 deploy:
   provider: pypi

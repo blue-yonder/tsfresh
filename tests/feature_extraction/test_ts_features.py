@@ -17,6 +17,7 @@ class FeatureExtractorTestCase(DataTestCase):
     def setUp(self):
         self.settings = FeatureExtractionSettings()
         self.settings.PROFILING = False
+        self.settings.n_processes = 1
 
     def test_calculate_ts_features(self):
         # todo: implement more methods and test more aspects
@@ -49,9 +50,40 @@ class FeatureExtractorTestCase(DataTestCase):
         extracted_features_from_random = extract_features(df_random, self.settings,
                                                           "id", "sort", "kind", "val").sort_index()
 
-
         six.assertCountEqual(self, extracted_features.columns, extracted_features_from_random.columns)
 
         for col in extracted_features:
             self.assertIsNone(np.testing.assert_array_almost_equal(extracted_features[col],
                                                                    extracted_features_from_random[col]))
+
+
+class ParallelFeatureExtractorTestCase(DataTestCase):
+
+    def setUp(self):
+        self.settings = FeatureExtractionSettings()
+        self.settings.PROFILING = False
+        self.settings.n_processes = 2
+
+        # only calculate some features to reduce load on travis ci
+        self.name_to_param = {"maximum": None,
+                              "sum_values": None,
+                              "abs_energy": None,
+                              "minimum": None,
+                              "mean": None,
+                              "median": None}
+
+    def test_calculate_ts_features(self):
+
+        # todo: implement more methods and test more aspects
+        df = self.create_test_data_sample()
+        extracted_features = extract_features(df, self.settings, "id", "sort", "kind", "val")
+
+        self.assertIsInstance(extracted_features, pd.DataFrame)
+        self.assertTrue(np.all(extracted_features.a__maximum == np.array([71, 77])))
+        self.assertTrue(np.all(extracted_features.a__sum_values == np.array([691, 1017])))
+        self.assertTrue(np.all(extracted_features.a__abs_energy == np.array([32211, 63167])))
+        self.assertTrue(np.all(extracted_features.b__sum_values == np.array([757, 695])))
+        self.assertTrue(np.all(extracted_features.b__minimum == np.array([3, 1])))
+        self.assertTrue(np.all(extracted_features.b__abs_energy == np.array([36619, 35483])))
+        self.assertTrue(np.all(extracted_features.b__mean == np.array([37.85, 34.75])))
+        self.assertTrue(np.all(extracted_features.b__median == np.array([39.5, 28.0])))

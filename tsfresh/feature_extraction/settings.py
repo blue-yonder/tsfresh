@@ -100,6 +100,9 @@ class FeatureExtractionSettings(object):
                 "approximate_entropy": [{"m": 2, "r": r} for r in [.1, .3, .5, .7, .9]]
             })
 
+        # default None means one process per cpu
+        self.n_processes = None
+
     def set_default_parameters(self, kind):
         """
         Setup the feature calculations for kind as defined in `self.name_to_param`
