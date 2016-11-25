@@ -25,7 +25,8 @@ class TestSettingsObject(TestCase):
         self.assertRaises(ValueError, fset.from_columns, ["This__also__not"])
 
         # Aggregate functions
-        feature_names = [tsn + '__sum_values', tsn + "__median", tsn + "__length"]
+        feature_names = [tsn + '__sum_values', tsn + "__median", tsn + "__length", tsn + "__sample_entropy"]
+
 
         # Aggregate functions with params
         feature_names += [tsn + '__quantile__q_10', tsn + '__quantile__q_70', tsn + '__number_peaks__n_30',
@@ -37,10 +38,10 @@ class TestSettingsObject(TestCase):
 
         cset = fset.from_columns(feature_names)
 
-        six.assertCountEqual(self, list(cset.kind_to_calculation_settings_mapping[tsn].keys()),
-                             ["sum_values", "median", "length", "quantile", "number_peaks", "ar_coefficient",
-                              "value_count"])
-
+        six.assertCountEqual(self, list(cset.kind_to_calculation_settings_mapping[tsn].keys()), 
+          ["sum_values", "median", "length", "sample_entropy", "quantile", "number_peaks", "ar_coefficient",
+                                  "value_count"])
+        
         self.assertEqual(cset.kind_to_calculation_settings_mapping[tsn]["sum_values"], None)
         self.assertEqual(cset.kind_to_calculation_settings_mapping[tsn]["ar_coefficient"],
                          [{"k": 20, "coeff": 4}, {"k": -1, "coeff": 10}])
