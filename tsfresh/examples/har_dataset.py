@@ -10,7 +10,7 @@ A description of the data set can be found in [5].
 References
 ----------
 
-.. [4] https://archive.ics.uci.edu/ml/datasets/Human+Activity+Recognition+Using+Smartphones
+.. [4] https://mlr.cs.umass.edu/ml/datasets/Human+Activity+Recognition+Using+Smartphones
 .. [5] Davide Anguita, Alessandro Ghio, Luca Oneto, Xavier Parra and Jorge L. Reyes-Ortiz. (2013)
      A Public Domain Dataset for Human Activity Recognition Using Smartphones.
      21th European Symposium on Artificial Neural Networks,
@@ -42,7 +42,7 @@ def download_har_dataset():
     >>> download_har_dataset()
     """
     
-    zipurl = 'https://archive.ics.uci.edu/ml/machine-learning-databases/00240/UCI%20HAR%20Dataset.zip'
+    zipurl = 'https://mlr.cs.umass.edu/ml/machine-learning-databases/00240/UCI%20HAR%20Dataset.zip'
     
     with urlopen(zipurl) as zipresp:
         with ZipFile(BytesIO(zipresp.read())) as zfile:
