@@ -138,6 +138,10 @@ class FeatureCalculationTestCase(TestCase):
         pass
         # todo: add unit test
 
+    def test_augmented_dickey_fuller_p_val(self):
+        x = [1,2,3,4,3,4,2,3]
+        self.assertAlmostEqualOnAllArrayTypes(augmented_dickey_fuller_p_val, x, 0.077103947319183241)
+
     def test_abs_energy(self):
         self.assertEqualOnAllArrayTypes(abs_energy, [1, 1, 1], 3)
         self.assertEqualOnAllArrayTypes(abs_energy, [1, 2, 3], 14)
