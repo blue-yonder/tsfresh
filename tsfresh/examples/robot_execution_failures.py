@@ -35,7 +35,7 @@ _logger = logging.getLogger(__name__)
 UCI_MLD_REF_MSG = ("The example data could not be found. You need to download the Robot Execution Failures "
                    "LP1 Data Set from the UCI Machine Learning Repository. To do so, you can call the function "
                   "tsfresh.examples.robot_execution_failures.download_robot_execution_failures")
-UCI_MLD_REF_URL = "http://mlr.cs.umass.edu/ml/machine-learning-databases/robotfailure-mld/lp1.data"
+UCI_MLD_REF_URL = "https://raw.githubusercontent.com/MaxBenChrist/robot-failure-dataset/master/lp1.data.txt"
 
 
 module_path = os.path.dirname(__file__)

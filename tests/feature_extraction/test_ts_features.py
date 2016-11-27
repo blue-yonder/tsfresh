@@ -9,7 +9,7 @@ from tests.fixtures import DataTestCase
 from tsfresh.feature_extraction.extraction import extract_features
 from tsfresh.feature_extraction.settings import FeatureExtractionSettings
 import six
-
+import os
 
 class FeatureExtractorTestCase(DataTestCase):
     """The unit tests in this module make sure if the time series features are created properly"""
@@ -55,3 +55,36 @@ class FeatureExtractorTestCase(DataTestCase):
         for col in extracted_features:
             self.assertIsNone(np.testing.assert_array_almost_equal(extracted_features[col],
                                                                    extracted_features_from_random[col]))
+    def test_profiling_file_written_out(self):
+
+        fes = FeatureExtractionSettings()
+        fes.PROFILING = True
+        fes.PROFILING_FILENAME = "test_profiling.txt"
+
+        df = pd.DataFrame(data={"id": np.repeat([1, 2], 10), "value": np.random.normal(0, 1, 20)})
+        X = extract_features(df, column_id="id", column_value="value", feature_extraction_settings=fes)
+
+        self.assertTrue(os.path.isfile(fes.PROFILING_FILENAME))
+        os.remove(fes.PROFILING_FILENAME)
+
+    def test_profiling_cumulative_file_written_out(self):
+
+        fes = FeatureExtractionSettings()
+        fes.PROFILING = True
+        fes.PROFILING_FILENAME = "test_profiling_cumulative.txt"
+        fes.PROFILING_SORTING = "cumulative"
+
+        df = pd.DataFrame(data={"id": np.repeat([1, 2], 10), "value": np.random.normal(0, 1, 20)})
+        X = extract_features(df, column_id="id", column_value="value", feature_extraction_settings=fes)
+
+        self.assertTrue(os.path.isfile(fes.PROFILING_FILENAME))
+        os.remove(fes.PROFILING_FILENAME)
+
+    def test_extracting_without_settings(self):
+        df = pd.DataFrame(data={"id": np.repeat([1, 2], 10),
+                                "value1": np.random.normal(0, 1, 20),
+                                "value2": np.random.normal(0, 1, 20)})
+        X = extract_features(df, column_id="id")
+        self.assertIn("value1__maximum", list(X.columns))
+        self.assertIn("value2__maximum", list(X.columns))
+
