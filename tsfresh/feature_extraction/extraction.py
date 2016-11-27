@@ -95,8 +95,8 @@ def extract_features(timeseries_container, feature_extraction_settings=None,
 
     # Turn off profiling if it was turned on
     if feature_extraction_settings.PROFILING:
-        profiling.end_profiling(profiler, sorting=feature_extraction_settings.PROFILING_SORTING,
-                                filename=feature_extraction_settings.PROFILING_FILENAME)
+        profiling.end_profiling(profiler, filename=feature_extraction_settings.PROFILING_FILENAME,
+                                sorting=feature_extraction_settings.PROFILING_SORTING)
 
     return result
 

@@ -36,17 +36,17 @@ def start_profiling():
     return profiler
 
 
-def end_profiling(profiler, sorting, filename):
+def end_profiling(profiler, filename, sorting=None):
     """
     Helper function to stop the profiling process and write out the profiled
     data into the given filename. Before this, sort the stats by the passed sorting.
 
     :param profiler: An already started profiler (probably by start_profiling).
     :type profiler: cProfile.Profile
-    :param sorting: The sorting of the statistics passed to the sort_stats function.
-    :type sorting: basestring
     :param filename: The name of the output file to save the profile.
     :type filename: basestring
+    :param sorting: The sorting of the statistics passed to the sort_stats function.
+    :type sorting: basestring
 
     :return: None
     :rtype: None
