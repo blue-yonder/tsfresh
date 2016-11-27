@@ -135,8 +135,8 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqualOnAllArrayTypes(mean_autocorrelation, x, expected_res)
 
     def test_augmented_dickey_fuller(self):
-        pass
         # todo: add unit test
+        pass
 
 
     def test_abs_energy(self):

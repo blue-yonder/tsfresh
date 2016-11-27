@@ -258,7 +258,7 @@ cache = LRUCache(maxsize=10)
 def _augmented_dickey_fuller(x):
     maxlag = 1
     try:
-        return adfuller(x, maxlag)
+        return np.array(adfuller(x, maxlag))
     except LinAlgError:
         return np.NaN
     except ValueError:
@@ -280,7 +280,7 @@ def augmented_dickey_fuller(x):
     :return type: float
     """
     # convert x into tuple to make it hashable for cache
-    return np.array(_augmented_dickey_fuller(tuple(x))[0])
+    return _augmented_dickey_fuller(tuple(x))
     
 
 
