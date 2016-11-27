@@ -184,6 +184,17 @@ class FeatureSelection(TestCase):
         self.assertLess(result_series.p_value, self.maximal_p_value_for_significant_features)
         self.assertEqual(result_series.type, "real")
 
+    def test_const_feature(self):
+        """Constant features should not be used in the p-value calculation."""
+        x = pd.Series([1.111]*250, name="TEST")
+        y = x + pd.Series(np.random.normal(0, 1, 250))
+
+        result_series = tsfresh.feature_selection.feature_selector._calculate_p_value("TEST", pd.DataFrame(x), y,
+                                                                                      self.settings, False)
+        self.assertEqual(result_series.name, "TEST")
+        self.assertEqual(result_series.type, "const")
+        self.assertEqual(result_series.rejected, False)
+
 
 # noinspection PyUnresolvedReferences
 class FeatureSelectionConfigTestCase(TestCase):
