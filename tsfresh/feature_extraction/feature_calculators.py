@@ -280,7 +280,7 @@ def augmented_dickey_fuller(x):
     :return type: float
     """
     # convert x into tuple to make it hashable for cache
-    return _augmented_dickey_fuller(tuple(x))[0]
+    return np.array(_augmented_dickey_fuller(tuple(x))[0])
     
 
 
@@ -297,7 +297,7 @@ def augmented_dickey_fuller_p_val(x):
     :return type: float
     """
     # convert x into tuple to make it hashable for cache
-    return _augmented_dickey_fuller(tuple(x))[1]
+    return np.array(_augmented_dickey_fuller(tuple(x))[1])
 
 
 @set_property("fctype", "aggregate")
