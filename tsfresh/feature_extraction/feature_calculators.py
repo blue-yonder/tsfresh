@@ -26,6 +26,7 @@ import pandas as pd
 from scipy.signal import welch, cwt, ricker, find_peaks_cwt
 from statsmodels.tsa.ar_model import AR
 from statsmodels.tsa.stattools import adfuller
+from cachetools import cached, LRUCache
 from functools import reduce
 
 
@@ -251,6 +252,19 @@ def mean_autocorrelation(x):
         return np.nanmean(r / var)
 
 
+cache = LRUCache(maxsize=10)
+
+@cached(cache)
+def _augmented_dickey_fuller(x):
+    maxlag = 1
+    try:
+        return adfuller(x, maxlag)
+    except LinAlgError:
+        return np.NaN
+    except ValueError:
+        return np.NaN
+
+
 @set_property("fctype", "aggregate")
 @not_apply_to_raw_numbers
 def augmented_dickey_fuller(x):
@@ -265,13 +279,9 @@ def augmented_dickey_fuller(x):
     :return: the value of this feature
     :return type: float
     """
-
-    try:
-        return adfuller(x)[0]
-    except LinAlgError:
-        return np.NaN
-    except ValueError:  # occurs if sample size is too small
-        return np.NaN
+    # convert x into tuple to make it hashable for cache
+    return _augmented_dickey_fuller(tuple(x))[0]
+    
 
 
 @set_property("fctype", "aggregate")
@@ -286,13 +296,8 @@ def augmented_dickey_fuller_p_val(x):
     :return: the value of this feature
     :return type: float
     """
-    maxlag = 1
-    try:
-        return adfuller(x, maxlag)[1]
-    except LinAlgError:
-        return np.NaN
-    except ValueError:  # occurs if sample size is too small
-        return np.NaN
+    # convert x into tuple to make it hashable for cache
+    return _augmented_dickey_fuller(tuple(x))[1]
 
 
 @set_property("fctype", "aggregate")
