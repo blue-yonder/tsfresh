@@ -9,6 +9,7 @@ from future import standard_library
 standard_library.install_aliases()
 import cProfile, pstats, io
 import logging
+import six
 
 
 _logger = logging.getLogger(__name__)
@@ -54,7 +55,7 @@ def end_profiling(profiler, sorting, filename):
 
     >>> profiler = start_profiling()
     >>> # Do something you want to profile
-    >>> end_profiling(profiler, "cumulative", "out.txt")
+    >>> end_profiling(profiler, "out.txt", "cumulative")
     """
     profiler.disable()
     s = io.StringIO()
