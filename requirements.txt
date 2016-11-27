@@ -6,3 +6,4 @@ statsmodels>=0.6.1
 patsy>=0.4.1
 scikit-learn>=0.17.1
 future>=0.16.0
+cachetools>=2.0.0
