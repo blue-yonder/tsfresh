@@ -79,3 +79,12 @@ class FeatureExtractorTestCase(DataTestCase):
 
         self.assertTrue(os.path.isfile(fes.PROFILING_FILENAME))
         os.remove(fes.PROFILING_FILENAME)
+
+    def test_extracting_without_settings(self):
+        df = pd.DataFrame(data={"id": np.repeat([1, 2], 10),
+                                "value1": np.random.normal(0, 1, 20),
+                                "value2": np.random.normal(0, 1, 20)})
+        X = extract_features(df, column_id="id")
+        self.assertIn("value1__maximum", list(X.columns))
+        self.assertIn("value2__maximum", list(X.columns))
+
