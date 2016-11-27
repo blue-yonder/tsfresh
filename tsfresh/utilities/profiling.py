@@ -58,7 +58,7 @@ def end_profiling(profiler, filename, sorting=None):
     >>> end_profiling(profiler, "out.txt", "cumulative")
     """
     profiler.disable()
-    s = io.StringIO()
+    s = six.StringIO()
     ps = pstats.Stats(profiler, stream=s).sort_stats(sorting)
     ps.print_stats()
 
