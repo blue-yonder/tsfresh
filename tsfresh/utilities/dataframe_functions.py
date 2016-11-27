@@ -226,17 +226,17 @@ def normalize_input_to_internal_representation(df_or_dict, column_id, column_sor
             or dict.
     """
     if isinstance(df_or_dict, dict):
-        if column_kind:
+        if column_kind is not None:
             raise ValueError("You passed in a dictionary and gave a column name for the kind. Both is not possible.")
         kind_to_df_map = {key: df.copy() for key, df in df_or_dict.items()}
     else:
-        if column_kind:
+        if column_kind is not None:
             kind_to_df_map = {key: group.copy().drop(column_kind, axis=1) for key, group in df_or_dict.groupby(column_kind)}
         else:
-            if column_value:
+            if column_value is not None:
                 kind_to_df_map = {"feature": df_or_dict.copy()}
             else:
-                id_and_sort_column = [_f for _f in [column_id, column_sort] if _f]
+                id_and_sort_column = [_f for _f in [column_id, column_sort] if _f is not None]
                 kind_to_df_map = {key: df_or_dict[[key] + id_and_sort_column].copy().rename(columns={key: "_value"})
                                   for key in df_or_dict.columns if key not in id_and_sort_column}
 
@@ -245,14 +245,14 @@ def normalize_input_to_internal_representation(df_or_dict, column_id, column_sor
                     raise ValueError("You passed in a dataframe without a value column.")
                 column_value = "_value"
 
-    if column_sort:
+    if column_sort is not None:
         for kind in kind_to_df_map:
             # Require no Nans in column
             if kind_to_df_map[kind][column_sort].isnull().any():
                 raise ValueError("You have NaN values in your sort column.")
             kind_to_df_map[kind] = kind_to_df_map[kind].sort_values(column_sort).drop(column_sort, axis=1)
 
-    if column_id:
+    if column_id is not None:
         for kind in kind_to_df_map:
             if column_id not in kind_to_df_map[kind].columns:
                 raise AttributeError("The given column for the id is not present in the data.")
@@ -262,7 +262,7 @@ def normalize_input_to_internal_representation(df_or_dict, column_id, column_sor
         raise ValueError("You have to set the column_id which contains the ids of the different time series")
 
     # Either the column for the value must be given...
-    if column_value:
+    if column_value is not None:
         for kind in kind_to_df_map:
             if column_value not in kind_to_df_map[kind].columns:
                 raise ValueError("The given column for the value is not present in the data.")

@@ -69,3 +69,17 @@ class RelevantFeatureExtractionTestCase(TestCase):
         pdt.assert_series_equal(self.X["f2"], X["f2"])
         pdt.assert_index_equal(self.X["f1"].index, X["f1"].index)
         pdt.assert_index_equal(self.X["f2"].index, X["f2"].index)
+
+    def test_extraction_null_as_column_name(self):
+
+        df1 = pd.DataFrame(data={0: range(10), 1: np.repeat([0, 1], 5), 2: np.repeat([0, 1, 2, 3, 4], 2)})
+        X1 = extract_features(df1, column_id=1, column_sort=2)
+        self.assertEqual(len(X1), 2)
+
+        df2 = pd.DataFrame(data={1: range(10), 0: np.repeat([0, 1], 5), 2: np.repeat([0, 1, 2, 3, 4], 2)})
+        X2 = extract_features(df2, column_id=0, column_sort=2)
+        self.assertEqual(len(X2), 2)
+
+        df3 = pd.DataFrame(data={0: range(10), 2: np.repeat([0, 1], 5), 1: np.repeat([0, 1, 2, 3, 4], 2)})
+        X3 = extract_features(df3, column_id=2, column_sort=1)
+        self.assertEqual(len(X3), 2)
