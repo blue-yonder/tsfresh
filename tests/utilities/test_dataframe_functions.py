@@ -7,7 +7,7 @@ from unittest import TestCase
 import pandas as pd
 from tsfresh.utilities import dataframe_functions
 import numpy as np
-
+import six
 
 class NormalizeTestCase(TestCase):
 
@@ -91,7 +91,7 @@ class NormalizeTestCase(TestCase):
         self.assertEqual(column_id, "id")
         self.assertEqual(column_value, "value")
         self.assertIn("a", result_dict)
-        self.assertEqual(list(result_dict["a"].columns), ["id", "value"])
+        six.assertCountEqual(self, list(result_dict["a"].columns), ["id", "value"])
         self.assertEqual(list(result_dict["a"]["value"]), [3])
         self.assertEqual(list(result_dict["a"]["id"]), [0])
 
@@ -103,7 +103,7 @@ class NormalizeTestCase(TestCase):
         self.assertEqual(column_id, "id")
         self.assertEqual(column_value, "value")
         self.assertIn("feature", result_dict)
-        self.assertEqual(list(result_dict["feature"].columns), ["id", "value"])
+        six.assertCountEqual(self, list(result_dict["feature"].columns), ["id", "value"])
         self.assertEqual(list(result_dict["feature"]["value"]), [3])
         self.assertEqual(list(result_dict["feature"]["id"]), [0])
 
@@ -116,10 +116,10 @@ class NormalizeTestCase(TestCase):
         self.assertEqual(column_value, "_value")
         self.assertIn("a", result_dict)
         self.assertIn("b", result_dict)
-        self.assertEqual(list(result_dict["a"].columns), ["_value", "id"])
+        six.assertCountEqual(self, list(result_dict["a"].columns), ["_value", "id"])
         self.assertEqual(list(result_dict["a"]["_value"]), [3])
         self.assertEqual(list(result_dict["a"]["id"]), [0])
-        self.assertEqual(list(result_dict["b"].columns), ["_value", "id"])
+        six.assertCountEqual(self, list(result_dict["b"].columns), ["_value", "id"])
         self.assertEqual(list(result_dict["b"]["_value"]), [5])
         self.assertEqual(list(result_dict["b"]["id"]), [0])
 
