@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
+import os
 from multiprocessing import cpu_count
 from builtins import object
 
@@ -53,4 +54,4 @@ class FeatureSignificanceTestsSettings(object):
         self.result_dir = "logging"
 
         #: Number of processes to use during the p-value calculation
-        self.n_processes = cpu_count()
+        self.n_processes = int(os.getenv("NUMBER_OF_CPUS")) or cpu_count()
