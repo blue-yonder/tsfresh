@@ -12,12 +12,15 @@ which to cut off (solely based on the p-values).
 
 from __future__ import absolute_import, division, print_function
 
+from functools import partial
+
 from builtins import zip
 from builtins import range
 import os
 import numpy as np
 import pandas as pd
 import logging
+from multiprocessing import Pool
 from tsfresh.feature_selection.significance_tests import target_binary_feature_real_test, \
     target_real_feature_binary_test, target_real_feature_real_test, target_binary_feature_binary_test
 
@@ -104,41 +107,17 @@ def check_fs_sig_bh(X, y, settings=None):
     df_features = df_features.set_index('Feature', drop=False)
 
     # Add relevant columns to df_features
+    df_features["rejected"] = np.nan
     df_features["type"] = np.nan
     df_features["p_value"] = np.nan
-    df_features["rejected"] = np.nan
 
-    # Process the features
-    for feature in df_features['Feature']:
+    # Calculate the feature significance in parallel
+    pool = Pool(settings.n_processes)
 
-        if len(pd.unique(X[feature].values)) == 1:
-
-            # Do not process constant features
-            df_features.loc[df_features.Feature == feature, "type"] = "const"
-            df_features.loc[df_features.Feature == feature, "rejected"] = False
-            _logger.warning("[test_feature_significance] Feature {} is constant".format(feature))
-
-        else:
-
-            if target_is_binary:
-                # Decide if the current feature is binary or not
-                if len(set(X[feature].values)) == 2:
-                    df_features.loc[df_features.Feature == feature, "type"] = "binary"
-                    p_value = target_binary_feature_binary_test(X[feature], y, settings)
-                else:
-                    df_features.loc[df_features.Feature == feature, "type"] = "real"
-                    p_value = target_binary_feature_real_test(X[feature], y, settings)
-            else:
-                # Decide if the current feature is binary or not
-                if len(set(X[feature].values)) == 2:
-                    df_features.loc[df_features.Feature == feature, "type"] = "binary"
-                    p_value = target_real_feature_binary_test(X[feature], y, settings)
-                else:
-                    df_features.loc[df_features.Feature == feature, "type"] = "real"
-                    p_value = target_real_feature_real_test(X[feature], y, settings)
-
-            # Add p_values to df_features
-            df_features.loc[df_features['Feature'] == feature, "p_value"] = p_value
+    # Helper function which wrapps the _calculate_p_value with many arguments already set
+    f = partial(_calculate_p_value, X=X, y=y, settings=settings, target_is_binary=target_is_binary)
+    p_values_of_features = pd.DataFrame(pool.map(f, df_features['Feature']))
+    df_features.update(p_values_of_features)
 
     # Perform the real feature rejection
     if "const" in set(df_features.type):
@@ -146,6 +125,9 @@ def check_fs_sig_bh(X, y, settings=None):
         df_features = pd.concat([df_features_bh, df_features.loc[df_features.type == "const"]])
     else:
         df_features = benjamini_hochberg_test(df_features, settings)
+        
+    # It is very important that we have a boolean "rejected" column, so we do a cast here to be sure
+    df_features["rejected"] = df_features["rejected"].astype("bool")
 
     if settings.write_selection_report:
         # Write results of BH - Test to file
@@ -159,6 +141,56 @@ def check_fs_sig_bh(X, y, settings=None):
             df_features.to_csv(index=False, path_or_buf=file_out, sep=';', float_format='%.4f')
 
     return df_features
+
+
+def _calculate_p_value(feature, X, y, settings, target_is_binary):
+    """
+    Internal helper function to calculate the p-value of a given feature in df_features using one of the dedicated
+    functions target_*_feature_*_test. It uses the data in X and the target in y.
+
+    :param X: the data with a column named after feature.
+    :type X: pandas.DataFrame
+
+    :param y: the binary target vector
+    :type y: pandas.Series
+
+    :param feature: The feature for which the p-value should be calculated.
+    :type feature: basestring
+
+    :param settings: The settings object to control how the significance is calculated.
+    :type settings: FeatureSignificanceTestsSettings
+
+    :param target_is_binary: Whether the target is binary or not
+    :type target_is_binary: bool
+
+    :return: the p-value of the feature significance test and the type of the tested feature as a Series.
+             Lower p-values indicate a higher feature significance.
+    :rtype: pd.Series
+    """
+    # Do not process constant features
+    if len(pd.unique(X[feature].values)) == 1:
+        _logger.warning("[test_feature_significance] Feature {} is constant".format(feature))
+        return pd.Series({"type": "const", "rejected": False}, name=feature)
+
+    else:
+        if target_is_binary:
+            # Decide if the current feature is binary or not
+            if len(set(X[feature].values)) == 2:
+                type = "binary"
+                p_value = target_binary_feature_binary_test(X[feature], y, settings)
+            else:
+                type = "real"
+                p_value = target_binary_feature_real_test(X[feature], y, settings)
+        else:
+            # Decide if the current feature is binary or not
+            if len(set(X[feature].values)) == 2:
+                type = "binary"
+                p_value = target_real_feature_binary_test(X[feature], y, settings)
+            else:
+                type = "real"
+                p_value = target_real_feature_real_test(X[feature], y, settings)
+
+        return pd.Series({"p_value": p_value, "type": type}, name=feature)
 
 
 def benjamini_hochberg_test(df_pvalues, settings):
