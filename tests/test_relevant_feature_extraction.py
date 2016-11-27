@@ -7,10 +7,12 @@ from tests.fixtures import DataTestCase
 from tsfresh import extract_features, select_features, extract_relevant_features
 from tsfresh.feature_extraction.settings import FeatureExtractionSettings
 from tsfresh.utilities.dataframe_functions import impute
+from unittest import TestCase
+import numpy as np
+import pandas.util.testing as pdt
+import pandas as pd
 
-
-# todo: add more unit tests
-class RelevantFeatureExtractionTestCase(DataTestCase):
+class RelevantFeatureExtractionDataTestCase(DataTestCase):
     """
     Test case for the relevant_feature_extraction function
     """
@@ -38,3 +40,32 @@ class RelevantFeatureExtractionTestCase(DataTestCase):
                                                                                        selected_features.columns))
         self.assertTrue((relevant_features.values == selected_features.values).all().all(),
                         "Should calculate the same feature values")
+
+class RelevantFeatureExtractionTestCase(TestCase):
+
+    def setUp(self):
+        np.random.seed(42)
+
+        y = pd.Series(np.random.binomial(1, 0.5, 10), index=range(10))
+        df = pd.DataFrame(index=range(100))
+
+        df["a"] = np.random.normal(0, 1, 100)
+        df["b"] = np.random.normal(0, 1, 100)
+        df["id"] = np.repeat(range(10), 10)
+
+        X = pd.DataFrame(index=range(10))
+        X["f1"] = np.random.normal(0, 1, 10)
+        X["f2"] = np.random.normal(0, 1, 10)
+
+        self.df = df
+        self.X = X
+        self.y = y
+
+    def test_extracted_features_contain_X_features(self):
+        X = extract_relevant_features(self.df, self.y, self.X, column_id='id', feature_extraction_settings=None)
+        self.assertIn("f1", X.columns)
+        self.assertIn("f2", X.columns)
+        pdt.assert_series_equal(self.X["f1"], X["f1"])
+        pdt.assert_series_equal(self.X["f2"], X["f2"])
+        pdt.assert_index_equal(self.X["f1"].index, X["f1"].index)
+        pdt.assert_index_equal(self.X["f2"].index, X["f2"].index)
