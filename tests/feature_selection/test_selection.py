@@ -20,7 +20,7 @@ class SelectionTestCase(TestCase):
         self.assertRaises(ValueError, select_features, X=X, y=y)
 
     def test_assert_different_index(self):
-        X = pd.DataFrame(range(3), index=[1, 2, 3])
+        X = pd.DataFrame(list(range(3)), index=[1, 2, 3])
         y = pd.Series(range(3), index=[1, 3, 4])
         self.assertRaises(ValueError, select_features, X=X, y=y)
 
