@@ -286,22 +286,6 @@ def augmented_dickey_fuller(x):
 
 @set_property("fctype", "aggregate")
 @not_apply_to_raw_numbers
-def augmented_dickey_fuller_p_val(x):
-    """
-    The Augmented Dickey-Fuller is a hypothesis test which checks whether a unit root is present in a time
-    series sample. This feature calculator returns the value of the corresponding p-value.
-
-    :param x: the time series to calculate the feature of
-    :type x: pandas.Series
-    :return: the value of this feature
-    :return type: float
-    """
-    # convert x into tuple to make it hashable for cache
-    return np.array(_augmented_dickey_fuller(tuple(x))[1])
-
-
-@set_property("fctype", "aggregate")
-@not_apply_to_raw_numbers
 def abs_energy(x):
     """
     Returns the absolute energy of the time series which is the sum over the squared values
