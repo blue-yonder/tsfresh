@@ -4,6 +4,12 @@ Changelog
 
 tsfresh uses `Semantic Versioning <http://semver.org/>`_
 
+Version 0.3.0
+=============
+
+- fixed with parsing of "NUMBER_OF_CPUS" environment variable
+- now features are calculated in parallel for each type
+
 Version 0.2.0
 =============
 
