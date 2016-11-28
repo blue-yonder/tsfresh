@@ -87,6 +87,12 @@ If you have some questions or feedback you can find the developers in
 the `gitter
 chatroom. <https://gitter.im/tsfresh/Lobby?utm_source=share-link&utm_medium=link&utm_campaign=share-link>`__
 
+We appreciate any contributions, if you are interested in helping us to
+make *TSFRESH* the biggest archive of feature extraction methods in
+python, just head over to our
+`How-To-Contribute <http://tsfresh.readthedocs.io/en/latest/text/how_to_contribute.html>`__
+instructions.
+
 .. |Documentation Status| image:: https://readthedocs.org/projects/tsfresh/badge/?version=latest
    :target: http://tsfresh.readthedocs.io/en/latest/?badge=latest
 .. |Build Status| image:: https://travis-ci.org/blue-yonder/tsfresh.svg?branch=master
