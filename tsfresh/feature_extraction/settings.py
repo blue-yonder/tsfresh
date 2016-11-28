@@ -100,7 +100,8 @@ class FeatureExtractionSettings(object):
             })
 
         # default None means one procesqs per cpu
-        self.n_processes = int(int(os.getenv("NUMBER_OF_CPUS") or cpu_count())/2)
+        n_cores = int(os.getenv("NUMBER_OF_CPUS") or cpu_count())
+        self.n_processes = max(1, n_cores//2)
 
     def set_default_parameters(self, kind):
         """
