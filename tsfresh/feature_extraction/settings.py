@@ -7,19 +7,18 @@ For the naming of the features, see :ref:`feature-naming-label`.
 
 """
 
-from __future__ import absolute_import
+from __future__ import absolute_import, division
 from builtins import zip
 from builtins import str
 from builtins import range
 from past.builtins import basestring
 from builtins import object
 import ast
+import os
 from functools import partial
-
 import numpy as np
-
 from tsfresh.feature_extraction import feature_calculators
-from tsfresh.utilities.dataframe_functions import impute_dataframe_zero
+from multiprocessing import cpu_count
 
 
 # todo: this classes' docstrings are not completely up-to-date
@@ -99,6 +98,9 @@ class FeatureExtractionSettings(object):
                 "range_count": [{"min": -1, "max": 1}],
                 "approximate_entropy": [{"m": 2, "r": r} for r in [.1, .3, .5, .7, .9]]
             })
+
+        # default None means one procesqs per cpu
+        self.n_processes = int((os.getenv("NUMBER_OF_CPUS") or cpu_count()) /2) + 1
 
     def set_default_parameters(self, kind):
         """
