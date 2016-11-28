@@ -4,6 +4,18 @@ Changelog
 
 tsfresh uses `Semantic Versioning <http://semver.org/>`_
 
+Version 0.2.0
+=============
+
+- now p-values are calculated in parallel
+- fixed bugs for constant features
+- allow time series columns to be named 0
+- moved uci repository datasets to github mirror
+- added feature caculator sampleentropy
+- added minimalfeaturesignificance extraction settings
+- fixed bug in calculation of fourier coefficients
+
+
 Version 0.1.2
 =============
 
