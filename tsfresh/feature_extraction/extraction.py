@@ -103,6 +103,9 @@ def extract_features(timeseries_container, feature_extraction_settings=None,
         profiling.end_profiling(profiler, filename=feature_extraction_settings.PROFILING_FILENAME,
                                 sorting=feature_extraction_settings.PROFILING_SORTING)
 
+    pool.close()
+    pool.terminate()
+
     return result
 
 
