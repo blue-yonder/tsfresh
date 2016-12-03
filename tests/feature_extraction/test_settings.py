@@ -7,7 +7,7 @@ from __future__ import absolute_import, division
 from unittest import TestCase
 import numpy as np
 import pandas as pd
-from tsfresh.feature_extraction.extraction import extract_features
+from tsfresh.feature_extraction.extraction import extract_features, _extract_features_for_one_time_series
 from tsfresh.feature_extraction.settings import FeatureExtractionSettings, MinimalFeatureExtractionSettings
 import six
 from tsfresh.feature_extraction import feature_calculators
@@ -91,4 +91,16 @@ class TestMinimalSettingsObject(TestCase):
         six.assertCountEqual(self, extracted_features.columns, ["0__median", "0__standard_deviation", "0__sum_values", "0__maximum", "0__variance",
                                                       "0__minimum", "0__mean", "0__length"])
 
+        six.assertCountEqual(self, extracted_features.index, [0, 1])
+
+
+    def test_extraction_for_one_time_series_runs_through(self):
+
+        mfs = MinimalFeatureExtractionSettings()
+        data = pd.DataFrame([[0, 0, 0, 0], [1, 0, 0, 0]], columns=["id", "time", "kind", "value"])
+        extracted_features = _extract_features_for_one_time_series([0, data], settings=mfs,
+                                                                   column_value="value", column_id="id")
+        six.assertCountEqual(self, extracted_features.columns,
+                             ["0__median", "0__standard_deviation", "0__sum_values", "0__maximum", "0__variance",
+                              "0__minimum", "0__mean", "0__length"])
         six.assertCountEqual(self, extracted_features.index, [0, 1])

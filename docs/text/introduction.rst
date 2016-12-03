@@ -49,7 +49,7 @@ Currently, tsfresh is not suitable
     * to train models on the features (we do not want to reinvent the wheel, check out the python package `scikit-learn <http://scikit-learn.org/stable/>`_ for example)
 
 However, some of these use cases could be implemented, if you have an application in mind, open
-an issue at `<https://github.com/blue-yonder>`_, or feel free to contact us.
+an issue at `<https://github.com/blue-yonder/tsfresh/issues>`_, or feel free to contact us.
 
 What else is out there?
 -----------------------

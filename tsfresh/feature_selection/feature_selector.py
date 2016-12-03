@@ -119,6 +119,9 @@ def check_fs_sig_bh(X, y, settings=None):
     p_values_of_features = pd.DataFrame(pool.map(f, df_features['Feature']))
     df_features.update(p_values_of_features)
 
+    pool.close()
+    pool.terminate()
+
     # Perform the real feature rejection
     if "const" in set(df_features.type):
         df_features_bh = benjamini_hochberg_test(df_features.loc[~(df_features.type == "const")], settings)
@@ -139,7 +142,6 @@ def check_fs_sig_bh(X, y, settings=None):
                             "FDR-Level={0};Hypothesis independent={1}\n"
                             ).format(settings.fdr_level, settings.hypotheses_independent))
             df_features.to_csv(index=False, path_or_buf=file_out, sep=';', float_format='%.4f')
-
     return df_features
 
 
