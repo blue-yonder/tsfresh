@@ -56,3 +56,6 @@ class FeatureSignificanceTestsSettings(object):
 
         #: Number of processes to use during the p-value calculation
         self.n_processes = int(os.getenv("NUMBER_OF_CPUS") or cpu_count())
+
+        # Size of the chunks submitted to the worker processes
+        self.chunksize = None
