@@ -104,7 +104,7 @@ def extract_features(timeseries_container, feature_extraction_settings=None,
                                 sorting=feature_extraction_settings.PROFILING_SORTING)
 
     pool.close()
-    pool.terminate()
+    pool.join()
 
     return result
 

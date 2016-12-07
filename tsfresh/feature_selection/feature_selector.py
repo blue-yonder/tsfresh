@@ -120,7 +120,7 @@ def check_fs_sig_bh(X, y, settings=None):
     df_features.update(p_values_of_features)
 
     pool.close()
-    pool.terminate()
+    pool.join()
 
     # Perform the real feature rejection
     if "const" in set(df_features.type):
