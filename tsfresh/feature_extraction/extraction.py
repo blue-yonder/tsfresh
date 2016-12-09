@@ -146,7 +146,8 @@ def _extract_features_parallel_per_kind(kind_to_df_map, settings, column_id, col
                                                            settings=settings)
     pool = Pool(settings.n_processes)
 
-    extracted_features = pool.map(partial_extract_features_for_one_time_series, kind_to_df_map.items())
+    extracted_features = pool.map(partial_extract_features_for_one_time_series, kind_to_df_map.items(),
+                                  chunksize=settings.chunksize)
 
     pool.close()
 
@@ -193,7 +194,8 @@ def _extract_features_parallel_per_sample(kind_to_df_map, settings, column_id, c
         results_fifo.put(
             pool.map_async(
                 partial_extract_features_for_one_time_series,
-                [(kind, group) for _, group in gb]
+                [(kind, group) for _, group in gb],
+                chunksize=settings.chunksize
             )
         )
 

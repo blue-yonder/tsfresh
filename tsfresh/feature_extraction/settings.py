@@ -103,6 +103,9 @@ class FeatureExtractionSettings(object):
         n_cores = int(os.getenv("NUMBER_OF_CPUS") or cpu_count())
         self.n_processes = max(1, n_cores//2)
 
+        # Size of the chunks submitted to the worker processes
+        self.chunksize = None
+
     def set_default_parameters(self, kind):
         """
         Setup the feature calculations for kind as defined in `self.name_to_param`
