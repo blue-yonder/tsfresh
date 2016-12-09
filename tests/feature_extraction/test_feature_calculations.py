@@ -333,6 +333,25 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqual(res["TEST__index_mass_quantile__q_0.6"], 0.375, places=1)
         self.assertAlmostEqual(res["TEST__index_mass_quantile__q_0.9"], 0.75, places=1)
 
+        x = [0, 0, 0]
+        c = "TEST"
+        param = [{"q": 0.5}]
+        expected_index = ["TEST__index_mass_quantile__q_0.5"]
+        res = index_mass_quantile(x, c, param)
+        self.assertIsInstance(res, pd.Series)
+        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertTrue(np.isnan(res["TEST__index_mass_quantile__q_0.5"]))
+
+        x = []
+        c = "TEST"
+        param = [{"q": 0.5}]
+        expected_index = ["TEST__index_mass_quantile__q_0.5"]
+        res = index_mass_quantile(x, c, param)
+        self.assertIsInstance(res, pd.Series)
+        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertTrue(np.isnan(res["TEST__index_mass_quantile__q_0.5"]))
+
+
     def test_number_cwt_peaks(self):
         pass
         # todo: add unit test
