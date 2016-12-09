@@ -10,7 +10,7 @@ from __future__ import absolute_import, division
 from builtins import str
 from multiprocessing import Pool
 from functools import partial
-from Queue import Queue
+from six.moves.queue import Queue
 import pandas as pd
 import numpy as np
 
@@ -189,7 +189,7 @@ def _extract_features_parallel_per_sample(kind_to_df_map, settings, column_id, c
 
     # Submit map jobs per kind per sample
     results_fifo = Queue()
-    for kind, df_kind in kind_to_df_map.iteritems():
+    for kind, df_kind in kind_to_df_map.items():
         gb = df_kind.groupby(column_id)
         results_fifo.put(
             pool.map_async(
