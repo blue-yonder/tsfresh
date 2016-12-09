@@ -759,6 +759,9 @@ def index_mass_quantile(x, c, param):
     :return: the different feature values
     :return type: pandas.Series
     """
+    if sum(x) == 0 or len(x) == 0:
+        return np.NaN
+
     mass_centralized = np.cumsum(x) * 1.0 / sum(x)
     res = pd.Series()
     for config in param:
