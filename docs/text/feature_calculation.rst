@@ -1,7 +1,22 @@
 .. _feature-naming-label:
 
+Feature Calculation
+===================
+
+
+Overview on extracted feature
+'''''''''''''''''''''''''''''
+
+tsfresh already calculates a comprehensive number of features. If you are interested which features are calculated just
+go to our
+
+:mod:`tsfresh.feature_extraction.feature_calculators`
+
+module. You will find the documentation of every calculated feature there.
+
+
 Feature naming
-==============
+''''''''''''''
 
 tsfresh enforces a strict naming of the created features, which you have to follow whenever you create new feature
 calculators.
@@ -19,8 +34,8 @@ necessary conditions, the features will be named in the following format
 
 (Here we assumed that {feature_name} has k parameters).
 
-Examples
-'''''''''
+Examples for feature naming
+'''''''''''''''''''''''''''
 
 So for example the following feature name
 
