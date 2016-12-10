@@ -23,9 +23,9 @@ The following chapters will explain the tsfresh package in detail:
    Module Reference <api/modules>
    Data Formats <text/data_formats>
    scikit-learn Transformers <text/sklearn_transformers>
+   Feature Calculation <text/feature_calculation>
    Feature Filtering <text/feature_filtering>
    How to write custom Feature Calculators <text/how_to_add_custom_feature>
-   Feature Naming <text/feature_naming>
    FAQ <text/faq>
    Authors <authors>
    License <license>
