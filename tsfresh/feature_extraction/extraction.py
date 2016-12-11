@@ -171,6 +171,10 @@ def _extract_features_parallel_per_sample(kind_to_df_map, settings, column_id, c
     """
     Parallelize the feature extraction per kind and per sample.
 
+    As the splitting of the dataframes per kind along column_id is quite costly, we settled for an async map in this
+    function. The result objects are temporarily stored in a fifo queue from which they can be retrieved in order
+    of submission.
+
     :param kind_to_df_map: The time series to compute the features for in our internal format
     :type kind_to_df_map: dict of pandas.DataFrame
 
