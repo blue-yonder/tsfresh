@@ -11,11 +11,16 @@ from builtins import str
 from multiprocessing import Pool
 from functools import partial
 from six.moves.queue import Queue
+import logging
 import pandas as pd
 import numpy as np
 
 from tsfresh.utilities import dataframe_functions, profiling
 from tsfresh.feature_extraction.settings import FeatureExtractionSettings
+
+
+_logger = logging.getLogger(__name__)
+
 
 def extract_features(timeseries_container, feature_extraction_settings=None,
                      column_id=None, column_sort=None, column_kind=None, column_value=None,
@@ -93,6 +98,7 @@ def extract_features(timeseries_container, feature_extraction_settings=None,
         parallelization = 'per_sample'
     else:
         parallelization = 'per_kind'
+    _logger.info('Parallelizing feature calculation {}'.format(parallelization))
 
     # If requested, do profiling (advanced feature)
     if feature_extraction_settings.PROFILING:
