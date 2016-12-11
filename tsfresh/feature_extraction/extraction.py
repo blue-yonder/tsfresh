@@ -202,11 +202,11 @@ def _extract_features_parallel_per_sample(kind_to_df_map, settings, column_id, c
     # Submit map jobs per kind per sample
     results_fifo = Queue()
     for kind, df_kind in kind_to_df_map.items():
-        gb = df_kind.groupby(column_id)
+        df_grouped_by_id = df_kind.groupby(column_id)
         results_fifo.put(
             pool.map_async(
                 partial_extract_features_for_one_time_series,
-                [(kind, group) for _, group in gb],
+                [(kind, df_group) for _, df_group in df_grouped_by_id],
                 chunksize=settings.chunksize
             )
         )
