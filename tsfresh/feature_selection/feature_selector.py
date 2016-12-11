@@ -116,7 +116,7 @@ def check_fs_sig_bh(X, y, settings=None):
 
     # Helper function which wrapps the _calculate_p_value with many arguments already set
     f = partial(_calculate_p_value, y=y, settings=settings, target_is_binary=target_is_binary)
-    results = pool.map(f, [X[column] for column in set(X.columns)], chunksize=settings.chunksize)
+    results = pool.map(f, [X[feature] for feature in df_features['Feature']], chunksize=settings.chunksize)
     p_values_of_features = pd.DataFrame(results)
     df_features.update(p_values_of_features)
 
