@@ -204,7 +204,7 @@ def _extract_features_parallel_per_sample(kind_to_df_map, settings, column_id, c
 
     pool.close()
 
-    # Wait for the jobs to complete and conatenate the partial results
+    # Wait for the jobs to complete and concatenate the partial results
     dfs_per_kind = [df_with_ids]
     while not results_fifo.empty():
         map_result = results_fifo.get()
