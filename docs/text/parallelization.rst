@@ -8,6 +8,9 @@ Out of the box both tasks are parallelized by tsfresh. However, the overhead int
 parallelization should not be underestimated. Here we discuss the different settings to control
 the parallelization. To achieve best results for your use-case you should experiment with the parameters.
 
+Please let us know about your results tuning the below mentioned parameters! It will help improve this document as
+well as the default settings.
+
 Parallelization of Feature Selection
 ------------------------------------
 
