@@ -234,7 +234,7 @@ def normalize_input_to_internal_representation(df_or_dict, column_id, column_sor
             kind_to_df_map = {key: group.copy().drop(column_kind, axis=1) for key, group in df_or_dict.groupby(column_kind)}
         else:
             if column_value is not None:
-                kind_to_df_map = {"feature": df_or_dict.copy()}
+                kind_to_df_map = {column_value: df_or_dict.copy()}
             else:
                 id_and_sort_column = [_f for _f in [column_id, column_sort] if _f is not None]
                 kind_to_df_map = {key: df_or_dict[[key] + id_and_sort_column].copy().rename(columns={key: "_value"})
