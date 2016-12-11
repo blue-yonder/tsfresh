@@ -37,8 +37,8 @@ Additionally there are two options for how the parallelization is done:
 To enforce an option, either pass ``'per_kind'`` or ``'per_sample'`` as the ``parallelization=`` parameter of the
 :func:`tsfresh.extract_features` function. By default the option is chosen with a rule of thumb:
 
-If the number of different time series (kinds) is less than half the available worker processes (``n_processes``)
-then ``'per_sample'`` is chosen, otherwise ``'per_kind'``.
+If the number of different time series (kinds) is less than half of the number of available worker
+processes (``n_processes``) then ``'per_sample'`` is chosen, otherwise ``'per_kind'``.
 
 Generally, there is no perfect setting for all cases. On the one hand more parallelization can speed up the calculation
 as the work is better distributed among the computers resources. On the other hand parallelization
