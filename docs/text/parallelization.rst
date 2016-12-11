@@ -31,13 +31,13 @@ for the feature selection.
 
 Additionally there are two options for how the parallelization is done:
 
-1.  ``'per_kind'`` parallelizes the feature calculation per kind of timeseries.
+1.  ``'per_kind'`` parallelizes the feature calculation per kind of time series.
 2.  ``'per_sample'`` parallelizes per kind and per sample.
 
 To enforce an option, either pass ``'per_kind'`` or ``'per_sample'`` as the ``parallelization=`` parameter of the
 :func:`tsfresh.extract_features` function. By default the option is chosen with a rule of thumb:
 
-If the number of different timeseries (kinds) is less than half the available worker processes (``n_processes``)
+If the number of different time series (kinds) is less than half the available worker processes (``n_processes``)
 then ``'per_sample'`` is chosen, otherwise ``'per_kind'``.
 
 Generally, there is no perfect setting for all cases. On the one hand more parallelization can speed up the calculation
@@ -50,7 +50,7 @@ Implementing the parallelization we observed the following points:
 -   For small data sets the difference between parallelization per kind or per sample should be negligible.
 -   For data sets with one kind of time series parallelization per sample results in a decent speed up that grows
     with the number of samples.
--   The more kinds of timeseries the data set contains, the more samples are necessary to make parallelization
+-   The more kinds of time series the data set contains, the more samples are necessary to make parallelization
     per sample worthwhile.
 -   If the data set contains more kinds of time series than available cpu cores, parallelization per kind is
     the way to go.
