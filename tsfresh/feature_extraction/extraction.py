@@ -124,9 +124,8 @@ def _extract_features_parallel_per_kind(kind_to_df_map, settings, column_id, col
     """
     Parallelize the feature extraction per kind.
 
-    :param timeseries_container: The pandas.DataFrame with the time series to compute the features for, or a
-               dictionary of pandas.DataFrames.
-    :type timeseries_container: pandas.DataFrame or dict
+    :param kind_to_df_map: The time series to compute the features for in our internal format
+    :type kind_to_df_map: dict of pandas.DataFrame
 
     :param column_id: The name of the id column to group by.
     :type column_id: str
