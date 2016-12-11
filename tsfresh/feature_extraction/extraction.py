@@ -94,10 +94,10 @@ def extract_features(timeseries_container, feature_extraction_settings=None,
             feature_extraction_settings.set_default_parameters(key)
 
     # Choose the parallelization according to a rule-of-thumb
-    if parallelization is None and (feature_extraction_settings.n_processes / 2) > len(kind_to_df_map):
-        parallelization = 'per_sample'
-    else:
-        parallelization = 'per_kind'
+    if parallelization is None:
+        parallelization = 'per_sample' if (feature_extraction_settings.n_processes / 2) > len(kind_to_df_map) \
+            else 'per_kind'
+
     _logger.info('Parallelizing feature calculation {}'.format(parallelization))
 
     # If requested, do profiling (advanced feature)
