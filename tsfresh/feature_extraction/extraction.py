@@ -67,7 +67,10 @@ def extract_features(timeseries_container, feature_extraction_settings=None,
     :param column_value: The name for the column keeping the value itself.
     :type column_value: str
 
-    :param parallelization: Either 'per_sample' or 'per_kind'
+    :param parallelization: Either ``'per_sample'`` or ``'per_kind'``   , see
+                            :func:`~tsfresh.feature_extraction.extraction._extract_features_parallel_per_sample`,
+                            :func:`~tsfresh.feature_extraction.extraction._extract_features_parallel_per_kind` and
+                            :ref:`parallelization-label` for details.
     :type parallelization: str
 
     :return: The (maybe imputed) DataFrame containing extracted features.
