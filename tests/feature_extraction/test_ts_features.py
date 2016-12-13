@@ -19,10 +19,11 @@ class FeatureExtractorTestCase(DataTestCase):
         self.settings.PROFILING = False
         self.settings.n_processes = 1
 
-    def test_calculate_ts_features(self):
+    def test_calculate_ts_features_per_kind(self):
         # todo: implement more methods and test more aspects
         df = self.create_test_data_sample()
-        extracted_features = extract_features(df, self.settings, "id", "sort", "kind", "val")
+        extracted_features = extract_features(df, self.settings, "id", "sort", "kind", "val",
+                                              parallelization='per_kind')
 
         self.assertIsInstance(extracted_features, pd.DataFrame)
         self.assertTrue(np.all(extracted_features.a__maximum == np.array([71, 77])))
@@ -35,7 +36,33 @@ class FeatureExtractorTestCase(DataTestCase):
         self.assertTrue(np.all(extracted_features.b__median == np.array([39.5, 28.0])))
 
         df_sts = self.create_one_valued_time_series()
-        extracted_features_sts = extract_features(df_sts, self.settings, "id", "sort", "kind", "val")
+        extracted_features_sts = extract_features(df_sts, self.settings, "id", "sort", "kind", "val",
+                                                  parallelization='per_kind')
+
+        self.assertIsInstance(extracted_features_sts, pd.DataFrame)
+        self.assertTrue(np.all(extracted_features_sts.a__maximum == np.array([1.0, 6.0])))
+        self.assertTrue(np.all(extracted_features_sts.a__sum_values == np.array([1.0, 11.0])))
+        self.assertTrue(np.all(extracted_features_sts.a__count_above_mean == np.array([0, 1])))
+
+    def test_calculate_ts_features_per_sample(self):
+        # todo: implement more methods and test more aspects
+        df = self.create_test_data_sample()
+        extracted_features = extract_features(df, self.settings, "id", "sort", "kind", "val",
+                                              parallelization='per_sample')
+
+        self.assertIsInstance(extracted_features, pd.DataFrame)
+        self.assertTrue(np.all(extracted_features.a__maximum == np.array([71, 77])))
+        self.assertTrue(np.all(extracted_features.a__sum_values == np.array([691, 1017])))
+        self.assertTrue(np.all(extracted_features.a__abs_energy == np.array([32211, 63167])))
+        self.assertTrue(np.all(extracted_features.b__sum_values == np.array([757, 695])))
+        self.assertTrue(np.all(extracted_features.b__minimum == np.array([3, 1])))
+        self.assertTrue(np.all(extracted_features.b__abs_energy == np.array([36619, 35483])))
+        self.assertTrue(np.all(extracted_features.b__mean == np.array([37.85, 34.75])))
+        self.assertTrue(np.all(extracted_features.b__median == np.array([39.5, 28.0])))
+
+        df_sts = self.create_one_valued_time_series()
+        extracted_features_sts = extract_features(df_sts, self.settings, "id", "sort", "kind", "val",
+                                                  parallelization='per_sample')
 
         self.assertIsInstance(extracted_features_sts, pd.DataFrame)
         self.assertTrue(np.all(extracted_features_sts.a__maximum == np.array([1.0, 6.0])))
