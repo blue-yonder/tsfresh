@@ -11,7 +11,7 @@ from tsfresh.feature_extraction.settings import FeatureExtractionSettings
 import six
 import os
 
-class FeatureExtractorTestCase(DataTestCase):
+class ExtractionTestCase(DataTestCase):
     """The unit tests in this module make sure if the time series features are created properly"""
 
     def setUp(self):
@@ -19,7 +19,7 @@ class FeatureExtractorTestCase(DataTestCase):
         self.settings.PROFILING = False
         self.settings.n_processes = 1
 
-    def test_calculate_ts_features_per_kind(self):
+    def test_extract_features_per_kind(self):
         # todo: implement more methods and test more aspects
         df = self.create_test_data_sample()
         extracted_features = extract_features(df, self.settings, "id", "sort", "kind", "val",
@@ -44,7 +44,7 @@ class FeatureExtractorTestCase(DataTestCase):
         self.assertTrue(np.all(extracted_features_sts.a__sum_values == np.array([1.0, 11.0])))
         self.assertTrue(np.all(extracted_features_sts.a__count_above_mean == np.array([0, 1])))
 
-    def test_calculate_ts_features_per_sample(self):
+    def test_extract_features_per_sample(self):
         # todo: implement more methods and test more aspects
         df = self.create_test_data_sample()
         extracted_features = extract_features(df, self.settings, "id", "sort", "kind", "val",
@@ -69,7 +69,7 @@ class FeatureExtractorTestCase(DataTestCase):
         self.assertTrue(np.all(extracted_features_sts.a__sum_values == np.array([1.0, 11.0])))
         self.assertTrue(np.all(extracted_features_sts.a__count_above_mean == np.array([0, 1])))
 
-    def test_calculate_ts_features_for_one_time_series(self):
+    def test_extract_features_for_one_time_series(self):
         # todo: implement more methods and test more aspects
         df = self.create_test_data_sample()
         extracted_features = _extract_features_for_one_time_series(["b", df.loc[df.kind == "b", ["val", "id"]]],
@@ -93,7 +93,7 @@ class FeatureExtractorTestCase(DataTestCase):
         self.assertTrue(np.all(extracted_features_sts.a__sum_values == np.array([1.0, 11.0])))
         self.assertTrue(np.all(extracted_features_sts.a__count_above_mean == np.array([0, 1])))
 
-    def test_calculate_ts_features_after_randomisation(self):
+    def test_extract_features_after_randomisation(self):
         df = self.create_test_data_sample()
         df_random = df.copy().sample(frac=1)
 
@@ -132,7 +132,7 @@ class FeatureExtractorTestCase(DataTestCase):
         self.assertTrue(os.path.isfile(fes.PROFILING_FILENAME))
         os.remove(fes.PROFILING_FILENAME)
 
-    def test_extracting_without_settings(self):
+    def test_extract_features_without_settings(self):
         df = pd.DataFrame(data={"id": np.repeat([1, 2], 10),
                                 "value1": np.random.normal(0, 1, 20),
                                 "value2": np.random.normal(0, 1, 20)})
@@ -141,7 +141,7 @@ class FeatureExtractorTestCase(DataTestCase):
         self.assertIn("value2__maximum", list(X.columns))
 
 
-class ParallelFeatureExtractorTestCase(DataTestCase):
+class ParallelExtractionTestCase(DataTestCase):
     def setUp(self):
         self.settings = FeatureExtractionSettings()
         self.settings.PROFILING = False
@@ -155,7 +155,7 @@ class ParallelFeatureExtractorTestCase(DataTestCase):
                               "mean": None,
                               "median": None}
 
-    def test_calculate_ts_features(self):
+    def test_extract_features(self):
         # todo: implement more methods and test more aspects
         df = self.create_test_data_sample()
         extracted_features = extract_features(df, self.settings, "id", "sort", "kind", "val")
