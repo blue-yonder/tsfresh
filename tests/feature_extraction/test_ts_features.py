@@ -101,22 +101,6 @@ class FeatureExtractorTestCase(DataTestCase):
         extracted_features_from_random = extract_features(df_random, self.settings,
                                                           "id", "sort", "kind", "val").sort_index()
 
-
-        six.assertCountEqual(self, extracted_features.columns, extracted_features_from_random.columns)
-
-        for col in extracted_features:
-            self.assertIsNone(np.testing.assert_array_almost_equal(extracted_features[col],
-                                                                   extracted_features_from_random[col]))
-
-    def test_calculate_ts_features_after_randomisation(self):
-        df = self.create_test_data_sample()
-        df_random = df.copy().sample(frac=1)
-
-        extracted_features = extract_features(df, self.settings, "id", "sort", "kind", "val").sort_index()
-        extracted_features_from_random = extract_features(df_random, self.settings,
-                                                          "id", "sort", "kind", "val").sort_index()
-
-
         six.assertCountEqual(self, extracted_features.columns, extracted_features_from_random.columns)
 
         for col in extracted_features:
