@@ -21,7 +21,7 @@ class FeatureSignificanceTestsSettings(object):
     >>> settings = FeatureSignificanceTestsSettings()
     >>> settings.fdr_level = 0.1
     >>> from tsfresh.feature_selection import select_features
-    >>> select_features(X, y, feature_extraction_settings=settings)
+    >>> select_features(X, y, feature_selection_settings=settings)
 
     This selection process will return more features as the fdr level was raised.
 

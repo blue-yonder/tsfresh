@@ -102,10 +102,10 @@ class NormalizeTestCase(TestCase):
 
         self.assertEqual(column_id, "id")
         self.assertEqual(column_value, "value")
-        self.assertIn("feature", result_dict)
-        six.assertCountEqual(self, list(result_dict["feature"].columns), ["id", "value"])
-        self.assertEqual(list(result_dict["feature"]["value"]), [3])
-        self.assertEqual(list(result_dict["feature"]["id"]), [0])
+        self.assertIn("value", result_dict)
+        six.assertCountEqual(self, list(result_dict["value"].columns), ["id", "value"])
+        self.assertEqual(list(result_dict["value"]["value"]), [3])
+        self.assertEqual(list(result_dict["value"]["id"]), [0])
 
         # Let the function find the values
         test_df = pd.DataFrame([{"id": 0, "a": 3, "b": 5, "sort": 1}])

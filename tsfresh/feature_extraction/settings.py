@@ -71,6 +71,9 @@ class FeatureExtractionSettings(object):
         self.set_default = True
         self.name_to_param = {}
 
+        # Set to false to dismiss all warnings.
+        self.show_warnings = False
+
         if calculate_all_features is True:
             for name, func in feature_calculators.__dict__.items():
                 if callable(func):

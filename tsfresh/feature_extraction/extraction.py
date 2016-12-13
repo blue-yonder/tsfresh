@@ -7,6 +7,7 @@ This module contains the main function to interact with tsfresh: extract feature
 
 from __future__ import absolute_import, division
 
+import warnings
 from builtins import str
 from multiprocessing import Pool
 from functools import partial
@@ -280,29 +281,35 @@ def _extract_features_for_one_time_series(prefix_and_dataframe, column_id, colum
     column_prefix, dataframe = prefix_and_dataframe
     column_prefix = str(column_prefix)
 
-    if settings.set_default and column_prefix not in settings.kind_to_calculation_settings_mapping:
-        settings.set_default_parameters(column_prefix)
+    with warnings.catch_warnings():
+        if not settings.show_warnings:
+            warnings.simplefilter("ignore")
+        else:
+            warnings.simplefilter("default")
 
-    # Calculate the aggregation functions
-    column_name_to_aggregate_function = settings.get_aggregate_functions(column_prefix)
+        if settings.set_default and column_prefix not in settings.kind_to_calculation_settings_mapping:
+            settings.set_default_parameters(column_prefix)
 
-    if column_name_to_aggregate_function:
-        extracted_features = dataframe.groupby(column_id)[column_value].aggregate(column_name_to_aggregate_function)
-    else:
-        extracted_features = pd.DataFrame(index=dataframe[column_id].unique())
+        # Calculate the aggregation functions
+        column_name_to_aggregate_function = settings.get_aggregate_functions(column_prefix)
 
-    # Calculate the apply functions
-    apply_functions = settings.get_apply_functions(column_prefix)
+        if column_name_to_aggregate_function:
+            extracted_features = dataframe.groupby(column_id)[column_value].aggregate(column_name_to_aggregate_function)
+        else:
+            extracted_features = pd.DataFrame(index=dataframe[column_id].unique())
 
-    if apply_functions:
-        list_of_extracted_feature_dataframes = [extracted_features]
-        for apply_function, kwargs in apply_functions:
-            current_result = dataframe.groupby(column_id)[column_value].apply(apply_function, **kwargs).unstack()
-            if len(current_result) > 0:
-                list_of_extracted_feature_dataframes.append(current_result)
+        # Calculate the apply functions
+        apply_functions = settings.get_apply_functions(column_prefix)
 
-        if len(list_of_extracted_feature_dataframes) > 0:
-            extracted_features = pd.concat(list_of_extracted_feature_dataframes, axis=1,
-                                           join_axes=[extracted_features.index])
+        if apply_functions:
+            list_of_extracted_feature_dataframes = [extracted_features]
+            for apply_function, kwargs in apply_functions:
+                current_result = dataframe.groupby(column_id)[column_value].apply(apply_function, **kwargs).unstack()
+                if len(current_result) > 0:
+                    list_of_extracted_feature_dataframes.append(current_result)
 
-    return extracted_features
+            if len(list_of_extracted_feature_dataframes) > 0:
+                extracted_features = pd.concat(list_of_extracted_feature_dataframes, axis=1,
+                                               join_axes=[extracted_features.index])
+
+        return extracted_features
