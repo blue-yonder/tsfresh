@@ -93,13 +93,31 @@ class ExtractionTestCase(DataTestCase):
         self.assertTrue(np.all(extracted_features_sts.a__sum_values == np.array([1.0, 11.0])))
         self.assertTrue(np.all(extracted_features_sts.a__count_above_mean == np.array([0, 1])))
 
-    def test_extract_features_after_randomisation(self):
+    def test_extract_features_after_randomisation_per_kind(self):
         df = self.create_test_data_sample()
         df_random = df.copy().sample(frac=1)
 
-        extracted_features = extract_features(df, self.settings, "id", "sort", "kind", "val").sort_index()
+        extracted_features = extract_features(df, self.settings, "id", "sort", "kind", "val",
+                                              parallelization='per_kind').sort_index()
         extracted_features_from_random = extract_features(df_random, self.settings,
-                                                          "id", "sort", "kind", "val").sort_index()
+                                                          "id", "sort", "kind", "val",
+                                                          parallelization='per_kind').sort_index()
+
+        six.assertCountEqual(self, extracted_features.columns, extracted_features_from_random.columns)
+
+        for col in extracted_features:
+            self.assertIsNone(np.testing.assert_array_almost_equal(extracted_features[col],
+                                                                   extracted_features_from_random[col]))
+
+    def test_extract_features_after_randomisation_per_sample(self):
+        df = self.create_test_data_sample()
+        df_random = df.copy().sample(frac=1)
+
+        extracted_features = extract_features(df, self.settings, "id", "sort", "kind", "val",
+                                              parallelization='per_sample').sort_index()
+        extracted_features_from_random = extract_features(df_random, self.settings,
+                                                          "id", "sort", "kind", "val",
+                                                          parallelization='per_sample').sort_index()
 
         six.assertCountEqual(self, extracted_features.columns, extracted_features_from_random.columns)
 
