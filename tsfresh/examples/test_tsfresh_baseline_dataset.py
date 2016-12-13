@@ -32,14 +32,10 @@ def download_json_dataset():
     url = 'https://raw.githubusercontent.com/earthgecko/skyline/master/utils/data.json'
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
-    else:
-        dir_exists = True
     if not os.path.exists(data_file_dir):
         os.makedirs(data_file_dir)
-    else:
-        dir_exists = True
 
-    if os.path.exists(data_file_name):
+    if os.path.isfile(data_file_name):
         return str(data_file_name)
 
     with urlopen(url) as resp:
@@ -50,7 +46,7 @@ def download_json_dataset():
         with open(data_file_name, 'w') as fh:
             fh.write(json_data)
 
-    if os.path.exists(data_file_name):
+    if os.path.isfile(data_file_name):
         return str(data_file_name)
 
     return None

@@ -7,6 +7,7 @@ import csv
 import json
 import errno
 import tempfile
+from ast import literal_eval
 
 import unittest
 from mock import Mock, patch
@@ -26,17 +27,13 @@ baseline_ts_json_baseline = '%s/tsfresh-%s.py%s.%s.features.transposed.csv' % (
     baseline_dir, TSFRESH_BASELINE_VERSION, str(python_version),
     baseline_ts_json_file)
 t_fname_out_fail = '%s/tsfresh/examples/data/test_tsfresh_baseline_dataset/tsfresh-unknown-version.py%s.data.json.features.transposed.csv' % (tsfresh_dir, str(python_version))
-test_path = tempfile.mkdtemp()
-fname_in = '%s/%s' % (test_path, baseline_ts_json_file)
-tmp_csv = '%s.tmp.csv' % (fname_in)
-fname_out = '%s.features.csv' % fname_in
-t_fname_out = '%s.features.transposed.csv' % fname_in
+baseline_ts_json = '%s/tsfresh/examples/data/test_tsfresh_baseline_dataset/data.json' % tsfresh_dir
 
 
 class TestTsfreshBaseline(unittest.TestCase):
     """
     Test all the features and their calculated values with a 60 data point
-    sample of simple anomalous timeseries data set and compare that the feature
+    sample of a simple anomalous timeseries data set and compare that the feature
     names and calculated values match the baselines calcualated for the specific
     verison of tsfresh as defined by :mod:`tsfresh_feature_names.TSFRESH_FEATURES`
 
@@ -67,33 +64,13 @@ class TestTsfreshBaseline(unittest.TestCase):
     """
     def setUp(self):
         self.baseline_ts_json = download_json_dataset()
+        self.test_path = tempfile.mkdtemp()
+        self.fname_in = '%s/%s' % (self.test_path, baseline_ts_json_file)
+        tmp_csv = '%s.tmp.csv' % (self.fname_in)
+        fname_out = '%s.features.csv' % self.fname_in
+        t_fname_out = '%s.features.transposed.csv' % self.fname_in
 
-    def tearDown(self):
-        # Remove the directory after the test
-        try:
-            shutil.rmtree(test_path)
-        except:
-            pass
-
-    def test_tsfresh_baseline(self):
-        """
-        This test should generates a set of resources from a sample 60 data
-        point timeseries, extracts the features and saves a transposed csv of
-        feature_name,value that is used to compare against to baseline
-        transposed csv
-        """
-        baseline_ts_json = self.baseline_ts_json
-
-        test_path_created = False
-        if os.path.exists(test_path):
-            test_path_created = True
-        self.assertEqual(test_path_created, True)
-
-        json_data_exists = False
-        if os.path.isfile(baseline_ts_json):
-            json_data_exists = True
-
-        self.assertEqual(json_data_exists, True)
+        self.assertTrue(os.path.exists(baseline_ts_json))
 
         timeseries_json = None
         if os.path.isfile(baseline_ts_json):
@@ -105,7 +82,7 @@ class TestTsfreshBaseline(unittest.TestCase):
         if python_version == 3:
             timeseries_str = str(timeseries_json).replace('{\'results\': ', '').replace('}', '')
 
-        full_timeseries = eval(timeseries_str)
+        full_timeseries = literal_eval(timeseries_str)
         timeseries = full_timeseries[:60]
         self.assertEqual(int(timeseries[0][0]), 1369677886)
         self.assertEqual(len(timeseries), 60)
@@ -118,15 +95,9 @@ class TestTsfreshBaseline(unittest.TestCase):
             with open(tmp_csv, 'a') as fh:
                 fh.write(utc_ts_line)
 
-        if os.path.isfile(tmp_csv):
-            file_created = True
-        else:
-            file_created = False
-        self.assertEqual(file_created, True)
+        self.assertTrue(os.path.isfile(tmp_csv))
 
         df_features = None
-        if os.path.isfile(t_fname_out):
-            return True
         df = pd.read_csv(tmp_csv, delimiter=',', header=None, names=['metric', 'timestamp', 'value'])
         df.columns = ['metric', 'timestamp', 'value']
         df_features = extract_features(df, column_id='metric', column_sort='timestamp', column_kind=None, column_value=None)
@@ -138,35 +109,23 @@ class TestTsfreshBaseline(unittest.TestCase):
             df_created = str(df_features.head())
             if df_created:
                 df_assert = True
-                self.assertEqual(df_assert, True)
+                self.assertTrue(df_assert)
         # Catch when df_created is None
         except AttributeError:
-            self.assertEqual(df_created, True)
+            self.assertTrue(df_created)
             pass
         # Catch if not defined
         except NameError:
-            self.assertEqual(df_created, True)
+            self.assertTrue(df_created)
             pass
-
-        if os.path.isfile(t_fname_out):
-            return True
 
         # Write to disk
         df_features.to_csv(fname_out)
+        self.assertTrue(os.path.isfile(fname_out))
 
-        if os.path.isfile(fname_out):
-            file_created = True
-        else:
-            file_created = False
-        self.assertEqual(file_created, True)
-
-        if os.path.isfile(t_fname_out):
-            return True
-
-        # Transpose
+        # Transpose, because we are humans
         df_t = None
         df_t = df_features.transpose()
-        # df_t.sort_values(by=[0], ascending=[False])
 
         # Test the DataFrame
         df_t_created = None
@@ -175,25 +134,32 @@ class TestTsfreshBaseline(unittest.TestCase):
             df_t_created = str(df_t.head())
             if df_t_created:
                 df_t_assert = True
-                self.assertEqual(df_t_assert, True)
+                self.assertTrue(df_t_assert)
         # Catch when df_t_created is None
         except AttributeError:
-            self.assertEqual(df_t_created, True)
+            self.assertTrue(df_t_created)
             pass
         # Catch if not defined
         except NameError:
-            self.assertEqual(df_t_created, True)
+            self.assertTrue(df_t_created)
             pass
 
         # Write the transposed csv
         df_t.to_csv(t_fname_out)
 
-        if os.path.isfile(t_fname_out):
-            file_created = True
-        else:
-            file_created = False
-        self.assertEqual(file_created, True)
-        return True
+        self.assertTrue(os.path.isfile(t_fname_out))
+        return self.fname_in
+
+    def tearDown(self):
+        # Remove the directory after the test
+        ran = False
+        fail_msg = 'failed to removed - %s' % self.test_path
+        try:
+            shutil.rmtree(self.test_path)
+            ran = True
+        except:
+            pass
+        self.assertTrue(ran, msg=fail_msg)
 
     def test_tsfresh_features(self):
         """
@@ -201,48 +167,46 @@ class TestTsfreshBaseline(unittest.TestCase):
         the feature names in the baseline transposed csv and will display new
         or missing feature names if it is fails.
         """
-        start = self.test_tsfresh_baseline()
+        tmp_csv = '%s.tmp.csv' % (self.fname_in)
+        fname_out = '%s.features.csv' % self.fname_in
+        t_fname_out = '%s.features.transposed.csv' % self.fname_in
+
+        self.assertTrue(os.path.isfile(t_fname_out))
 
         feature_names_determined = False
         feature_names = []
-        if start:
-            count_id = 0
-            with open(t_fname_out, 'rt') as fr:
-                reader = csv.reader(fr, delimiter=',')
-                for i, line in enumerate(reader):
-                    if str(line[0]) != '':
-                        if ',' in line[0]:
-                            feature_name = '"%s"' % str(line[0])
-                        else:
-                            feature_name = str(line[0])
-                        count_id += 1
-                        feature_names.append([count_id, feature_name])
+        count_id = 0
+        with open(t_fname_out, 'rt') as fr:
+            reader = csv.reader(fr, delimiter=',')
+            for i, line in enumerate(reader):
+                if str(line[0]) != '':
+                    if ',' in line[0]:
+                        feature_name = '"%s"' % str(line[0])
+                    else:
+                        feature_name = str(line[0])
+                    count_id += 1
+                    feature_names.append([count_id, feature_name])
 
         if feature_names != []:
             feature_names_determined = True
 
         fail_msg = 'tsfresh feature names were not determined from %s' % t_fname_out
-        self.assertEqual(feature_names_determined, True, msg=fail_msg)
+        self.assertTrue(feature_names_determined, msg=fail_msg)
 
-        max_known_id = int(TSFRESH_FEATURES[-1][0])
-        valid_max_id = None
+        try:
+            max_known_id = int(TSFRESH_FEATURES[-1][0])
+        except:
+            max_known_id = None
+
         fail_msg = 'max_known_id not an integer'
-        try:
-            _valid_max_id = max_known_id + 1
-            valid_max_id = True
-        except:
-            valid_max_id = False
-        self.assertEqual(valid_max_id, True, msg=fail_msg)
+        self.assertTrue(isinstance(max_known_id, int), msg=fail_msg)
 
-        max_seen_id = int(feature_names[-1][0])
-        valid_max_seen_id = None
-        fail_msg = 'max_seen_id not an integer'
         try:
-            _valid_max_seen_id = max_seen_id + 1
-            valid_max_seen_id = True
+            max_seen_id = int(feature_names[-1][0])
         except:
-            valid_max_seen_id = False
-        self.assertEqual(valid_max_seen_id, True, msg=fail_msg)
+            max_seen_id = None
+        fail_msg = 'max_seen_id not an integer'
+        self.assertTrue(isinstance(max_known_id, int), msg=fail_msg)
 
         feature_names_match = False
         if feature_names != TSFRESH_FEATURES:
@@ -319,7 +283,7 @@ Repo path: tests/baseline/tsfresh_feature_names.py
             feature_names_match = False
             shutil.move(t_fname_out, t_fname_out_fail)
 
-        self.assertEqual(feature_names_match, True)
+        self.assertTrue(feature_names_match)
         return True
 
     def test_tsfresh_baseline_json(self):
@@ -328,42 +292,13 @@ Repo path: tests/baseline/tsfresh_feature_names.py
         transposed csv to the feature names AND values in the baseline
         transposed csv.  It outputs the differences if the test fails.
         """
-        start = self.test_tsfresh_baseline()
-        self.assertEqual(start, True)
+        tmp_csv = '%s.tmp.csv' % (self.fname_in)
+        fname_out = '%s.features.csv' % self.fname_in
+        t_fname_out = '%s.features.transposed.csv' % self.fname_in
 
-        if os.path.isfile(t_fname_out):
-            file_created = True
-        else:
-            file_created = False
-        self.assertEqual(file_created, True)
+        self.assertTrue(os.path.isfile(t_fname_out))
 
-        df = pd.read_csv(
-            t_fname_out, delimiter=',', header=0,
-            names=['feature_name', 'value'])
-        baseline_df = pd.read_csv(
-            baseline_ts_json_baseline, delimiter=',', header=0,
-            names=['feature_name', 'value'])
-
-        # There is a more friendly user output than DataFrames comparison
-        # dataframes_equal = df.equals(baseline_df)
-        dataframes_equal = True
-        if not dataframes_equal:
-            df1 = df
-            df2 = baseline_df
-            ne = (df1 != df2).any(1)
-            ne_stacked = (df1 != df2).stack()
-            changed = ne_stacked[ne_stacked]
-            changed.index.names = ['id', 'col']
-            difference_locations = np.where(df1 != df2)
-            changed_from = df1.values[difference_locations]
-            changed_to = df2.values[difference_locations]
-            _fail_msg = pd.DataFrame(
-                {'from': changed_from, 'to': changed_to}, index=changed.index)
-            fail_msg = 'Baseline comparison failed - %s' % _fail_msg
-            self.assertEqual(dataframes_equal, True, msg=fail_msg)
-        # self.assertEqual(dataframes_equal, True)
-
-        # This is more friendly user output than the above DataFrames comparison
+        # This is more human friendly output than a DataFrames comparison
         calculated_features = []
         sortedlist_calcf = []
         with open(t_fname_out, 'rt') as fr:
@@ -411,7 +346,7 @@ NOT in baseline   :: %s
 NOT in calculated :: %s''' % (t_fname_out_fail, baseline_dir, baseline_dir, str(not_in_baseline), str(not_in_calculated))
         if not features_equal:
             shutil.move(t_fname_out, t_fname_out_fail)
-        self.assertEqual(features_equal, True, msg=fail_msg)
+        self.assertTrue(features_equal, msg=fail_msg)
 
 if __name__ == '__main__':
     unittest.main()
