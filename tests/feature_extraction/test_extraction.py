@@ -158,6 +158,20 @@ class ExtractionTestCase(DataTestCase):
         self.assertIn("value1__maximum", list(X.columns))
         self.assertIn("value2__maximum", list(X.columns))
 
+    def test_extract_features_per_sample_equals_per_kind(self):
+        df = self.create_test_data_sample()
+
+        features_per_sample = extract_features(df, self.settings, "id", "sort", "kind", "val",
+                                               parallelization='per_sample')
+        features_per_kind = extract_features(df, self.settings, "id", "sort", "kind", "val",
+                                               parallelization='per_kind')
+
+        six.assertCountEqual(self, features_per_sample.columns, features_per_kind.columns)
+
+        for col in features_per_sample.columns:
+            self.assertIsNone(np.testing.assert_array_almost_equal(features_per_sample[col],
+                                                                   features_per_kind[col]))
+
 
 class ParallelExtractionTestCase(DataTestCase):
     def setUp(self):
