@@ -35,7 +35,7 @@ class TestTsfreshBaseline(unittest.TestCase):
     Test all the features and their calculated values with a 60 data point
     sample of a simple anomalous timeseries data set and compare that the feature
     names and calculated values match the baselines calcualated for the specific
-    verison of tsfresh as defined by :mod:`tsfresh_feature_names.TSFRESH_FEATURES`
+    version of tsfresh as defined by :mod:`tsfresh_feature_names.TSFRESH_FEATURES`
 
     .. warning:: the Python 2 and 3 calculate different results in terms of
         float precision therefore baseline transposed features csv files are
