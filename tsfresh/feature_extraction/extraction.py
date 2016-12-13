@@ -144,10 +144,6 @@ def _extract_features_parallel_per_kind(kind_to_df_map, settings, column_id, col
     :return: The (maybe imputed) DataFrame containing extracted features.
     :rtype: pandas.DataFrame
     """
-    all_possible_unique_id_values = set(id_value for kind, df in kind_to_df_map.items()
-                                        for id_value in df[column_id])
-    df_with_ids = pd.DataFrame(index=all_possible_unique_id_values)
-
     partial_extract_features_for_one_time_series = partial(_extract_features_for_one_time_series,
                                                            column_id=column_id,
                                                            column_value=column_value,
@@ -160,8 +156,7 @@ def _extract_features_parallel_per_kind(kind_to_df_map, settings, column_id, col
     pool.close()
 
     # Concatenate all partial results
-    result = pd.concat([df_with_ids] + extracted_features, axis=1, join='outer', join_axes=[df_with_ids.index]) \
-        .astype(np.float64)
+    result = pd.concat(extracted_features, axis=1, join='outer').astype(np.float64)
 
     pool.join()
     return result
@@ -189,10 +184,6 @@ def _extract_features_parallel_per_sample(kind_to_df_map, settings, column_id, c
     :return: The (maybe imputed) DataFrame containing extracted features.
     :rtype: pandas.DataFrame
     """
-    all_possible_unique_id_values = set(id_value for kind, df in kind_to_df_map.items()
-                                        for id_value in df[column_id])
-    df_with_ids = pd.DataFrame(index=all_possible_unique_id_values)
-
     partial_extract_features_for_one_time_series = partial(_extract_features_for_one_time_series,
                                                            column_id=column_id,
                                                            column_value=column_value,
@@ -214,7 +205,7 @@ def _extract_features_parallel_per_sample(kind_to_df_map, settings, column_id, c
     pool.close()
 
     # Wait for the jobs to complete and concatenate the partial results
-    dfs_per_kind = [df_with_ids]
+    dfs_per_kind = []
     while not results_fifo.empty():
         map_result = results_fifo.get()
         dfs = map_result.get()
