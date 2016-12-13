@@ -10,6 +10,7 @@ from unittest import TestCase
 from tsfresh.feature_extraction.feature_calculators import *
 from tsfresh.feature_extraction.feature_calculators import _get_length_sequences_where
 import six
+import math
 
 class FeatureCalculationTestCase(TestCase):
 
@@ -361,8 +362,22 @@ class FeatureCalculationTestCase(TestCase):
         # todo: add unit test
 
     def test_cwt_coefficients(self):
-        pass
-        # todo: add unit test
+        x = [0.1, 0.2, 0.3]
+        c = "TEST"
+        param = [{"widths": (1, 2, 3), "coeff": 2, "w": 1},
+                 {"widths": (1, 3), "coeff": 2, "w": 3},
+                 {"widths": (1, 3), "coeff": 5, "w": 3}]
+        shuffle(param)
+
+        expected_index = ["TEST__cwt_coefficients__widths_(1, 2, 3)__coeff_2__w_1",
+                          "TEST__cwt_coefficients__widths_(1, 3)__coeff_2__w_3",
+                          "TEST__cwt_coefficients__widths_(1, 3)__coeff_5__w_3"]
+
+        res = cwt_coefficients(x, c, param)
+
+        # todo: add unit test for the values
+        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertTrue(math.isnan(res["TEST__cwt_coefficients__widths_(1, 3)__coeff_5__w_3"]))
 
     def test_ar_coefficient(self):
 

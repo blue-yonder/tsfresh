@@ -826,14 +826,21 @@ def cwt_coefficients(x, c, param):
 
         for w in df_cfg[df_cfg["widths"] == widths]["w"].unique():
 
+            # get the coefficients corresponding to this array of widths
             coeff = df_cfg[(df_cfg["widths"] == widths) & (df_cfg["w"] == w)]["coeff"].unique()
+
+            # get the row of the current width
             i = widths.index(w)
 
-            if calculated_cwt.shape[1] < len(coeff):  # There are less data points than requested model coefficients
-                red_coeff = coeff[:calculated_cwt.shape[1]]
-                res_tmp = calculated_cwt[i, red_coeff]
-                # Fill up the rest of the requested coefficients with np.NaNs
-                res_tmp = np.append(res_tmp, np.array([np.NaN] * (len(coeff) - len(red_coeff))))
+            if calculated_cwt.shape[1] <= max(coeff):
+                # The calculated cwt is not width enough, at least one coefficient would cause Index Error
+                res_tmp = []
+
+                for j in coeff:
+                    if calculated_cwt.shape[1] <= j: # the current index is out of range
+                        res_tmp.append(np.NaN)
+                    else:
+                        res_tmp.append(calculated_cwt[i, j])
             else:
                 res_tmp = calculated_cwt[i, coeff]
 
