@@ -212,7 +212,7 @@ def _extract_features_parallel_per_sample(kind_to_df_map, settings, column_id, c
     # We have to make sure to not create unnecessary copies here.
 
     # We will use groupby to group the list by their kind entry. The keyfunction extracts this kind for us.
-    keyfunction = lambda (kind, df): kind
+    keyfunction = lambda kind_and_df: kind_and_df[0]
     dfs_per_kind = sorted(dfs_per_kind, key=keyfunction)
     dfs_per_kind = (pd.concat((df for kind, df in dfs), axis=0).astype(np.float64)
                     for kind, dfs in groupby(dfs_per_kind, keyfunction))
