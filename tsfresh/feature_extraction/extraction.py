@@ -198,7 +198,7 @@ def _extract_features_parallel_per_sample(kind_to_df_map, settings, column_id, c
         results_fifo.put(
             pool.map_async(
                 partial_extract_features_for_one_time_series,
-                [(kind, df_group.astype(np.float64)) for _, df_group in df_grouped_by_id],
+                [(kind, df_group) for _, df_group in df_grouped_by_id],
                 chunksize=settings.chunksize
             )
         )
@@ -280,6 +280,9 @@ def _extract_features_for_one_time_series(prefix_and_dataframe, column_id, colum
     """
     column_prefix, dataframe = prefix_and_dataframe
     column_prefix = str(column_prefix)
+
+    # Ensure features are calculated on float64
+    dataframe[column_value] = dataframe[column_value].astype(np.float64)
 
     with warnings.catch_warnings():
         if not settings.show_warnings:
