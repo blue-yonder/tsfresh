@@ -103,13 +103,11 @@ class TestTsfreshBaseline(unittest.TestCase):
         df_features = extract_features(df, column_id='metric', column_sort='timestamp', column_kind=None, column_value=None)
 
         df_created = None
-        df_assert = None
         # Test the DataFrame
         try:
             df_created = str(df_features.head())
             if df_created:
-                df_assert = True
-                self.assertTrue(df_assert)
+                self.assertTrue(isinstance(df_created, str))
         # Catch when df_created is None
         except AttributeError:
             self.assertTrue(df_created)
@@ -129,12 +127,10 @@ class TestTsfreshBaseline(unittest.TestCase):
 
         # Test the DataFrame
         df_t_created = None
-        df_t_assert = None
         try:
             df_t_created = str(df_t.head())
             if df_t_created:
-                df_t_assert = True
-                self.assertTrue(df_t_assert)
+                self.assertTrue(isinstance(df_t_created, str))
         # Catch when df_t_created is None
         except AttributeError:
             self.assertTrue(df_t_created)
@@ -206,7 +202,7 @@ class TestTsfreshBaseline(unittest.TestCase):
         except:
             max_seen_id = None
         fail_msg = 'max_seen_id not an integer'
-        self.assertTrue(isinstance(max_known_id, int), msg=fail_msg)
+        self.assertTrue(isinstance(max_seen_id, int), msg=fail_msg)
 
         feature_names_match = False
         if feature_names != TSFRESH_FEATURES:
@@ -220,7 +216,7 @@ class TestTsfreshBaseline(unittest.TestCase):
             for nid, nname in sorted_feature_names:
                 new_entry = None
                 if int(nid) > max_known_id:
-                    new_entry = '    [%s, %s]' % (str(nnid), str(nname))
+                    new_entry = '    [%s, %s]' % (str(nid), str(nname))
                     fail_msg = '''
 
 ###    NOTICE    ###
@@ -274,7 +270,7 @@ Repo path: tests/baseline/tsfresh_feature_names.py
 - TSFRESH_BASELINE_VERSION to your <NEW_VERSION>
 - Add the new feature/s name to TSFRESH_FEATURES with a incremented id value
 
-''' % (soid, soid, soname, soid, soid, snname, t_fname_out, baseline_dir, baseline_dir)
+''' % (soid, soid, soname, snid, snid, snname, t_fname_out, baseline_dir, baseline_dir)
                             if soname != snname:
                                 shutil.move(t_fname_out, t_fname_out_fail)
                             self.assertEqual(soname, snname, msg=fail_msg)
