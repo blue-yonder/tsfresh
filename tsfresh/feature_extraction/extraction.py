@@ -198,7 +198,7 @@ def _extract_features_parallel_per_sample(kind_to_df_map, settings, column_id, c
         results_fifo.put(
             pool.map_async(
                 partial_extract_features_for_one_time_series,
-                [(kind, df_group) for _, df_group in df_grouped_by_id],
+                [(kind, df_group.astype(np.float64)) for _, df_group in df_grouped_by_id],
                 chunksize=settings.chunksize
             )
         )
@@ -210,7 +210,7 @@ def _extract_features_parallel_per_sample(kind_to_df_map, settings, column_id, c
     while not results_fifo.empty():
         map_result = results_fifo.get()
         dfs = map_result.get()
-        dfs_per_kind.append(pd.concat(dfs, axis=0))
+        dfs_per_kind.append(pd.concat(dfs, axis=0).astype(np.float64))
 
     result = pd.concat(dfs_per_kind, axis=1).astype(np.float64)
 
