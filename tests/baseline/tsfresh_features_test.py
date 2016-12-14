@@ -16,10 +16,20 @@ from tsfresh import extract_features, extract_relevant_features, select_features
 from tsfresh import __version__ as tsfresh_version
 from tsfresh.examples.test_tsfresh_baseline_dataset import download_json_dataset
 
-# tsfresh_version can be used when https://github.com/blue-yonder/tsfresh/issues/109
-# is fixed in a future release
-# TSFRESH_BASELINE_VERSION = str(tsfresh_version)
-TSFRESH_BASELINE_VERSION = '0.3.0'
+# TODO: reconsider including a config with no feature names just declaring the
+# current baseline version as there is not difference in the baselines between
+# 0.3.0 and 0.3.1, a version should not require a baseline if no changes were
+# made, it should just use the last known baseline or just use a specific file
+# name for current baseline file and deprecate the old baselines prefixed with
+# tsfresh-x.y.z and if __version__ < TSFRESH_BASELINE_VERSION use ah... if each
+# one does not have a baseline, which is the last baseline, listdir sort... :)
+# Needs thought.
+
+TSFRESH_BASELINE_VERSION = str(tsfresh_version)
+if TSFRESH_BASELINE_VERSION == '0.1.1.post0.dev62+ng0f1b4c7':
+    # #109 was fixed in 0.3.1, just here for local testing purposes, for the
+    # various local version.
+    TSFRESH_BASELINE_VERSION = '0.3.0'
 
 python_version = int(sys.version_info[0])
 baseline_dir = os.path.dirname(os.path.realpath(__file__))
