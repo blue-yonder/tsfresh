@@ -11,6 +11,7 @@ from tsfresh.feature_extraction.settings import FeatureExtractionSettings
 import six
 import os
 
+
 class ExtractionTestCase(DataTestCase):
     """The unit tests in this module make sure if the time series features are created properly"""
 
@@ -72,9 +73,11 @@ class ExtractionTestCase(DataTestCase):
     def test_extract_features_for_one_time_series(self):
         # todo: implement more methods and test more aspects
         df = self.create_test_data_sample()
-        extracted_features = _extract_features_for_one_time_series(["b", df.loc[df.kind == "b", ["val", "id"]]],
-                                                                   settings=self.settings,
-                                                                   column_value="val", column_id="id")
+        kind, extracted_features = _extract_features_for_one_time_series(["b", df.loc[df.kind == "b", ["val", "id"]]],
+                                                                         settings=self.settings,
+                                                                         column_value="val", column_id="id")
+
+        self.assertEqual(kind, "b")
 
         self.assertIsInstance(extracted_features, pd.DataFrame)
         self.assertTrue(np.all(extracted_features.b__sum_values == np.array([757, 695])))
@@ -84,10 +87,11 @@ class ExtractionTestCase(DataTestCase):
         self.assertTrue(np.all(extracted_features.b__median == np.array([39.5, 28.0])))
 
         df_sts = self.create_one_valued_time_series()
-        extracted_features_sts = _extract_features_for_one_time_series(["a", df_sts[["val", "id"]]],
+        kind, extracted_features_sts = _extract_features_for_one_time_series(["a", df_sts[["val", "id"]]],
                                                                        settings=self.settings,
                                                                        column_value="val", column_id="id")
 
+        self.assertEqual(kind, "a")
         self.assertIsInstance(extracted_features_sts, pd.DataFrame)
         self.assertTrue(np.all(extracted_features_sts.a__maximum == np.array([1.0, 6.0])))
         self.assertTrue(np.all(extracted_features_sts.a__sum_values == np.array([1.0, 11.0])))
@@ -164,7 +168,7 @@ class ExtractionTestCase(DataTestCase):
         features_per_sample = extract_features(df, self.settings, "id", "sort", "kind", "val",
                                                parallelization='per_sample')
         features_per_kind = extract_features(df, self.settings, "id", "sort", "kind", "val",
-                                               parallelization='per_kind')
+                                             parallelization='per_kind')
 
         six.assertCountEqual(self, features_per_sample.columns, features_per_kind.columns)
 
