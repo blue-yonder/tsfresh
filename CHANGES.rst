@@ -4,6 +4,14 @@ Changelog
 
 tsfresh uses `Semantic Versioning <http://semver.org/>`_
 
+
+Version 0.3.1
+=============
+
+- fixed several bugs: closing multiprocessing pools / index out of range cwt calculator / division by 0 in index_mass_quantile
+- now all warnings are disabled by default
+- for a singular type time series data, the name of value column is used as feature prefix
+
 Version 0.3.0
 =============
 
@@ -20,7 +28,6 @@ Version 0.2.0
 - added feature caculator sampleentropy
 - added minimalfeaturesignificance extraction settings
 - fixed bug in calculation of fourier coefficients
-
 
 Version 0.1.2
 =============
