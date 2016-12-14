@@ -245,7 +245,7 @@ New entry for tsfresh_feature_names.py:
                     if int(oid) == int(nid):
                         if str(oname) != str(nname):
                             soid = str(int(oid))
-                            snid = str(int(nid))
+                            string_of_new_id = str(int(nid))
                             soname = str(oname)
                             snname = str(oname)
                             fail_msg = '''
@@ -270,7 +270,7 @@ Repo path: tests/baseline/tsfresh_feature_names.py
 - TSFRESH_BASELINE_VERSION to your <NEW_VERSION>
 - Add the new feature/s name to TSFRESH_FEATURES with a incremented id value
 
-''' % (soid, soid, soname, snid, snid, snname, t_fname_out, baseline_dir, baseline_dir)
+''' % (soid, soid, soname, string_of_new_id, string_of_new_id, snname, t_fname_out, baseline_dir, baseline_dir)
                             if soname != snname:
                                 shutil.move(t_fname_out, t_fname_out_fail)
                             self.assertEqual(soname, snname, msg=fail_msg)
