@@ -38,8 +38,7 @@ class FeatureSelection(TestCase):
         p_value = tsfresh.feature_selection.significance_tests.target_binary_feature_binary_test(x, y)
         self.assertGreater(p_value, self.minimal_p_value_for_unsignificant_features)
 
-        result_series = tsfresh.feature_selection.feature_selector._calculate_p_value("TEST", pd.DataFrame(x), y,
-                                                                                      self.settings, True)
+        result_series = tsfresh.feature_selection.feature_selector._calculate_p_value(x, y, self.settings, True)
         self.assertEqual(result_series.name, "TEST")
         self.assertGreater(result_series.p_value, self.minimal_p_value_for_unsignificant_features)
         self.assertEqual(result_series.type, "binary")
@@ -54,8 +53,7 @@ class FeatureSelection(TestCase):
 
         self.assertGreater(p_value, self.minimal_p_value_for_unsignificant_features)
 
-        result_series = tsfresh.feature_selection.feature_selector._calculate_p_value("TEST", pd.DataFrame(x), y,
-                                                                                      self.settings, True)
+        result_series = tsfresh.feature_selection.feature_selector._calculate_p_value(x, y, self.settings, True)
         self.assertEqual(result_series.name, "TEST")
         self.assertGreater(result_series.p_value, self.minimal_p_value_for_unsignificant_features)
         self.assertEqual(result_series.type, "real")
@@ -70,8 +68,7 @@ class FeatureSelection(TestCase):
 
         self.assertGreater(p_value, self.minimal_p_value_for_unsignificant_features)
 
-        result_series = tsfresh.feature_selection.feature_selector._calculate_p_value("TEST", pd.DataFrame(x), y,
-                                                                                      self.settings, False)
+        result_series = tsfresh.feature_selection.feature_selector._calculate_p_value(x, y, self.settings, False)
         self.assertEqual(result_series.name, "TEST")
         self.assertGreater(result_series.p_value, self.minimal_p_value_for_unsignificant_features)
         self.assertEqual(result_series.type, "binary")
@@ -86,8 +83,7 @@ class FeatureSelection(TestCase):
 
         self.assertGreater(p_value, self.minimal_p_value_for_unsignificant_features)
 
-        result_series = tsfresh.feature_selection.feature_selector._calculate_p_value("TEST", pd.DataFrame(x), y,
-                                                                                      self.settings, False)
+        result_series = tsfresh.feature_selection.feature_selector._calculate_p_value(x, y, self.settings, False)
         self.assertEqual(result_series.name, "TEST")
         self.assertGreater(result_series.p_value, self.minimal_p_value_for_unsignificant_features)
         self.assertEqual(result_series.type, "real")
@@ -104,8 +100,7 @@ class FeatureSelection(TestCase):
         p_value = tsfresh.feature_selection.significance_tests.target_binary_feature_binary_test(x, y)
         self.assertLess(p_value, self.maximal_p_value_for_significant_features)
 
-        result_series = tsfresh.feature_selection.feature_selector._calculate_p_value("TEST", pd.DataFrame(x), y,
-                                                                                      self.settings, True)
+        result_series = tsfresh.feature_selection.feature_selector._calculate_p_value(x, y, self.settings, True)
         self.assertEqual(result_series.name, "TEST")
         self.assertLess(result_series.p_value, self.maximal_p_value_for_significant_features)
         self.assertEqual(result_series.type, "binary")
@@ -124,8 +119,7 @@ class FeatureSelection(TestCase):
         p_value = tsfresh.feature_selection.significance_tests.target_binary_feature_real_test(x, y, self.settings)
         self.assertLess(p_value, self.maximal_p_value_for_significant_features)
 
-        result_series = tsfresh.feature_selection.feature_selector._calculate_p_value("TEST", pd.DataFrame(x), y,
-                                                                                      self.settings, True)
+        result_series = tsfresh.feature_selection.feature_selector._calculate_p_value(x, y, self.settings, True)
         self.assertEqual(result_series.name, "TEST")
         self.assertLess(result_series.p_value, self.maximal_p_value_for_significant_features)
         self.assertEqual(result_series.type, "real")
@@ -147,8 +141,7 @@ class FeatureSelection(TestCase):
         p_value = tsfresh.feature_selection.significance_tests.target_binary_feature_real_test(x, y, tmp_settings)
         self.assertLess(p_value, self.maximal_p_value_for_significant_features)
 
-        result_series = tsfresh.feature_selection.feature_selector._calculate_p_value("TEST", pd.DataFrame(x), y,
-                                                                                      self.settings, True)
+        result_series = tsfresh.feature_selection.feature_selector._calculate_p_value(x, y, self.settings, True)
         self.assertEqual(result_series.name, "TEST")
         self.assertLess(result_series.p_value, self.maximal_p_value_for_significant_features)
         self.assertEqual(result_series.type, "real")
@@ -162,8 +155,7 @@ class FeatureSelection(TestCase):
         p_value = tsfresh.feature_selection.significance_tests.target_real_feature_binary_test(x, y)
         self.assertLess(p_value, self.maximal_p_value_for_significant_features)
 
-        result_series = tsfresh.feature_selection.feature_selector._calculate_p_value("TEST", pd.DataFrame(x), y,
-                                                                                      self.settings, False)
+        result_series = tsfresh.feature_selection.feature_selector._calculate_p_value(x, y, self.settings, False)
         self.assertEqual(result_series.name, "TEST")
         self.assertLess(result_series.p_value, self.maximal_p_value_for_significant_features)
         self.assertEqual(result_series.type, "binary")
@@ -178,8 +170,7 @@ class FeatureSelection(TestCase):
 
         self.assertLess(p_value, self.maximal_p_value_for_significant_features)
 
-        result_series = tsfresh.feature_selection.feature_selector._calculate_p_value("TEST", pd.DataFrame(x), y,
-                                                                                      self.settings, False)
+        result_series = tsfresh.feature_selection.feature_selector._calculate_p_value(x, y, self.settings, False)
         self.assertEqual(result_series.name, "TEST")
         self.assertLess(result_series.p_value, self.maximal_p_value_for_significant_features)
         self.assertEqual(result_series.type, "real")
@@ -189,8 +180,7 @@ class FeatureSelection(TestCase):
         x = pd.Series([1.111]*250, name="TEST")
         y = x + pd.Series(np.random.normal(0, 1, 250))
 
-        result_series = tsfresh.feature_selection.feature_selector._calculate_p_value("TEST", pd.DataFrame(x), y,
-                                                                                      self.settings, False)
+        result_series = tsfresh.feature_selection.feature_selector._calculate_p_value(x, y, self.settings, False)
         self.assertEqual(result_series.name, "TEST")
         self.assertEqual(result_series.type, "const")
         self.assertEqual(result_series.rejected, False)

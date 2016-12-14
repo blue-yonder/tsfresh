@@ -26,6 +26,7 @@ The following chapters will explain the tsfresh package in detail:
    Feature Calculation <text/feature_calculation>
    Feature Filtering <text/feature_filtering>
    How to write custom Feature Calculators <text/how_to_add_custom_feature>
+   Parallelization <text/parallelization>
    FAQ <text/faq>
    Authors <authors>
    License <license>

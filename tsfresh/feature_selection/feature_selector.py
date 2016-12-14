@@ -115,8 +115,9 @@ def check_fs_sig_bh(X, y, settings=None):
     pool = Pool(settings.n_processes)
 
     # Helper function which wrapps the _calculate_p_value with many arguments already set
-    f = partial(_calculate_p_value, X=X, y=y, settings=settings, target_is_binary=target_is_binary)
-    p_values_of_features = pd.DataFrame(pool.map(f, df_features['Feature']))
+    f = partial(_calculate_p_value, y=y, settings=settings, target_is_binary=target_is_binary)
+    results = pool.map(f, [X[feature] for feature in df_features['Feature']], chunksize=settings.chunksize)
+    p_values_of_features = pd.DataFrame(results)
     df_features.update(p_values_of_features)
 
     pool.close()
@@ -145,19 +146,16 @@ def check_fs_sig_bh(X, y, settings=None):
     return df_features
 
 
-def _calculate_p_value(feature, X, y, settings, target_is_binary):
+def _calculate_p_value(feature_column, y, settings, target_is_binary):
     """
-    Internal helper function to calculate the p-value of a given feature in df_features using one of the dedicated
-    functions target_*_feature_*_test. It uses the data in X and the target in y.
+    Internal helper function to calculate the p-value of a given feature using one of the dedicated
+    functions target_*_feature_*_test.
 
-    :param X: the data with a column named after feature.
-    :type X: pandas.DataFrame
+    :param feature_column: the feature column.
+    :type feature_column: pandas.Series
 
     :param y: the binary target vector
     :type y: pandas.Series
-
-    :param feature: The feature for which the p-value should be calculated.
-    :type feature: basestring
 
     :param settings: The settings object to control how the significance is calculated.
     :type settings: FeatureSignificanceTestsSettings
@@ -170,29 +168,29 @@ def _calculate_p_value(feature, X, y, settings, target_is_binary):
     :rtype: pd.Series
     """
     # Do not process constant features
-    if len(pd.unique(X[feature].values)) == 1:
-        _logger.warning("[test_feature_significance] Feature {} is constant".format(feature))
-        return pd.Series({"type": "const", "rejected": False}, name=feature)
+    if len(pd.unique(feature_column.values)) == 1:
+        _logger.warning("[test_feature_significance] Feature {} is constant".format(feature_column.name))
+        return pd.Series({"type": "const", "rejected": False}, name=feature_column.name)
 
     else:
         if target_is_binary:
             # Decide if the current feature is binary or not
-            if len(set(X[feature].values)) == 2:
+            if len(set(feature_column.values)) == 2:
                 type = "binary"
-                p_value = target_binary_feature_binary_test(X[feature], y, settings)
+                p_value = target_binary_feature_binary_test(feature_column, y, settings)
             else:
                 type = "real"
-                p_value = target_binary_feature_real_test(X[feature], y, settings)
+                p_value = target_binary_feature_real_test(feature_column, y, settings)
         else:
             # Decide if the current feature is binary or not
-            if len(set(X[feature].values)) == 2:
+            if len(set(feature_column.values)) == 2:
                 type = "binary"
-                p_value = target_real_feature_binary_test(X[feature], y, settings)
+                p_value = target_real_feature_binary_test(feature_column, y, settings)
             else:
                 type = "real"
-                p_value = target_real_feature_real_test(X[feature], y, settings)
+                p_value = target_real_feature_real_test(feature_column, y, settings)
 
-        return pd.Series({"p_value": p_value, "type": type}, name=feature)
+        return pd.Series({"p_value": p_value, "type": type}, name=feature_column.name)
 
 
 def benjamini_hochberg_test(df_pvalues, settings):
