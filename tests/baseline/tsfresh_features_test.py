@@ -7,6 +7,7 @@ import csv
 import json
 import tempfile
 from ast import literal_eval
+import re
 
 import unittest
 from mock import Mock, patch
@@ -30,6 +31,9 @@ if TSFRESH_BASELINE_VERSION == '0.1.1.post0.dev62+ng0f1b4c7':
     # #109 was fixed in 0.3.1, just here for local testing purposes, for the
     # various local version.
     TSFRESH_BASELINE_VERSION = '0.3.0'
+if 'post' in TSFRESH_BASELINE_VERSION:
+    travis_tsfresh_version = re.sub('\.post.*', '', TSFRESH_BASELINE_VERSION)
+    TSFRESH_BASELINE_VERSION = travis_tsfresh_version
 
 python_version = int(sys.version_info[0])
 baseline_dir = os.path.dirname(os.path.realpath(__file__))
