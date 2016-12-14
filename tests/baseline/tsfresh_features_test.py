@@ -5,7 +5,6 @@ import shutil
 import datetime
 import csv
 import json
-import errno
 import tempfile
 from ast import literal_eval
 
@@ -14,9 +13,13 @@ from mock import Mock, patch
 import numpy as np
 import pandas as pd
 from tsfresh import extract_features, extract_relevant_features, select_features
+from tsfresh import __version__ as tsfresh_version
 from tsfresh.examples.test_tsfresh_baseline_dataset import download_json_dataset
 
-from tsfresh_feature_names import TSFRESH_FEATURES, TSFRESH_BASELINE_VERSION
+# tsfresh_version can be used when https://github.com/blue-yonder/tsfresh/issues/109
+# is fixed in a future release
+# TSFRESH_BASELINE_VERSION = str(tsfresh_version)
+TSFRESH_BASELINE_VERSION = '0.3.0'
 
 python_version = int(sys.version_info[0])
 baseline_dir = os.path.dirname(os.path.realpath(__file__))
@@ -35,7 +38,7 @@ class TestTsfreshBaseline(unittest.TestCase):
     Test all the features and their calculated values with a 60 data point
     sample of a simple anomalous timeseries data set and compare that the feature
     names and calculated values match the baselines calcualated for the specific
-    version of tsfresh as defined by :mod:`tsfresh_feature_names.TSFRESH_FEATURES`
+    version of tsfresh.
 
     .. warning:: the Python 2 and 3 calculate different results in terms of
         float precision therefore baseline transposed features csv files are
@@ -67,7 +70,6 @@ class TestTsfreshBaseline(unittest.TestCase):
         self.test_path = tempfile.mkdtemp()
         self.fname_in = '%s/%s' % (self.test_path, baseline_ts_json_file)
         tmp_csv = '%s.tmp.csv' % (self.fname_in)
-        fname_out = '%s.features.csv' % self.fname_in
         t_fname_out = '%s.features.transposed.csv' % self.fname_in
 
         self.assertTrue(os.path.exists(baseline_ts_json))
@@ -117,10 +119,6 @@ class TestTsfreshBaseline(unittest.TestCase):
             self.assertTrue(df_created)
             pass
 
-        # Write to disk
-        df_features.to_csv(fname_out)
-        self.assertTrue(os.path.isfile(fname_out))
-
         # Transpose, because we are humans
         df_t = None
         df_t = df_features.transpose()
@@ -142,9 +140,10 @@ class TestTsfreshBaseline(unittest.TestCase):
 
         # Write the transposed csv
         df_t.to_csv(t_fname_out)
+        self.df_trans = df_features.transpose()
 
         self.assertTrue(os.path.isfile(t_fname_out))
-        return self.fname_in
+        return True
 
     def tearDown(self):
         # Remove the directory after the test
@@ -157,161 +156,30 @@ class TestTsfreshBaseline(unittest.TestCase):
             pass
         self.assertTrue(ran, msg=fail_msg)
 
-    def test_tsfresh_features(self):
-        """
-        This test compares the calculated feature names in the transposed csv to
-        the feature names in the baseline transposed csv and will display new
-        or missing feature names if it is fails.
-        """
-        tmp_csv = '%s.tmp.csv' % (self.fname_in)
-        fname_out = '%s.features.csv' % self.fname_in
-        t_fname_out = '%s.features.transposed.csv' % self.fname_in
-
-        self.assertTrue(os.path.isfile(t_fname_out))
-
-        feature_names_determined = False
-        feature_names = []
-        count_id = 0
-        with open(t_fname_out, 'rt') as fr:
-            reader = csv.reader(fr, delimiter=',')
-            for i, line in enumerate(reader):
-                if str(line[0]) != '':
-                    if ',' in line[0]:
-                        feature_name = '"%s"' % str(line[0])
-                    else:
-                        feature_name = str(line[0])
-                    count_id += 1
-                    feature_names.append([count_id, feature_name])
-
-        if feature_names != []:
-            feature_names_determined = True
-
-        fail_msg = 'tsfresh feature names were not determined from %s' % t_fname_out
-        self.assertTrue(feature_names_determined, msg=fail_msg)
-
-        try:
-            max_known_id = int(TSFRESH_FEATURES[-1][0])
-        except:
-            max_known_id = None
-
-        fail_msg = 'max_known_id not an integer'
-        self.assertTrue(isinstance(max_known_id, int), msg=fail_msg)
-
-        try:
-            max_seen_id = int(feature_names[-1][0])
-        except:
-            max_seen_id = None
-        fail_msg = 'max_seen_id not an integer'
-        self.assertTrue(isinstance(max_seen_id, int), msg=fail_msg)
-
-        feature_names_match = False
-        if feature_names != TSFRESH_FEATURES:
-
-            def getKey(item):
-                return item[0]
-
-            sorted_feature_names = sorted(feature_names, key=getKey)
-            sorted_tsfresh_features = sorted(TSFRESH_FEATURES, key=getKey)
-
-            for nid, nname in sorted_feature_names:
-                new_entry = None
-                if int(nid) > max_known_id:
-                    new_entry = '    [%s, %s]' % (str(nid), str(nname))
-                    fail_msg = '''
-
-###    NOTICE    ###
-
-If you adding/testing new features, you can create a new baseline from: %s
-
-Added the new baseline (Python 2 and 3 baselines ARE different) as either:
-Local path: %s/tsfresh-<NEW_VERSION>.py{2,3}.data.json.features.transposed.csv
-Repo path: tests/baseline/tsfresh-<NEW_VERSION>.py{2,3}.data.json.features.transposed.csv
-
-In the tsfresh_feature_names.py change the following:
-Local path: %s/tsfresh_feature_names.py
-Repo path: tests/baseline/tsfresh_feature_names.py
-
-- TSFRESH_BASELINE_VERSION to your <NEW_VERSION>
-- Add the new feature/s name to TSFRESH_FEATURES with a incremented id value
-
-New entry for tsfresh_feature_names.py:
-%s
-''' % (t_fname_out_fail, baseline_dir, baseline_dir, str(new_entry))
-                    if new_entry:
-                        shutil.move(t_fname_out, t_fname_out_fail)
-                    self.assertEqual(new_entry, None, msg=fail_msg)
-
-                for oid, oname in sorted_feature_names:
-                    if int(oid) == int(nid):
-                        if str(oname) != str(nname):
-                            soid = str(int(oid))
-                            string_of_new_id = str(int(nid))
-                            soname = str(oname)
-                            snname = str(oname)
-                            fail_msg = '''
-
-###    ERROR    ###
-
-A baseline feature name for id %s has changed:
-    [%s, %s]
-Calculated feature name for id %s was:
-    [%s, %s]
-
-If you adding/testing new features, you can create a new baseline from: %s
-
-Added the new baseline (Python 2 and 3 baselines ARE different) as either:
-Local path: %s/tsfresh-<NEW_VERSION>.py{2,3}.data.json.features.transposed.csv
-Repo path: tests/baseline/tsfresh-<NEW_VERSION>.py{2,3}.data.json.features.transposed.csv
-
-In the tsfresh_feature_names.py change the following:
-Local path: %s/tsfresh_feature_names.py
-Repo path: tests/baseline/tsfresh_feature_names.py
-
-- TSFRESH_BASELINE_VERSION to your <NEW_VERSION>
-- Add the new feature/s name to TSFRESH_FEATURES with a incremented id value
-
-''' % (soid, soid, soname, string_of_new_id, string_of_new_id, snname, t_fname_out, baseline_dir, baseline_dir)
-                            if soname != snname:
-                                shutil.move(t_fname_out, t_fname_out_fail)
-                            self.assertEqual(soname, snname, msg=fail_msg)
-            feature_names_match = True
-        else:
-            feature_names_match = False
-            shutil.move(t_fname_out, t_fname_out_fail)
-
-        self.assertTrue(feature_names_match)
-        return True
-
     def test_tsfresh_baseline_json(self):
         """
         This test compares the calculated feature names AND values in the
         transposed csv to the feature names AND values in the baseline
         transposed csv.  It outputs the differences if the test fails.
         """
-        tmp_csv = '%s.tmp.csv' % (self.fname_in)
-        fname_out = '%s.features.csv' % self.fname_in
         t_fname_out = '%s.features.transposed.csv' % self.fname_in
-
         self.assertTrue(os.path.isfile(t_fname_out))
 
-        # This is more human friendly output than a DataFrames comparison
-        calculated_features = []
-        sortedlist_calcf = []
-        with open(t_fname_out, 'rt') as fr:
-            reader = csv.reader(fr, delimiter=',')
-            sortedlist_calcf = sorted(reader, key=lambda row: row[0], reverse=True)
+        df_t = pd.read_csv(
+            t_fname_out, delimiter=',', header=None,
+            names=['feature_name', 'value'])
+        df_t_features = []
+        for index, line in df_t.iterrows():
+            df_t_features.append([str(line[0]), str(line[1])])
+        calculated_features = sorted(df_t_features, key=lambda row: row[0], reverse=True)
 
-        for i, line in enumerate(sortedlist_calcf):
-            calculated_features.append([str(line[0]), str(line[1])])
-
-        baseline_features = []
-        sortedlist_baseline = []
-        with open(baseline_ts_json_baseline, 'rt') as fr:
-            reader = csv.reader(fr, delimiter=',')
-            sortedlist_baseline = sorted(reader, key=lambda row: row[0], reverse=True)
-
-        for i, line in enumerate(sortedlist_baseline):
-            baseline_features.append([str(line[0]), str(line[1])])
+        df_baseline = pd.read_csv(
+            baseline_ts_json_baseline, delimiter=',', header=None,
+            names=['feature_name', 'value'])
+        df_baseline_features = []
+        for index, line in df_baseline.iterrows():
+            df_baseline_features.append([str(line[0]), str(line[1])])
+        baseline_features = sorted(df_baseline_features, key=lambda row: row[0], reverse=True)
 
         features_equal = False
         fail_msg = 'none'
@@ -321,25 +189,12 @@ Repo path: tests/baseline/tsfresh_feature_names.py
             not_in_calculated = [x for x in baseline_features if x not in calculated_features]
             not_in_baseline = [x for x in calculated_features if x not in baseline_features]
             fail_msg = '''
-
-###    NOTICE    ###
-
-If you adding/testing new features, you can create a new baseline from: %s
-
-Added the new baseline (Python 2 and 3 baselines ARE different) as either:
-Local path: %s/tsfresh-<NEW_VERSION>.py{2,3}.data.json.features.transposed.csv
-Repo path: tests/baseline/tsfresh-<NEW_VERSION>.py{2,3}.data.json.features.transposed.csv
-
-In the tsfresh_feature_names.py change the following:
-Local path: %s/tsfresh_feature_names.py
-Repo path: tests/baseline/tsfresh_feature_names.py
-
-- TSFRESH_BASELINE_VERSION to your <NEW_VERSION>
-- Add the new feature/s name to TSFRESH_FEATURES with a incremented id value
+See the docs on how to update the baseline.
+New local baseline: %s
 
 NOT in baseline   :: %s
 
-NOT in calculated :: %s''' % (t_fname_out_fail, baseline_dir, baseline_dir, str(not_in_baseline), str(not_in_calculated))
+NOT in calculated :: %s''' % (t_fname_out_fail, str(not_in_baseline), str(not_in_calculated))
         if not features_equal:
             shutil.move(t_fname_out, t_fname_out_fail)
         self.assertTrue(features_equal, msg=fail_msg)
