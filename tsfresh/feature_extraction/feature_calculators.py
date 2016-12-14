@@ -26,6 +26,7 @@ import pandas as pd
 from scipy.signal import welch, cwt, ricker, find_peaks_cwt
 from statsmodels.tsa.ar_model import AR
 from statsmodels.tsa.stattools import adfuller
+from cachetools import cached, LRUCache
 from functools import reduce
 
 
@@ -251,6 +252,21 @@ def mean_autocorrelation(x):
         return np.nanmean(r / var)
 
 
+cache = LRUCache(maxsize=10)
+
+@set_property("fctype", "aggregate")
+@not_apply_to_raw_numbers
+@cached(cache)
+def _augmented_dickey_fuller(x):
+    maxlag = 1
+    try:
+        return np.array(adfuller(x, maxlag))
+    except LinAlgError:
+        return np.NaN
+    except ValueError:
+        return np.NaN
+
+
 @set_property("fctype", "aggregate")
 @not_apply_to_raw_numbers
 def augmented_dickey_fuller(x):
@@ -265,13 +281,27 @@ def augmented_dickey_fuller(x):
     :return: the value of this feature
     :return type: float
     """
+    # convert x into tuple to make it hashable for cache
+    return _augmented_dickey_fuller(tuple(x))[0]
 
-    try:
-        return adfuller(x)[0]
-    except LinAlgError:
-        return np.NaN
-    except ValueError:  # occurs if sample size is too small
-        return np.NaN
+
+@set_property("fctype", "aggregate")
+@not_apply_to_raw_numbers
+def augmented_dickey_fuller_p_val(x):
+    """
+    The Augmented Dickey-Fuller is a hypothesis test which checks whether a unit root is present in a time
+    series sample. This feature calculator returns the value of the respective p-value.
+
+    See the statsmodels implementation for references and more details.
+
+    :param x: the time series to calculate the feature of
+    :type x: pandas.Series
+    :return: the value of this feature
+    :return type: float
+    """
+    # convert x into tuple to make it hashable for cache
+    return _augmented_dickey_fuller(tuple(x))[1]
+    
 
 
 @set_property("fctype", "aggregate")
