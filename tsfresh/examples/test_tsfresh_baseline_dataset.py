@@ -5,8 +5,7 @@ utilised by tests/baseline/tsfresh_features_test.py to test calculated feature
 names and their calculated values are consistent with the known baseline.
 """
 
-from __future__ import absolute_import
-from urllib.request import urlopen
+import requests
 import os
 from sys import version_info
 
@@ -38,13 +37,14 @@ def download_json_dataset():
     if os.path.isfile(data_file_name):
         return str(data_file_name)
 
-    with urlopen(url) as resp:
-        if python_version == 2:
-            json_data = resp.read()
-        if python_version == 3:
-            json_data = resp.read().decode(resp.headers.get_content_charset())
-        with open(data_file_name, 'w') as fh:
-            fh.write(json_data)
+    response = requests.get(url)
+
+    assert response.status_code == 200
+
+    json_data = response.text
+
+    with open(data_file_name, 'w') as fh:
+        fh.write(json_data)
 
     if os.path.isfile(data_file_name):
         return str(data_file_name)
