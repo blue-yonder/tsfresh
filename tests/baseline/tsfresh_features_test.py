@@ -120,14 +120,7 @@ class TestTsfreshBaseline(unittest.TestCase):
 
     def tearDown(self):
         # Remove the directory after the test
-        ran = False
-        fail_msg = 'failed to removed - %s' % self.test_path
-        try:
-            shutil.rmtree(self.test_path)
-            ran = True
-        except:
-            pass
-        self.assertTrue(ran, msg=fail_msg)
+        shutil.rmtree(self.test_path)
 
     def test_tsfresh_baseline_json(self):
         """
