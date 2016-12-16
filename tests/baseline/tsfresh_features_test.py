@@ -75,26 +75,19 @@ class TestTsfreshBaseline(unittest.TestCase):
 
     """
     def setUp(self):
-        self.baseline_ts_json = download_json_dataset()
+        download_json_dataset()
+
         self.test_path = tempfile.mkdtemp()
         self.fname_in = '%s/%s' % (self.test_path, baseline_ts_json_file)
         tmp_csv = '%s.tmp.csv' % (self.fname_in)
         t_fname_out = '%s.features.transposed.csv' % self.fname_in
 
-        self.assertTrue(os.path.exists(baseline_ts_json))
+        self.assertTrue(os.path.isfile(baseline_ts_json))
 
-        timeseries_json = None
-        if os.path.isfile(baseline_ts_json):
-            with open(baseline_ts_json, 'r') as f:
-                timeseries_json = json.loads(f.read())
+        with open(baseline_ts_json, 'r') as f:
+            timeseries_json = json.loads(f.read())
 
-        if python_version == 2:
-            timeseries_str = str(timeseries_json).replace('{u\'results\': ', '').replace('}', '')
-        if python_version == 3:
-            timeseries_str = str(timeseries_json).replace('{\'results\': ', '').replace('}', '')
-
-        full_timeseries = literal_eval(timeseries_str)
-        timeseries = full_timeseries[:60]
+        timeseries = timeseries_json["results"][:60]
         self.assertEqual(int(timeseries[0][0]), 1369677886)
         self.assertEqual(len(timeseries), 60)
 
@@ -108,51 +101,22 @@ class TestTsfreshBaseline(unittest.TestCase):
 
         self.assertTrue(os.path.isfile(tmp_csv))
 
-        df_features = None
         df = pd.read_csv(tmp_csv, delimiter=',', header=None, names=['metric', 'timestamp', 'value'])
         df.columns = ['metric', 'timestamp', 'value']
         df_features = extract_features(df, column_id='metric', column_sort='timestamp', column_kind=None, column_value=None)
 
-        df_created = None
-        # Test the DataFrame
-        try:
-            df_created = str(df_features.head())
-            if df_created:
-                self.assertTrue(isinstance(df_created, str))
-        # Catch when df_created is None
-        except AttributeError:
-            self.assertTrue(df_created)
-            pass
-        # Catch if not defined
-        except NameError:
-            self.assertTrue(df_created)
-            pass
+        self.assertTrue(str(df_features.head()))
 
         # Transpose, because we are humans
-        df_t = None
-        df_t = df_features.transpose()
-
-        # Test the DataFrame
-        df_t_created = None
-        try:
-            df_t_created = str(df_t.head())
-            if df_t_created:
-                self.assertTrue(isinstance(df_t_created, str))
-        # Catch when df_t_created is None
-        except AttributeError:
-            self.assertTrue(df_t_created)
-            pass
-        # Catch if not defined
-        except NameError:
-            self.assertTrue(df_t_created)
-            pass
-
-        # Write the transposed csv
-        df_t.to_csv(t_fname_out)
         self.df_trans = df_features.transpose()
 
+        # Test the DataFrame
+        self.assertTrue(str(self.df_trans.head()))
+
+        # Write the transposed csv
+        self.df_trans.to_csv(t_fname_out)
+
         self.assertTrue(os.path.isfile(t_fname_out))
-        return True
 
     def tearDown(self):
         # Remove the directory after the test
