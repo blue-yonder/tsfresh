@@ -1,19 +1,14 @@
 import sys
 import os
-from time import time, sleep
 import shutil
-import datetime
-import csv
 import json
 import tempfile
 from ast import literal_eval
 import re
 
 import unittest
-from mock import Mock, patch
-import numpy as np
 import pandas as pd
-from tsfresh import extract_features, extract_relevant_features, select_features
+from tsfresh import extract_features
 from tsfresh import __version__ as tsfresh_version
 from tsfresh.examples.test_tsfresh_baseline_dataset import download_json_dataset
 
