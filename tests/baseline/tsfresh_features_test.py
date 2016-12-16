@@ -41,7 +41,7 @@ baseline_ts_json_baseline = '%s/tsfresh-%s.py%s.%s.features.transposed.csv' % (
 t_fname_out_fail = '%s/tsfresh/examples/data/test_tsfresh_baseline_dataset/tsfresh-unknown-version.py%s.data.json.features.transposed.csv' % (tsfresh_dir, str(python_version))
 baseline_ts_json = '%s/tsfresh/examples/data/test_tsfresh_baseline_dataset/data.json' % tsfresh_dir
 
-from pandas.util.testing import assert_frame_equal
+from numpy.testing import assert_almost_equal
 
 message_header = """
 See the docs on how to update the baseline.
@@ -139,12 +139,14 @@ class TestTsfreshBaseline(unittest.TestCase):
 
         df_t = pd.read_csv(
             t_fname_out, delimiter=',', header=None,
-            names=['feature_name', 'value'])
+            names=['feature_name', 'value']).sort("feature_name").reset_index(drop=True)
+
         calculated_features = set(df_t["feature_name"])
 
         df_baseline = pd.read_csv(
             baseline_ts_json_baseline, delimiter=',', header=None,
-            names=['feature_name', 'value'])
+            names=['feature_name', 'value']).sort("feature_name").reset_index(drop=True)
+
         baseline_features = set(df_baseline["feature_name"])
 
         try:
@@ -154,7 +156,10 @@ class TestTsfreshBaseline(unittest.TestCase):
             self.assertEqual(not_in_calculated, set())
             self.assertEqual(not_in_baseline, set())
 
-            assert_frame_equal(df_t, df_baseline)
+            for t_row, baseline_row in zip(df_t.itertuples(), df_baseline.itertuples()):
+                if t_row.value != "tsfresh_features_test":
+                    assert_almost_equal(float(t_row.value), float(baseline_row.value))
+                    self.assertEqual(t_row.feature_name, baseline_row.feature_name)
 
         except AssertionError:
             shutil.move(t_fname_out, t_fname_out_fail)
