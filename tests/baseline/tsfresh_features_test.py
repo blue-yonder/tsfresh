@@ -41,6 +41,12 @@ baseline_ts_json_baseline = '%s/tsfresh-%s.py%s.%s.features.transposed.csv' % (
 t_fname_out_fail = '%s/tsfresh/examples/data/test_tsfresh_baseline_dataset/tsfresh-unknown-version.py%s.data.json.features.transposed.csv' % (tsfresh_dir, str(python_version))
 baseline_ts_json = '%s/tsfresh/examples/data/test_tsfresh_baseline_dataset/data.json' % tsfresh_dir
 
+from pandas.util.testing import assert_frame_equal
+
+message_header = """
+See the docs on how to update the baseline.
+New local baseline: {local_baseline}
+"""
 
 class TestTsfreshBaseline(unittest.TestCase):
     """
@@ -134,36 +140,26 @@ class TestTsfreshBaseline(unittest.TestCase):
         df_t = pd.read_csv(
             t_fname_out, delimiter=',', header=None,
             names=['feature_name', 'value'])
-        df_t_features = []
-        for index, line in df_t.iterrows():
-            df_t_features.append([str(line[0]), str(line[1])])
-        calculated_features = sorted(df_t_features, key=lambda row: row[0], reverse=True)
+        calculated_features = set(df_t["feature_name"])
 
         df_baseline = pd.read_csv(
             baseline_ts_json_baseline, delimiter=',', header=None,
             names=['feature_name', 'value'])
-        df_baseline_features = []
-        for index, line in df_baseline.iterrows():
-            df_baseline_features.append([str(line[0]), str(line[1])])
-        baseline_features = sorted(df_baseline_features, key=lambda row: row[0], reverse=True)
+        baseline_features = set(df_baseline["feature_name"])
 
-        features_equal = False
-        fail_msg = 'none'
-        if baseline_features == calculated_features:
-            features_equal = True
-        else:
-            not_in_calculated = [x for x in baseline_features if x not in calculated_features]
-            not_in_baseline = [x for x in calculated_features if x not in baseline_features]
-            fail_msg = '''
-See the docs on how to update the baseline.
-New local baseline: %s
+        try:
+            not_in_calculated = baseline_features - calculated_features
+            not_in_baseline = calculated_features - baseline_features
 
-NOT in baseline   :: %s
+            self.assertEqual(not_in_calculated, set())
+            self.assertEqual(not_in_baseline, set())
 
-NOT in calculated :: %s''' % (t_fname_out_fail, str(not_in_baseline), str(not_in_calculated))
-        if not features_equal:
+            assert_frame_equal(df_t, df_baseline)
+
+        except AssertionError:
             shutil.move(t_fname_out, t_fname_out_fail)
-        self.assertTrue(features_equal, msg=fail_msg)
+            print(message_header.format(local_baseline=t_fname_out_fail))
+            raise
 
 if __name__ == '__main__':
     unittest.main()
