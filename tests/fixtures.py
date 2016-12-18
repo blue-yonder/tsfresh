@@ -9,7 +9,7 @@ import pandas as pd
 # todo: add test cases with time series of length one
 class DataTestCase(TestCase):
     def create_test_data_sample(self):
-        cid = np.repeat([1, 5], 40)
+        cid = np.repeat([10, 500], 40)
         ckind = np.repeat(["a", "b", "a", "b"], 20)
         csort = [30, 53, 26, 35, 42, 25, 17, 67, 20, 68, 46, 12, 0, 74, 66, 31, 32,
                  2, 55, 59, 56, 60, 34, 69, 47, 15, 49, 8, 50, 73, 23, 62, 24, 33,
@@ -22,7 +22,7 @@ class DataTestCase(TestCase):
                 77, 26, 73, 76, 75, 72, 74, 10, 57, 4, 14, 68, 22, 18, 52, 54, 60,
                 79, 12, 49, 63, 8, 59, 1, 13, 20, 17, 48, 34]
         df = pd.DataFrame({"id": cid, "kind": ckind, "sort": csort, "val": cval})
-        return df
+        return df.set_index("id", drop=False)
 
 
     def create_one_valued_time_series(self):

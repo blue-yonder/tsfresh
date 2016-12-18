@@ -38,8 +38,8 @@ class RelevantFeatureAugmenterTestCase(DataTestCase):
                                             column_value="val", column_id="id", column_sort="sort",
                                             column_kind="kind")
 
-        y = pd.Series({1: 1, 5: 0})
-        X = pd.DataFrame(index=[1, 5])
+        y = pd.Series({10: 1, 500: 0})
+        X = pd.DataFrame(index=[10, 500])
 
         augmenter.set_timeseries_container(self.test_df)
         augmenter.fit(X, y)
@@ -56,8 +56,8 @@ class RelevantFeatureAugmenterTestCase(DataTestCase):
                                             column_value="val", column_id="id", column_sort="sort",
                                             column_kind="kind")
 
-        y = pd.Series({1: 1, 5: 0})
-        X = pd.DataFrame(index=[1, 5])
+        y = pd.Series({10: 1, 500: 0})
+        X = pd.DataFrame(index=[10, 500])
 
         augmeter.set_timeseries_container(self.test_df)
         augmeter.fit(X, y)

@@ -31,7 +31,7 @@ class FeatureAugmenterTestCase(DataTestCase):
         augmenter.set_timeseries_container(self.test_df)
 
         # Add features to all time series
-        X_with_index = pd.DataFrame([{"feature_1": 1}]*2, index=[1, 5])
+        X_with_index = pd.DataFrame([{"feature_1": 1}]*2, index=[10, 500])
         X_transformed = augmenter.transform(X_with_index)
 
         # Require same shape
@@ -58,7 +58,7 @@ class FeatureAugmenterTestCase(DataTestCase):
 
         augmenter.set_timeseries_container(self.test_df)
 
-        X_with_not_all_ids = pd.DataFrame([{"feature_1": 1}], index=[1])
+        X_with_not_all_ids = pd.DataFrame([{"feature_1": 1}], index=[10])
         X_transformed = augmenter.transform(X_with_not_all_ids)
 
         for i in X_transformed.index:
@@ -68,7 +68,7 @@ class FeatureAugmenterTestCase(DataTestCase):
             self.assertIn(i, X_transformed.index)
 
         self.assertEqual(X_transformed.shape, (1, 3))
-        self.assertEqual(X_transformed.index, [1])
+        self.assertEqual(X_transformed.index, [10])
 
         # Features are not allowed to be NaN
         for index, row in X_transformed.iterrows():
