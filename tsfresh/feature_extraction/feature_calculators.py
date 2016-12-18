@@ -955,6 +955,8 @@ def mean_abs_change_quantiles(x, ql, qh):
     :return: the value of this feature
     :return type: float
     """
+    x = np.asarray(x)
+
     if ql >= qh:
         ValueError("ql={} should be lower than qh={}".format(ql, qh))
     div = np.abs(np.diff(x))
