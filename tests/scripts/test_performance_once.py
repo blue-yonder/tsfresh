@@ -139,9 +139,6 @@ def calc_saving(x, func_object, func_name, fc_times):
 x = create_x()
 
 calc_saving(x, np.std, 'np.std', 5)
-# ≈ (0.07 to 0.2) × average length of a human blink of an eye ( 100 to 400 ms )
-# ≈ time for a nerve impulse to travel the length of a human ( 1 average human heights/maximum speed of a nerve impulse )
-
 calc_saving(x, np.var, 'np.var', 3)
 calc_saving(x, len, 'len', 26)
 calc_saving(x, np.mean, 'np.mean', 13)
@@ -161,4 +158,3 @@ diff = np.diff(a) / np.abs(a[:-1]) * 100.
 print(
     'It is %s percent less efficient to calculate values multiple times' %
     (str(diff)))
-
