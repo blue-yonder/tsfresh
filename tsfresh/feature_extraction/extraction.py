@@ -198,7 +198,7 @@ def _extract_features_parallel_per_sample(kind_to_df_map, settings, column_id, c
                               for kind, df_kind in kind_to_df_map.items()
                               for _, df_group in df_kind.groupby(column_id))
 
-    dfs_per_kind = pool.map(
+    kind_and_df_list = pool.map(
         partial_extract_features_for_one_time_series,
         kind_and_df_group_list,
         chunksize=settings.chunksize,
@@ -208,16 +208,18 @@ def _extract_features_parallel_per_sample(kind_to_df_map, settings, column_id, c
     pool.close()
     pool.join()
 
-    # dfs_per_kind is now a list of (kind, df). We want to extract all dfs with the same kind and concatenate them
+    # kind_and_df_list is now a list of (kind, df). We want to extract all dfs with the same kind and concatenate them
     # We have to make sure to not create unnecessary copies here.
 
-    # We will use groupby to group the list by their kind entry. The keyfunction extracts this kind for us.
-    keyfunction = lambda kind_and_df: kind_and_df[0]
-    dfs_per_kind = sorted(dfs_per_kind, key=keyfunction)
-    dfs_per_kind = (pd.concat((df for kind, df in dfs), axis=0).astype(np.float64)
-                    for kind, dfs in groupby(dfs_per_kind, keyfunction))
+    # We will use groupby to group the list by their kind entry. The extract_kind_function extracts this kind for us.
+    def extract_kind_function(x):
+        return x[0]
 
-    result = pd.concat(dfs_per_kind, axis=1).astype(np.float64)
+    kind_and_df_list = sorted(kind_and_df_list, key=extract_kind_function)
+    kind_and_df_list = (pd.concat((df for kind, df in dfs), axis=0).astype(np.float64)
+                        for kind, dfs in groupby(kind_and_df_list, extract_kind_function))
+
+    result = pd.concat(kind_and_df_list, axis=1).astype(np.float64)
 
     return result
 
