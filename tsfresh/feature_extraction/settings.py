@@ -19,6 +19,7 @@ from functools import partial
 import numpy as np
 from tsfresh.feature_extraction import feature_calculators
 from multiprocessing import cpu_count
+import six
 
 
 # todo: this classes' docstrings are not completely up-to-date
@@ -101,6 +102,11 @@ class FeatureExtractionSettings(object):
                 "range_count": [{"min": -1, "max": 1}],
                 "approximate_entropy": [{"m": 2, "r": r} for r in [.1, .3, .5, .7, .9]]
             })
+
+        # drop all features with high computational costs
+        for fname, f in six.iteritems(feature_calculators.__dict__):
+            if hasattr(f, "high_comp_cost"):
+                del self.name_to_param[fname]
 
         # default None means one procesqs per cpu
         n_cores = int(os.getenv("NUMBER_OF_CPUS") or cpu_count())

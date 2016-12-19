@@ -1045,6 +1045,7 @@ def binned_entropy(x, max_bins):
 
 # todo - include latex formula
 # todo - check if vectorizable
+@set_property("high_comp_cost", True)
 @set_property("fctype", "aggregate")
 def sample_entropy(x):
     """
@@ -1200,6 +1201,7 @@ def range_count(x, min, max):
 
 
 @set_property("fctype", "aggregate_with_parameters")
+@set_property("high_comp_cost", True)
 def approximate_entropy(x, m, r):
     """
     Implements a vectorized Approximate entropy algorithm.
