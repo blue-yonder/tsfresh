@@ -1,0 +1,217 @@
+,tsfresh_features_test
+value__symmetry_looking__r_0.7000000000000001,1.0
+value__symmetry_looking__r_0.2,1.0
+value__symmetry_looking__r_0.25,1.0
+value__mean_abs_change_quantiles__qh_0.8__ql_0.4,20.0
+value__autocorrelation__lag_6,0.5124801685138614
+value__length,60.0
+value__mean_abs_change_quantiles__qh_0.6__ql_0.8,0.0
+value__approximate_entropy__m_2__r_0.3,0.5560594285625684
+value__mean_autocorrelation,1.1720475293977404
+value__skewness,-0.13542292125432515
+value__count_above_mean,29.0
+value__mean_abs_change_quantiles__qh_0.8__ql_0.8,0.0
+value__symmetry_looking__r_0.75,1.0
+value__large_standard_deviation__r_0.15000000000000002,1.0
+value__maximum,10123.0
+value__large_standard_deviation__r_0.1,1.0
+value__mean_abs_change,46.69491525423729
+value__quantile__q_0.8,10033.2
+value__mean_second_derivate_central,0.7068965517241379
+value__augmented_dickey_fuller,-0.8041220342033477
+value__abs_energy,5983503421.0
+value__large_standard_deviation__r_0.45,0.0
+value__mean_abs_change_quantiles__qh_0.4__ql_0.0,35.6
+value__mean_abs_change_quantiles__qh_0.4__ql_0.6,0.0
+value__mean_abs_change_quantiles__qh_0.8__ql_0.0,43.02564102564103
+value__autocorrelation__lag_0,1.0
+value__large_standard_deviation__r_0.25,0.0
+value__approximate_entropy__m_2__r_0.5,0.8166299197284519
+value__symmetry_looking__r_0.45,1.0
+value__large_standard_deviation__r_0.2,1.0
+value__quantile__q_0.9,10048.9
+value__time_reversal_asymmetry_statistic__lag_3,1993963105.1111112
+value__mean_abs_change_quantiles__qh_1.0__ql_0.8,58.333333333333336
+value__mean_abs_change_quantiles__qh_1.0__ql_0.6,41.125
+value__mean_abs_change_quantiles__qh_0.6__ql_0.0,42.25
+value__autocorrelation__lag_5,0.46463952576506445
+value__large_number_of_peaks__n_3,1.0
+value__mean_abs_change_quantiles__qh_0.2__ql_0.4,0.0
+value__mean_abs_change_quantiles__qh_1.0__ql_0.4,45.074074074074076
+value__autocorrelation__lag_4,0.535012070945404
+value__large_standard_deviation__r_0.4,0.0
+value__symmetry_looking__r_0.9,1.0
+value__sample_entropy,2.226461397521245
+value__has_duplicate_max,0.0
+value__number_peaks__n_1,21.0
+value__quantile__q_0.6,10004.8
+value__ratio_value_number_to_time_series_length,0.9
+value__symmetry_looking__r_0.5,1.0
+value__symmetry_looking__r_0.8,1.0
+value__standard_deviation,56.53915801361822
+value__quantile__q_0.2,9937.8
+value__approximate_entropy__m_2__r_0.7,0.7705662353813092
+value__median,9981.0
+value__variance_larger_than_standard_deviation,1.0
+value__time_reversal_asymmetry_statistic__lag_2,1215832201.5892856
+value__mean_abs_change_quantiles__qh_0.4__ql_0.8,0.0
+value__sum_of_reoccurring_values,109822.0
+value__has_duplicate,1.0
+value__symmetry_looking__r_0.8500000000000001,1.0
+value__mean_change,2.389830508474576
+value__symmetry_looking__r_0.65,1.0
+value__symmetry_looking__r_0.55,1.0
+value__autocorrelation__lag_9,0.21748400096837414
+value__symmetry_looking__r_0.05,1.0
+value__percentage_of_reoccurring_datapoints_to_all_datapoints,0.09259259259259259
+value__number_cwt_peaks__n_1,9.0
+value__value_count__value_0,0.0
+value__last_location_of_minimum,0.033333333333333326
+value__autocorrelation__lag_8,0.3600822542968586
+value__large_number_of_peaks__n_1,1.0
+value__large_standard_deviation__r_0.35000000000000003,0.0
+value__quantile__q_0.4,9975.6
+value__first_location_of_minimum,0.016666666666666666
+value__kurtosis,-0.028901521751474757
+value__quantile__q_0.7,10017.6
+value__mean_abs_change_quantiles__qh_0.8__ql_0.2,31.61904761904762
+value__range_count__max_1__min_-1,0.0
+value__count_below_mean,31.0
+value__value_count__value_nan,0.0
+value__value_count__value_-inf,0.0
+value__mean_abs_change_quantiles__qh_0.2__ql_0.6,0.0
+value__symmetry_looking__r_0.35000000000000003,1.0
+value__variance,3196.676388888889
+value__quantile__q_0.3,9962.7
+value__sum_values,599165.0
+value__number_peaks__n_3,9.0
+value__absolute_sum_of_changes,2755.0
+value__percentage_of_reoccurring_values_to_all_values,0.18333333333333332
+value__large_standard_deviation__r_0.30000000000000004,0.0
+value__time_reversal_asymmetry_statistic__lag_1,836027272.2758621
+value__approximate_entropy__m_2__r_0.9,0.6797278530812287
+value__mean_abs_change_quantiles__qh_0.4__ql_0.2,12.0
+value__symmetry_looking__r_0.4,1.0
+value__mean_abs_change_quantiles__qh_0.4__ql_0.4,0.0
+value__number_cwt_peaks__n_5,6.0
+value__mean_abs_change_quantiles__qh_0.6__ql_0.6,0.0
+value__autocorrelation__lag_7,0.6538534951469428
+value__large_standard_deviation__r_0.0,1.0
+value__last_location_of_maximum,0.9666666666666667
+value__mean_abs_change_quantiles__qh_0.6__ql_0.4,6.0
+value__approximate_entropy__m_2__r_0.1,0.07689162502170799
+value__symmetry_looking__r_0.15000000000000002,1.0
+value__autocorrelation__lag_3,0.41157540616944277
+value__mean,9986.083333333334
+value__longest_strike_below_mean,9.0
+value__symmetry_looking__r_0.1,1.0
+value__value_count__value_1,0.0
+value__symmetry_looking__r_0.6000000000000001,1.0
+value__has_duplicate_min,0.0
+value__large_standard_deviation__r_0.05,1.0
+value__longest_strike_above_mean,10.0
+value__binned_entropy__max_bins_10,2.119743626741142
+value__first_location_of_maximum,0.95
+value__mean_abs_change_quantiles__qh_0.2__ql_0.8,0.0
+value__symmetry_looking__r_0.0,0.0
+value__large_number_of_peaks__n_5,0.0
+value__autocorrelation__lag_2,0.36765813197781516
+value__mean_abs_change_quantiles__qh_0.6__ql_0.2,23.181818181818183
+value__quantile__q_0.1,9909.9
+value__mean_abs_change_quantiles__qh_1.0__ql_0.0,46.69491525423729
+value__mean_abs_change_quantiles__qh_1.0__ql_0.2,42.46341463414634
+value__mean_abs_change_quantiles__qh_0.2__ql_0.2,0.0
+value__number_peaks__n_5,4.0
+value__mean_abs_change_quantiles__qh_0.2__ql_0.0,29.4
+value__value_count__value_inf,0.0
+value__minimum,9856.0
+value__symmetry_looking__r_0.9500000000000001,1.0
+value__mean_abs_change_quantiles__qh_0.8__ql_0.6,13.0
+value__autocorrelation__lag_1,0.5154799442499526
+value__symmetry_looking__r_0.30000000000000004,1.0
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_0__w_2",-40.26584696076512
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_1__w_2",5485.741180131762
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_2__w_2",7535.02284445965
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_3__w_2",6017.192007927546
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_4__w_2",3308.4304014332133
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_5__w_2",1295.7433671924832
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_6__w_2",336.63243154202974
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_7__w_2",39.91676725858371
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_8__w_2",17.95548569182395
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_9__w_2",50.25903008787768
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_10__w_2",35.90470247450137
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_11__w_2",-24.14602386100941
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_12__w_2",-61.88712524130824
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_13__w_2",-33.66850432521918
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_14__w_2",24.2088382102474
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_0__w_5",-20.25759713427192
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_1__w_5",3771.32544151532
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_2__w_5",7120.960920890312
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_3__w_5",9670.131692340241
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_4__w_5",11207.929406479912
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_5__w_5",11696.157551031654
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_6__w_5",11253.943680982822
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_7__w_5",10110.899443515671
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_8__w_5",8545.473828217693
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_9__w_5",6826.238621617837
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_10__w_5",5169.353887616802
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_11__w_5",3717.9693031013257
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_12__w_5",2542.019687569354
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_13__w_5",1652.1018555118546
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_14__w_5",1019.5707851504081
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_0__w_10",836.6419785398173
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_1__w_10",3543.079676303278
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_2__w_10",6167.81421141303
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_3__w_10",8634.724847532969
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_4__w_10",10876.52373637707
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_5__w_10",12835.39894023715
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_6__w_10",14466.109489818979
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_7__w_10",15737.722443656134
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_8__w_10",16639.548449136702
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_9__w_10",17169.07664099483
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_10__w_10",17339.769765701127
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_11__w_10",17183.302683017107
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_12__w_10",16737.753845933414
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_13__w_10",16046.185770382554
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_14__w_10",15154.905872253847
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_0__w_20",18718.957258866507
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_1__w_20",20645.635031408423
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_2__w_20",22554.42070815293
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_3__w_20",24433.795924964932
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_4__w_20",26275.187181689304
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_5__w_20",28065.040620993466
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_6__w_20",29788.065740263246
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_7__w_20",31428.519814904783
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_8__w_20",32985.8151195006
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_9__w_20",34437.54084086011
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_10__w_20",35770.923231998284
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_11__w_20",36992.81478848827
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_12__w_20",38098.19391272645
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_13__w_20",39076.98980573952
+"value__cwt_coefficients__widths_(2, 5, 10, 20)__coeff_14__w_20",39919.05725014526
+value__index_mass_quantile__q_0.1,0.11666666666666667
+value__index_mass_quantile__q_0.2,0.21666666666666667
+value__index_mass_quantile__q_0.3,0.31666666666666665
+value__index_mass_quantile__q_0.4,0.4166666666666667
+value__index_mass_quantile__q_0.6,0.6166666666666667
+value__index_mass_quantile__q_0.7,0.7166666666666667
+value__index_mass_quantile__q_0.8,0.8166666666666667
+value__index_mass_quantile__q_0.9,0.9166666666666666
+value__spkt_welch_density__coeff_2,1843.8211718074976
+value__spkt_welch_density__coeff_5,2859.9769051963667
+value__spkt_welch_density__coeff_8,2536.9954700088915
+value__fft_coefficient__coeff_0,178744.0
+value__fft_coefficient__coeff_1,-0.8045103874789064
+value__fft_coefficient__coeff_2,-53.13286168327596
+value__fft_coefficient__coeff_3,-338.00000000000006
+value__fft_coefficient__coeff_4,122.44503935479226
+value__fft_coefficient__coeff_5,-58.9307961342311
+value__fft_coefficient__coeff_6,13.000000000000057
+value__fft_coefficient__coeff_7,112.23530652170982
+value__fft_coefficient__coeff_8,118.18782232848392
+value__fft_coefficient__coeff_9,-248.0
+value__ar_coefficient__k_10__coeff_0,904.4391850794491
+value__ar_coefficient__k_10__coeff_1,0.1635789481157781
+value__ar_coefficient__k_10__coeff_2,-0.0432470001474492
+value__ar_coefficient__k_10__coeff_3,-0.06654237068301239
+value__ar_coefficient__k_10__coeff_4,0.2836853193919273
