@@ -17,6 +17,10 @@ can be used with pandas apply.
 from __future__ import absolute_import, division
 from builtins import range
 import itertools
+# @added 20161219 - performance_once
+import logging
+from timeit import default_timer as timer
+
 import numpy as np
 from numpy.linalg import LinAlgError
 import numbers
@@ -28,8 +32,16 @@ from statsmodels.tsa.ar_model import AR
 from statsmodels.tsa.stattools import adfuller
 from functools import reduce
 
+logging.basicConfig(filename='/tmp/tsfresh.debug.log', filemode='w', level=logging.DEBUG)
 
 # todo: make sure '_' works in parameter names in all cases, add a warning if not
+
+
+def end_timer(start):
+    end = timer()
+    runtime = end - start
+    return str('%.6f' % runtime)
+
 
 def _get_length_sequences_where(x):
     """
@@ -53,7 +65,10 @@ def _get_length_sequences_where(x):
     :return: A list with the length of all sub-sequences where the array is either True or False. If no ones or Trues
     contained, a the list [0] is returned.
     """
+    start = timer()
     if len(x) == 0:
+        runtime = end_timer(start)
+        logging.debug('len,%s' % runtime)
         return [0]
     else:
         res = [len(list(group)) for value, group in itertools.groupby(x) if value == 1]
@@ -71,9 +86,15 @@ def not_apply_to_raw_numbers(func):
 
     @wraps(func)
     def func_on_nonNumberObject(x, *arg, **args):
+        start = timer()
         if isinstance(x, numbers.Number):
+            runtime = end_timer(start)
+            runtime = end - start
+            logging.debug('isinstance,%s' % runtime)
             return 0
         else:
+            runtime = end_timer(start)
+            logging.debug('isinstance,%s' % runtime)
             return func(x, *arg, **args)
     return func_on_nonNumberObject
 
@@ -102,7 +123,17 @@ def variance_larger_than_standard_deviation(x):
     :return: the value of this feature
     :return type: bool
     """
-    return np.var(x) > np.std(x)
+    start = timer()
+    np_var_x = np.var(x)
+    runtime = end_timer(start)
+    logging.debug('np.var,%s' % runtime)
+    start = timer()
+    np_std_x = np.std(x)
+    runtime = end_timer(start)
+    logging.debug('np.std,%s' % runtime)
+
+    # return np.var(x) > np.std(x)
+    return np_var_x > np_std_x
 
 
 @set_property("fctype", "aggregate_with_parameters")
@@ -126,7 +157,21 @@ def large_standard_deviation(x, r):
     :return: the value of this feature
     :return type: bool
     """
-    return np.std(x) > (r * (max(x) - min(x)))
+    start = timer()
+    np_std_x = np.std(x)
+    runtime = end_timer(start)
+    logging.debug('np.std,%s' % runtime)
+    start = timer()
+    max_x = max(x)
+    runtime = end_timer(start)
+    logging.debug('max,%s' % runtime)
+    start = timer()
+    min_x = min(x)
+    runtime = end_timer(start)
+    logging.debug('min,%s' % runtime)
+
+    # return np.std(x) > (r * (max(x) - min(x)))
+    return np_std_x > (r * (max_x - min_x))
 
 
 @set_property("fctype", "aggregate_with_parameters")
@@ -146,7 +191,29 @@ def symmetry_looking(x, r):
     :return: the value of this feature
     :return type: bool
     """
+
+    start = timer()
+    np_mean_x = np.mean(x)
+    runtime = end_timer(start)
+    logging.debug('np.mean,%s' % runtime)
+
+    start = timer()
+    np_median_x = np.median(x)
+    runtime = end_timer(start)
+    logging.debug('np.median,%s' % runtime)
+
+    start = timer()
+    max_x = max(x)
+    runtime = end_timer(start)
+    logging.debug('max,%s' % runtime)
+
+    start = timer()
+    min_x = min(x)
+    runtime = end_timer(start)
+    logging.debug('min,%s' % runtime)
+
     return abs(np.mean(x) - np.median(x)) < (r * (max(x) - min(x)))
+    return abs(np_mean_x - np_median_x) < (r * (max_x - min_x))
 
 
 @set_property("fctype", "aggregate")
@@ -160,7 +227,19 @@ def has_duplicate_max(x):
     :return: the value of this feature
     :return type: bool
     """
-    return sum(np.asarray(x) == max(x)) >= 2
+
+    start = timer()
+    max_x = max(x)
+    runtime = end_timer(start)
+    logging.debug('max,%s' % runtime)
+
+    start = timer()
+    np_asarray_x = np.asarray(x)
+    runtime = end_timer(start)
+    logging.debug('np.asarray,%s' % runtime)
+
+    # return sum(np.asarray(x) == max(x)) >= 2
+    return sum(np_asarray_x == max_x) >= 2
 
 
 @set_property("fctype", "aggregate")
@@ -174,7 +253,18 @@ def has_duplicate_min(x):
     :return: the value of this feature
     :return type: bool
     """
-    return sum(np.asarray(x) == min(x)) >= 2
+    start = timer()
+    min_x = min(x)
+    runtime = end_timer(start)
+    logging.debug('min,%s' % runtime)
+
+    start = timer()
+    np_asarray_x = np.asarray(x)
+    runtime = end_timer(start)
+    logging.debug('np.asarray,%s' % runtime)
+
+    # return sum(np.asarray(x) == min(x)) >= 2
+    return sum(np_asarray_x == min_x) >= 2
 
 
 @set_property("fctype", "aggregate")
@@ -188,7 +278,13 @@ def has_duplicate(x):
     :return: the value of this feature
     :return type: bool
     """
-    return len(x) != len(set(x))
+    start = timer()
+    len_x = len(x)
+    runtime = end_timer(start)
+    logging.debug('min,%s' % runtime)
+
+    # return len(x) != len(set(x))
+    return len_x != len(set(x))
 
 
 @set_property("fctype", "aggregate")
@@ -202,7 +298,13 @@ def sum_values(x):
     :return: the value of this feature
     :return type: bool
     """
-    return np.sum(x)
+    start = timer()
+    np_sum_x = np.sum(x)
+    runtime = end_timer(start)
+    logging.debug('np.sum,%s' % runtime)
+
+    # return np.sum(x)
+    return np_sum_x
 
 
 @set_property("fctype", "aggregate_with_parameters")
@@ -240,13 +342,35 @@ def mean_autocorrelation(x):
     :return: the value of this feature
     :return type: float
     """
+    start = timer()
+    len_x = len(x)
+    runtime = end_timer(start)
+    logging.debug('len,%s' % runtime)
+
+    # n = len(x)
+    n = len_x
+
+    start = timer()
     var = np.var(x)
-    n = len(x)
+    runtime = end_timer(start)
+    logging.debug('np.var,%s' % runtime)
 
     if abs(var) < 10**-10 or n == 1:
         return 0
     else:
-        r = np.correlate(x - np.mean(x), x - np.mean(x), mode='full')
+
+        start = timer()
+        np_mean_x_1 = np.mean(x)
+        runtime = end_timer(start)
+        logging.debug('np.mean,%s' % runtime)
+
+        start = timer()
+        np_mean_x_2 = np.mean(x)
+        runtime = end_timer(start)
+        logging.debug('np.mean,%s' % runtime)
+
+        # r = np.correlate(x - np.mean(x), x - np.mean(x), mode='full')
+        r = np.correlate(x - np_mean_x_1, x - np_mean_x_2, mode='full')
         r = r[0: (n-1)] / np.arange(n-1, 0, -1)
         return np.nanmean(r / var)
 
@@ -289,7 +413,13 @@ def abs_energy(x):
     :return: the value of this feature
     :return type: float
     """
-    x = np.asarray(x)
+    start = timer()
+    np_asarray_x = np.asarray(x)
+    runtime = end_timer(start)
+    logging.debug('np.asarray,%s' % runtime)
+
+    # x = np.asarray(x)
+    x = np_asarray_x
     return sum(x * x)
 
 
@@ -345,8 +475,13 @@ def mean_second_derivate_central(x):
     :return: the value of this feature
     :return type: float
     """
+    start = timer()
+    np_array_x = np.array(x)
+    runtime = end_timer(start)
+    logging.debug('np.array,%s' % runtime)
 
-    diff = (np.roll(x, 1) - 2 * np.array(x) + np.roll(x, -1)) / 2.0
+    # diff = (np.roll(x, 1) - 2 * np.array(x) + np.roll(x, -1)) / 2.0
+    diff = (np.roll(x, 1) - 2 * np_array_x + np.roll(x, -1)) / 2.0
     return np.mean(diff[1:-1])
 
 
@@ -361,7 +496,13 @@ def median(x):
     :return: the value of this feature
     :return type: float
     """
-    return np.median(x)
+    start = timer()
+    np_median_x = np.median(x)
+    runtime = end_timer(start)
+    logging.debug('np.median,%s' % runtime)
+
+    # return np.median(x)
+    return np_median_x
 
 
 @set_property("fctype", "aggregate")
@@ -375,7 +516,13 @@ def mean(x):
     :return: the value of this feature
     :return type: float
     """
-    return np.mean(x)
+    start = timer()
+    np_mean_x = np.mean(x)
+    runtime = end_timer(start)
+    logging.debug('np.mean,%s' % runtime)
+
+    # return np.mean(x)
+    return np_mean_x
 
 
 @set_property("fctype", "aggregate")
@@ -390,7 +537,12 @@ def length(x):
     :return: the value of this feature
     :return type: int
     """
-    return len(x)
+    start = timer()
+    len_x = len(x)
+    runtime = end_timer(start)
+    logging.debug('len,%s' % runtime)
+    # return len(x)
+    return len_x
 
 
 @set_property("fctype", "aggregate")
@@ -405,7 +557,13 @@ def standard_deviation(x):
     :return: the value of this feature
     :return type: float
     """
-    return np.std(x)
+    start = timer()
+    np_std_x = np.std(x)
+    runtime = end_timer(start)
+    logging.debug('np.std,%s' % runtime)
+
+    # return np.std(x)
+    return np_std_x
 
 
 @set_property("fctype", "aggregate")
@@ -420,7 +578,13 @@ def variance(x):
     :return: the value of this feature
     :return type: float
     """
-    return np.var(x)
+    start = timer()
+    np_var_x = np.var(x)
+    runtime = end_timer(start)
+    logging.debug('np.var,%s' % runtime)
+
+    # return np.var(x)
+    return np_var_x
 
 
 @set_property("fctype", "aggregate")
@@ -484,8 +648,18 @@ def longest_strike_below_mean(x):
     :return: the value of this feature
     :return type: float
     """
+    start = timer()
+    len_x = len(x)
+    runtime = end_timer(start)
+    logging.debug('len,%s' % runtime)
 
-    return max(_get_length_sequences_where(x <= np.mean(x))) if len(x) > 0 else 0
+    start = timer()
+    np_mean_x = np.mean(x)
+    runtime = end_timer(start)
+    logging.debug('np.mean,%s' % runtime)
+
+    # return max(_get_length_sequences_where(x <= np.mean(x))) if len(x) > 0 else 0
+    return max(_get_length_sequences_where(x <= np_mean_x)) if len_x > 0 else 0
 
 
 @set_property("fctype", "aggregate")
@@ -499,8 +673,18 @@ def longest_strike_above_mean(x):
     :return: the value of this feature
     :return type: float
     """
+    start = timer()
+    len_x = len(x)
+    runtime = end_timer(start)
+    logging.debug('len,%s' % runtime)
 
-    return max(_get_length_sequences_where(x >= np.mean(x))) if len(x) > 0 else 0
+    start = timer()
+    np_mean_x = np.mean(x)
+    runtime = end_timer(start)
+    logging.debug('np.mean,%s' % runtime)
+
+    # return max(_get_length_sequences_where(x >= np.mean(x))) if len(x) > 0 else 0
+    return max(_get_length_sequences_where(x >= np_mean_x)) if len_x > 0 else 0
 
 
 @set_property("fctype", "aggregate")
@@ -514,8 +698,13 @@ def count_above_mean(x):
     :return: the value of this feature
     :return type: float
     """
+    start = timer()
+    np_mean_x = np.mean(x)
+    runtime = end_timer(start)
+    logging.debug('np.mean,%s' % runtime)
 
-    return sum(x > np.mean(x))
+    # return sum(x > np.mean(x))
+    return sum(x > np_mean_x)
 
 
 @set_property("fctype", "aggregate")
@@ -529,8 +718,13 @@ def count_below_mean(x):
     :return: the value of this feature
     :return type: float
     """
+    start = timer()
+    np_mean_x = np.mean(x)
+    runtime = end_timer(start)
+    logging.debug('np.mean,%s' % runtime)
 
-    return sum(x < np.mean(x))
+    # return sum(x < np.mean(x))
+    return sum(x < np_mean_x)
 
 
 @set_property("fctype", "aggregate")
@@ -544,8 +738,23 @@ def last_location_of_maximum(x):
     :return: the value of this feature
     :return type: float
     """
+    start = timer()
+    len_x = len(x)
+    runtime = end_timer(start)
+    logging.debug('len,%s' % runtime)
+
+    start = timer()
+    len_x = len(x)
+    runtime = end_timer(start)
+    logging.debug('len,%s' % runtime)
+
+    start = timer()
     x = np.asarray(x)
-    return 1.0 - np.argmax(x[::-1]) / len(x) if len(x) > 0 else np.NaN
+    runtime = end_timer(start)
+    logging.debug('np.asarray,%s' % runtime)
+
+    # return 1.0 - np.argmax(x[::-1]) / len(x) if len(x) > 0 else np.NaN
+    return 1.0 - np.argmax(x[::-1]) / len_x if len_x > 0 else np.NaN
 
 
 @set_property("fctype", "aggregate")
@@ -559,8 +768,23 @@ def first_location_of_maximum(x):
     :return: the value of this feature
     :return type: float
     """
+    start = timer()
+    len_x = len(x)
+    runtime = end_timer(start)
+    logging.debug('len,%s' % runtime)
+
+    start = timer()
+    len_x = len(x)
+    runtime = end_timer(start)
+    logging.debug('len,%s' % runtime)
+
+    start = timer()
     x = np.asarray(x)
-    return np.argmax(x) / len(x) if len(x) > 0 else np.NaN
+    runtime = end_timer(start)
+    logging.debug('np.asarray,%s' % runtime)
+
+    # return np.argmax(x) / len(x) if len(x) > 0 else np.NaN
+    return np.argmax(x) / len_x if len_x > 0 else np.NaN
 
 
 @set_property("fctype", "aggregate")
@@ -574,8 +798,23 @@ def last_location_of_minimum(x):
     :return: the value of this feature
     :return type: float
     """
+    start = timer()
+    len_x = len(x)
+    runtime = end_timer(start)
+    logging.debug('len,%s' % runtime)
+
+    start = timer()
+    len_x = len(x)
+    runtime = end_timer(start)
+    logging.debug('len,%s' % runtime)
+
+    start = timer()
     x = np.asarray(x)
-    return 1.0 - np.argmin(x[::-1]) / len(x) if len(x) > 0 else np.NaN
+    runtime = end_timer(start)
+    logging.debug('np.asarray,%s' % runtime)
+
+    # return 1.0 - np.argmin(x[::-1]) / len(x) if len(x) > 0 else np.NaN
+    return 1.0 - np.argmin(x[::-1]) / len_x if len_x > 0 else np.NaN
 
 
 @set_property("fctype", "aggregate")
@@ -589,8 +828,23 @@ def first_location_of_minimum(x):
     :return: the value of this feature
     :return type: float
     """
+    start = timer()
+    len_x = len(x)
+    runtime = end_timer(start)
+    logging.debug('len,%s' % runtime)
+
+    start = timer()
+    len_x = len(x)
+    runtime = end_timer(start)
+    logging.debug('len,%s' % runtime)
+
+    start = timer()
     x = np.asarray(x)
-    return np.argmin(x) / len(x) if len(x) > 0 else np.NaN
+    runtime = end_timer(start)
+    logging.debug('np.asarray,%s' % runtime)
+
+    # return np.argmin(x) / len(x) if len(x) > 0 else np.NaN
+    return np.argmin(x) / len_x if len_x > 0 else np.NaN
 
 
 @set_property("fctype", "aggregate")
@@ -633,11 +887,24 @@ def percentage_of_reoccurring_values_to_all_values(x):
     """
     x = pd.Series(x)
 
-    if len(x) == 0:
+    start = timer()
+    len_x = len(x)
+    runtime = end_timer(start)
+    logging.debug('len,%s' % runtime)
+
+    # if len(x) == 0:
+    if len_x == 0:
         return np.nan
 
     value_counts = x.value_counts()
-    return 1.0 * value_counts[value_counts > 1].sum() / len(x)
+
+    start = timer()
+    len_x = len(x)
+    runtime = end_timer(start)
+    logging.debug('len,%s' % runtime)
+
+    # return 1.0 * value_counts[value_counts > 1].sum() / len(x)
+    return 1.0 * value_counts[value_counts > 1].sum() / len_x
 
 
 @set_property("fctype", "aggregate")
@@ -673,10 +940,22 @@ def ratio_value_number_to_time_series_length(x):
     :return type: float
     """
 
-    if len(x) == 0:
+    start = timer()
+    len_x = len(x)
+    runtime = end_timer(start)
+    logging.debug('len,%s' % runtime)
+
+    # if len(x) == 0:
+    if len_x == 0:
         return np.nan
 
-    return 1.0 * len(set(x))/len(x)
+    start = timer()
+    len_x = len(x)
+    runtime = end_timer(start)
+    logging.debug('len,%s' % runtime)
+
+    # return 1.0 * len(set(x))/len(x)
+    return 1.0 * len(set(x))/len_x
 
 
 @set_property("fctype", "apply")
@@ -703,7 +982,14 @@ def fft_coefficient(x, c, param):
             raise ValueError("Coefficients must be positive or zero.")
 
     maximum_coefficient = max(max(coefficients), 1)
-    fft = np.fft.rfft(x, min(len(x), 2 * maximum_coefficient))
+
+    start = timer()
+    len_x = len(x)
+    runtime = end_timer(start)
+    logging.debug('len,%s' % runtime)
+
+    # fft = np.fft.rfft(x, min(len(x), 2 * maximum_coefficient))
+    fft = np.fft.rfft(x, min(len_x, 2 * maximum_coefficient))
 
     res = [fft[q] if q < len(fft) else 0 for q in coefficients]
     res = [r.real if isinstance(r, complex) else r for r in res]
@@ -759,6 +1045,7 @@ def index_mass_quantile(x, c, param):
     :return: the different feature values
     :return type: pandas.Series
     """
+    logging.debug('np.abs')
     s = sum(np.abs(x))
     res = pd.Series()
 
@@ -1008,8 +1295,19 @@ def time_reversal_asymmetry_statistic(x, lag):
     :return: the value of this feature
     :return type: float
     """
-    n = len(x)
+    start = timer()
+    len_x = len(x)
+    runtime = end_timer(start)
+    logging.debug('len,%s' % runtime)
+
+    # n = len(x)
+    n = len_x
+
+    start = timer()
     x = np.asarray(x)
+    runtime = end_timer(start)
+    logging.debug('np.asarray,%s' % runtime)
+
     if 2 * lag > n:
         return 0
     elif 2 * lag == n:
@@ -1038,7 +1336,14 @@ def binned_entropy(x, max_bins):
     :return type: float
     """
     hist, bin_edges = np.histogram(x, bins=max_bins)
-    probs = hist * 1.0 / len(x)
+
+    start = timer()
+    len_x = len(x)
+    runtime = end_timer(start)
+    logging.debug('len,%s' % runtime)
+
+    # probs = hist * 1.0 / len(x)
+    probs = hist * 1.0 / len_x
     return - np.sum(p * np.math.log(p) for p in probs if p != 0)
 
 # todo - include latex formula
@@ -1051,20 +1356,36 @@ def sample_entropy(x):
     ----------
     [1] http://en.wikipedia.org/wiki/Sample_Entropy
     [2] https://www.ncbi.nlm.nih.gov/pubmed/10843903?dopt=Abstract
-    
+
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
     :param tolerance: normalization factor; equivalent to the common practice of expressing the tolerance as r times the standard deviation
     :type tolerance: float
     :return: the value of this feature
     :return type: float
-    """ 
+    """
+    start = timer()
     x = np.array(x)
-    
-    sample_length = 1 # number of sequential points of the time series
-    tolerance = 0.2 * np.std(x) # 0.2 is a common value for r - why?
+    runtime = end_timer(start)
+    logging.debug('np.array,%s' % runtime)
 
-    n = len(x)
+    sample_length = 1 # number of sequential points of the time series
+
+    start = timer()
+    np_std_x = np.std(x)
+    runtime = end_timer(start)
+    logging.debug('np.std,%s' % runtime)
+
+    # tolerance = 0.2 * np.std(x) # 0.2 is a common value for r - why?
+    tolerance = 0.2 * np_std_x  # 0.2 is a common value for r - why?
+
+    start = timer()
+    len_x = len(x)
+    runtime = end_timer(start)
+    logging.debug('len,%s' % runtime)
+
+    # n = len(x)
+    n = len_x
     prev = np.zeros(n)
     curr = np.zeros(n)
     A = np.zeros((1, 1))  # number of matches for m = [1,...,template_length - 1]
@@ -1086,16 +1407,16 @@ def sample_entropy(x):
                 curr[jj] = 0
         for j in range(nj):
             prev[j] = curr[j]
-            
+
     N = n * (n - 1) / 2
     B = np.vstack(([N], B[0]))
-    
+
     # sample entropy = -1 * (log (A/B))
-    similarity_ratio = A / B 
+    similarity_ratio = A / B
     se = -1 * np.log(similarity_ratio)
     se = np.reshape(se, -1)
     return se[0]
-    
+
 
 
 @set_property("fctype", "aggregate_with_parameters")
@@ -1143,7 +1464,13 @@ def maximum(x):
     :return: the value of this feature
     :return type: float
     """
-    return max(x)
+    start = timer()
+    max_x = max(x)
+    runtime = end_timer(start)
+    logging.debug('max,%s' % runtime)
+
+    # return max(x)
+    return max_x
 
 
 @set_property("fctype", "aggregate")
@@ -1157,7 +1484,13 @@ def minimum(x):
     :return: the value of this feature
     :return type: float
     """
-    return min(x)
+    start = timer()
+    min_x = min(x)
+    runtime = end_timer(start)
+    logging.debug('min,%s' % runtime)
+
+    # return min(x)
+    return min_x
 
 
 @set_property("fctype", "aggregate_with_parameters")
@@ -1207,7 +1540,7 @@ def approximate_entropy(x, m, r):
     For short time-series this method is highly dependent on the parameters,
     but should be stable for N > 2000, see:
 
-        Yentes et al. (2012) - 
+        Yentes et al. (2012) -
         *The Appropriate Use of Approximate Entropy and Sample Entropy with Short Data Sets*
 
 
@@ -1226,9 +1559,26 @@ def approximate_entropy(x, m, r):
     :return: Approximate entropy
     :return type: float
     """
+    start = timer()
     x = np.asarray(x)
-    N = len(x)
-    r *= np.std(x)
+    runtime = end_timer(start)
+    logging.debug('np.asarray,%s' % runtime)
+
+    start = timer()
+    len_x = len(x)
+    runtime = end_timer(start)
+    logging.debug('len,%s' % runtime)
+
+    # N = len(x)
+    N = len_x
+
+    start = timer()
+    np_std_x = np.std(x)
+    runtime = end_timer(start)
+    logging.debug('np.std,%s' % runtime)
+
+    # r *= np.std(x)
+    r *= np_std_x
     if r < 0:
         raise ValueError("Parameter r must be positive.")
     if N <= m+1:
