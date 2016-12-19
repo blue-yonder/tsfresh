@@ -58,7 +58,7 @@ class TestSettingsObject(TestCase):
         """
         settings = FeatureExtractionSettings()
         all_feature_calculators = [name for name, func in feature_calculators.__dict__.items()
-                                   if hasattr(func, "fctype") and not hasattr(func, "high_comp_cost")]
+                                   if hasattr(func, "fctype")]
 
         for calculator in all_feature_calculators:
             self.assertIn(calculator, settings.name_to_param,
@@ -104,3 +104,8 @@ class TestMinimalSettingsObject(TestCase):
                              ["0__median", "0__standard_deviation", "0__sum_values", "0__maximum", "0__variance",
                               "0__minimum", "0__mean", "0__length"])
         six.assertCountEqual(self, extracted_features.index, [0, 1])
+
+def         # drop all features with high computational costs
+        for fname, f in six.iteritems(feature_calculators.__dict__):
+            if hasattr(f, "high_comp_cost"):
+                del self.name_to_param[fname]
