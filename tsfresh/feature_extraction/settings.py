@@ -71,6 +71,8 @@ class FeatureExtractionSettings(object):
         self.IMPUTE = None
         self.set_default = True
         self.name_to_param = {}
+        # Do not show the progress bar
+        self.disable_progressbar = False
 
         # Set to false to dismiss all warnings.
         self.show_warnings = False
