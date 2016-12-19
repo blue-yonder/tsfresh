@@ -98,7 +98,7 @@ class TestMinimalSettingsObject(TestCase):
 
         mfs = MinimalFeatureExtractionSettings()
         data = pd.DataFrame([[0, 0, 0, 0], [1, 0, 0, 0]], columns=["id", "time", "kind", "value"])
-        extracted_features = _extract_features_for_one_time_series([0, data], settings=mfs,
+        kind, extracted_features = _extract_features_for_one_time_series([0, data], settings=mfs,
                                                                    column_value="value", column_id="id")
         six.assertCountEqual(self, extracted_features.columns,
                              ["0__median", "0__standard_deviation", "0__sum_values", "0__maximum", "0__variance",

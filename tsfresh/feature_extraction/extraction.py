@@ -19,6 +19,7 @@ import numpy as np
 from tsfresh.utilities import dataframe_functions, profiling
 from tsfresh.feature_extraction.settings import FeatureExtractionSettings
 
+from itertools import groupby
 
 _logger = logging.getLogger(__name__)
 
@@ -157,7 +158,7 @@ def _extract_features_parallel_per_kind(kind_to_df_map, settings, column_id, col
     pool.close()
 
     # Concatenate all partial results
-    result = pd.concat(extracted_features, axis=1, join='outer').astype(np.float64)
+    result = pd.concat((df for _, df in extracted_features), axis=1, join='outer').astype(np.float64)
 
     pool.join()
     return result
@@ -185,36 +186,41 @@ def _extract_features_parallel_per_sample(kind_to_df_map, settings, column_id, c
     :return: The (maybe imputed) DataFrame containing extracted features.
     :rtype: pandas.DataFrame
     """
+
     partial_extract_features_for_one_time_series = partial(_extract_features_for_one_time_series,
                                                            column_id=column_id,
                                                            column_value=column_value,
                                                            settings=settings)
     pool = Pool(settings.n_processes)
 
-    # Submit map jobs per kind per sample
-    results_fifo = Queue()
-    for kind, df_kind in kind_to_df_map.items():
-        df_grouped_by_id = df_kind.groupby(column_id)
-        results_fifo.put(
-            pool.map_async(
-                partial_extract_features_for_one_time_series,
-                [(kind, df_group) for _, df_group in df_grouped_by_id],
-                chunksize=settings.chunksize
-            )
-        )
+    # Submit map jobs per kind per sample in a generator object
+    kind_and_df_group_list = ((kind, df_group)
+                              for kind, df_kind in kind_to_df_map.items()
+                              for _, df_group in df_kind.groupby(column_id))
 
+    kind_and_df_list = pool.map(
+        partial_extract_features_for_one_time_series,
+        kind_and_df_group_list,
+        chunksize=settings.chunksize,
+    )
+
+    # Wait for the pool to finish its job
     pool.close()
-
-    # Wait for the jobs to complete and concatenate the partial results
-    dfs_per_kind = []
-    while not results_fifo.empty():
-        map_result = results_fifo.get()
-        dfs = map_result.get()
-        dfs_per_kind.append(pd.concat(dfs, axis=0).astype(np.float64))
-
-    result = pd.concat(dfs_per_kind, axis=1).astype(np.float64)
-
     pool.join()
+
+    # kind_and_df_list is now a list of (kind, df). We want to extract all dfs with the same kind and concatenate them
+    # We have to make sure to not create unnecessary copies here.
+
+    # We will use groupby to group the list by their kind entry. The extract_kind_function extracts this kind for us.
+    def extract_kind_function(x):
+        return x[0]
+
+    kind_and_df_list = sorted(kind_and_df_list, key=extract_kind_function)
+    kind_and_df_list = (pd.concat((df for kind, df in dfs), axis=0).astype(np.float64)
+                        for kind, dfs in groupby(kind_and_df_list, extract_kind_function))
+
+    result = pd.concat(kind_and_df_list, axis=1).astype(np.float64)
+
     return result
 
 
@@ -315,4 +321,4 @@ def _extract_features_for_one_time_series(prefix_and_dataframe, column_id, colum
                 extracted_features = pd.concat(list_of_extracted_feature_dataframes, axis=1,
                                                join_axes=[extracted_features.index])
 
-        return extracted_features
+        return column_prefix, extracted_features
