@@ -156,7 +156,7 @@ def _extract_features_parallel_per_kind(kind_to_df_map, settings, column_id, col
     chunksize = _calculate_best_chunksize(kind_to_df_map, settings)
 
     total_number_of_expected_results = len(kind_to_df_map)
-    extracted_features = tqdm(pool.imap(partial_extract_features_for_one_time_series, kind_to_df_map.items(),
+    extracted_features = tqdm(pool.imap_unordered(partial_extract_features_for_one_time_series, kind_to_df_map.items(),
                                         chunksize=chunksize), total=total_number_of_expected_results)
 
     pool.close()
@@ -208,7 +208,7 @@ def _extract_features_parallel_per_sample(kind_to_df_map, settings, column_id, c
         chunksize = _calculate_best_chunksize(df_grouped_by_id, settings)
 
         results_fifo.put(
-            pool.imap(
+            pool.imap_unordered(
                 partial_extract_features_for_one_time_series,
                 [(kind, df_group) for _, df_group in df_grouped_by_id],
                 chunksize=chunksize
