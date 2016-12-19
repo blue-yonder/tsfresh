@@ -21,7 +21,6 @@ from tqdm import tqdm
 from tsfresh.utilities import dataframe_functions, profiling
 from tsfresh.feature_extraction.settings import FeatureExtractionSettings
 
-
 _logger = logging.getLogger(__name__)
 
 
@@ -157,7 +156,8 @@ def _extract_features_parallel_per_kind(kind_to_df_map, settings, column_id, col
 
     total_number_of_expected_results = len(kind_to_df_map)
     extracted_features = tqdm(pool.imap_unordered(partial_extract_features_for_one_time_series, kind_to_df_map.items(),
-                                        chunksize=chunksize), total=total_number_of_expected_results)
+                                                  chunksize=chunksize), total=total_number_of_expected_results,
+                              desc="Feature Extraction", disable=settings.disable_progressbar)
 
     pool.close()
 
@@ -221,7 +221,7 @@ def _extract_features_parallel_per_sample(kind_to_df_map, settings, column_id, c
     dfs_per_kind = []
 
     # Do this all with a progress bar
-    with tqdm(total=total_number_of_expected_results) as progress_bar:
+    with tqdm(total=total_number_of_expected_results, desc="Feature Extraction", disable=settings.disable_progressbar) as progress_bar:
         # We need some sort of measure, when a new result is there. So we wrap the
         # map_results into another iterable which updates the progress bar each time,
         # a new result is there
