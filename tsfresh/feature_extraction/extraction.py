@@ -250,6 +250,8 @@ def _calculate_best_chunksize(iterable_list, settings):
     :param iterable_list: A list which defines how many calculations there need to be.
     :param settings: The settings object where the chunksize may already be given (or not).
     :return: The chunksize which should be used.
+
+    TODO: Investigate which is the best chunk size for different settings.
     """
     if not settings.chunksize:
         chunksize, extra = divmod(len(iterable_list), settings.n_processes * 5)
