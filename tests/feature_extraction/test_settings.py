@@ -58,7 +58,7 @@ class TestSettingsObject(TestCase):
         """
         settings = FeatureExtractionSettings()
         all_feature_calculators = [name for name, func in feature_calculators.__dict__.items()
-                                   if hasattr(func, "fctype")]
+                                   if hasattr(func, "fctype") and not hasattr(func, "high_comp_cost")]
 
         for calculator in all_feature_calculators:
             self.assertIn(calculator, settings.name_to_param,
