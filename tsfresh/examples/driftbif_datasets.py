@@ -27,9 +27,9 @@ class velocity(object):
 
 
     >>> ds = velocity(tau=3.5) # Dissipative soliton with equilibrium velocity 1.5e-3
-    >>> print ds.label # Discriminating before or beyond Drift-Bifurcation
+    >>> print(ds.label) # Discriminating before or beyond Drift-Bifurcation
     1
-    >>> print ds.deterministic # Equilibrium velocity
+    >>> print(ds.deterministic) # Equilibrium velocity
     0.0015191090506254991
     >>> v = ds.simulate(20000) # Simulate velocity time series with 20000 time steps being disturbed by Gaussian white noise
     """
