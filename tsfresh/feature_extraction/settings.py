@@ -328,7 +328,7 @@ class FeatureExtractionSettings(object):
 
 class MinimalFeatureExtractionSettings(FeatureExtractionSettings):
     """
-    This class is a parent class of the FeatureExtractionSettings class
+    This class is a child class of the FeatureExtractionSettings class
     and has the same functionality as its base class. The only difference is,
     that most of the feature calculators are disabled and only a small
     subset of calculators will be calculated at all.
@@ -357,7 +357,7 @@ class MinimalFeatureExtractionSettings(FeatureExtractionSettings):
 
 class ReasonableFeatureExtractionSettings(FeatureExtractionSettings):
     """
-    This class is a parent class of the FeatureExtractionSettings class
+    This class is a child class of the FeatureExtractionSettings class
     and has the same functionality as its base class.
 
     The only difference is, that the features with high computational costs are not calculated. Those are denoted by
