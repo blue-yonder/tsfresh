@@ -41,6 +41,11 @@ if TSFRESH_BASELINE_VERSION == '0.1.1.post0.dev62+ng0f1b4c7':
 if 'post' in TSFRESH_BASELINE_VERSION:
     TSFRESH_BASELINE_VERSION = re.sub('\.post.*', '', TSFRESH_BASELINE_VERSION)
 
+if 'dirty' in TSFRESH_BASELINE_VERSION:
+    # remove "dirty" part of version tag, for example 0.4.0+ng7e4c397.dirty becomes 0.4.0
+    TSFRESH_BASELINE_VERSION = TSFRESH_BASELINE_VERSION.rsplit('+', 1)[0]
+
+# IO stuff, getting directories to read and to write
 baseline_dir = os.path.dirname(os.path.realpath(__file__))
 tests_dir = os.path.dirname(baseline_dir)
 tsfresh_dir = os.path.dirname(tests_dir)
