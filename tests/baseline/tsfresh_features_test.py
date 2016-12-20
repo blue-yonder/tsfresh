@@ -1,16 +1,22 @@
+# -*- coding: utf-8 -*-
+# This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
+# Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
+"""
+This module contains code to comapre results of tsfresh to calculated older snapshots
+"""
+
 import sys
 import os
 import shutil
 import json
 import tempfile
-from ast import literal_eval
 import re
-
 import unittest
 import pandas as pd
 from tsfresh import extract_features
 from tsfresh import __version__ as tsfresh_version
 from tsfresh.examples.test_tsfresh_baseline_dataset import download_json_dataset
+from numpy.testing import assert_almost_equal
 
 # TODO: reconsider including a config with no feature names just declaring the
 # current baseline version as there is not difference in the baselines between
@@ -21,38 +27,37 @@ from tsfresh.examples.test_tsfresh_baseline_dataset import download_json_dataset
 # one does not have a baseline, which is the last baseline, listdir sort... :)
 # Needs thought.
 
+# version number stuff, getting python and tsfresh version
 TSFRESH_BASELINE_VERSION = str(tsfresh_version)
+PYTHON_VERSION = str(int(sys.version_info[0]))
+
+# todo: what is the point of this checks ?
 if TSFRESH_BASELINE_VERSION == '0.1.1.post0.dev62+ng0f1b4c7':
     # #109 was fixed in 0.3.1, just here for local testing purposes, for the
     # various local version.
     TSFRESH_BASELINE_VERSION = '0.3.0'
-if 'post' in TSFRESH_BASELINE_VERSION:
-    travis_tsfresh_version = re.sub('\.post.*', '', TSFRESH_BASELINE_VERSION)
-    TSFRESH_BASELINE_VERSION = travis_tsfresh_version
 
-python_version = int(sys.version_info[0])
+# todo: what is the point of this check ?
+if 'post' in TSFRESH_BASELINE_VERSION:
+    TSFRESH_BASELINE_VERSION = re.sub('\.post.*', '', TSFRESH_BASELINE_VERSION)
+
 baseline_dir = os.path.dirname(os.path.realpath(__file__))
 tests_dir = os.path.dirname(baseline_dir)
 tsfresh_dir = os.path.dirname(tests_dir)
-baseline_ts_json_file = 'data.json'
-baseline_ts_json_baseline = '%s/tsfresh-%s.py%s.%s.features.transposed.csv' % (
-    baseline_dir, TSFRESH_BASELINE_VERSION, str(python_version),
-    baseline_ts_json_file)
-t_fname_out_fail = '%s/tsfresh/examples/data/test_tsfresh_baseline_dataset/tsfresh-unknown-version.py%s.data.json.features.transposed.csv' % (tsfresh_dir, str(python_version))
+
+baseline_ts_json_baseline = '{}/tsfresh-{}.py{}.data.json.features.transposed.csv'.format(baseline_dir,
+                                                                                          TSFRESH_BASELINE_VERSION,
+                                                                                          PYTHON_VERSION)
+t_fname_out_fail = '{}/tsfresh/examples/data/test_tsfresh_baseline_dataset/' \
+                   'tsfresh-unknown-version.py{}s.data.json.features.transposed.csv'.format(tsfresh_dir, PYTHON_VERSION)
 baseline_ts_json = '%s/tsfresh/examples/data/test_tsfresh_baseline_dataset/data.json' % tsfresh_dir
 
-from numpy.testing import assert_almost_equal
-
-message_header = """
-See the docs on how to update the baseline.
-New local baseline: {local_baseline}
-"""
 
 class TestTsfreshBaseline(unittest.TestCase):
     """
     Test all the features and their calculated values with a 60 data point
     sample of a simple anomalous timeseries data set and compare that the feature
-    names and calculated values match the baselines calcualated for the specific
+    names and calculated values match the baselines calculated for the specific
     version of tsfresh.
 
     .. warning:: the Python 2 and 3 calculate different results in terms of
@@ -76,15 +81,17 @@ class TestTsfreshBaseline(unittest.TestCase):
 
     - Modify the first value in your local tsfresh/examples/data/test_tsfresh_baseline_dataset/data.json
       and run the test, then delete the modified local data.json file to be pulled down again.
-    - Modify a feature name or value in your local tests/baseline/tsfresh-<TSFRESH_BASELINE_VERSION>.py<PYTHON_VERSION>.data.json.features.transposed.csv file,
+    - Modify a feature name or value in your local
+         tests/baseline/tsfresh-<TSFRESH_BASELINE_VERSION>.py<PYTHON_VERSION>.data.json.features.transposed.csv file,
       run the test and either pull it again or revert the change
 
     """
+
     def setUp(self):
         download_json_dataset()
 
         self.test_path = tempfile.mkdtemp()
-        self.fname_in = '%s/%s' % (self.test_path, baseline_ts_json_file)
+        self.fname_in = '%s/%s' % (self.test_path, 'data.json')
         tmp_csv = '%s.tmp.csv' % (self.fname_in)
         t_fname_out = '%s.features.transposed.csv' % self.fname_in
 
@@ -109,7 +116,8 @@ class TestTsfreshBaseline(unittest.TestCase):
 
         df = pd.read_csv(tmp_csv, delimiter=',', header=None, names=['metric', 'timestamp', 'value'])
         df.columns = ['metric', 'timestamp', 'value']
-        df_features = extract_features(df, column_id='metric', column_sort='timestamp', column_kind=None, column_value=None)
+        df_features = extract_features(df,
+                                       column_id='metric', column_sort='timestamp', column_kind=None, column_value=None)
 
         self.assertTrue(str(df_features.head()))
 
@@ -137,15 +145,13 @@ class TestTsfreshBaseline(unittest.TestCase):
         t_fname_out = '%s.features.transposed.csv' % self.fname_in
         self.assertTrue(os.path.isfile(t_fname_out))
 
-        df_t = pd.read_csv(
-            t_fname_out, delimiter=',', header=None,
-            names=['feature_name', 'value']).sort("feature_name").reset_index(drop=True)
+        df_t = pd.read_csv(t_fname_out, delimiter=',', header=None, names=['feature_name', 'value']
+                           ).sort_values(by="feature_name").reset_index(drop=True)
 
         calculated_features = set(df_t["feature_name"])
 
-        df_baseline = pd.read_csv(
-            baseline_ts_json_baseline, delimiter=',', header=None,
-            names=['feature_name', 'value']).sort("feature_name").reset_index(drop=True)
+        df_baseline = pd.read_csv(baseline_ts_json_baseline, delimiter=',', header=None, names=['feature_name', 'value']
+                                  ).sort_values(by="feature_name").reset_index(drop=True)
 
         baseline_features = set(df_baseline["feature_name"])
 
@@ -163,8 +169,10 @@ class TestTsfreshBaseline(unittest.TestCase):
 
         except AssertionError:
             shutil.move(t_fname_out, t_fname_out_fail)
-            print(message_header.format(local_baseline=t_fname_out_fail))
+            print("See the docs on how to update the baseline."
+                  "New local baseline: {local_baseline}".format(local_baseline=t_fname_out_fail))
             raise
+
 
 if __name__ == '__main__':
     unittest.main()
