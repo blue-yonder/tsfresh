@@ -8,12 +8,16 @@ from unittest import TestCase
 import numpy as np
 import pandas as pd
 from tsfresh.feature_extraction.extraction import extract_features, _extract_features_for_one_time_series
-from tsfresh.feature_extraction.settings import FeatureExtractionSettings, MinimalFeatureExtractionSettings
+from tsfresh.feature_extraction.settings import FeatureExtractionSettings, MinimalFeatureExtractionSettings,\
+    ReasonableFeatureExtractionSettings
 import six
 from tsfresh.feature_extraction import feature_calculators
 
 
 class TestSettingsObject(TestCase):
+    """
+    This tests the base class FeatureExtractionSettings
+    """
     def test_from_columns(self):
         tsn = "TEST_TIME_SERIES"
 
@@ -53,15 +57,44 @@ class TestSettingsObject(TestCase):
         """
         Test that by default a FeatureExtractionSettings object should be set up to calculate all features defined
         in tsfresh.feature_extraction.feature_calculators
-        :param self:
-        :return:
         """
         settings = FeatureExtractionSettings()
+        all_feature_calculators = [name for name, func in feature_calculators.__dict__.items()
+                                   if hasattr(func, "fctype")]
+
+        for calculator in all_feature_calculators:
+            self.assertIn(calculator, settings.name_to_param,
+                          msg='Default FeatureExtractionSettings object does not setup calculation of {}'
+                          .format(calculator))
+
+
+class TestReasonableFeatureExtractionSettings(TestCase):
+    """
+    This tests the ReasonableFeatureExtractionSettings class
+    """
+
+    def test_extraction_runs_through(self):
+        rfs = ReasonableFeatureExtractionSettings()
+
+        data = pd.DataFrame([[0, 0, 0, 0], [1, 0, 0, 0]], columns=["id", "time", "kind", "value"])
+
+        extracted_features = extract_features(data, feature_extraction_settings=rfs,
+                                              column_kind="kind", column_value="value",
+                                              column_sort="time", column_id="id")
+
+        six.assertCountEqual(self, extracted_features.index, [0, 1])
+
+    def test_contains_all_non_high_comp_cost_features(self):
+        """
+        Test that by default a FeatureExtractionSettings object should be set up to calculate all features defined
+        in tsfresh.feature_extraction.feature_calculators that do not have the attribute "high_comp_cost"
+        """
+        rfs = ReasonableFeatureExtractionSettings()
         all_feature_calculators = [name for name, func in feature_calculators.__dict__.items()
                                    if hasattr(func, "fctype") and not hasattr(func, "high_comp_cost")]
 
         for calculator in all_feature_calculators:
-            self.assertIn(calculator, settings.name_to_param,
+            self.assertIn(calculator, rfs.name_to_param,
                           msg='Default FeatureExtractionSettings object does not setup calculation of {}'
                           .format(calculator))
 
@@ -88,14 +121,12 @@ class TestMinimalSettingsObject(TestCase):
                                               column_kind="kind", column_value="value",
                                               column_sort="time", column_id="id")
 
-        six.assertCountEqual(self, extracted_features.columns, ["0__median", "0__standard_deviation", "0__sum_values", "0__maximum", "0__variance",
-                                                      "0__minimum", "0__mean", "0__length"])
-
+        six.assertCountEqual(self, extracted_features.columns, ["0__median", "0__standard_deviation", "0__sum_values",
+                                                                "0__maximum", "0__variance","0__minimum", "0__mean",
+                                                                "0__length"])
         six.assertCountEqual(self, extracted_features.index, [0, 1])
 
-
     def test_extraction_for_one_time_series_runs_through(self):
-
         mfs = MinimalFeatureExtractionSettings()
         data = pd.DataFrame([[0, 0, 0, 0], [1, 0, 0, 0]], columns=["id", "time", "kind", "value"])
         extracted_features = _extract_features_for_one_time_series([0, data], settings=mfs,

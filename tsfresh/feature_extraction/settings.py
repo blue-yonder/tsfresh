@@ -105,11 +105,6 @@ class FeatureExtractionSettings(object):
                 "approximate_entropy": [{"m": 2, "r": r} for r in [.1, .3, .5, .7, .9]]
             })
 
-        # drop all features with high computational costs
-        for fname, f in six.iteritems(feature_calculators.__dict__):
-            if hasattr(f, "high_comp_cost"):
-                del self.name_to_param[fname]
-
         # default None means one procesqs per cpu
         n_cores = int(os.getenv("NUMBER_OF_CPUS") or cpu_count())
         self.n_processes = max(1, n_cores//2)
@@ -335,7 +330,7 @@ class FeatureExtractionSettings(object):
 
 class MinimalFeatureExtractionSettings(FeatureExtractionSettings):
     """
-    This class is a parent class of the FeatureExtractionSettings class
+    This class is a child class of the FeatureExtractionSettings class
     and has the same functionality as its base class. The only difference is,
     that most of the feature calculators are disabled and only a small
     subset of calculators will be calculated at all.
@@ -360,3 +355,26 @@ class MinimalFeatureExtractionSettings(FeatureExtractionSettings):
                 name_to_param_copy[feature_calculator] = self.name_to_param[feature_calculator]
 
         self.name_to_param = name_to_param_copy
+
+
+class ReasonableFeatureExtractionSettings(FeatureExtractionSettings):
+    """
+    This class is a child class of the FeatureExtractionSettings class
+    and has the same functionality as its base class.
+
+    The only difference is, that the features with high computational costs are not calculated. Those are denoted by
+    the attribute "high_comp_cost"
+
+    You should use this object when calling the extract function, like so:
+
+    >>> from tsfresh.feature_extraction import extract_features, ReasonableFeatureExtractionSettings
+    >>> extract_features(df, feature_extraction_settings=ReasonableFeatureExtractionSettings)
+    """
+
+    def __init__(self):
+        FeatureExtractionSettings.__init__(self, True)
+
+        # drop all features with high computational costs
+        for fname, f in six.iteritems(feature_calculators.__dict__):
+            if hasattr(f, "high_comp_cost"):
+                del self.name_to_param[fname]
