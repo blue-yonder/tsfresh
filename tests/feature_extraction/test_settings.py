@@ -88,14 +88,13 @@ class TestMinimalSettingsObject(TestCase):
                                               column_kind="kind", column_value="value",
                                               column_sort="time", column_id="id")
 
-        six.assertCountEqual(self, extracted_features.columns, ["0__median", "0__standard_deviation", "0__sum_values", "0__maximum", "0__variance",
-                                                      "0__minimum", "0__mean", "0__length"])
+        six.assertCountEqual(self, extracted_features.columns, ["0__median", "0__standard_deviation", "0__sum_values",
+                                                                "0__maximum", "0__variance","0__minimum", "0__mean",
+                                                                "0__length"])
 
         six.assertCountEqual(self, extracted_features.index, [0, 1])
 
-
     def test_extraction_for_one_time_series_runs_through(self):
-
         mfs = MinimalFeatureExtractionSettings()
         data = pd.DataFrame([[0, 0, 0, 0], [1, 0, 0, 0]], columns=["id", "time", "kind", "value"])
         extracted_features = _extract_features_for_one_time_series([0, data], settings=mfs,
@@ -104,8 +103,3 @@ class TestMinimalSettingsObject(TestCase):
                              ["0__median", "0__standard_deviation", "0__sum_values", "0__maximum", "0__variance",
                               "0__minimum", "0__mean", "0__length"])
         six.assertCountEqual(self, extracted_features.index, [0, 1])
-
-def         # drop all features with high computational costs
-        for fname, f in six.iteritems(feature_calculators.__dict__):
-            if hasattr(f, "high_comp_cost"):
-                del self.name_to_param[fname]
