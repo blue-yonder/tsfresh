@@ -67,16 +67,11 @@ class TestSettingsObject(TestCase):
                           msg='Default FeatureExtractionSettings object does not setup calculation of {}'
                           .format(calculator))
 
+
 class TestReasonableFeatureExtractionSettings(TestCase):
     """
     This tests the ReasonableFeatureExtractionSettings class
     """
-    def test_extraction_for_one_time_series_runs_through(self):
-        rfs = ReasonableFeatureExtractionSettings()
-        data = pd.DataFrame([[0, 0, 0, 0], [1, 0, 0, 0]], columns=["id", "time", "kind", "value"])
-        extracted_features = _extract_features_for_one_time_series([0, data], settings=rfs,
-                                                                   column_value="value", column_id="id")
-        six.assertCountEqual(self, extracted_features.index, [0, 1])
 
     def test_extraction_runs_through(self):
         rfs = ReasonableFeatureExtractionSettings()
@@ -129,7 +124,6 @@ class TestMinimalSettingsObject(TestCase):
         six.assertCountEqual(self, extracted_features.columns, ["0__median", "0__standard_deviation", "0__sum_values",
                                                                 "0__maximum", "0__variance","0__minimum", "0__mean",
                                                                 "0__length"])
-
         six.assertCountEqual(self, extracted_features.index, [0, 1])
 
     def test_extraction_for_one_time_series_runs_through(self):
