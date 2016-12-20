@@ -5,6 +5,16 @@ Changelog
 tsfresh uses `Semantic Versioning <http://semver.org/>`_
 
 
+Version 0.3.2
+=============
+
+- fixed several bugs: checking of UCI dataset, out of index error for mean_abs_change_quantiles
+- added a progress bar denoting the progress of the extraction process
+- added parallelization per sample
+- added unit tests for comparing results of feature extraction to older snapshots
+- added "high_comp_cost" attribute
+- added ReasonableFeatureExtraction settings only calculating features without "high_comp_cost" attribute
+
 Version 0.3.1
 =============
 
@@ -25,8 +35,8 @@ Version 0.2.0
 - fixed bugs for constant features
 - allow time series columns to be named 0
 - moved uci repository datasets to github mirror
-- added feature caculator sampleentropy
-- added minimalfeaturesignificance extraction settings
+- added feature calculator sample_entropy
+- added MinimalFeatureExtraction settings
 - fixed bug in calculation of fourier coefficients
 
 Version 0.1.2
