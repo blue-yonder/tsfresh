@@ -5,7 +5,7 @@ Changelog
 tsfresh uses `Semantic Versioning <http://semver.org/>`_
 
 
-Version 0.3.2
+Version 0.4.0
 =============
 
 - fixed several bugs: checking of UCI dataset, out of index error for mean_abs_change_quantiles
