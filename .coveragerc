@@ -11,7 +11,7 @@ omit = tsfresh/utilities/profiling.py
        tsfresh/convenience/__init__.py
        tsfresh/examples/har_dataset.py
        tsfresh/examples/robot_execution_failures.py
-       tsfresh/examples/driftbif_datasets.py
+       tsfresh/examples/driftbif_simulation.py
 
 [report]
 # Regexes for lines to exclude from consideration
