@@ -237,8 +237,8 @@ def _extract_features_parallel_per_sample(kind_to_df_map, settings, column_id, c
 
         result = pd.concat(dfs_per_kind, axis=1).astype(np.float64)
 
-        pool.join()
-        return result
+    pool.join()
+    return result
 
 
 def _calculate_best_chunksize(iterable_list, settings):
