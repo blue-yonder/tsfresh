@@ -43,7 +43,7 @@ class RelevantFeatureExtractionDataTestCase(DataTestCase):
         relevant_columns = relevant_features.columns
         relevant_index = relevant_features.index
         self.assertTrue(
-            (relevant_features.values == selected_features.loc[relevant_index][relevant_columns].values).all().all(),
+            relevant_features.equals(selected_features.loc[relevant_index][relevant_columns]),
             "Should calculate the same feature values")
 
 
