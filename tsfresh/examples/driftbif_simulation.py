@@ -121,7 +121,6 @@ def load_driftbif(n, l, classification=True):
 
     # todo: add ratio of classes
     # todo: add start seed
-    # todo: draw tau random from range [2, 4] so we really get a random dataset
     # todo: add variable for number of dimensions
 
     m = 2 # number of different time series for each sample
@@ -131,7 +130,8 @@ def load_driftbif(n, l, classification=True):
     labels = list()
     values = list()
 
-    ls_tau = np.linspace(2.87, 3.8, n).tolist()
+    tau = 2.87 + (3.8-2.87) * np.random.rand(n)
+    ls_tau = tau.tolist()
 
     for i, tau in enumerate(ls_tau):
         ds = velocity(tau=tau)

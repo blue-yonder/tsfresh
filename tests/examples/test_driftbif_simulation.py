@@ -47,6 +47,6 @@ class LoadDriftBifTestCase(unittest.TestCase):
         X, y = load_driftbif(Nsamples, 100, classification=False)
         self.assertEqual(y.size, np.unique(y).size,
                          'For regression the target vector is expected to not contain any dublicated labels.')
-        
+
 if __name__ == '__main__':
     unittest.main()
