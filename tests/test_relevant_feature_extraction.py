@@ -35,11 +35,17 @@ class RelevantFeatureExtractionDataTestCase(DataTestCase):
                                               column_value='val', column_kind='kind', column_sort='sort')
         selected_features = select_features(extracted_features, y)
 
-        self.assertEqual(set(relevant_features.columns), set(selected_features.columns),
-                         "Should select the same columns:\n\t{}\n\nvs.\n\n\t{}".format(relevant_features.columns,
-                                                                                       selected_features.columns))
-        self.assertTrue((relevant_features.values == selected_features.values).all().all(),
-                        "Should calculate the same feature values")
+        self.assertEqual(
+            set(relevant_features.columns), set(selected_features.columns),
+            "Should select the same columns:\n\t{}\n\nvs.\n\n\t{}".format(relevant_features.columns,
+                                                                          selected_features.columns))
+
+        relevant_columns = relevant_features.columns
+        relevant_index = relevant_features.index
+        self.assertTrue(
+            (relevant_features.values == selected_features.loc[relevant_index][relevant_columns].values).all().all(),
+            "Should calculate the same feature values")
+
 
 class RelevantFeatureExtractionTestCase(TestCase):
 
