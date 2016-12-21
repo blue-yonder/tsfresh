@@ -230,12 +230,12 @@ def _extract_features_parallel_per_sample(kind_to_df_map, settings, column_id, c
                 progress_bar.update(1)
                 yield element
 
+        result = pd.DataFrame()
         while not results_fifo.empty():
             map_result = results_fifo.get()
-            dfs = iterable_with_tqdm_update(map_result, progress_bar)
-            dfs_per_kind.append(pd.concat(dfs, axis=0).astype(np.float64))
-
-        result = pd.concat(dfs_per_kind, axis=1).astype(np.float64)
+            dfs_kind = iterable_with_tqdm_update(map_result, progress_bar)
+            df_tmp = pd.concat(dfs_kind, axis=0).astype(np.float64)
+            result = pd.concat([result, df_tmp], axis=1).astype(np.float64)
 
     pool.join()
     return result
