@@ -6,7 +6,7 @@ import numpy as np
 import unittest
 import pandas as pd
 
-from tsfresh.examples.driftbif_simulation import velocity
+from tsfresh.examples.driftbif_simulation import velocity, load_driftbif
 
 
 class DriftBifSimlationTestCase(unittest.TestCase):
@@ -36,6 +36,17 @@ class DriftBifSimlationTestCase(unittest.TestCase):
         t = ds.delta_t * np.arange(Nt)
         return np.testing.assert_array_almost_equal(v[:,0], np.vectorize(acceleration)(t),
                                                     decimal=8)
+
+class LoadDriftBifTestCase(unittest.TestCase):
+    def test_classification_labels(self):
+        X, y = load_driftbif(10, 100)
+        self.assertEqual(set(y), set([0,1]))
+
+    def test_regression_labels(self):
+        Nsamples = 10
+        X, y = load_driftbif(Nsamples, 100, classification=False)
+        self.assertEqual(y.size, np.unique(y).size,
+                         'For regression the target vector is expected to not contain any dublicated labels.')
         
 if __name__ == '__main__':
     unittest.main()

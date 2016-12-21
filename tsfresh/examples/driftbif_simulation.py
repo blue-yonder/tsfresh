@@ -104,14 +104,16 @@ class velocity(object):
         return v_vec
 
 
-def load_driftbif(n, l):
+def load_driftbif(n, l, classification=True):
     """
     Creates and loads the drift bifurcation dataset.
 
-    :param n: number of different samples
+    :param n: number of different samples 
     :type n: int
     :param l: length of the time series
     :type l: int
+    :param classification: distinguish between classification and regression target
+    :type classification: bool
     :return: X, y. Time series container and target vector
     :rtype X: pandas.DataFrame
     :rtype y: pandas.DataFrame
@@ -133,7 +135,10 @@ def load_driftbif(n, l):
 
     for i, tau in enumerate(ls_tau):
         ds = velocity(tau=tau)
-        labels.append(ds.label)
+        if classification:
+            labels.append(ds.label)
+        else:
+            labels.append(ds.tau)
         values.append(ds.simulate(l).transpose().flatten())
     time = np.stack([ds.delta_t * np.arange(l)] * n * m).flatten()
 
