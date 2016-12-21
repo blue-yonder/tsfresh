@@ -6,7 +6,7 @@ import numpy as np
 import unittest
 import pandas as pd
 
-from tsfresh.examples.driftbif_simulation import velocity, load_driftbif
+from tsfresh.examples.driftbif_simulation import velocity, load_driftbif, sample_tau
 
 
 class DriftBifSimlationTestCase(unittest.TestCase):
@@ -48,6 +48,12 @@ class DriftBifSimlationTestCase(unittest.TestCase):
         self.assertEqual(v.shape, (Nt, 3),
                          'The returned vector should reflect the dimension of the initial condition.')
 
+class SampleTauTestCase(unittest.TestCase):
+    def test_range(self):
+        tau = sample_tau(10)
+        self.assertTrue(tau.min() >= 2.87)
+        self.assertTrue(tau.max() <= 3.8)
+        
 class LoadDriftBifTestCase(unittest.TestCase):
     def test_classification_labels(self):
         X, y = load_driftbif(10, 100)

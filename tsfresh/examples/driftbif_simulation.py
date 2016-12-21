@@ -103,12 +103,21 @@ class velocity(object):
         v_vec = np.array(v)
         return v_vec
 
+def sample_tau(n=10):
+    """
+    Return list of control parameters
+
+    :param n: number of samples 
+    :type n: int    
+    """
+    tau = 2.87 + (3.8-2.87) * np.random.rand(n)
+    return tau.tolist()
 
 def load_driftbif(n, l, m=2, classification=True):
     """
     Simulates n time-series with l time steps each for the m-dimensional velocity of a dissipative soliton
 
-    :param n: number of different samples 
+    :param n: number of samples 
     :type n: int
     :param l: length of the time series
     :type l: int
@@ -130,8 +139,7 @@ def load_driftbif(n, l, m=2, classification=True):
     labels = list()
     values = list()
 
-    tau = 2.87 + (3.8-2.87) * np.random.rand(n)
-    ls_tau = tau.tolist()
+    ls_tau = sample_tau(n)
 
     for i, tau in enumerate(ls_tau):
         ds = velocity(tau=tau)
