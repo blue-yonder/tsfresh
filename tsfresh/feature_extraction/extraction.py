@@ -116,10 +116,6 @@ def extract_features(timeseries_container, feature_extraction_settings=None,
     else:
         raise ValueError("Argument parallelization must be one of: 'per_kind', 'per_sample'")
 
-    # Impute the result if requested
-    if feature_extraction_settings.IMPUTE is not None:
-        feature_extraction_settings.IMPUTE(result)
-
     # Turn off profiling if it was turned on
     if feature_extraction_settings.PROFILING:
         profiling.end_profiling(profiler, filename=feature_extraction_settings.PROFILING_FILENAME,
@@ -163,6 +159,10 @@ def _extract_features_parallel_per_kind(kind_to_df_map, settings, column_id, col
 
     # Concatenate all partial results
     result = pd.concat(extracted_features, axis=1, join='outer').astype(np.float64)
+
+    # Impute the result if requested
+    if settings.IMPUTE is not None:
+        settings.IMPUTE(result)
 
     pool.join()
     return result
@@ -235,6 +235,11 @@ def _extract_features_parallel_per_sample(kind_to_df_map, settings, column_id, c
             map_result = results_fifo.get()
             dfs_kind = iterable_with_tqdm_update(map_result, progress_bar)
             df_tmp = pd.concat(dfs_kind, axis=0).astype(np.float64)
+
+            # Impute the result if requested
+            if settings.IMPUTE is not None:
+                settings.IMPUTE(df_tmp)
+
             result = pd.concat([result, df_tmp], axis=1).astype(np.float64)
 
     pool.join()
