@@ -96,7 +96,7 @@ class velocity(object):
         v = [v0]                        # first value is initial condition
         n = N - 1                       # Because we are returning the initial condition,
                                         # only (N-1) time steps are computed
-        gamma = np.random.randn(n, 2)
+        gamma = np.random.randn(n, v0.size)
         for i in xrange(n):
             next_v = self.__call__(v[i]) + self.c * gamma[i]
             v.append(next_v)
@@ -104,14 +104,16 @@ class velocity(object):
         return v_vec
 
 
-def load_driftbif(n, l, classification=True):
+def load_driftbif(n, l, m=2, classification=True):
     """
-    Creates and loads the drift bifurcation dataset.
+    Simulates n time-series with l time steps each for the m-dimensional velocity of a dissipative soliton
 
     :param n: number of different samples 
     :type n: int
     :param l: length of the time series
     :type l: int
+    :param m: number of spatial dimensions the dissipative soliton is propagating in
+    :type m: int
     :param classification: distinguish between classification and regression target
     :type classification: bool
     :return: X, y. Time series container and target vector
@@ -121,9 +123,7 @@ def load_driftbif(n, l, classification=True):
 
     # todo: add ratio of classes
     # todo: add start seed
-    # todo: add variable for number of dimensions
 
-    m = 2 # number of different time series for each sample
     id = np.repeat(range(n), l * m)
     dimensions = list(np.repeat(range(m), l)) * n
 
@@ -139,7 +139,7 @@ def load_driftbif(n, l, classification=True):
             labels.append(ds.label)
         else:
             labels.append(ds.tau)
-        values.append(ds.simulate(l).transpose().flatten())
+        values.append(ds.simulate(l, v0=np.zeros(m)).transpose().flatten())
     time = np.stack([ds.delta_t * np.arange(l)] * n * m).flatten()
 
     df = pd.DataFrame({'id': id, "time": time, "value": np.stack(values).flatten(), "dimension": dimensions})

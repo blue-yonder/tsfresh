@@ -37,6 +37,17 @@ class DriftBifSimlationTestCase(unittest.TestCase):
         return np.testing.assert_array_almost_equal(v[:,0], np.vectorize(acceleration)(t),
                                                     decimal=8)
 
+    def test_dimensionality(self):
+        ds = velocity(tau=1.0/0.3)
+        Nt = 10
+        v = ds.simulate(Nt)
+        self.assertEqual(v.shape, (Nt, 2),
+                         'The default configuration should return velocities from a two-dimensional dissipative soliton.')
+
+        v = ds.simulate(Nt, v0=np.zeros(3))
+        self.assertEqual(v.shape, (Nt, 3),
+                         'The returned vector should reflect the dimension of the initial condition.')
+
 class LoadDriftBifTestCase(unittest.TestCase):
     def test_classification_labels(self):
         X, y = load_driftbif(10, 100)
@@ -47,6 +58,18 @@ class LoadDriftBifTestCase(unittest.TestCase):
         X, y = load_driftbif(Nsamples, 100, classification=False)
         self.assertEqual(y.size, np.unique(y).size,
                          'For regression the target vector is expected to not contain any dublicated labels.')
+
+    def test_default_dimensionality(self):
+        Nsamples = 10
+        Nt = 100
+        X, y = load_driftbif(Nsamples, Nt)
+        self.assertEqual(X.shape, (2 * Nt * Nsamples, 4))
+
+    def test_configured_dimensionality(self):
+        Nsamples = 10
+        Nt = 100
+        X, y = load_driftbif(Nsamples, Nt, m=3)
+        self.assertEqual(X.shape, (3 * Nt * Nsamples, 4))
 
 if __name__ == '__main__':
     unittest.main()
