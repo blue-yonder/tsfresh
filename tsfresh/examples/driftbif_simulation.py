@@ -12,7 +12,7 @@ import numpy as np
 
 class velocity(object):
     """
-    Simulates the velocity of one dissipative soliton (kind of self organized particle)
+    Simulates the velocity of a two-dimensional dissipative soliton (kind of self organized particle)
 
     label 0 means tau<=1/0.3, Dissipative Soliton with Brownian motion (purely noise driven)
     label 1 means tau> 1/0.3, Dissipative Soliton with Active Brownian motion (intrinsiv velocity with overlaid noise)
@@ -51,6 +51,9 @@ class velocity(object):
         # todo: add start seed
 
         self.delta_t = delta_t
+        self.kappa_3 = kappa_3
+        self.Q = Q
+        self.tau = tau
         self.a = self.delta_t * kappa_3 ** 2 * (tau - 1.0 / kappa_3)
         self.b = self.delta_t * Q / kappa_3
         self.label = int(tau > 1.0 / kappa_3)
