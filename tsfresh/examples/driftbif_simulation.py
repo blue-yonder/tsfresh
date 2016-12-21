@@ -97,7 +97,7 @@ class velocity(object):
         n = N - 1                       # Because we are returning the initial condition,
                                         # only (N-1) time steps are computed
         gamma = np.random.randn(n, v0.size)
-        for i in xrange(n):
+        for i in range(n):
             next_v = self.__call__(v[i]) + self.c * gamma[i]
             v.append(next_v)
         v_vec = np.array(v)
