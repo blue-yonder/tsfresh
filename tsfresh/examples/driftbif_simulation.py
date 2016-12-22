@@ -12,7 +12,7 @@ import numpy as np
 
 class velocity(object):
     """
-    Simulates the velocity of one dissipative soliton (kind of self organized particle)
+    Simulates the velocity of a two-dimensional dissipative soliton (kind of self organized particle)
 
     label 0 means tau<=1/0.3, Dissipative Soliton with Brownian motion (purely noise driven)
     label 1 means tau> 1/0.3, Dissipative Soliton with Active Brownian motion (intrinsiv velocity with overlaid noise)
@@ -51,6 +51,9 @@ class velocity(object):
         # todo: add start seed
 
         self.delta_t = delta_t
+        self.kappa_3 = kappa_3
+        self.Q = Q
+        self.tau = tau
         self.a = self.delta_t * kappa_3 ** 2 * (tau - 1.0 / kappa_3)
         self.b = self.delta_t * Q / kappa_3
         self.label = int(tau > 1.0 / kappa_3)
@@ -93,22 +96,35 @@ class velocity(object):
         v = [v0]                        # first value is initial condition
         n = N - 1                       # Because we are returning the initial condition,
                                         # only (N-1) time steps are computed
-        gamma = np.random.randn(n, 2)
-        for i in xrange(n):
+        gamma = np.random.randn(n, v0.size)
+        for i in range(n):
             next_v = self.__call__(v[i]) + self.c * gamma[i]
             v.append(next_v)
         v_vec = np.array(v)
         return v_vec
 
-
-def load_driftbif(n, l):
+def sample_tau(n=10):
     """
-    Creates and loads the drift bifurcation dataset.
+    Return list of control parameters
 
-    :param n: number of different samples
+    :param n: number of samples 
+    :type n: int    
+    """
+    tau = 2.87 + (3.8-2.87) * np.random.rand(n)
+    return tau.tolist()
+
+def load_driftbif(n, l, m=2, classification=True):
+    """
+    Simulates n time-series with l time steps each for the m-dimensional velocity of a dissipative soliton
+
+    :param n: number of samples 
     :type n: int
     :param l: length of the time series
     :type l: int
+    :param m: number of spatial dimensions the dissipative soliton is propagating in
+    :type m: int
+    :param classification: distinguish between classification and regression target
+    :type classification: bool
     :return: X, y. Time series container and target vector
     :rtype X: pandas.DataFrame
     :rtype y: pandas.DataFrame
@@ -116,22 +132,22 @@ def load_driftbif(n, l):
 
     # todo: add ratio of classes
     # todo: add start seed
-    # todo: draw tau random from range [2, 4] so we really get a random dataset
-    # todo: add variable for number of dimensions
 
-    m = 2 # number of different time series for each sample
     id = np.repeat(range(n), l * m)
     dimensions = list(np.repeat(range(m), l)) * n
 
     labels = list()
     values = list()
 
-    ls_tau = np.linspace(2.87, 3.8, n).tolist()
+    ls_tau = sample_tau(n)
 
     for i, tau in enumerate(ls_tau):
         ds = velocity(tau=tau)
-        labels.append(ds.label)
-        values.append(ds.simulate(l).transpose().flatten())
+        if classification:
+            labels.append(ds.label)
+        else:
+            labels.append(ds.tau)
+        values.append(ds.simulate(l, v0=np.zeros(m)).transpose().flatten())
     time = np.stack([ds.delta_t * np.arange(l)] * n * m).flatten()
 
     df = pd.DataFrame({'id': id, "time": time, "value": np.stack(values).flatten(), "dimension": dimensions})
