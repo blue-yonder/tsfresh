@@ -116,10 +116,6 @@ def extract_features(timeseries_container, feature_extraction_settings=None,
     else:
         raise ValueError("Argument parallelization must be one of: 'per_kind', 'per_sample'")
 
-    # Impute the result if requested
-    if feature_extraction_settings.IMPUTE is not None:
-        feature_extraction_settings.IMPUTE(result)
-
     # Turn off profiling if it was turned on
     if feature_extraction_settings.PROFILING:
         profiling.end_profiling(profiler, filename=feature_extraction_settings.PROFILING_FILENAME,
@@ -163,6 +159,10 @@ def _extract_features_parallel_per_kind(kind_to_df_map, settings, column_id, col
 
     # Concatenate all partial results
     result = pd.concat(extracted_features, axis=1, join='outer').astype(np.float64)
+
+    # Impute the result if requested
+    if settings.IMPUTE is not None:
+        settings.IMPUTE(result)
 
     pool.join()
     return result
@@ -230,15 +230,20 @@ def _extract_features_parallel_per_sample(kind_to_df_map, settings, column_id, c
                 progress_bar.update(1)
                 yield element
 
+        result = pd.DataFrame()
         while not results_fifo.empty():
             map_result = results_fifo.get()
-            dfs = iterable_with_tqdm_update(map_result, progress_bar)
-            dfs_per_kind.append(pd.concat(dfs, axis=0).astype(np.float64))
+            dfs_kind = iterable_with_tqdm_update(map_result, progress_bar)
+            df_tmp = pd.concat(dfs_kind, axis=0).astype(np.float64)
 
-        result = pd.concat(dfs_per_kind, axis=1).astype(np.float64)
+            # Impute the result if requested
+            if settings.IMPUTE is not None:
+                settings.IMPUTE(df_tmp)
 
-        pool.join()
-        return result
+            result = pd.concat([result, df_tmp], axis=1).astype(np.float64)
+
+    pool.join()
+    return result
 
 
 def _calculate_best_chunksize(iterable_list, settings):
