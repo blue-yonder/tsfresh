@@ -341,7 +341,7 @@ class MinimalFeatureExtractionSettings(FeatureExtractionSettings):
     You should use this object when calling the extract function, like so:
 
     >>> from tsfresh.feature_extraction import extract_features, MinimalFeatureExtractionSettings
-    >>> extract_features(df, feature_extraction_settings=MinimalFeatureExtractionSettings)
+    >>> extract_features(df, feature_extraction_settings=MinimalFeatureExtractionSettings())
     """
     def __init__(self):
         FeatureExtractionSettings.__init__(self, True)
@@ -368,7 +368,7 @@ class ReasonableFeatureExtractionSettings(FeatureExtractionSettings):
     You should use this object when calling the extract function, like so:
 
     >>> from tsfresh.feature_extraction import extract_features, ReasonableFeatureExtractionSettings
-    >>> extract_features(df, feature_extraction_settings=ReasonableFeatureExtractionSettings)
+    >>> extract_features(df, feature_extraction_settings=ReasonableFeatureExtractionSettings())
     """
 
     def __init__(self):
