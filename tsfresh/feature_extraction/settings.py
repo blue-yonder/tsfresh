@@ -65,17 +65,17 @@ class FeatureExtractionSettings(object):
         """
 
         self.kind_to_calculation_settings_mapping = {}
-        self.PROFILING = False
-        self.PROFILING_SORTING = "cumulative"
-        self.PROFILING_FILENAME = "profile.txt"
-        self.IMPUTE = None
+        #self.PROFILING = False
+        #self.PROFILING_SORTING = "cumulative"
+        #self.PROFILING_FILENAME = "profile.txt"
+        #self.IMPUTE = None
         self.set_default = True
         self.name_to_param = {}
         # Do not show the progress bar
-        self.disable_progressbar = False
+        #self.disable_progressbar = False
 
         # Set to false to dismiss all warnings.
-        self.show_warnings = False
+        #self.show_warnings = False
 
         if calculate_all_features is True:
             for name, func in feature_calculators.__dict__.items():
@@ -104,13 +104,6 @@ class FeatureExtractionSettings(object):
                 "range_count": [{"min": -1, "max": 1}],
                 "approximate_entropy": [{"m": 2, "r": r} for r in [.1, .3, .5, .7, .9]]
             })
-
-        # default None means one procesqs per cpu
-        n_cores = int(os.getenv("NUMBER_OF_CPUS") or cpu_count())
-        self.n_processes = max(1, n_cores//2)
-
-        # Size of the chunks submitted to the worker processes
-        self.chunksize = None
 
     def set_default_parameters(self, kind):
         """
@@ -378,3 +371,17 @@ class ReasonableFeatureExtractionSettings(FeatureExtractionSettings):
         for fname, f in six.iteritems(feature_calculators.__dict__):
             if hasattr(f, "high_comp_cost"):
                 del self.name_to_param[fname]
+
+
+DEFAULT_CHUNKSIZE = None
+
+n_cores = int(os.getenv("NUMBER_OF_CPUS") or cpu_count())
+DEFAULT_N_PROCESSES = max(1, n_cores//2)
+
+DEFAULT_PROFILING = False
+DEFAULT_PROFILING_SORTING = "cumulative"
+DEFAULT_PROFILING_FILENAME = "profile.txt"
+DEFAULT_IMPUTE_FUNCTION = None
+DEFAULT_DISABLE_PROGRESSBAR = False
+DEFAULT_SHOW_WARNINGS = False
+DEFAULT_PARALLELIZATION = None

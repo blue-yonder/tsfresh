@@ -16,14 +16,14 @@ class ExtractionTestCase(DataTestCase):
 
     def setUp(self):
         self.settings = FeatureExtractionSettings()
-        self.settings.PROFILING = False
-        self.settings.n_processes = 1
+        self.n_processes = 1
 
     def test_extract_features_per_kind(self):
         # todo: implement more methods and test more aspects
         df = self.create_test_data_sample()
         extracted_features = extract_features(df, self.settings, "id", "sort", "kind", "val",
-                                              parallelization='per_kind')
+                                              parallelization='per_kind',
+                                              n_processes=self.n_processes)
 
         self.assertIsInstance(extracted_features, pd.DataFrame)
         self.assertTrue(np.all(extracted_features.a__maximum == np.array([71, 77])))
@@ -37,7 +37,8 @@ class ExtractionTestCase(DataTestCase):
 
         df_sts = self.create_one_valued_time_series()
         extracted_features_sts = extract_features(df_sts, self.settings, "id", "sort", "kind", "val",
-                                                  parallelization='per_kind')
+                                                  parallelization='per_kind',
+                                              n_processes=self.n_processes)
 
         self.assertIsInstance(extracted_features_sts, pd.DataFrame)
         self.assertTrue(np.all(extracted_features_sts.a__maximum == np.array([1.0, 6.0])))
@@ -48,7 +49,8 @@ class ExtractionTestCase(DataTestCase):
         # todo: implement more methods and test more aspects
         df = self.create_test_data_sample()
         extracted_features = extract_features(df, self.settings, "id", "sort", "kind", "val",
-                                              parallelization='per_sample')
+                                              parallelization='per_sample',
+                                              n_processes=self.n_processes)
 
         self.assertIsInstance(extracted_features, pd.DataFrame)
         self.assertTrue(np.all(extracted_features.a__maximum == np.array([71, 77])))
@@ -62,7 +64,8 @@ class ExtractionTestCase(DataTestCase):
 
         df_sts = self.create_one_valued_time_series()
         extracted_features_sts = extract_features(df_sts, self.settings, "id", "sort", "kind", "val",
-                                                  parallelization='per_sample')
+                                                  parallelization='per_sample',
+                                              n_processes=self.n_processes)
 
         self.assertIsInstance(extracted_features_sts, pd.DataFrame)
         self.assertTrue(np.all(extracted_features_sts.a__maximum == np.array([1.0, 6.0])))
@@ -98,10 +101,12 @@ class ExtractionTestCase(DataTestCase):
         df_random = df.copy().sample(frac=1)
 
         extracted_features = extract_features(df, self.settings, "id", "sort", "kind", "val",
-                                              parallelization='per_kind').sort_index()
+                                              parallelization='per_kind',
+                                              n_processes=self.n_processes).sort_index()
         extracted_features_from_random = extract_features(df_random, self.settings,
                                                           "id", "sort", "kind", "val",
-                                                          parallelization='per_kind').sort_index()
+                                                          parallelization='per_kind',
+                                              n_processes=self.n_processes).sort_index()
 
         six.assertCountEqual(self, extracted_features.columns, extracted_features_from_random.columns)
 
@@ -114,10 +119,12 @@ class ExtractionTestCase(DataTestCase):
         df_random = df.copy().sample(frac=1)
 
         extracted_features = extract_features(df, self.settings, "id", "sort", "kind", "val",
-                                              parallelization='per_sample').sort_index()
+                                              parallelization='per_sample',
+                                              n_processes=self.n_processes).sort_index()
         extracted_features_from_random = extract_features(df_random, self.settings,
                                                           "id", "sort", "kind", "val",
-                                                          parallelization='per_sample').sort_index()
+                                                          parallelization='per_sample',
+                                              n_processes=self.n_processes).sort_index()
 
         six.assertCountEqual(self, extracted_features.columns, extracted_features_from_random.columns)
 
@@ -127,34 +134,31 @@ class ExtractionTestCase(DataTestCase):
 
     def test_profiling_file_written_out(self):
 
-        fes = FeatureExtractionSettings()
-        fes.PROFILING = True
-        fes.PROFILING_FILENAME = "test_profiling.txt"
-
         df = pd.DataFrame(data={"id": np.repeat([1, 2], 10), "value": np.random.normal(0, 1, 20)})
-        X = extract_features(df, column_id="id", column_value="value", feature_extraction_settings=fes)
+        profiling_filename = "test_profiling.txt"
+        X = extract_features(df, column_id="id", column_value="value", feature_extraction_settings=self.settings,
+                             n_processes=self.n_processes, profile=True, profiling_filename=profiling_filename)
 
-        self.assertTrue(os.path.isfile(fes.PROFILING_FILENAME))
-        os.remove(fes.PROFILING_FILENAME)
+        self.assertTrue(os.path.isfile(profiling_filename))
+        os.remove(profiling_filename)
 
     def test_profiling_cumulative_file_written_out(self):
-
-        fes = FeatureExtractionSettings()
-        fes.PROFILING = True
-        fes.PROFILING_FILENAME = "test_profiling_cumulative.txt"
-        fes.PROFILING_SORTING = "cumulative"
+        PROFILING_FILENAME = "test_profiling_cumulative.txt"
+        PROFILING_SORTING = "cumulative"
 
         df = pd.DataFrame(data={"id": np.repeat([1, 2], 10), "value": np.random.normal(0, 1, 20)})
-        X = extract_features(df, column_id="id", column_value="value", feature_extraction_settings=fes)
+        extract_features(df, column_id="id", column_value="value",
+                             profile=True, profiling_filename=PROFILING_FILENAME, profiling_sorting=PROFILING_SORTING)
 
-        self.assertTrue(os.path.isfile(fes.PROFILING_FILENAME))
-        os.remove(fes.PROFILING_FILENAME)
+        self.assertTrue(os.path.isfile(PROFILING_FILENAME))
+        os.remove(PROFILING_FILENAME)
 
     def test_extract_features_without_settings(self):
         df = pd.DataFrame(data={"id": np.repeat([1, 2], 10),
                                 "value1": np.random.normal(0, 1, 20),
                                 "value2": np.random.normal(0, 1, 20)})
-        X = extract_features(df, column_id="id")
+        X = extract_features(df, column_id="id",
+                                              n_processes=self.n_processes)
         self.assertIn("value1__maximum", list(X.columns))
         self.assertIn("value2__maximum", list(X.columns))
 
@@ -162,9 +166,11 @@ class ExtractionTestCase(DataTestCase):
         df = self.create_test_data_sample()
 
         features_per_sample = extract_features(df, self.settings, "id", "sort", "kind", "val",
-                                               parallelization='per_sample')
+                                               parallelization='per_sample',
+                                              n_processes=self.n_processes)
         features_per_kind = extract_features(df, self.settings, "id", "sort", "kind", "val",
-                                               parallelization='per_kind')
+                                               parallelization='per_kind',
+                                              n_processes=self.n_processes)
 
         six.assertCountEqual(self, features_per_sample.columns, features_per_kind.columns)
 
@@ -176,8 +182,7 @@ class ExtractionTestCase(DataTestCase):
 class ParallelExtractionTestCase(DataTestCase):
     def setUp(self):
         self.settings = FeatureExtractionSettings()
-        self.settings.PROFILING = False
-        self.settings.n_processes = 2
+        self.n_processes = 2
 
         # only calculate some features to reduce load on travis ci
         self.name_to_param = {"maximum": None,
@@ -190,7 +195,8 @@ class ParallelExtractionTestCase(DataTestCase):
     def test_extract_features(self):
         # todo: implement more methods and test more aspects
         df = self.create_test_data_sample()
-        extracted_features = extract_features(df, self.settings, "id", "sort", "kind", "val")
+        extracted_features = extract_features(df, self.settings, "id", "sort", "kind", "val",
+                                              n_processes=self.n_processes)
 
         self.assertIsInstance(extracted_features, pd.DataFrame)
         self.assertTrue(np.all(extracted_features.a__maximum == np.array([71, 77])))

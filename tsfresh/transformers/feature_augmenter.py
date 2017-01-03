@@ -5,6 +5,7 @@
 from sklearn.base import BaseEstimator, TransformerMixin
 import pandas as pd
 from tsfresh.feature_extraction import extract_features
+from tsfresh.feature_extraction.settings import *
 from tsfresh.utilities.dataframe_functions import restrict_input_to_index
 
 
@@ -55,12 +56,21 @@ class FeatureAugmenter(BaseEstimator, TransformerMixin):
     :mod:`~tsfresh.feature_extraction.extraction`.
     """
     def __init__(self, settings=None, column_id=None, column_sort=None,
-                 column_kind=None, column_value=None, timeseries_container=None):
+                 column_kind=None, column_value=None, timeseries_container=None,
+                 parallelization=None, chunksize=DEFAULT_CHUNKSIZE,
+                 n_processes=DEFAULT_N_PROCESSES, show_warnings=DEFAULT_SHOW_WARNINGS,
+                 disable_progressbar=DEFAULT_DISABLE_PROGRESSBAR,
+                 impute_function=DEFAULT_IMPUTE_FUNCTION,
+                 profile=DEFAULT_PROFILING,
+                 profiling_filename=DEFAULT_PROFILING_FILENAME,
+                 profiling_sorting=DEFAULT_PROFILING_SORTING
+                 ):
         """
         Create a new FeatureAugmenter instance.
 
         :param settings: The extraction settings to use. Leave empty to use the default ones.
         :type settings: tsfresh.feature_extraction.settings.FeatureExtractionSettings
+
         :param column_id: The column with the id. See :mod:`~tsfresh.feature_extraction.extraction`.
         :type column_id: basestring
         :param column_sort: The column with the sort data. See :mod:`~tsfresh.feature_extraction.extraction`.
@@ -69,12 +79,45 @@ class FeatureAugmenter(BaseEstimator, TransformerMixin):
         :type column_kind: basestring
         :param column_value: The column with the values. See :mod:`~tsfresh.feature_extraction.extraction`.
         :type column_value: basestring
+
+        :param parallelization: Either ``'per_sample'`` or ``'per_kind'``   , see
+                            :func:`~tsfresh.feature_extraction.extraction._extract_features_parallel_per_sample`,
+                            :func:`~tsfresh.feature_extraction.extraction._extract_features_parallel_per_kind` and
+                            :ref:`parallelization-label` for details.
+                            Choosing None makes the algorithm look for the best parallelization technique by applying
+                            some general remarks.
+        :type parallelization: str
+
+        :param chunksize: The size of one chunk for the parallelisation
+        :type chunksize: None or int
+
+        :param n_processes: The number of processes to use for parallelisation.
+        :type n_processes: int
+
+        :param: show_warnings: Show warnings during the feature extraction (needed for debugging of calculators).
+        :type show_warnings: bool
+
+        :param disable_progressbar: Do not show a progressbar while doing the calculation.
+        :type disable_progressbar: bool
+
+        :param impute_function: None, if no imputing should happen or the function to call for imputing.
+        :type impute_function: None or function
         """
         self.settings = settings
         self.column_id = column_id
         self.column_sort = column_sort
         self.column_kind = column_kind
         self.column_value = column_value
+
+        self.parallelization = parallelization
+        self.chunksize = chunksize
+        self.n_processes = n_processes
+        self.show_warnings = show_warnings
+        self.disable_progressbar = disable_progressbar
+        self.impute_function = impute_function
+        self.profile = profile
+        self.profiling_filename = profiling_filename
+        self.profiling_sorting = profiling_sorting
 
         self.timeseries_container = timeseries_container
 
@@ -133,7 +176,14 @@ class FeatureAugmenter(BaseEstimator, TransformerMixin):
         extracted_features = extract_features(timeseries_container_X,
                                               feature_extraction_settings=self.settings,
                                               column_id=self.column_id, column_sort=self.column_sort,
-                                              column_kind=self.column_kind, column_value=self.column_value)
+                                              column_kind=self.column_kind, column_value=self.column_value,
+                                              parallelization=self.parallelization, chunksize=self.chunksize,
+                                              n_processes=self.n_processes, show_warnings=self.show_warnings,
+                                              disable_progressbar=self.disable_progressbar,
+                                              impute_function=self.impute_function,
+                                              profile=self.profile,
+                                              profiling_filename=self.profiling_filename,
+                                              profiling_sorting=self.profiling_sorting)
 
         X = pd.merge(X, extracted_features, left_index=True, right_index=True, how="left")
 
