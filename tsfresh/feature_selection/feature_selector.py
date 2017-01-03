@@ -77,6 +77,31 @@ def check_fs_sig_bh(X, y, n_processes=defaults.N_PROCESSES, chunksize=defaults.C
     :param y: The target vector
     :type y: pandas.Series
 
+    :param test_for_binary_target_real_feature: Which test to be used for binary target, real feature
+    :type test_for_binary_target_real_feature: str
+
+    :param fdr_level: The FDR level that should be respected, this is the theoretical expected percentage of irrelevant
+                      features among all created features.
+    :type fdr_level: float
+
+    :param hypotheses_independent: Can the significance of the features be assumed to be independent?
+                                   Normally, this should be set to False as the features are never
+                                   independent (e.g. mean and median)
+    :type hypotheses_independent: bool
+
+    :param write_selection_report: Whether to store the selection report after the Benjamini Hochberg procedure has
+                                   finished.
+    :type write_selection_report: bool
+
+    :param result_dir: Where to store the selection report
+    :type result_dir: str
+
+    :param n_processes: Number of processes to use during the p-value calculation
+    :type n_processes: int
+
+    :param chunksize: Size of the chunks submitted to the worker processes
+    :type chunksize: int
+
     :return: A pandas.DataFrame with each column of the input DataFrame X as index with information on the significance
             of this particular feature. The DataFrame has the columns
             "Feature",
@@ -154,11 +179,13 @@ def _calculate_p_value(feature_column, y, target_is_binary, test_for_binary_targ
     :param y: the binary target vector
     :type y: pandas.Series
 
-    :param settings: The settings object to control how the significance is calculated.
-    :type settings: FeatureSignificanceTestsSettings
-
     :param target_is_binary: Whether the target is binary or not
     :type target_is_binary: bool
+
+    :param test_for_binary_target_real_feature: The significance test to be used for binary target and real valued
+                                                features. Either ``'mann'`` for the Mann-Whitney-U test or ``'smir'``
+                                                for the Kolmogorov-Smirnov test.
+    :type test_for_binary_target_real_feature: str
 
     :return: the p-value of the feature significance test and the type of the tested feature as a Series.
              Lower p-values indicate a higher feature significance.
@@ -213,9 +240,14 @@ def benjamini_hochberg_test(df_pvalues, hypotheses_independent, fdr_level):
                        "p_values".
     :type df_pvalues: pandas.DataFrame
 
-    :param settings: The settings object to use for controlling the false discovery rate (FDR_level) and
-           whether to threat the hypothesis independent or not (hypotheses_independent).
-    :type settings: FeatureSignificanceTestsSettings
+    :param hypotheses_independent: Can the significance of the features be assumed to be independent?
+                                   Normally, this should be set to False as the features are never
+                                   independent (e.g. mean and median)
+    :type hypotheses_independent: bool
+
+    :param fdr_level: The FDR level that should be respected, this is the theoretical expected percentage of irrelevant
+                      features among all created features.
+    :type fdr_level: float
 
     :return: The same DataFrame as the input, but with an added boolean column "rejected".
     :rtype: pandas.DataFrame

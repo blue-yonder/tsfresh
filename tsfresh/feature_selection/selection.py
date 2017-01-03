@@ -78,16 +78,16 @@ def select_features(X, y, test_for_binary_target_binary_feature=defaults.TEST_FO
     :param y: Target vector which is needed to test, which features are relevant. Can be binary or real-valued.
     :type y: pandas.Series or numpy.ndarray
 
-    :param test_for_binary_target_binary_feature: Which test to be used for binary target, binary feature (unused)
+    :param test_for_binary_target_binary_feature: Which test to be used for binary target, binary feature (currently unused)
     :type test_for_binary_target_binary_feature: str
 
     :param test_for_binary_target_real_feature: Which test to be used for binary target, real feature
     :type test_for_binary_target_real_feature: str
 
-    :param test_for_real_target_binary_feature: Which test to be used for real target, binary feature (unused)
+    :param test_for_real_target_binary_feature: Which test to be used for real target, binary feature (currently unused)
     :type test_for_real_target_binary_feature: str
 
-    :param test_for_real_target_real_feature: Which test to be used for real target, real feature (unused)
+    :param test_for_real_target_real_feature: Which test to be used for real target, real feature (currently unused)
     :type test_for_real_target_real_feature: str
 
     :param fdr_level: The FDR level that should be respected, this is the theoretical expected percentage of irrelevant

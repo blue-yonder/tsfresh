@@ -139,9 +139,6 @@ def target_real_feature_binary_test(x, y):
     :param y: the real-valued target vector
     :type y: pandas.Series
 
-    :param settings: The settings object to control how the significance is calculated (currently unused).
-    :type settings: FeatureSignificanceTestsSettings or None
-
     :return: the p-value of the feature significance test. Lower p-values indicate a higher feature significance.
     :rtype: float
 
@@ -175,9 +172,6 @@ def target_real_feature_real_test(x, y):
 
     :param y: the real-valued target vector
     :type y: pandas.Series
-
-    :param settings: The settings object to control how the significance is calculated (currently unused).
-    :type settings: FeatureSignificanceTestsSettings or None
 
     :return: the p-value of the feature significance test. Lower p-values indicate a higher feature significance.
     :rtype: float
