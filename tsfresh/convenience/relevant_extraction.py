@@ -41,15 +41,95 @@ def extract_relevant_features(timeseries_container, y, X=None,
     >>> df, y = load_robot_execution_failures()
     >>> X = extract_relevant_features(df, y, column_id='id', column_sort='time')
 
-    :param timeseries_container: See parameter `timeseries_container` in :func:`~tsfresh.feature_extraction.extraction.extract_features`
-    :param y: See parameter `y` in :func:`~tsfresh.feature_selection.selection.select_features`
-    :param X: See parameter `X` in :func:`~tsfresh.feature_selection.selection.select_features`
-    :param column_id: See parameter `column_id` in :func:`~tsfresh.feature_extraction.extraction.extract_features`
-    :param column_sort: See parameter `column_sort` in :func:`~tsfresh.feature_extraction.extraction.extract_features`
-    :param column_kind: See parameter `column_kind` in :func:`~tsfresh.feature_extraction.extraction.extract_features`
-    :param column_value: See parameter `column_value` in :func:`~tsfresh.feature_extraction.extraction.extract_features`
-    :param feature_extraction_settings: See parameter `feature_extraction_settings` in :func:`~tsfresh.feature_extraction.extraction.extract_features`
-    :param feature_selection_settings: See parameter `feature_selection_settings` in :func:`~tsfresh.feature_selection.selection.select_features`
+    :param timeseries_container: The pandas.DataFrame with the time series to compute the features for, or a
+            dictionary of pandas.DataFrames.
+            See :func:`~tsfresh.feature_extraction.extraction.extract_features`.
+
+    :param X: A DataFrame containing additional features
+    :type X: pandas.DataFrame
+
+    :param y: The target vector
+    :type y: pandas.Series
+
+    :param default_calculation_settings_mapping: mapping from feature calculator names to parameters. Only those names
+           which are keys in this dict will be calculated. See the class:`FeatureExtractionSettings` for
+           more information.
+    :type default_calculation_settings_mapping: dict
+
+    :param kind_to_calculation_settings_mapping: mapping from kind names to objects of the same type as the ones for
+            default_calculation_settings_mapping. If you put a kind as a key here, the calculation_settings_mapping
+            object (which is the value), will be used instead of the default_calculation_settings_mapping.
+    :type kind_to_calculation_settings_mapping: dict
+
+    :param column_id: The name of the id column to group by.
+    :type column_id: str
+
+    :param column_sort: The name of the sort column.
+    :type column_sort: str
+
+    :param column_kind: The name of the column keeping record on the kind of the value.
+    :type column_kind: str
+
+    :param column_value: The name for the column keeping the value itself.
+    :type column_value: str
+
+    :param parallelization: Either ``'per_sample'`` or ``'per_kind'``   , see
+                            :func:`~tsfresh.feature_extraction.extraction._extract_features_parallel_per_sample`,
+                            :func:`~tsfresh.feature_extraction.extraction._extract_features_parallel_per_kind` and
+                            :ref:`parallelization-label` for details.
+                            Choosing None makes the algorithm look for the best parallelization technique by applying
+                            some general remarks.
+    :type parallelization: str
+
+    :param chunksize: The size of one chunk for the parallelisation
+    :type chunksize: None or int
+
+    :param n_processes: The number of processes to use for parallelisation.
+    :type n_processes: int
+
+    :param: show_warnings: Show warnings during the feature extraction (needed for debugging of calculators).
+    :type show_warnings: bool
+
+    :param disable_progressbar: Do not show a progressbar while doing the calculation.
+    :type disable_progressbar: bool
+
+    :param profile: Turn on profiling during feature extraction
+    :type profile: bool
+
+    :param profiling_sorting: How to sort the profiling results (see the documentation of the profiling package for
+           more information)
+    :type profiling_sorting: basestring
+
+    :param profiling_filename: Where to save the profiling results.
+    :type profiling_filename: basestring
+
+    :param test_for_binary_target_binary_feature: Which test to be used for binary target, binary feature (currently unused)
+    :type test_for_binary_target_binary_feature: str
+
+    :param test_for_binary_target_real_feature: Which test to be used for binary target, real feature
+    :type test_for_binary_target_real_feature: str
+
+    :param test_for_real_target_binary_feature: Which test to be used for real target, binary feature (currently unused)
+    :type test_for_real_target_binary_feature: str
+
+    :param test_for_real_target_real_feature: Which test to be used for real target, real feature (currently unused)
+    :type test_for_real_target_real_feature: str
+
+    :param fdr_level: The FDR level that should be respected, this is the theoretical expected percentage of irrelevant
+                      features among all created features.
+    :type fdr_level: float
+
+    :param hypotheses_independent: Can the significance of the features be assumed to be independent?
+                                   Normally, this should be set to False as the features are never
+                                   independent (e.g. mean and median)
+    :type hypotheses_independent: bool
+
+    :param write_selection_report: Whether to store the selection report after the Benjamini Hochberg procedure has
+                                   finished.
+    :type write_selection_report: bool
+
+    :param result_dir: Where to store the selection report
+    :type result_dir: str
 
     :return: Feature matrix X, possibly extended with relevant time series features.
     """
