@@ -280,7 +280,7 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
                                   col_to_min=self.col_to_min, col_to_median=self.col_to_median)
 
         relevant_feature_extractor = FeatureAugmenter(kind_to_calculation_settings_mapping=relevant_extraction_settings,
-                                                      default_calculation_settings_mapping=self.feature_extractor.default_calculation_settings_mapping,
+                                                      default_calculation_settings_mapping={},
                                                       column_id=self.feature_extractor.column_id,
                                                       column_sort=self.feature_extractor.column_sort,
                                                       column_kind=self.feature_extractor.column_kind,
