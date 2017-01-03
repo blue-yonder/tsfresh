@@ -5,6 +5,7 @@
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from tsfresh.feature_selection.feature_selector import check_fs_sig_bh
+from tsfresh.feature_selection import settings
 
 
 class FeatureSelector(BaseEstimator, TransformerMixin):
@@ -48,15 +49,33 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
     If you are interested in more information on the features, you can look into the member
     ``relevant_features`` after the fit.
     """
-    def __init__(self, settings=None):
+    def __init__(self, test_for_binary_target_binary_feature=settings.TEST_FOR_BINARY_TARGET_BINARY_FEATURE,
+                 test_for_binary_target_real_feature=settings.TEST_FOR_BINARY_TARGET_REAL_FEATURE,
+                 test_for_real_target_binary_feature=settings.TEST_FOR_REAL_TARGET_BINARY_FEATURE,
+                 test_for_real_target_real_feature=settings.TEST_FOR_REAL_TARGET_REAL_FEATURE,
+                 fdr_level=settings.FDR_LEVEL, hypotheses_independent=settings.HYPOTHESES_INDEPENDENT,
+                 write_selection_report=settings.WRITE_SELECTION_REPORT, result_dir=settings.RESULT_DIR,
+                 n_processes=settings.N_PROCESSES, chunksize=settings.CHUNKSIZE):
         """
         Create a new FeatureSelector instance.
 
         :param settings: The settings to use for feature selection.
         :type settings: tsfresh.feature_selection.settings.FeatureSelectionSettings
         """
-        self.settings = settings
         self.relevant_features = None
+        self.test_for_binary_target_binary_feature = test_for_binary_target_binary_feature
+        self.test_for_binary_target_real_feature = test_for_binary_target_real_feature
+        self.test_for_real_target_binary_feature = test_for_real_target_binary_feature
+        self.test_for_real_target_real_feature = test_for_real_target_real_feature
+
+        self.fdr_level = fdr_level
+        self.hypotheses_independent = hypotheses_independent
+
+        self.write_selection_report = write_selection_report
+        self.result_dir = result_dir
+
+        self.n_processes = n_processes
+        self.chunksize = chunksize
 
     def fit(self, X, y):
         """
@@ -81,7 +100,8 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
         if not isinstance(y, pd.Series):
             y = pd.Series(y.copy())
 
-        df_bh = check_fs_sig_bh(X, y, self.settings)
+        df_bh = check_fs_sig_bh(X, y, self.n_processes, self.chunksize, self.write_selection_report, self.result_dir,
+                                self.fdr_level, self.hypotheses_independent, self.test_for_binary_target_real_feature)
         self.relevant_features = df_bh.loc[df_bh.rejected].Feature
 
         return self

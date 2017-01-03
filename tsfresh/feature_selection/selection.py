@@ -10,12 +10,18 @@ from __future__ import absolute_import
 
 import pandas as pd
 import numpy as np
-from tsfresh.feature_selection.settings import FeatureSignificanceTestsSettings
+from tsfresh.feature_selection import settings
 from tsfresh.utilities.dataframe_functions import check_for_nans_in_columns
 from tsfresh.feature_selection.feature_selector import check_fs_sig_bh
 
 
-def select_features(X, y, feature_selection_settings=None):
+def select_features(X, y, test_for_binary_target_binary_feature=settings.TEST_FOR_BINARY_TARGET_BINARY_FEATURE,
+                    test_for_binary_target_real_feature=settings.TEST_FOR_BINARY_TARGET_REAL_FEATURE,
+                    test_for_real_target_binary_feature=settings.TEST_FOR_REAL_TARGET_BINARY_FEATURE,
+                    test_for_real_target_real_feature=settings.TEST_FOR_REAL_TARGET_REAL_FEATURE,
+                    fdr_level=settings.FDR_LEVEL, hypotheses_independent=settings.HYPOTHESES_INDEPENDENT,
+                    write_selection_report=settings.WRITE_SELECTION_REPORT, result_dir=settings.RESULT_DIR,
+                    n_processes=settings.N_PROCESSES, chunksize=settings.CHUNKSIZE):
     """
     Check the significance of all features (columns) of feature matrix X and return a possibly reduced feature matrix
     only containing relevant features.
@@ -72,10 +78,39 @@ def select_features(X, y, feature_selection_settings=None):
     :param y: Target vector which is needed to test, which features are relevant. Can be binary or real-valued.
     :type y: pandas.Series or numpy.ndarray
 
-    :param feature_selection_settings: The settings to control the feature selection algorithms. See
-           :class:`~tsfresh.feature_selection.settings.py` for more information. If none is passed, the defaults
-           will be used.
-    :type feature_selection_settings: FeatureSignificanceTestsSettings
+    :param test_for_binary_target_binary_feature: Which test to be used for binary target, binary feature (unused)
+    :type test_for_binary_target_binary_feature: str
+
+    :param test_for_binary_target_real_feature: Which test to be used for binary target, real feature
+    :type test_for_binary_target_real_feature: str
+
+    :param test_for_real_target_binary_feature: Which test to be used for real target, binary feature (unused)
+    :type test_for_real_target_binary_feature: str
+
+    :param test_for_real_target_real_feature: Which test to be used for real target, real feature (unused)
+    :type test_for_real_target_real_feature: str
+
+    :param fdr_level: The FDR level that should be respected, this is the theoretical expected percentage of irrelevant
+                      features among all created features.
+    :type fdr_level: float
+
+    :param hypotheses_independent: Can the significance of the features be assumed to be independent?
+                                   Normally, this should be set to False as the features are never
+                                   independent (e.g. mean and median)
+    :type hypotheses_independent: bool
+
+    :param write_selection_report: Whether to store the selection report after the Benjamini Hochberg procedure has
+                                   finished.
+    :type write_selection_report: bool
+
+    :param result_dir: Where to store the selection report
+    :type result_dir: str
+
+    :param n_processes: Number of processes to use during the p-value calculation
+    :type n_processes: int
+
+    :param chunksize: Size of the chunks submitted to the worker processes
+    :type chunksize: int
 
     :return: The same DataFrame as X, but possibly with reduced number of columns ( = features).
     :rtype: pandas.DataFrame
@@ -83,9 +118,6 @@ def select_features(X, y, feature_selection_settings=None):
     :raises: ``ValueError`` when the target vector does not fit to the feature matrix.
     """
     check_for_nans_in_columns(X)
-
-    if feature_selection_settings is None:
-        feature_selection_settings = FeatureSignificanceTestsSettings()
 
     if not isinstance(y, (pd.Series, np.ndarray)):
         raise TypeError("The type of target vector y must be one of: pandas.Series, numpy.ndarray")
@@ -100,6 +132,7 @@ def select_features(X, y, feature_selection_settings=None):
 
         y = pd.Series(y, index=X.index)
 
-    df_bh = check_fs_sig_bh(X, y, feature_selection_settings)
+    df_bh = check_fs_sig_bh(X, y, n_processes, chunksize, write_selection_report, result_dir, fdr_level,
+                            hypotheses_independent, test_for_binary_target_real_feature)
 
     return X.loc[:, df_bh[df_bh.rejected].Feature]

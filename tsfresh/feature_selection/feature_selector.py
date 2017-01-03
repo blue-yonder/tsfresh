@@ -23,14 +23,16 @@ import logging
 from multiprocessing import Pool
 from tsfresh.feature_selection.significance_tests import target_binary_feature_real_test, \
     target_real_feature_binary_test, target_real_feature_real_test, target_binary_feature_binary_test
-
-from tsfresh.feature_selection.settings import FeatureSignificanceTestsSettings
+from tsfresh.feature_selection import settings
 
 
 _logger = logging.getLogger(__name__)
 
 
-def check_fs_sig_bh(X, y, settings=None):
+def check_fs_sig_bh(X, y, n_processes=settings.N_PROCESSES, chunksize=settings.CHUNKSIZE,
+                    write_selection_report=settings.WRITE_SELECTION_REPORT, result_dir=settings.RESULT_DIR,
+                    fdr_level=settings.FDR_LEVEL, hypotheses_independent=settings.HYPOTHESES_INDEPENDENT,
+                    test_for_binary_target_real_feature=settings.TEST_FOR_BINARY_TARGET_REAL_FEATURE):
     """
     The wrapper function that calls the significance test functions in this package.
     In total, for each feature from the input pandas.DataFrame an univariate feature significance test is conducted.
@@ -75,9 +77,6 @@ def check_fs_sig_bh(X, y, settings=None):
     :param y: The target vector
     :type y: pandas.Series
 
-    :param settings: The feature selection settings to use for performing the tests.
-    :type settings: FeatureSignificanceTestsSettings
-
     :return: A pandas.DataFrame with each column of the input DataFrame X as index with information on the significance
             of this particular feature. The DataFrame has the columns
             "Feature",
@@ -87,9 +86,6 @@ def check_fs_sig_bh(X, y, settings=None):
     :rtype: pandas.DataFrame
 
     """
-    if settings is None:
-        settings = FeatureSignificanceTestsSettings()
-
     target_is_binary = len(set(y)) == 2
 
     # todo: solve the multiclassification case. for a multi classification the algorithm considers the target to be
@@ -112,11 +108,11 @@ def check_fs_sig_bh(X, y, settings=None):
     df_features["p_value"] = np.nan
 
     # Calculate the feature significance in parallel
-    pool = Pool(settings.n_processes)
+    pool = Pool(n_processes)
 
     # Helper function which wrapps the _calculate_p_value with many arguments already set
-    f = partial(_calculate_p_value, y=y, settings=settings, target_is_binary=target_is_binary)
-    results = pool.map(f, [X[feature] for feature in df_features['Feature']], chunksize=settings.chunksize)
+    f = partial(_calculate_p_value, y=y, target_is_binary=target_is_binary, test_for_binary_target_real_feature=test_for_binary_target_real_feature)
+    results = pool.map(f, [X[feature] for feature in df_features['Feature']], chunksize=chunksize)
     p_values_of_features = pd.DataFrame(results)
     df_features.update(p_values_of_features)
 
@@ -125,28 +121,29 @@ def check_fs_sig_bh(X, y, settings=None):
 
     # Perform the real feature rejection
     if "const" in set(df_features.type):
-        df_features_bh = benjamini_hochberg_test(df_features.loc[~(df_features.type == "const")], settings)
+        df_features_bh = benjamini_hochberg_test(df_features.loc[~(df_features.type == "const")],
+                                                 hypotheses_independent, fdr_level)
         df_features = pd.concat([df_features_bh, df_features.loc[df_features.type == "const"]])
     else:
-        df_features = benjamini_hochberg_test(df_features, settings)
+        df_features = benjamini_hochberg_test(df_features, hypotheses_independent, fdr_level)
         
     # It is very important that we have a boolean "rejected" column, so we do a cast here to be sure
     df_features["rejected"] = df_features["rejected"].astype("bool")
 
-    if settings.write_selection_report:
+    if write_selection_report:
         # Write results of BH - Test to file
-        if not os.path.exists(settings.result_dir):
-            os.mkdir(settings.result_dir)
+        if not os.path.exists(result_dir):
+            os.mkdir(result_dir)
 
-        with open(os.path.join(settings.result_dir, "fs_bh_results.txt"), 'w') as file_out:
+        with open(os.path.join(result_dir, "fs_bh_results.txt"), 'w') as file_out:
             file_out.write(("Performed BH Test to control the false discovery rate(FDR); \n"
                             "FDR-Level={0};Hypothesis independent={1}\n"
-                            ).format(settings.fdr_level, settings.hypotheses_independent))
+                            ).format(fdr_level, hypotheses_independent))
             df_features.to_csv(index=False, path_or_buf=file_out, sep=';', float_format='%.4f')
     return df_features
 
 
-def _calculate_p_value(feature_column, y, settings, target_is_binary):
+def _calculate_p_value(feature_column, y, target_is_binary, test_for_binary_target_real_feature):
     """
     Internal helper function to calculate the p-value of a given feature using one of the dedicated
     functions target_*_feature_*_test.
@@ -177,23 +174,23 @@ def _calculate_p_value(feature_column, y, settings, target_is_binary):
             # Decide if the current feature is binary or not
             if len(set(feature_column.values)) == 2:
                 type = "binary"
-                p_value = target_binary_feature_binary_test(feature_column, y, settings)
+                p_value = target_binary_feature_binary_test(feature_column, y)
             else:
                 type = "real"
-                p_value = target_binary_feature_real_test(feature_column, y, settings)
+                p_value = target_binary_feature_real_test(feature_column, y, test_for_binary_target_real_feature)
         else:
             # Decide if the current feature is binary or not
             if len(set(feature_column.values)) == 2:
                 type = "binary"
-                p_value = target_real_feature_binary_test(feature_column, y, settings)
+                p_value = target_real_feature_binary_test(feature_column, y)
             else:
                 type = "real"
-                p_value = target_real_feature_real_test(feature_column, y, settings)
+                p_value = target_real_feature_real_test(feature_column, y)
 
         return pd.Series({"p_value": p_value, "type": type}, name=feature_column.name)
 
 
-def benjamini_hochberg_test(df_pvalues, settings):
+def benjamini_hochberg_test(df_pvalues, hypotheses_independent, fdr_level):
     """
     This is an implementation of the benjamini hochberg procedure that calculates which of the hypotheses belonging
     to the different p-Values from df_p to reject. While doing so, this test controls the false discovery rate,
@@ -230,7 +227,7 @@ def benjamini_hochberg_test(df_pvalues, settings):
     K = list(range(1, m + 1))
 
     # Calculate the weight vector C
-    if settings.hypotheses_independent:
+    if hypotheses_independent:
         # c(k) = 1
         C = [1] * m
     else:
@@ -238,7 +235,7 @@ def benjamini_hochberg_test(df_pvalues, settings):
         C = [sum([1.0 / i for i in range(1, k + 1)]) for k in K]
 
     # Calculate the vector T to compare to the p_value
-    T = [settings.fdr_level * k / m * 1.0 / c for k, c in zip(K, C)]
+    T = [fdr_level * k / m * 1.0 / c for k, c in zip(K, C)]
 
     # Get the last rejected p_value
     try:

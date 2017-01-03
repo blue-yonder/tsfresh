@@ -5,14 +5,20 @@
 from __future__ import absolute_import
 import pandas as pd
 from tsfresh.feature_extraction import extract_features, FeatureExtractionSettings
-from tsfresh.feature_selection import select_features
+from tsfresh.feature_selection import select_features, settings
 from tsfresh.utilities.dataframe_functions import restrict_input_to_index, impute
 
 
 def extract_relevant_features(timeseries_container, y, X=None,
                               feature_extraction_settings=None,
-                              feature_selection_settings=None,
-                              column_id=None, column_sort=None, column_kind=None, column_value=None):
+                              column_id=None, column_sort=None, column_kind=None, column_value=None,
+                              test_for_binary_target_binary_feature=settings.TEST_FOR_BINARY_TARGET_BINARY_FEATURE,
+                              test_for_binary_target_real_feature=settings.TEST_FOR_BINARY_TARGET_REAL_FEATURE,
+                              test_for_real_target_binary_feature=settings.TEST_FOR_REAL_TARGET_BINARY_FEATURE,
+                              test_for_real_target_real_feature=settings.TEST_FOR_REAL_TARGET_REAL_FEATURE,
+                              fdr_level=settings.FDR_LEVEL, hypotheses_independent=settings.HYPOTHESES_INDEPENDENT,
+                              write_selection_report=settings.WRITE_SELECTION_REPORT, result_dir=settings.RESULT_DIR,
+                              n_processes=settings.N_PROCESSES, chunksize=settings.CHUNKSIZE):
     """
     High level convenience function to extract time series features from `timeseries_container`. Then return feature
     matrix `X` possibly augmented with features relevant with respect to target vector `y`.
@@ -47,7 +53,13 @@ def extract_relevant_features(timeseries_container, y, X=None,
                              column_id=column_id, column_sort=column_sort,
                              column_kind=column_kind, column_value=column_value,
                              impute_function=impute)
-    X_sel = select_features(X_ext, y, feature_selection_settings=feature_selection_settings)
+    X_sel = select_features(X_ext, y, test_for_binary_target_binary_feature=test_for_binary_target_binary_feature,
+                            test_for_binary_target_real_feature=test_for_binary_target_real_feature,
+                            test_for_real_target_binary_feature=test_for_real_target_binary_feature,
+                            test_for_real_target_real_feature=test_for_real_target_real_feature,
+                            fdr_level=fdr_level, hypotheses_independent=hypotheses_independent,
+                            write_selection_report=write_selection_report, result_dir=result_dir,
+                            n_processes=n_processes, chunksize=chunksize)
 
     if X is None:
         X = X_sel
