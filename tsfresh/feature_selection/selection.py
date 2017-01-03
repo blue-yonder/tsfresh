@@ -20,7 +20,6 @@ def select_features(X, y, test_for_binary_target_binary_feature=defaults.TEST_FO
                     test_for_real_target_binary_feature=defaults.TEST_FOR_REAL_TARGET_BINARY_FEATURE,
                     test_for_real_target_real_feature=defaults.TEST_FOR_REAL_TARGET_REAL_FEATURE,
                     fdr_level=defaults.FDR_LEVEL, hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
-                    write_selection_report=defaults.WRITE_SELECTION_REPORT, result_dir=defaults.RESULT_DIR,
                     n_processes=defaults.N_PROCESSES, chunksize=defaults.CHUNKSIZE):
     """
     Check the significance of all features (columns) of feature matrix X and return a possibly reduced feature matrix
@@ -99,13 +98,6 @@ def select_features(X, y, test_for_binary_target_binary_feature=defaults.TEST_FO
                                    independent (e.g. mean and median)
     :type hypotheses_independent: bool
 
-    :param write_selection_report: Whether to store the selection report after the Benjamini Hochberg procedure has
-                                   finished.
-    :type write_selection_report: bool
-
-    :param result_dir: Where to store the selection report
-    :type result_dir: str
-
     :param n_processes: Number of processes to use during the p-value calculation
     :type n_processes: int
 
@@ -132,7 +124,7 @@ def select_features(X, y, test_for_binary_target_binary_feature=defaults.TEST_FO
 
         y = pd.Series(y, index=X.index)
 
-    df_bh = check_fs_sig_bh(X, y, n_processes, chunksize, write_selection_report, result_dir, fdr_level,
-                            hypotheses_independent, test_for_binary_target_real_feature)
+    df_bh = check_fs_sig_bh(X, y, n_processes, chunksize, fdr_level, hypotheses_independent,
+                            test_for_binary_target_real_feature)
 
     return X.loc[:, df_bh[df_bh.rejected].Feature]

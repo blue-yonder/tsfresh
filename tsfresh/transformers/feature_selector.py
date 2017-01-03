@@ -54,7 +54,6 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
                  test_for_real_target_binary_feature=defaults.TEST_FOR_REAL_TARGET_BINARY_FEATURE,
                  test_for_real_target_real_feature=defaults.TEST_FOR_REAL_TARGET_REAL_FEATURE,
                  fdr_level=defaults.FDR_LEVEL, hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
-                 write_selection_report=defaults.WRITE_SELECTION_REPORT, result_dir=defaults.RESULT_DIR,
                  n_processes=defaults.N_PROCESSES, chunksize=defaults.CHUNKSIZE):
         """
         Create a new FeatureSelector instance.
@@ -70,9 +69,6 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
 
         self.fdr_level = fdr_level
         self.hypotheses_independent = hypotheses_independent
-
-        self.write_selection_report = write_selection_report
-        self.result_dir = result_dir
 
         self.n_processes = n_processes
         self.chunksize = chunksize
@@ -100,8 +96,8 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
         if not isinstance(y, pd.Series):
             y = pd.Series(y.copy())
 
-        df_bh = check_fs_sig_bh(X, y, self.n_processes, self.chunksize, self.write_selection_report, self.result_dir,
-                                self.fdr_level, self.hypotheses_independent, self.test_for_binary_target_real_feature)
+        df_bh = check_fs_sig_bh(X, y, self.n_processes, self.chunksize, self.fdr_level, self.hypotheses_independent,
+                                self.test_for_binary_target_real_feature)
         self.relevant_features = df_bh.loc[df_bh.rejected].Feature
 
         return self

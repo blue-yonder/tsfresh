@@ -106,8 +106,7 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
                  test_for_binary_target_real_feature=defaults.TEST_FOR_BINARY_TARGET_REAL_FEATURE,
                  test_for_real_target_binary_feature=defaults.TEST_FOR_REAL_TARGET_BINARY_FEATURE,
                  test_for_real_target_real_feature=defaults.TEST_FOR_REAL_TARGET_REAL_FEATURE,
-                 fdr_level=defaults.FDR_LEVEL, hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
-                 write_selection_report=defaults.WRITE_SELECTION_REPORT, result_dir=defaults.RESULT_DIR):
+                 fdr_level=defaults.FDR_LEVEL, hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT):
 
         """
         Create a new RelevantFeatureAugmenter instance.
@@ -184,7 +183,6 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
             test_for_real_target_binary_feature=test_for_real_target_binary_feature,
             test_for_real_target_real_feature=test_for_real_target_real_feature,
             fdr_level=fdr_level, hypotheses_independent=hypotheses_independent,
-            write_selection_report=write_selection_report, result_dir=result_dir,
             n_processes=n_processes, chunksize=chunksize
         )
 

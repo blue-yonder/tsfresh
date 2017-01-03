@@ -30,7 +30,6 @@ _logger = logging.getLogger(__name__)
 
 
 def check_fs_sig_bh(X, y, n_processes=defaults.N_PROCESSES, chunksize=defaults.CHUNKSIZE,
-                    write_selection_report=defaults.WRITE_SELECTION_REPORT, result_dir=defaults.RESULT_DIR,
                     fdr_level=defaults.FDR_LEVEL, hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
                     test_for_binary_target_real_feature=defaults.TEST_FOR_BINARY_TARGET_REAL_FEATURE):
     """
@@ -88,13 +87,6 @@ def check_fs_sig_bh(X, y, n_processes=defaults.N_PROCESSES, chunksize=defaults.C
                                    Normally, this should be set to False as the features are never
                                    independent (e.g. mean and median)
     :type hypotheses_independent: bool
-
-    :param write_selection_report: Whether to store the selection report after the Benjamini Hochberg procedure has
-                                   finished.
-    :type write_selection_report: bool
-
-    :param result_dir: Where to store the selection report
-    :type result_dir: str
 
     :param n_processes: Number of processes to use during the p-value calculation
     :type n_processes: int
@@ -155,16 +147,6 @@ def check_fs_sig_bh(X, y, n_processes=defaults.N_PROCESSES, chunksize=defaults.C
     # It is very important that we have a boolean "rejected" column, so we do a cast here to be sure
     df_features["rejected"] = df_features["rejected"].astype("bool")
 
-    if write_selection_report:
-        # Write results of BH - Test to file
-        if not os.path.exists(result_dir):
-            os.mkdir(result_dir)
-
-        with open(os.path.join(result_dir, "fs_bh_results.txt"), 'w') as file_out:
-            file_out.write(("Performed BH Test to control the false discovery rate(FDR); \n"
-                            "FDR-Level={0};Hypothesis independent={1}\n"
-                            ).format(fdr_level, hypotheses_independent))
-            df_features.to_csv(index=False, path_or_buf=file_out, sep=';', float_format='%.4f')
     return df_features
 
 
