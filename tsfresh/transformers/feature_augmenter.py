@@ -102,6 +102,16 @@ class FeatureAugmenter(BaseEstimator, TransformerMixin):
 
         :param impute_function: None, if no imputing should happen or the function to call for imputing.
         :type impute_function: None or function
+
+        :param profile: Turn on profiling during feature extraction
+        :type profile: bool
+
+        :param profiling_sorting: How to sort the profiling results (see the documentation of the profiling package for
+               more information)
+        :type profiling_sorting: basestring
+
+        :param profiling_filename: Where to save the profiling results.
+        :type profiling_filename: basestring
         """
         self.settings = settings
         self.column_id = column_id

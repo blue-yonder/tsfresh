@@ -88,6 +88,7 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
     :class:`~tsfresh.feature_selection.settings.FeatureSignificanceTestsSettings`. However, the default settings which
     are used if you pass no objects are often quite sensible.
     """
+
     def __init__(self,
                  evaluate_only_added_features=True,
                  feature_selection_settings=None,
@@ -144,8 +145,15 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
         :param disable_progressbar: Do not show a progressbar while doing the calculation.
         :type disable_progressbar: bool
 
-        :param impute_function: None, if no imputing should happen or the function to call for imputing.
-        :type impute_function: None or function
+        :param profile: Turn on profiling during feature extraction
+        :type profile: bool
+
+        :param profiling_sorting: How to sort the profiling results (see the documentation of the profiling package for
+               more information)
+        :type profiling_sorting: basestring
+
+        :param profiling_filename: Where to save the profiling results.
+        :type profiling_filename: basestring
         """
 
         # Range will be our default imputation strategy
@@ -253,11 +261,8 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
         relevant_extraction_settings.set_default = False
 
         # Set imputing strategy
-        if self.feature_extractor.impute_function is impute_dataframe_range:
-            impute_function = partial(impute_dataframe_range, col_to_max=self.col_to_max,
-                                                          col_to_min=self.col_to_min, col_to_median=self.col_to_median)
-        else:
-            impute_function = self.feature_extractor.settings.IMPUTE
+        impute_function = partial(impute_dataframe_range, col_to_max=self.col_to_max,
+                                  col_to_min=self.col_to_min, col_to_median=self.col_to_median)
 
         relevant_feature_extractor = FeatureAugmenter(settings=relevant_extraction_settings,
                                                       column_id=self.feature_extractor.column_id,
