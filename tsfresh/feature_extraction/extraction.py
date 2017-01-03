@@ -141,28 +141,22 @@ def extract_features(timeseries_container, feature_extraction_settings=None,
 
     # Calculate the result
     if parallelization == 'per_kind':
-        result = _extract_features_parallel_per_kind(kind_to_df_map,
-                                                     settings=feature_extraction_settings,
-                                                     column_id=column_id,
-                                                     column_value=column_value,
-                                                     chunksize=chunksize,
-                                                     n_processes=n_processes,
-                                                     show_warnings=show_warnings,
-                                                     disable_progressbar=disable_progressbar,
-                                                     impute_function=impute_function
-                                                     )
+        calculation_function = _extract_features_parallel_per_kind
     elif parallelization == 'per_sample':
-        result = _extract_features_parallel_per_sample(kind_to_df_map,
-                                                       settings=feature_extraction_settings,
-                                                       column_id=column_id,
-                                                       column_value=column_value,
-                                                       chunksize=chunksize,
-                                                       n_processes=n_processes,
-                                                       show_warnings=show_warnings,
-                                                       disable_progressbar=disable_progressbar,
-                                                       impute_function=impute_function)
+        calculation_function = _extract_features_parallel_per_sample
     else:
         raise ValueError("Argument parallelization must be one of: 'per_kind', 'per_sample'")
+
+    result = calculation_function(kind_to_df_map,
+                                  settings=feature_extraction_settings,
+                                  column_id=column_id,
+                                  column_value=column_value,
+                                  chunksize=chunksize,
+                                  n_processes=n_processes,
+                                  show_warnings=show_warnings,
+                                  disable_progressbar=disable_progressbar,
+                                  impute_function=impute_function
+                                  )
 
     # Turn off profiling if it was turned on
     if profile:
