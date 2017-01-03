@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 # This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
+from functools import partial
 
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
-from functools import partial
-from tsfresh.feature_extraction.settings import *
+from tsfresh import defaults
+from tsfresh.feature_extraction.settings import from_columns
 from tsfresh.transformers.feature_augmenter import FeatureAugmenter
 from tsfresh.transformers.feature_selector import FeatureSelector
 from tsfresh.utilities.dataframe_functions import impute_dataframe_range, get_range_values_per_column
-from tsfresh.feature_selection import settings
 
 
 # TODO: Add more testcases
@@ -96,18 +96,18 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
                  kind_to_calculation_settings_mapping=None,
                  column_id=None, column_sort=None, column_kind=None, column_value=None,
                  timeseries_container=None,
-                 parallelization=DEFAULT_PARALLELIZATION, chunksize=DEFAULT_CHUNKSIZE,
-                 n_processes=DEFAULT_N_PROCESSES, show_warnings=DEFAULT_SHOW_WARNINGS,
-                 disable_progressbar=DEFAULT_DISABLE_PROGRESSBAR,
-                 profile=DEFAULT_PROFILING,
-                 profiling_filename=DEFAULT_PROFILING_FILENAME,
-                 profiling_sorting=DEFAULT_PROFILING_SORTING,
-                 test_for_binary_target_binary_feature=settings.TEST_FOR_BINARY_TARGET_BINARY_FEATURE,
-                 test_for_binary_target_real_feature=settings.TEST_FOR_BINARY_TARGET_REAL_FEATURE,
-                 test_for_real_target_binary_feature=settings.TEST_FOR_REAL_TARGET_BINARY_FEATURE,
-                 test_for_real_target_real_feature=settings.TEST_FOR_REAL_TARGET_REAL_FEATURE,
-                 fdr_level=settings.FDR_LEVEL, hypotheses_independent=settings.HYPOTHESES_INDEPENDENT,
-                 write_selection_report=settings.WRITE_SELECTION_REPORT, result_dir=settings.RESULT_DIR):
+                 parallelization=defaults.PARALLELISATION, chunksize=defaults.CHUNKSIZE,
+                 n_processes=defaults.N_PROCESSES, show_warnings=defaults.SHOW_WARNINGS,
+                 disable_progressbar=defaults.DISABLE_PROGRESSBAR,
+                 profile=defaults.PROFILING,
+                 profiling_filename=defaults.PROFILING_FILENAME,
+                 profiling_sorting=defaults.PROFILING_SORTING,
+                 test_for_binary_target_binary_feature=defaults.TEST_FOR_BINARY_TARGET_BINARY_FEATURE,
+                 test_for_binary_target_real_feature=defaults.TEST_FOR_BINARY_TARGET_REAL_FEATURE,
+                 test_for_real_target_binary_feature=defaults.TEST_FOR_REAL_TARGET_BINARY_FEATURE,
+                 test_for_real_target_real_feature=defaults.TEST_FOR_REAL_TARGET_REAL_FEATURE,
+                 fdr_level=defaults.FDR_LEVEL, hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
+                 write_selection_report=defaults.WRITE_SELECTION_REPORT, result_dir=defaults.RESULT_DIR):
 
         """
         Create a new RelevantFeatureAugmenter instance.

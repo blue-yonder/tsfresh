@@ -3,9 +3,9 @@
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
 import pandas as pd
+from tsfresh import defaults
 from sklearn.base import BaseEstimator, TransformerMixin
 from tsfresh.feature_selection.feature_selector import check_fs_sig_bh
-from tsfresh.feature_selection import settings
 
 
 class FeatureSelector(BaseEstimator, TransformerMixin):
@@ -49,13 +49,13 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
     If you are interested in more information on the features, you can look into the member
     ``relevant_features`` after the fit.
     """
-    def __init__(self, test_for_binary_target_binary_feature=settings.TEST_FOR_BINARY_TARGET_BINARY_FEATURE,
-                 test_for_binary_target_real_feature=settings.TEST_FOR_BINARY_TARGET_REAL_FEATURE,
-                 test_for_real_target_binary_feature=settings.TEST_FOR_REAL_TARGET_BINARY_FEATURE,
-                 test_for_real_target_real_feature=settings.TEST_FOR_REAL_TARGET_REAL_FEATURE,
-                 fdr_level=settings.FDR_LEVEL, hypotheses_independent=settings.HYPOTHESES_INDEPENDENT,
-                 write_selection_report=settings.WRITE_SELECTION_REPORT, result_dir=settings.RESULT_DIR,
-                 n_processes=settings.N_PROCESSES, chunksize=settings.CHUNKSIZE):
+    def __init__(self, test_for_binary_target_binary_feature=defaults.TEST_FOR_BINARY_TARGET_BINARY_FEATURE,
+                 test_for_binary_target_real_feature=defaults.TEST_FOR_BINARY_TARGET_REAL_FEATURE,
+                 test_for_real_target_binary_feature=defaults.TEST_FOR_REAL_TARGET_BINARY_FEATURE,
+                 test_for_real_target_real_feature=defaults.TEST_FOR_REAL_TARGET_REAL_FEATURE,
+                 fdr_level=defaults.FDR_LEVEL, hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
+                 write_selection_report=defaults.WRITE_SELECTION_REPORT, result_dir=defaults.RESULT_DIR,
+                 n_processes=defaults.N_PROCESSES, chunksize=defaults.CHUNKSIZE):
         """
         Create a new FeatureSelector instance.
 

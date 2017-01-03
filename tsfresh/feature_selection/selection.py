@@ -10,18 +10,18 @@ from __future__ import absolute_import
 
 import pandas as pd
 import numpy as np
-from tsfresh.feature_selection import settings
+from tsfresh import defaults
 from tsfresh.utilities.dataframe_functions import check_for_nans_in_columns
 from tsfresh.feature_selection.feature_selector import check_fs_sig_bh
 
 
-def select_features(X, y, test_for_binary_target_binary_feature=settings.TEST_FOR_BINARY_TARGET_BINARY_FEATURE,
-                    test_for_binary_target_real_feature=settings.TEST_FOR_BINARY_TARGET_REAL_FEATURE,
-                    test_for_real_target_binary_feature=settings.TEST_FOR_REAL_TARGET_BINARY_FEATURE,
-                    test_for_real_target_real_feature=settings.TEST_FOR_REAL_TARGET_REAL_FEATURE,
-                    fdr_level=settings.FDR_LEVEL, hypotheses_independent=settings.HYPOTHESES_INDEPENDENT,
-                    write_selection_report=settings.WRITE_SELECTION_REPORT, result_dir=settings.RESULT_DIR,
-                    n_processes=settings.N_PROCESSES, chunksize=settings.CHUNKSIZE):
+def select_features(X, y, test_for_binary_target_binary_feature=defaults.TEST_FOR_BINARY_TARGET_BINARY_FEATURE,
+                    test_for_binary_target_real_feature=defaults.TEST_FOR_BINARY_TARGET_REAL_FEATURE,
+                    test_for_real_target_binary_feature=defaults.TEST_FOR_REAL_TARGET_BINARY_FEATURE,
+                    test_for_real_target_real_feature=defaults.TEST_FOR_REAL_TARGET_REAL_FEATURE,
+                    fdr_level=defaults.FDR_LEVEL, hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
+                    write_selection_report=defaults.WRITE_SELECTION_REPORT, result_dir=defaults.RESULT_DIR,
+                    n_processes=defaults.N_PROCESSES, chunksize=defaults.CHUNKSIZE):
     """
     Check the significance of all features (columns) of feature matrix X and return a possibly reduced feature matrix
     only containing relevant features.

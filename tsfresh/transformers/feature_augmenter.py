@@ -2,10 +2,10 @@
 # This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
-from sklearn.base import BaseEstimator, TransformerMixin
 import pandas as pd
+from sklearn.base import BaseEstimator, TransformerMixin
+import tsfresh.defaults
 from tsfresh.feature_extraction import extract_features
-from tsfresh.feature_extraction.settings import *
 from tsfresh.utilities.dataframe_functions import restrict_input_to_index
 
 
@@ -58,13 +58,13 @@ class FeatureAugmenter(BaseEstimator, TransformerMixin):
     def __init__(self, default_calculation_settings_mapping=None,
                  kind_to_calculation_settings_mapping=None, column_id=None, column_sort=None,
                  column_kind=None, column_value=None, timeseries_container=None,
-                 parallelization=None, chunksize=DEFAULT_CHUNKSIZE,
-                 n_processes=DEFAULT_N_PROCESSES, show_warnings=DEFAULT_SHOW_WARNINGS,
-                 disable_progressbar=DEFAULT_DISABLE_PROGRESSBAR,
-                 impute_function=DEFAULT_IMPUTE_FUNCTION,
-                 profile=DEFAULT_PROFILING,
-                 profiling_filename=DEFAULT_PROFILING_FILENAME,
-                 profiling_sorting=DEFAULT_PROFILING_SORTING
+                 parallelization=None, chunksize=tsfresh.defaults.CHUNKSIZE,
+                 n_processes=tsfresh.defaults.N_PROCESSES, show_warnings=tsfresh.defaults.SHOW_WARNINGS,
+                 disable_progressbar=tsfresh.defaults.DISABLE_PROGRESSBAR,
+                 impute_function=tsfresh.defaults.IMPUTE_FUNCTION,
+                 profile=tsfresh.defaults.PROFILING,
+                 profiling_filename=tsfresh.defaults.PROFILING_FILENAME,
+                 profiling_sorting=tsfresh.defaults.PROFILING_SORTING
                  ):
         """
         Create a new FeatureAugmenter instance.

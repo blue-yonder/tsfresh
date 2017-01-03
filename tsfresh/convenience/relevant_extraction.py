@@ -5,10 +5,8 @@
 from __future__ import absolute_import
 import pandas as pd
 from tsfresh.feature_extraction import extract_features
-from tsfresh.feature_extraction.settings import DEFAULT_CHUNKSIZE, DEFAULT_DISABLE_PROGRESSBAR, DEFAULT_PROFILING, \
-    DEFAULT_PROFILING_FILENAME, DEFAULT_PROFILING_SORTING
-from tsfresh.feature_extraction.settings import DEFAULT_PARALLELIZATION, DEFAULT_SHOW_WARNINGS
-from tsfresh.feature_selection import select_features, settings
+from tsfresh import defaults
+from tsfresh.feature_selection import select_features
 from tsfresh.utilities.dataframe_functions import restrict_input_to_index, impute
 
 
@@ -16,18 +14,18 @@ def extract_relevant_features(timeseries_container, y, X=None,
                               default_calculation_settings_mapping=None,
                               kind_to_calculation_settings_mapping=None,
                               column_id=None, column_sort=None, column_kind=None, column_value=None,
-                              parallelization=DEFAULT_PARALLELIZATION, show_warnings=DEFAULT_SHOW_WARNINGS,
-                              disable_progressbar=DEFAULT_DISABLE_PROGRESSBAR,
-                              profile=DEFAULT_PROFILING,
-                              profiling_filename=DEFAULT_PROFILING_FILENAME,
-                              profiling_sorting=DEFAULT_PROFILING_SORTING,
-                              test_for_binary_target_binary_feature=settings.TEST_FOR_BINARY_TARGET_BINARY_FEATURE,
-                              test_for_binary_target_real_feature=settings.TEST_FOR_BINARY_TARGET_REAL_FEATURE,
-                              test_for_real_target_binary_feature=settings.TEST_FOR_REAL_TARGET_BINARY_FEATURE,
-                              test_for_real_target_real_feature=settings.TEST_FOR_REAL_TARGET_REAL_FEATURE,
-                              fdr_level=settings.FDR_LEVEL, hypotheses_independent=settings.HYPOTHESES_INDEPENDENT,
-                              write_selection_report=settings.WRITE_SELECTION_REPORT, result_dir=settings.RESULT_DIR,
-                              n_processes=settings.N_PROCESSES, chunksize=settings.CHUNKSIZE):
+                              parallelization=defaults.PARALLELISATION, show_warnings=defaults.SHOW_WARNINGS,
+                              disable_progressbar=defaults.DISABLE_PROGRESSBAR,
+                              profile=defaults.PROFILING,
+                              profiling_filename=defaults.PROFILING_FILENAME,
+                              profiling_sorting=defaults.PROFILING_SORTING,
+                              test_for_binary_target_binary_feature=defaults.TEST_FOR_BINARY_TARGET_BINARY_FEATURE,
+                              test_for_binary_target_real_feature=defaults.TEST_FOR_BINARY_TARGET_REAL_FEATURE,
+                              test_for_real_target_binary_feature=defaults.TEST_FOR_REAL_TARGET_BINARY_FEATURE,
+                              test_for_real_target_real_feature=defaults.TEST_FOR_REAL_TARGET_REAL_FEATURE,
+                              fdr_level=defaults.FDR_LEVEL, hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
+                              write_selection_report=defaults.WRITE_SELECTION_REPORT, result_dir=defaults.RESULT_DIR,
+                              n_processes=defaults.N_PROCESSES, chunksize=defaults.CHUNKSIZE):
     """
     High level convenience function to extract time series features from `timeseries_container`. Then return feature
     matrix `X` possibly augmented with features relevant with respect to target vector `y`.

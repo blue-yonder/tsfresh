@@ -17,9 +17,8 @@ import pandas as pd
 from builtins import str
 from six.moves.queue import Queue
 from tqdm import tqdm
-from tsfresh.feature_extraction.settings import FeatureExtractionSettings, DEFAULT_CHUNKSIZE, DEFAULT_N_PROCESSES, \
-    DEFAULT_SHOW_WARNINGS, DEFAULT_DISABLE_PROGRESSBAR, DEFAULT_IMPUTE_FUNCTION, DEFAULT_PROFILING, \
-    DEFAULT_PROFILING_FILENAME, DEFAULT_PROFILING_SORTING, get_aggregate_functions, get_apply_functions
+from tsfresh.feature_extraction.settings import FeatureExtractionSettings, get_aggregate_functions, get_apply_functions
+import tsfresh.defaults
 from tsfresh.utilities import dataframe_functions, profiling
 
 _logger = logging.getLogger(__name__)
@@ -28,13 +27,13 @@ _logger = logging.getLogger(__name__)
 def extract_features(timeseries_container, default_calculation_settings_mapping=None,
                      kind_to_calculation_settings_mapping=None,
                      column_id=None, column_sort=None, column_kind=None, column_value=None,
-                     parallelization=None, chunksize=DEFAULT_CHUNKSIZE,
-                     n_processes=DEFAULT_N_PROCESSES, show_warnings=DEFAULT_SHOW_WARNINGS,
-                     disable_progressbar=DEFAULT_DISABLE_PROGRESSBAR,
-                     impute_function=DEFAULT_IMPUTE_FUNCTION,
-                     profile=DEFAULT_PROFILING,
-                     profiling_filename=DEFAULT_PROFILING_FILENAME,
-                     profiling_sorting=DEFAULT_PROFILING_SORTING):
+                     parallelization=None, chunksize=tsfresh.defaults.CHUNKSIZE,
+                     n_processes=tsfresh.defaults.N_PROCESSES, show_warnings=tsfresh.defaults.SHOW_WARNINGS,
+                     disable_progressbar=tsfresh.defaults.DISABLE_PROGRESSBAR,
+                     impute_function=tsfresh.defaults.IMPUTE_FUNCTION,
+                     profile=tsfresh.defaults.PROFILING,
+                     profiling_filename=tsfresh.defaults.PROFILING_FILENAME,
+                     profiling_sorting=tsfresh.defaults.PROFILING_SORTING):
     """
     Extract features from
 
@@ -170,10 +169,10 @@ def _extract_features_parallel_per_kind(kind_to_df_map,
                                         column_id, column_value,
                                         default_calculation_settings_mapping,
                                         kind_to_calculation_settings_mapping=None,
-                                        chunksize=DEFAULT_CHUNKSIZE,
-                                        n_processes=DEFAULT_N_PROCESSES, show_warnings=DEFAULT_SHOW_WARNINGS,
-                                        disable_progressbar=DEFAULT_DISABLE_PROGRESSBAR,
-                                        impute_function=DEFAULT_IMPUTE_FUNCTION):
+                                        chunksize=tsfresh.defaults.CHUNKSIZE,
+                                        n_processes=tsfresh.defaults.N_PROCESSES, show_warnings=tsfresh.defaults.SHOW_WARNINGS,
+                                        disable_progressbar=tsfresh.defaults.DISABLE_PROGRESSBAR,
+                                        impute_function=tsfresh.defaults.IMPUTE_FUNCTION):
     """
     Parallelize the feature extraction per kind.
 
@@ -238,10 +237,10 @@ def _extract_features_parallel_per_sample(kind_to_df_map,
                                           column_id, column_value,
                                           default_calculation_settings_mapping,
                                           kind_to_calculation_settings_mapping=None,
-                                          chunksize=DEFAULT_CHUNKSIZE,
-                                          n_processes=DEFAULT_N_PROCESSES, show_warnings=DEFAULT_SHOW_WARNINGS,
-                                          disable_progressbar=DEFAULT_DISABLE_PROGRESSBAR,
-                                          impute_function=DEFAULT_IMPUTE_FUNCTION):
+                                          chunksize=tsfresh.defaults.CHUNKSIZE,
+                                          n_processes=tsfresh.defaults.N_PROCESSES, show_warnings=tsfresh.defaults.SHOW_WARNINGS,
+                                          disable_progressbar=tsfresh.defaults.DISABLE_PROGRESSBAR,
+                                          impute_function=tsfresh.defaults.IMPUTE_FUNCTION):
     """
     Parallelize the feature extraction per kind and per sample.
 
@@ -356,7 +355,7 @@ def _calculate_best_chunksize(iterable_list, n_processes):
 def _extract_features_for_one_time_series(prefix_and_dataframe, column_id, column_value,
                                           default_calculation_settings_mapping,
                                           kind_to_calculation_settings_mapping=None,
-                                          show_warnings=DEFAULT_SHOW_WARNINGS):
+                                          show_warnings=tsfresh.defaults.SHOW_WARNINGS):
     """
     Extract time series features for a given data frame based on the passed settings.
 

@@ -9,20 +9,15 @@ For the naming of the features, see :ref:`feature-naming-label`.
 
 from __future__ import absolute_import, division
 
-from collections import defaultdict
-
-from builtins import zip
-from builtins import str
-from builtins import range
-from past.builtins import basestring
-from builtins import object
 import ast
-import os
 from functools import partial
+
 import numpy as np
+from builtins import range
+from builtins import str
+from builtins import zip
+from past.builtins import basestring
 from tsfresh.feature_extraction import feature_calculators
-from multiprocessing import cpu_count
-import six
 
 
 def get_aggregate_functions(calculation_settings_mapping, column_prefix):
@@ -289,15 +284,3 @@ class ReasonableFeatureExtractionSettings(FeatureExtractionSettings):
                 del self[fname]
 
 
-DEFAULT_CHUNKSIZE = None
-
-n_cores = int(os.getenv("NUMBER_OF_CPUS") or cpu_count())
-DEFAULT_N_PROCESSES = max(1, n_cores//2)
-
-DEFAULT_PROFILING = False
-DEFAULT_PROFILING_SORTING = "cumulative"
-DEFAULT_PROFILING_FILENAME = "profile.txt"
-DEFAULT_IMPUTE_FUNCTION = None
-DEFAULT_DISABLE_PROGRESSBAR = False
-DEFAULT_SHOW_WARNINGS = False
-DEFAULT_PARALLELIZATION = None

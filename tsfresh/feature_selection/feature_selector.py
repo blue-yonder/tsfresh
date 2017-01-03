@@ -23,16 +23,16 @@ import logging
 from multiprocessing import Pool
 from tsfresh.feature_selection.significance_tests import target_binary_feature_real_test, \
     target_real_feature_binary_test, target_real_feature_real_test, target_binary_feature_binary_test
-from tsfresh.feature_selection import settings
+from tsfresh import defaults
 
 
 _logger = logging.getLogger(__name__)
 
 
-def check_fs_sig_bh(X, y, n_processes=settings.N_PROCESSES, chunksize=settings.CHUNKSIZE,
-                    write_selection_report=settings.WRITE_SELECTION_REPORT, result_dir=settings.RESULT_DIR,
-                    fdr_level=settings.FDR_LEVEL, hypotheses_independent=settings.HYPOTHESES_INDEPENDENT,
-                    test_for_binary_target_real_feature=settings.TEST_FOR_BINARY_TARGET_REAL_FEATURE):
+def check_fs_sig_bh(X, y, n_processes=defaults.N_PROCESSES, chunksize=defaults.CHUNKSIZE,
+                    write_selection_report=defaults.WRITE_SELECTION_REPORT, result_dir=defaults.RESULT_DIR,
+                    fdr_level=defaults.FDR_LEVEL, hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
+                    test_for_binary_target_real_feature=defaults.TEST_FOR_BINARY_TARGET_REAL_FEATURE):
     """
     The wrapper function that calls the significance test functions in this package.
     In total, for each feature from the input pandas.DataFrame an univariate feature significance test is conducted.
