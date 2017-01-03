@@ -127,5 +127,5 @@ Please make sure, that the different feature extraction settings
 :class:`tsfresh.feature_extraction.settings.ReasonableFeatureExtractionSettings`) do include different sets of
 feature calculators to use. You can control, which feature extraction settings object will include your new
 feature calculator by giving your function attributes like "minimal" or "high_comp_cost". Please see the
-classes in :module:`tsfresh.feature_extraction.settings` for more information.
+classes in :mod:`tsfresh.feature_extraction.settings` for more information.
 

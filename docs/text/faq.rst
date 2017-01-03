@@ -1,5 +1,5 @@
 FAQ
-=================
+===
 
 
     1. *Does tsfresh supports different time series lengths?*
