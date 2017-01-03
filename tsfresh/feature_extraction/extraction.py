@@ -25,7 +25,8 @@ from tsfresh.utilities import dataframe_functions, profiling
 _logger = logging.getLogger(__name__)
 
 
-def extract_features(timeseries_container, feature_extraction_settings=None,
+def extract_features(timeseries_container, default_calculation_settings_mapping=None,
+                     kind_to_calculation_settings_mapping=None,
                      column_id=None, column_sort=None, column_kind=None, column_value=None,
                      parallelization=None, chunksize=DEFAULT_CHUNKSIZE,
                      n_processes=DEFAULT_N_PROCESSES, show_warnings=DEFAULT_SHOW_WARNINGS,
@@ -124,8 +125,8 @@ def extract_features(timeseries_container, feature_extraction_settings=None,
                                                                        column_kind, column_value)
 
     # Use the standard setting if the user did not supply ones himself.
-    if feature_extraction_settings is None:
-        feature_extraction_settings = FeatureExtractionSettings()
+    if default_calculation_settings_mapping is None:
+        default_calculation_settings_mapping = FeatureExtractionSettings()
 
     # Choose the parallelization according to a rule-of-thumb
     if parallelization is None:
@@ -146,7 +147,8 @@ def extract_features(timeseries_container, feature_extraction_settings=None,
         raise ValueError("Argument parallelization must be one of: 'per_kind', 'per_sample'")
 
     result = calculation_function(kind_to_df_map,
-                                  default_calculation_settings_mapping=feature_extraction_settings.name_to_param,
+                                  default_calculation_settings_mapping=default_calculation_settings_mapping,
+                                  kind_to_calculation_settings_mapping=kind_to_calculation_settings_mapping,
                                   column_id=column_id,
                                   column_value=column_value,
                                   chunksize=chunksize,

@@ -78,7 +78,7 @@ class ExtractionTestCase(DataTestCase):
         settings = FeatureExtractionSettings()
 
         extracted_features = _extract_features_for_one_time_series(["b", df.loc[df.kind == "b", ["val", "id"]]],
-                                                                   default_calculation_settings_mapping=settings.name_to_param,
+                                                                   default_calculation_settings_mapping=settings,
                                                                    column_value="val", column_id="id")
 
         self.assertIsInstance(extracted_features, pd.DataFrame)
@@ -90,7 +90,7 @@ class ExtractionTestCase(DataTestCase):
 
         df_sts = self.create_one_valued_time_series()
         extracted_features_sts = _extract_features_for_one_time_series(["a", df_sts[["val", "id"]]],
-                                                                       default_calculation_settings_mapping=settings.name_to_param,
+                                                                       default_calculation_settings_mapping=settings,
                                                                        column_value="val", column_id="id")
 
         self.assertIsInstance(extracted_features_sts, pd.DataFrame)

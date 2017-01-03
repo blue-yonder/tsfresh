@@ -55,7 +55,8 @@ class FeatureAugmenter(BaseEstimator, TransformerMixin):
     For a description what the parameters column_id, column_sort, column_kind and column_value mean, please see
     :mod:`~tsfresh.feature_extraction.extraction`.
     """
-    def __init__(self, settings=None, column_id=None, column_sort=None,
+    def __init__(self, default_calculation_settings_mapping=None,
+                 kind_to_calculation_settings_mapping=None, column_id=None, column_sort=None,
                  column_kind=None, column_value=None, timeseries_container=None,
                  parallelization=None, chunksize=DEFAULT_CHUNKSIZE,
                  n_processes=DEFAULT_N_PROCESSES, show_warnings=DEFAULT_SHOW_WARNINGS,
@@ -113,7 +114,9 @@ class FeatureAugmenter(BaseEstimator, TransformerMixin):
         :param profiling_filename: Where to save the profiling results.
         :type profiling_filename: basestring
         """
-        self.settings = settings
+        self.default_calculation_settings_mapping = default_calculation_settings_mapping
+        self.kind_to_calculation_settings_mapping = kind_to_calculation_settings_mapping
+
         self.column_id = column_id
         self.column_sort = column_sort
         self.column_kind = column_kind
@@ -184,7 +187,8 @@ class FeatureAugmenter(BaseEstimator, TransformerMixin):
         timeseries_container_X = restrict_input_to_index(self.timeseries_container, self.column_id, X.index)
 
         extracted_features = extract_features(timeseries_container_X,
-                                              feature_extraction_settings=self.settings,
+                                              default_calculation_settings_mapping=self.default_calculation_settings_mapping,
+                                              kind_to_calculation_settings_mapping=self.kind_to_calculation_settings_mapping,
                                               column_id=self.column_id, column_sort=self.column_sort,
                                               column_kind=self.column_kind, column_value=self.column_value,
                                               parallelization=self.parallelization, chunksize=self.chunksize,

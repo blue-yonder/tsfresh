@@ -92,7 +92,8 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
 
     def __init__(self,
                  evaluate_only_added_features=True,
-                 feature_extraction_settings=None,
+                 default_calculation_settings_mapping=None,
+                 kind_to_calculation_settings_mapping=None,
                  column_id=None, column_sort=None, column_kind=None, column_value=None,
                  timeseries_container=None,
                  parallelization=DEFAULT_PARALLELIZATION, chunksize=DEFAULT_CHUNKSIZE,
@@ -164,8 +165,10 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
         # Range will be our default imputation strategy
         impute_function = impute_dataframe_range
 
-        self.feature_extractor = FeatureAugmenter(feature_extraction_settings,
-                                                  column_id, column_sort, column_kind, column_value,
+        self.feature_extractor = FeatureAugmenter(column_id=column_id, column_sort=column_sort, column_kind=column_kind,
+                                                  column_value=column_value,
+                                                  default_calculation_settings_mapping=default_calculation_settings_mapping,
+                                                  kind_to_calculation_settings_mapping=kind_to_calculation_settings_mapping,
                                                   parallelization=parallelization, chunksize=chunksize,
                                                   n_processes=n_processes, show_warnings=show_warnings,
                                                   disable_progressbar=disable_progressbar,
@@ -270,14 +273,14 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
 
         relevant_time_series_features = set(self.feature_selector.relevant_features) - set(pd.DataFrame(X).columns)
 
-        relevant_extraction_settings = FeatureExtractionSettings.from_columns(relevant_time_series_features)
-        relevant_extraction_settings.set_default = False
+        relevant_extraction_settings = from_columns(relevant_time_series_features)
 
         # Set imputing strategy
         impute_function = partial(impute_dataframe_range, col_to_max=self.col_to_max,
                                   col_to_min=self.col_to_min, col_to_median=self.col_to_median)
 
-        relevant_feature_extractor = FeatureAugmenter(settings=relevant_extraction_settings,
+        relevant_feature_extractor = FeatureAugmenter(kind_to_calculation_settings_mapping=relevant_extraction_settings,
+                                                      default_calculation_settings_mapping=self.feature_extractor.default_calculation_settings_mapping,
                                                       column_id=self.feature_extractor.column_id,
                                                       column_sort=self.feature_extractor.column_sort,
                                                       column_kind=self.feature_extractor.column_kind,

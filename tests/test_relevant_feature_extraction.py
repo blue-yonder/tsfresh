@@ -67,7 +67,7 @@ class RelevantFeatureExtractionTestCase(TestCase):
         self.y = y
 
     def test_extracted_features_contain_X_features(self):
-        X = extract_relevant_features(self.df, self.y, self.X, column_id='id', feature_extraction_settings=None)
+        X = extract_relevant_features(self.df, self.y, self.X, column_id='id')
         self.assertIn("f1", X.columns)
         self.assertIn("f2", X.columns)
         pdt.assert_series_equal(self.X["f1"], X["f1"])

@@ -13,14 +13,15 @@ import numpy as np
 class FeatureAugmenterTestCase(DataTestCase):
     def setUp(self):
         self.test_df = self.create_test_data_sample()
-        self.settings = FeatureExtractionSettings()
-        calculation_settings_mapping = {"length": self.settings.kind_to_calculation_settings_mapping["a"]["length"]}
-        self.settings.kind_to_calculation_settings_mapping = {"a": calculation_settings_mapping.copy(),
-                                                              "b": calculation_settings_mapping.copy()}
+
+        calculation_settings_mapping = {"length": None}
+        self.kind_to_calculation_settings_mapping = {"a": calculation_settings_mapping.copy(),
+                                                     "b": calculation_settings_mapping.copy()}
 
     def test_fit_and_transform(self):
         augmenter = FeatureAugmenter(column_value="val", column_id="id", column_sort="sort",
-                                     column_kind="kind", settings=self.settings)
+                                     column_kind="kind",
+                                     kind_to_calculation_settings_mapping=self.kind_to_calculation_settings_mapping)
 
         # Fit should do nothing
         returned_df = augmenter.fit()
@@ -53,7 +54,8 @@ class FeatureAugmenterTestCase(DataTestCase):
 
     def test_add_features_to_only_a_part(self):
         augmenter = FeatureAugmenter(column_value="val", column_id="id", column_sort="sort",
-                                     column_kind="kind", settings=self.settings)
+                                     column_kind="kind",
+                                     kind_to_calculation_settings_mapping=self.kind_to_calculation_settings_mapping)
 
         augmenter.set_timeseries_container(self.test_df)
 
