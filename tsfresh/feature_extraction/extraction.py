@@ -66,8 +66,15 @@ def extract_features(timeseries_container, default_calculation_settings_mapping=
             dictionary of pandas.DataFrames.
     :type timeseries_container: pandas.DataFrame or dict
 
-    :param feature_extraction_settings: settings object that controls which features are calculated
-    :type feature_extraction_settings: tsfresh.feature_extraction.settings.FeatureExtractionSettings
+    :param default_calculation_settings_mapping: mapping from feature calculator names to parameters. Only those names
+           which are keys in this dict will be calculated. See the class:`FeatureExtractionSettings` for
+           more information.
+    :type default_calculation_settings_mapping: dict
+
+    :param kind_to_calculation_settings_mapping: mapping from kind names to objects of the same type as the ones for
+            default_calculation_settings_mapping. If you put a kind as a key here, the calculation_settings_mapping
+            object (which is the value), will be used instead of the default_calculation_settings_mapping.
+    :type kind_to_calculation_settings_mapping: dict
 
     :param column_id: The name of the id column to group by.
     :type column_id: str
@@ -181,11 +188,19 @@ def _extract_features_parallel_per_kind(kind_to_df_map,
 
     :param column_id: The name of the id column to group by.
     :type column_id: str
+
     :param column_value: The name for the column keeping the value itself.
     :type column_value: str
 
-    :param settings: settings object that controls which features are calculated
-    :type settings: tsfresh.feature_extraction.settings.FeatureExtractionSettings
+    :param default_calculation_settings_mapping: mapping from feature calculator names to parameters. Only those names
+           which are keys in this dict will be calculated. See the class:`FeatureExtractionSettings` for
+           more information.
+    :type default_calculation_settings_mapping: dict
+
+    :param kind_to_calculation_settings_mapping: mapping from kind names to objects of the same type as the ones for
+            default_calculation_settings_mapping. If you put a kind as a key here, the calculation_settings_mapping
+            object (which is the value), will be used instead of the default_calculation_settings_mapping.
+    :type kind_to_calculation_settings_mapping: dict
 
     :param chunksize: The size of one chunk for the parallelisation
     :type chunksize: None or int
@@ -253,11 +268,19 @@ def _extract_features_parallel_per_sample(kind_to_df_map,
 
     :param column_id: The name of the id column to group by.
     :type column_id: str
+
     :param column_value: The name for the column keeping the value itself.
     :type column_value: str
 
-    :param settings: settings object that controls which features are calculated
-    :type settings: tsfresh.feature_extraction.settings.FeatureExtractionSettings
+    :param default_calculation_settings_mapping: mapping from feature calculator names to parameters. Only those names
+           which are keys in this dict will be calculated. See the class:`FeatureExtractionSettings` for
+           more information.
+    :type default_calculation_settings_mapping: dict
+
+    :param kind_to_calculation_settings_mapping: mapping from kind names to objects of the same type as the ones for
+            default_calculation_settings_mapping. If you put a kind as a key here, the calculation_settings_mapping
+            object (which is the value), will be used instead of the default_calculation_settings_mapping.
+    :type kind_to_calculation_settings_mapping: dict
 
     :param chunksize: The size of one chunk for the parallelisation
     :type chunksize: None or int
@@ -409,10 +432,26 @@ def _extract_features_for_one_time_series(prefix_and_dataframe, column_id, colum
         dataframe with at least the columns column_id and column_value to extract the time
         series features for.
     :type prefix_and_dataframe: (str, DataFrame)
+
     :param column_id: The name of the column with the ids.
+    :type column_id: str
+
     :param column_value: The name of the column with the values.
-    :param settings: The settings to control, which features will be extracted.
-    :param: show_warnings: Show warnings during the feature extraction (needed for debugging of calculators).
+    :type column_value: str
+
+    :param default_calculation_settings_mapping: mapping from feature calculator names to parameters. Only those names
+           which are keys in this dict will be calculated. See the class:`FeatureExtractionSettings` for
+           more information.
+    :type default_calculation_settings_mapping: dict
+
+    :param kind_to_calculation_settings_mapping: mapping from kind names to objects of the same type as the ones for
+            default_calculation_settings_mapping. If you put a kind as a key here, the calculation_settings_mapping
+            object (which is the value), will be used instead of the default_calculation_settings_mapping.
+    :type kind_to_calculation_settings_mapping: dict
+
+    :param show_warnings: Show warnings during the feature extraction (needed for debugging of calculators).
+    :type show_warnings: bool
+
     :return: A dataframe with the extracted features as the columns (prefixed with column_prefix) and as many
         rows as their are unique values in the id column.
     """

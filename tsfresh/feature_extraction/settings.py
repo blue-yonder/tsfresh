@@ -2,9 +2,8 @@
 # This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 """
-This file contains all settings of the tsfresh.
+This file contains methods/objects for controlling which features will be extracted when calling extract_features.
 For the naming of the features, see :ref:`feature-naming-label`.
-
 """
 
 from __future__ import absolute_import, division
@@ -22,12 +21,16 @@ from tsfresh.feature_extraction import feature_calculators
 
 def get_aggregate_functions(calculation_settings_mapping, column_prefix):
     """
-    For the tyme series Returns a dictionary with the column name mapped to the feature calculators that are
-    specified in the FeatureExtractionSettings object. This dictionary can be used in a pandas group by command to
-    extract the all aggregate features at the same time.
+    Returns a dictionary with some of the column name mapped to the feature calculators that are
+    specified in the calculation_settings_mapping. This dictionary includes those calculators,
+    that can be used in a pandas group by command to extract all aggregate features at the same time.
+
+    :param calculation_settings_mapping: mapping from feature calculator names to settings.
+    :type calculation_settings_mapping: FeatureExtractionSettings or child class
 
     :param column_prefix: the prefix for all column names.
     :type column_prefix: basestring
+
     :return: mapping of column name to function calculator
     :rtype: dict
     """
@@ -68,11 +71,16 @@ def get_aggregate_functions(calculation_settings_mapping, column_prefix):
 
 def get_apply_functions(calculation_settings_mapping, column_prefix):
     """
-    Convenience function to return a list with all the functions to apply on a data frame and extract features.
-    Only adds those functions to the dictionary, that are enabled in the settings.
+    Returns a dictionary with some of the column name mapped to the feature calculators that are
+    specified in the calculation_settings_mapping. This dictionary includes those calculators,
+    that can *not* be used in a pandas group by command to extract all aggregate features at the same time.
+
+    :param calculation_settings_mapping: mapping from feature calculator names to settings.
+    :type calculation_settings_mapping: FeatureExtractionSettings or child class
 
     :param column_prefix: the prefix for all column names.
     :type column_prefix: basestring
+
     :return: all functions to use for feature extraction
     :rtype: list
     """
@@ -100,20 +108,21 @@ def get_apply_functions(calculation_settings_mapping, column_prefix):
 
 def from_columns(columns):
     """
-    Creates a FeatureExtractionSettings object set to extract only the features contained in the list columns. to
-    do so, for every feature name in columns this method
+    Creates a mapping from kind names to calculation_settings_mapping objects
+    (which are itself mappings from feature calculators to settings)
+    to extract only the features contained in the columns.
+    To do so, for every feature name in columns this method
 
     1. split the column name into col, feature, params part
     2. decide which feature we are dealing with (aggregate with/without params or apply)
     3. add it to the new name_to_function dict
     4. set up the params
 
-    Set the feature and params dictionaries in the settings object, then return it.
-
     :param columns: containing the feature names
     :type columns: list of str
-    :return: The changed settings object
-    :rtype: FeatureExtractionSettings
+
+    :return: The kind_to_calculation_settings_mapping object ready to be used in the extract_features function.
+    :rtype: dict
     """
 
     kind_to_calculation_settings_mapping = {}
@@ -147,7 +156,7 @@ def from_columns(columns):
 
         elif func.fctype == "aggregate_with_parameters":
 
-            config = get_config_from_string(parts)
+            config = _get_config_from_string(parts)
 
             if feature_name in kind_to_calculation_settings_mapping[kind]:
                 kind_to_calculation_settings_mapping[kind][feature_name].append(config)
@@ -156,7 +165,7 @@ def from_columns(columns):
 
         elif func.fctype == "apply":
 
-            config = get_config_from_string(parts)
+            config = _get_config_from_string(parts)
 
             if feature_name in kind_to_calculation_settings_mapping[kind]:
                 kind_to_calculation_settings_mapping[kind][feature_name].append(config)
@@ -166,7 +175,7 @@ def from_columns(columns):
     return kind_to_calculation_settings_mapping
 
 
-def get_config_from_string(parts):
+def _get_config_from_string(parts):
     """
     Helper function to extract the configuration of a certain function from the column name.
     The column name parts (split by "__") should be passed to this function. It will skip the
@@ -204,6 +213,21 @@ class FeatureExtractionSettings(dict):
         """
         Create a new FeatureExtractionSettings instance. You have to pass this instance to the
         extract_feature instance.
+
+        It is basically a dictionary (and also based on one), which is a mapping from
+        string (the same names that are in the feature_calculators.py file) to a list of dictionary of parameters,
+        which should be used when the function with this name is called.
+
+        Only those strings (function names), that are keys in this dictionary, will be later used to extract
+        features - so whenever you delete a key from this dict, you disable the calculation of this feature.
+
+        You can use the settings object with
+
+        >>> from tsfresh.feature_extraction import extract_features, FeatureExtractionSettings
+        >>> extract_features(df, default_calculation_settings_mapping=FeatureExtractionSettings())
+
+        to extract all features (which is the default nevertheless) or you change the FeatureExtractionSettings
+        object to other types (see below).
         """
         name_to_param = {}
 
@@ -251,7 +275,7 @@ class MinimalFeatureExtractionSettings(FeatureExtractionSettings):
     You should use this object when calling the extract function, like so:
 
     >>> from tsfresh.feature_extraction import extract_features, MinimalFeatureExtractionSettings
-    >>> extract_features(df, feature_extraction_settings=MinimalFeatureExtractionSettings())
+    >>> extract_features(df, default_calculation_settings_mapping=MinimalFeatureExtractionSettings())
     """
     def __init__(self):
         FeatureExtractionSettings.__init__(self)
@@ -272,7 +296,7 @@ class ReasonableFeatureExtractionSettings(FeatureExtractionSettings):
     You should use this object when calling the extract function, like so:
 
     >>> from tsfresh.feature_extraction import extract_features, ReasonableFeatureExtractionSettings
-    >>> extract_features(df, feature_extraction_settings=ReasonableFeatureExtractionSettings())
+    >>> extract_features(df, default_calculation_settings_mapping=ReasonableFeatureExtractionSettings())
     """
 
     def __init__(self):
