@@ -22,7 +22,8 @@ extraction and filtering of the features in a single step.
 Example
 -------
 
-In the following example you see how we combine tsfresh's :class:`~tsfresh.transformers.relevant_feature_augmenter.RelevantFeatureAugmenter`
+In the following example you see how we combine tsfresh's
+:class:`~tsfresh.transformers.relevant_feature_augmenter.RelevantFeatureAugmenter`
 and a :class:`~sklearn.ensemble.RandomForestClassifier` into a single pipeline.
 This pipeline can then fit both our transformer and the classifier in one step.
 
@@ -33,8 +34,10 @@ This pipeline can then fit both our transformer and the classifier in one step.
     from tsfresh.examples import load_robot_execution_failures
     from tsfresh.transformers import RelevantFeatureAugmenter
 
-    pipeline = Pipeline([('augmenter', RelevantFeatureAugmenter(column_id='id', column_sort='time')),
-                ('classifier', RandomForestClassifier())])
+    pipeline = Pipeline([
+                 ('augmenter', RelevantFeatureAugmenter(column_id='id', column_sort='time')),
+                 ('classifier', RandomForestClassifier())
+               ])
 
     df_ts, y = load_robot_execution_failures()
     X = pd.DataFrame(index=y.index)
@@ -54,7 +57,7 @@ In general, you can change the time series container from which the features are
 pipeline's :func:`~sklearn.pipeline.Pipeline.set_params` method or the transformers
 :func:`~tsfresh.transformers.relevant_feature_augmenter.RelevantFeatureAugmenter.set_timeseries_container` method.
 
-For further examples, see the  Jupyter Notebook pipeline_example.ipynb in the notebooks folder of the tsfresh package.
+For further examples, see the Jupyter Notebook pipeline_example.ipynb in the notebooks folder of the tsfresh package.
 
 
 References

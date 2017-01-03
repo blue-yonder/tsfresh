@@ -267,7 +267,7 @@ class MinimalFeatureExtractionSettings(FeatureExtractionSettings):
     This class is a child class of the FeatureExtractionSettings class
     and has the same functionality as its base class. The only difference is,
     that most of the feature calculators are disabled and only a small
-    subset of calculators will be calculated at all.
+    subset of calculators will be calculated at all. Those are donated by an attribute called "minimal".
 
     Use this class for quick tests of your setup before calculating all
     features which could take some time depending of your data set size.
@@ -291,7 +291,7 @@ class ReasonableFeatureExtractionSettings(FeatureExtractionSettings):
     and has the same functionality as its base class.
 
     The only difference is, that the features with high computational costs are not calculated. Those are denoted by
-    the attribute "high_comp_cost"
+    the attribute "high_comp_cost".
 
     You should use this object when calling the extract function, like so:
 

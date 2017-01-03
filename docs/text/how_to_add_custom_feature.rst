@@ -21,7 +21,6 @@ parameters.
 Then, if your features can be calculated independently for each possible parameter set, stick with type *2.*, the
 aggregate features with parameters.
 
-
 If both cases from above do not apply, because it is beneficial to calculate the features for the different
 parameter settings at the same time (to e.g. perform auxiliary calculations only once for all features), stick with
 type *3.*, the apply features with parameters.
@@ -121,4 +120,12 @@ just append your parameters to the ``name_to_param`` dictionary inside the
 
 
 That is it, tsfresh will calculate your feature the next time you run it.
+
+Please make sure, that the different feature extraction settings
+(e.g. :class:`tsfresh.feature_extraction.settings.FeatureExtractionSettings`,
+:class:`tsfresh.feature_extraction.settings.MinimalFeatureExtractionSettings` or
+:class:`tsfresh.feature_extraction.settings.ReasonableFeatureExtractionSettings`) do include different sets of
+feature calculators to use. You can control, which feature extraction settings object will include your new
+feature calculator by giving your function attributes like "minimal" or "high_comp_cost". Please see the
+classes in :module:`tsfresh.feature_extraction.settings` for more information.
 
