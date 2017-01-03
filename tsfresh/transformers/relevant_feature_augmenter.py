@@ -37,10 +37,9 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
     * Settings for the feature extraction: :class:`~tsfresh.feature_extraction.settings.FeatureExtractionSettings`
     * Feature extraction method: :func:`~tsfresh.feature_extraction.extraction.extract_features`
     * Extracted features: :mod:`~tsfresh.feature_extraction.feature_calculators`
-    * Settings for the feature selection: :class:`~tsfresh.feature_selection.settings.FeatureSignificanceTestsSettings`
     * Feature selection: :func:`~tsfresh.feature_selection.feature_selector.check_fs_sig_bh`
 
-    This estimator works quite analogues to the :class:`~tsfresh.transformers.feature_augmenter.FeatureAugmenter` with
+    This estimator works analogue to the :class:`~tsfresh.transformers.feature_augmenter.FeatureAugmenter` with
     the difference that this estimator does only output and calculate the relevant features,
     whereas the other outputs all features.
 
@@ -82,12 +81,6 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
 
     For a description what the parameters column_id, column_sort, column_kind and column_value mean, please see
     :mod:`~tsfresh.feature_extraction.extraction`.
-
-    You can control the feature extraction in the fit step (the feature extraction in the transform step is done
-    automatically) as well as the feature selection in the fit step by handing in settings objects of the type
-    :class:`~tsfresh.feature_extraction.settings.FeatureExtractionSettings` and
-    :class:`~tsfresh.feature_selection.settings.FeatureSignificanceTestsSettings`. However, the default settings which
-    are used if you pass no objects are often quite sensible.
     """
 
     def __init__(self,
@@ -159,6 +152,27 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
 
         :param profiling_filename: Where to save the profiling results.
         :type profiling_filename: basestring
+
+        :param test_for_binary_target_binary_feature: Which test to be used for binary target, binary feature (currently unused)
+        :type test_for_binary_target_binary_feature: str
+
+        :param test_for_binary_target_real_feature: Which test to be used for binary target, real feature
+        :type test_for_binary_target_real_feature: str
+
+        :param test_for_real_target_binary_feature: Which test to be used for real target, binary feature (currently unused)
+        :type test_for_real_target_binary_feature: str
+
+        :param test_for_real_target_real_feature: Which test to be used for real target, real feature (currently unused)
+        :type test_for_real_target_real_feature: str
+
+        :param fdr_level: The FDR level that should be respected, this is the theoretical expected percentage of irrelevant
+                          features among all created features.
+        :type fdr_level: float
+
+        :param hypotheses_independent: Can the significance of the features be assumed to be independent?
+                                       Normally, this should be set to False as the features are never
+                                       independent (e.g. mean and median)
+        :type hypotheses_independent: bool
         """
 
         # Range will be our default imputation strategy
