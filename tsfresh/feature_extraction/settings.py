@@ -8,6 +8,9 @@ For the naming of the features, see :ref:`feature-naming-label`.
 """
 
 from __future__ import absolute_import, division
+
+from collections import defaultdict
+
 from builtins import zip
 from builtins import str
 from builtins import range
@@ -20,6 +23,95 @@ import numpy as np
 from tsfresh.feature_extraction import feature_calculators
 from multiprocessing import cpu_count
 import six
+
+
+def get_aggregate_functions(calculation_settings_mapping, column_prefix):
+    """
+    For the tyme series Returns a dictionary with the column name mapped to the feature calculators that are
+    specified in the FeatureExtractionSettings object. This dictionary can be used in a pandas group by command to
+    extract the all aggregate features at the same time.
+
+    :param column_prefix: the prefix for all column names.
+    :type column_prefix: basestring
+    :return: mapping of column name to function calculator
+    :rtype: dict
+    """
+
+    aggregate_functions = {}
+
+    for name, param in calculation_settings_mapping.items():
+
+        func = getattr(feature_calculators, name)
+
+        if func.fctype == "aggregate":
+
+            aggregate_functions['{}__{}'.format(column_prefix, name)] = func
+
+        elif func.fctype == "aggregate_with_parameters":
+
+            if not isinstance(param, list):
+                raise ValueError("The parameters needs to be saved as a list of dictionaries")
+
+            for config in param:
+
+                if not isinstance(config, dict):
+                    raise ValueError("The parameters needs to be saved as a list of dictionaries")
+
+                # if there are several params, create a feature for each one
+                c = '{}__{}'.format(column_prefix, name)
+                for arg, p in sorted(config.items()):
+                    c += "__" + arg + "_" + str(p)
+                aggregate_functions[c] = partial(func, **config)
+
+        elif func.fctype == "apply":
+            pass
+        else:
+            raise ValueError("Do not know fctype {}".format(func.fctype))
+
+    return aggregate_functions
+
+
+def get_apply_functions(calculation_settings_mapping, column_prefix):
+    """
+    Convenience function to return a list with all the functions to apply on a data frame and extract features.
+    Only adds those functions to the dictionary, that are enabled in the settings.
+
+    :param column_prefix: the prefix for all column names.
+    :type column_prefix: basestring
+    :return: all functions to use for feature extraction
+    :rtype: list
+    """
+
+    apply_functions = []
+
+    for name, param in calculation_settings_mapping.items():
+
+        func = getattr(feature_calculators, name)
+
+        if func.fctype == "apply":
+
+            if not isinstance(param, list):
+                raise ValueError("The parameters needs to be saved as a list of dictionaries")
+
+            apply_functions.append((func, {"c": column_prefix, "param": param}))
+
+        elif func.fctype == "aggregate" or func.fctype == "aggregate_with_parameters":
+            pass
+        else:
+            raise ValueError("Do not know fctype {}".format(func.fctype))
+
+    return apply_functions
+
+
+class defaultvaluedict(dict):
+    def __init__(self, default_value, *args, **kwargs):
+        dict.__init__(self, *args, **kwargs)
+
+        self.default_value = default_value
+
+    def __missing__(self, key):
+        value = self[key] = self.default_value
+        return value
 
 
 # todo: this classes' docstrings are not completely up-to-date
@@ -64,8 +156,6 @@ class FeatureExtractionSettings(object):
         extract_feature instance.
         """
 
-        self.kind_to_calculation_settings_mapping = {}
-        self.set_default = True
         self.name_to_param = {}
 
         if calculate_all_features is True:
@@ -96,35 +186,7 @@ class FeatureExtractionSettings(object):
                 "approximate_entropy": [{"m": 2, "r": r} for r in [.1, .3, .5, .7, .9]]
             })
 
-    def set_default_parameters(self, kind):
-        """
-        Setup the feature calculations for kind as defined in `self.name_to_param`
-
-        :param kind: str, the type of the time series
-        :return:
-        """
-
-        self.kind_to_calculation_settings_mapping[kind] = self.name_to_param.copy()
-
-    def do_not_calculate(self, kind, identifier):
-        """
-        Delete the all features of type identifier for time series of type kind.
-
-        :param kind: the type of the time series
-        :type kind: basestring
-        :param identifier: the name of the feature
-        :type identifier: basestring
-        :return: The setting object itself
-        :rtype: FeatureExtractionSettings
-        """
-
-        if not isinstance(kind, basestring):
-            raise TypeError("Time series {} should be a string".format(kind))
-        if not isinstance(identifier, basestring):
-            raise TypeError("Identifier {} should be a string".format(identifier))
-
-        del self.kind_to_calculation_settings_mapping[kind][identifier]
-        return self
+        self.kind_to_calculation_settings_mapping = defaultvaluedict(default_value=self.name_to_param)
 
     @staticmethod
     def from_columns(columns):
@@ -228,88 +290,6 @@ class FeatureExtractionSettings(object):
                 dict_if_configs[key] = ast.literal_eval(value)
 
         return dict_if_configs
-
-    def get_aggregate_functions(self, kind):
-        """
-        For the tyme series Returns a dictionary with the column name mapped to the feature calculators that are
-        specified in the FeatureExtractionSettings object. This dictionary can be used in a pandas group by command to
-        extract the all aggregate features at the same time.
-
-        :param kind: the type of the time series
-        :type kind: basestring
-        :return: mapping of column name to function calculator
-        :rtype: dict
-        """
-
-        aggregate_functions = {}
-
-        if kind not in self.kind_to_calculation_settings_mapping:
-            return aggregate_functions
-
-        for name, param in self.kind_to_calculation_settings_mapping[kind].items():
-
-            func = getattr(feature_calculators, name)
-
-            if func.fctype == "aggregate":
-
-                aggregate_functions['{}__{}'.format(kind, name)] = func
-
-            elif func.fctype == "aggregate_with_parameters":
-
-                if not isinstance(param, list):
-                    raise ValueError("The parameters needs to be saved as a list of dictionaries")
-
-                for config in param:
-
-                    if not isinstance(config, dict):
-                        raise ValueError("The parameters needs to be saved as a list of dictionaries")
-
-                    # if there are several params, create a feature for each one
-                    c = '{}__{}'.format(kind, name)
-                    for arg, p in sorted(config.items()):
-                        c += "__" + arg + "_" + str(p)
-                    aggregate_functions[c] = partial(func, **config)
-
-            elif func.fctype == "apply":
-                pass
-            else:
-                raise ValueError("Do not know fctype {}".format(func.fctype))
-
-        return aggregate_functions
-
-    def get_apply_functions(self, column_prefix):
-        """
-        Convenience function to return a list with all the functions to apply on a data frame and extract features.
-        Only adds those functions to the dictionary, that are enabled in the settings.
-
-        :param column_prefix: the prefix all column names.
-        :type column_prefix: basestring
-        :return: all functions to use for feature extraction
-        :rtype: list
-        """
-
-        apply_functions = []
-
-        if column_prefix not in self.kind_to_calculation_settings_mapping:
-            return apply_functions
-
-        for name, param in self.kind_to_calculation_settings_mapping[column_prefix].items():
-
-            func = getattr(feature_calculators, name)
-
-            if func.fctype == "apply":
-
-                if not isinstance(param, list):
-                    raise ValueError("The parameters needs to be saved as a list of dictionaries")
-
-                apply_functions.append((func, {"c": column_prefix, "param": param}))
-
-            elif func.fctype == "aggregate" or func.fctype == "aggregate_with_parameters":
-                pass
-            else:
-                raise ValueError("Do not know fctype {}".format(func.fctype))
-
-        return apply_functions
 
 
 class MinimalFeatureExtractionSettings(FeatureExtractionSettings):

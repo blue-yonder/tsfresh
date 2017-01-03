@@ -19,7 +19,7 @@ from six.moves.queue import Queue
 from tqdm import tqdm
 from tsfresh.feature_extraction.settings import FeatureExtractionSettings, DEFAULT_CHUNKSIZE, DEFAULT_N_PROCESSES, \
     DEFAULT_SHOW_WARNINGS, DEFAULT_DISABLE_PROGRESSBAR, DEFAULT_IMPUTE_FUNCTION, DEFAULT_PROFILING, \
-    DEFAULT_PROFILING_FILENAME, DEFAULT_PROFILING_SORTING
+    DEFAULT_PROFILING_FILENAME, DEFAULT_PROFILING_SORTING, get_aggregate_functions, get_apply_functions
 from tsfresh.utilities import dataframe_functions, profiling
 
 _logger = logging.getLogger(__name__)
@@ -126,8 +126,6 @@ def extract_features(timeseries_container, feature_extraction_settings=None,
     # Use the standard setting if the user did not supply ones himself.
     if feature_extraction_settings is None:
         feature_extraction_settings = FeatureExtractionSettings()
-        for key in kind_to_df_map:
-            feature_extraction_settings.set_default_parameters(key)
 
     # Choose the parallelization according to a rule-of-thumb
     if parallelization is None:
@@ -148,7 +146,7 @@ def extract_features(timeseries_container, feature_extraction_settings=None,
         raise ValueError("Argument parallelization must be one of: 'per_kind', 'per_sample'")
 
     result = calculation_function(kind_to_df_map,
-                                  settings=feature_extraction_settings,
+                                  default_calculation_settings_mapping=feature_extraction_settings.name_to_param,
                                   column_id=column_id,
                                   column_value=column_value,
                                   chunksize=chunksize,
@@ -166,7 +164,11 @@ def extract_features(timeseries_container, feature_extraction_settings=None,
     return result
 
 
-def _extract_features_parallel_per_kind(kind_to_df_map, settings, column_id, column_value, chunksize=DEFAULT_CHUNKSIZE,
+def _extract_features_parallel_per_kind(kind_to_df_map,
+                                        column_id, column_value,
+                                        default_calculation_settings_mapping,
+                                        kind_to_calculation_settings_mapping=None,
+                                        chunksize=DEFAULT_CHUNKSIZE,
                                         n_processes=DEFAULT_N_PROCESSES, show_warnings=DEFAULT_SHOW_WARNINGS,
                                         disable_progressbar=DEFAULT_DISABLE_PROGRESSBAR,
                                         impute_function=DEFAULT_IMPUTE_FUNCTION):
@@ -205,7 +207,8 @@ def _extract_features_parallel_per_kind(kind_to_df_map, settings, column_id, col
     partial_extract_features_for_one_time_series = partial(_extract_features_for_one_time_series,
                                                            column_id=column_id,
                                                            column_value=column_value,
-                                                           settings=settings,
+                                                           default_calculation_settings_mapping=default_calculation_settings_mapping,
+                                                           kind_to_calculation_settings_mapping=kind_to_calculation_settings_mapping,
                                                            show_warnings=show_warnings)
     pool = Pool(n_processes)
 
@@ -229,7 +232,10 @@ def _extract_features_parallel_per_kind(kind_to_df_map, settings, column_id, col
     return result
 
 
-def _extract_features_parallel_per_sample(kind_to_df_map, settings, column_id, column_value,
+def _extract_features_parallel_per_sample(kind_to_df_map,
+                                          column_id, column_value,
+                                          default_calculation_settings_mapping,
+                                          kind_to_calculation_settings_mapping=None,
                                           chunksize=DEFAULT_CHUNKSIZE,
                                           n_processes=DEFAULT_N_PROCESSES, show_warnings=DEFAULT_SHOW_WARNINGS,
                                           disable_progressbar=DEFAULT_DISABLE_PROGRESSBAR,
@@ -273,7 +279,8 @@ def _extract_features_parallel_per_sample(kind_to_df_map, settings, column_id, c
     partial_extract_features_for_one_time_series = partial(_extract_features_for_one_time_series,
                                                            column_id=column_id,
                                                            column_value=column_value,
-                                                           settings=settings,
+                                                           default_calculation_settings_mapping=default_calculation_settings_mapping,
+                                                           kind_to_calculation_settings_mapping=kind_to_calculation_settings_mapping,
                                                            show_warnings=show_warnings)
     pool = Pool(n_processes)
     total_number_of_expected_results = 0
@@ -344,7 +351,9 @@ def _calculate_best_chunksize(iterable_list, n_processes):
     return chunksize
 
 
-def _extract_features_for_one_time_series(prefix_and_dataframe, column_id, column_value, settings,
+def _extract_features_for_one_time_series(prefix_and_dataframe, column_id, column_value,
+                                          default_calculation_settings_mapping,
+                                          kind_to_calculation_settings_mapping=None,
                                           show_warnings=DEFAULT_SHOW_WARNINGS):
     """
     Extract time series features for a given data frame based on the passed settings.
@@ -406,11 +415,20 @@ def _extract_features_for_one_time_series(prefix_and_dataframe, column_id, colum
     :return: A dataframe with the extracted features as the columns (prefixed with column_prefix) and as many
         rows as their are unique values in the id column.
     """
+    if kind_to_calculation_settings_mapping is None:
+        kind_to_calculation_settings_mapping = {}
+
     column_prefix, dataframe = prefix_and_dataframe
     column_prefix = str(column_prefix)
 
     # Ensure features are calculated on float64
     dataframe[column_value] = dataframe[column_value].astype(np.float64)
+
+    # If there are no special settings for this column_prefix, use the default ones.
+    if column_prefix in kind_to_calculation_settings_mapping:
+        calculation_settings_mapping = kind_to_calculation_settings_mapping[column_prefix]
+    else:
+        calculation_settings_mapping = default_calculation_settings_mapping
 
     with warnings.catch_warnings():
         if not show_warnings:
@@ -418,11 +436,8 @@ def _extract_features_for_one_time_series(prefix_and_dataframe, column_id, colum
         else:
             warnings.simplefilter("default")
 
-        if settings.set_default and column_prefix not in settings.kind_to_calculation_settings_mapping:
-            settings.set_default_parameters(column_prefix)
-
         # Calculate the aggregation functions
-        column_name_to_aggregate_function = settings.get_aggregate_functions(column_prefix)
+        column_name_to_aggregate_function = get_aggregate_functions(calculation_settings_mapping, column_prefix)
 
         if column_name_to_aggregate_function:
             extracted_features = dataframe.groupby(column_id)[column_value].aggregate(column_name_to_aggregate_function)
@@ -430,7 +445,7 @@ def _extract_features_for_one_time_series(prefix_and_dataframe, column_id, colum
             extracted_features = pd.DataFrame(index=dataframe[column_id].unique())
 
         # Calculate the apply functions
-        apply_functions = settings.get_apply_functions(column_prefix)
+        apply_functions = get_apply_functions(calculation_settings_mapping, column_prefix)
 
         if apply_functions:
             list_of_extracted_feature_dataframes = [extracted_features]

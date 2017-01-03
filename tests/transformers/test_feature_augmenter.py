@@ -14,7 +14,6 @@ class FeatureAugmenterTestCase(DataTestCase):
     def setUp(self):
         self.test_df = self.create_test_data_sample()
         self.settings = FeatureExtractionSettings()
-        self.settings.set_default_parameters("a")
         calculation_settings_mapping = {"length": self.settings.kind_to_calculation_settings_mapping["a"]["length"]}
         self.settings.kind_to_calculation_settings_mapping = {"a": calculation_settings_mapping.copy(),
                                                               "b": calculation_settings_mapping.copy()}
