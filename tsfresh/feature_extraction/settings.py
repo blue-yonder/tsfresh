@@ -65,17 +65,8 @@ class FeatureExtractionSettings(object):
         """
 
         self.kind_to_calculation_settings_mapping = {}
-        #self.PROFILING = False
-        #self.PROFILING_SORTING = "cumulative"
-        #self.PROFILING_FILENAME = "profile.txt"
-        #self.IMPUTE = None
         self.set_default = True
         self.name_to_param = {}
-        # Do not show the progress bar
-        #self.disable_progressbar = False
-
-        # Set to false to dismiss all warnings.
-        #self.show_warnings = False
 
         if calculate_all_features is True:
             for name, func in feature_calculators.__dict__.items():
