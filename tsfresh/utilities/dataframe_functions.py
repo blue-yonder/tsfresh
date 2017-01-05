@@ -55,7 +55,30 @@ def impute(df_impute):
     :rtype: None
     """
     col_to_max, col_to_min, col_to_median = get_range_values_per_column(df_impute)
-    impute_dataframe_range(df_impute, col_to_max, col_to_min, col_to_median)
+
+    # +inf -> max
+    columns = df_impute.columns
+    indices = np.nonzero(df_impute.values == np.PINF)
+    if len(indices[0]) > 0:
+        newValues = [ col_to_max[ columns[i] ] for i in indices[1]]
+        df_impute.values[ indices ] = newValues
+
+    # -inf -> min
+    columns = df_impute.columns
+    indices = np.nonzero(df_impute.values == np.NINF)
+    if len(indices[0]) > 0:
+        newValues = [ col_to_min[ columns[i] ] for i in indices[1]]
+        df_impute.values[ indices ] = newValues
+
+    # NaN -> median
+    columns = df_impute.columns
+    indices = np.nonzero(np.isnan(df_impute.values))
+    if len(indices[0]) > 0:
+        newValues = [ col_to_median[ columns[i] ] for i in indices[1]]
+        df_impute.values[ indices ] = newValues
+
+    # Ensure a type of "np.float64"
+    df_impute.astype(np.float64)
 
 
 def impute_dataframe_zero(df_impute):
@@ -133,7 +156,6 @@ def impute_dataframe_range(df_impute, col_to_max=None, col_to_min=None, col_to_m
 
     return df_impute
 
-
 def get_range_values_per_column(df):
     """
     Retrieves the finite max, min and mean values per column in `df` and stores them in three dictionaries, each mapping
@@ -142,21 +164,20 @@ def get_range_values_per_column(df):
     :param df: ``Dataframe``
     :return: Dictionaries mapping column names to max, min, mean values
     """
-    col_to_max = {}
-    col_to_min = {}
-    col_to_median = {}
+    column = df.get_values()
+    masked = np.ma.masked_invalid(column)
+    
+    columns = df.columns
 
-    for column_name in df.columns:
-        column = df[column_name]
-        finite_values_in_column = column[np.isfinite(column)]
-
-        if len(finite_values_in_column) == 0:
-            finite_values_in_column = [0]
-
-        col_to_max[column_name] = max(finite_values_in_column)
-        col_to_min[column_name] = min(finite_values_in_column)
-        col_to_median[column_name] = np.median(finite_values_in_column)
-
+        
+    # If a column does not contain finite value, 0 is stored instead.
+    masked.data[:,masked.mask.sum(axis=0) == masked.data.shape[0]] = 0         # Set the values of the columns to 0
+    masked.mask[:,masked.mask.sum(axis=0) == masked.data.shape[0]] = False     # Remove the mask for this column
+    
+    col_to_max     = dict( zip(columns, np.max(masked,axis=0) ) )
+    col_to_min     = dict( zip(columns, np.min(masked,axis=0) ) )
+    col_to_median  = dict( zip(columns, np.ma.median(masked,axis=0) ) )
+        
     return col_to_max, col_to_min, col_to_median
 
 
