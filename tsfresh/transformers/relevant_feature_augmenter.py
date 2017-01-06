@@ -75,7 +75,7 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
     Please keep in mind that the time series you hand in before fit or transform must contain data for the rows that are
     present in X.
 
-    If your set evaluate_only_added_features to True, your manually-created features that were present in X_train (or
+    If your set filter_only_tsfresh_features to True, your manually-created features that were present in X_train (or
     X_test) before using this estimator are not touched. Otherwise, also those features are evaluated and may be
     rejected from the data sample, because they are irrelevant.
 
@@ -84,7 +84,7 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
     """
 
     def __init__(self,
-                 evaluate_only_added_features=True,
+                 filter_only_tsfresh_features=True,
                  default_calculation_settings_mapping=None,
                  kind_to_calculation_settings_mapping=None,
                  column_id=None, column_sort=None, column_kind=None, column_value=None,
@@ -107,9 +107,9 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
         :param settings: The extraction settings to use. Leave empty to use the default ones.
         :type settings: tsfresh.feature_extraction.settings.FeatureExtractionSettings
 
-        :param evaluate_only_added_features: Whether to touch the manually-created features during feature selection or
+        :param filter_only_tsfresh_features: Whether to touch the manually-created features during feature selection or
                                              not.
-        :type evaluate_only_added_features: bool
+        :type filter_only_tsfresh_features: bool
         :param feature_selection_settings: The feature selection settings.
         :type feature_selection_settings: tsfresh.feature_selection.settings.FeatureSelectionSettings
         :param feature_extraction_settings: The feature extraction settings.
@@ -200,7 +200,7 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
             n_processes=n_processes, chunksize=chunksize
         )
 
-        self.evaluate_only_added_features = evaluate_only_added_features
+        self.filter_only_tsfresh_features = filter_only_tsfresh_features
 
         self.timeseries_container = timeseries_container
 
@@ -228,7 +228,7 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
         Then determine which of the features of X are relevant for the given target y.
         Store those relevant features internally to only extract them in the transform step.
 
-        If evaluate_only_added_features is True, only reject newly, automatically added features. If it is False,
+        If filter_only_tsfresh_features is True, only reject newly, automatically added features. If it is False,
         also look at the features that are already present in the DataFrame.
 
         :param X: The data frame without the time series features. The index rows should be present in the timeseries
@@ -246,7 +246,7 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
 
         self.feature_extractor.set_timeseries_container(self.timeseries_container)
 
-        if self.evaluate_only_added_features:
+        if self.filter_only_tsfresh_features:
             # Do not merge the time series features to the old features
             X_tmp = pd.DataFrame(index=X.index)
         else:
@@ -266,13 +266,13 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
         After the fit step, it is known which features are relevant, Only extract those from the time series handed in
         with the function :func:`~set_timeseries_container`.
 
-        If evaluate_only_added_features is False, also delete the irrelevant, already present features in the data frame.
+        If filter_only_tsfresh_features is False, also delete the irrelevant, already present features in the data frame.
 
         :param X: the data sample to add the relevant (and delete the irrelevant) features to.
         :type X: pandas.DataFrame or numpy.array
 
         :return: a data sample with the same information as X, but with added relevant time series features and
-            deleted irrelevant information (only if evaluate_only_added_features is False).
+            deleted irrelevant information (only if filter_only_tsfresh_features is False).
         :rtype: pandas.DataFrame
         """
         if self.feature_selector.relevant_features is None:
