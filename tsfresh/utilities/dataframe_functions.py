@@ -78,7 +78,7 @@ def impute(df_impute):
         df_impute.values[ indices ] = newValues
 
     # Ensure a type of "np.float64"
-    df_impute.astype(np.float64)
+    df_impute.astype(np.float64,copy=False)
 
 
 def impute_dataframe_zero(df_impute):
