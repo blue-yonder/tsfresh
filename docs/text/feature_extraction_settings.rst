@@ -8,8 +8,9 @@ function and select only the relevant features later. Then you can call the func
 `kind_to_calculation_settings_mapping` object, which means you are using the default options (which will use all
 feature calculators in this package).
 
-But if you want to dig deeper into your data and use custom settings for the feature extractors, you
-have to use a custom settings object, like shown here:
+After digging deeper into your data, you maybe want to calculate more of a certain type of feature and less of another
+type. So, you need to use custom settings for the feature extractors. To do that with tsfresh you will have to use a
+custom settings object, like shown now:
 
 >>> from tsfresh.feature_extraction import FeatureExtractionSettings
 >>> settings = FeatureExtractionSettings()
@@ -20,7 +21,7 @@ have to use a custom settings object, like shown here:
 
 
 The `default_calculation_settings_mapping` is expected to be a dictionary, which maps feature calculator names
-(the function names you can find in the :mod:`tsfresh.feature_extraction.feature_calculators` file) to list
+(the function names you can find in the :mod:`tsfresh.feature_extraction.feature_calculators` file) to a list
 of dictionaries, which are the parameters with which the function will be called (as key value pairs). Each function
 parameter combination, that is in this dict will be called during the extraction and will produce a feature.
 If the function does not need any parameters, the list value of the corresponding key can be empty.
@@ -51,11 +52,17 @@ For convenience, there are already three dict predefined, which can be used righ
   :class:`tsfresh.feature_extraction.settings.FeatureExtractionSettings`, except a few exception, which are marked as
   high_comp_cost. This can be used if runtime performance plays a major role.
 
-It is also possible, to control the features to be extracted for the different kinds individually. You can do so by
-passing another dictionary to the extract function as a `kind_to_calculation_settings_mapping` parameter. This dict
-must be a mapping from kind names (as string) to `calculation_settings_mapping` objects, which you would normally pass
-to `default_calculation_settings_mapping`. The same rules apply as above. If you include a kind name in the
-`kind_to_calculation_settings_mapping` parameter, its value will override the `default_calculation_settings_mapping`.
-Otherwise, the `default_calculation_settings_mapping` will be used.
+It is also possible, to control the features to be extracted for the different kinds of time series individually.
+You can do so by passing another dictionary to the extract function as a
+
+`kind_to_calculation_settings_mapping` = {"kind" : `calculation_settings_mapping`}
+
+parameter. This dict must be a mapping from kind names (as string) to `calculation_settings_mapping` objects,
+which you would normally pass as an argument to the `default_calculation_settings_mapping` parameter.
+
+This dominating behavior of the `kind_to_calculation_settings_mapping` argument works partly. So, if you include a kind
+name in the `kind_to_calculation_settings_mapping` parameter, its value will override the
+`default_calculation_settings_mapping`. Otherwise, the `default_calculation_settings_mapping` if the kind name could
+not be found.
 
 
