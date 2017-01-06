@@ -12,8 +12,6 @@ from tsfresh.transformers.feature_selector import FeatureSelector
 from tsfresh.utilities.dataframe_functions import impute_dataframe_range, get_range_values_per_column
 
 
-# TODO: Add more testcases
-# TODO: Do we want to keep the flag `evaluate_only_added_features`?
 # Pro: It offers more control
 # Contra: The Transformer is more than an Augmenter
 class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
