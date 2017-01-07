@@ -4,8 +4,8 @@ Feature extraction settings
 In most of the cases - especially when you play around with the data and do data mining -
 you probably want to extract all typical features when you call the :func:`tsfresh.extract_features`
 function and select only the relevant features later. Then you can call the function
-:func:`tsfresh.extract_features` without passing a `default_calculation_settings_mapping` or
-`kind_to_calculation_settings_mapping` object, which means you are using the default options (which will use all
+:func:`tsfresh.extract_features` without passing a `default_para_map` or
+`kind_to_para_map` object, which means you are using the default options (which will use all
 feature calculators in this package).
 
 After digging deeper into your data, you maybe want to calculate more of a certain type of feature and less of another
@@ -17,10 +17,10 @@ custom settings object, like shown now:
 >>> # Set here the options of the settings object as shown in the chapters below
 >>> # ...
 >>> from tsfresh.feature_extraction import extract_features
->>> extract_features(df, default_calculation_settings_mapping=settings)
+>>> extract_features(df, default_para_map=settings)
 
 
-The `default_calculation_settings_mapping` is expected to be a dictionary, which maps feature calculator names
+The `default_para_map` is expected to be a dictionary, which maps feature calculator names
 (the function names you can find in the :mod:`tsfresh.feature_extraction.feature_calculators` file) to a list
 of dictionaries, which are the parameters with which the function will be called (as key value pairs). Each function
 parameter combination, that is in this dict will be called during the extraction and will produce a feature.
@@ -30,7 +30,7 @@ For example
 
 .. code:: python
 
-    calculation_settings_mapping = {
+    para_map = {
         "length": None,
         "large_standard_deviation": [{"r": 0.05}, {"r": 0.1}]
     }
@@ -45,7 +45,7 @@ For convenience, there are already three dict predefined, which can be used righ
 
 * :class:`tsfresh.feature_extraction.settings.FeatureExtractionSettings`: includes all features without parameters and
   all features will parameters, with quite some different parameter combinations. This is the default of you do not
-  hand in a `default_calculation_settings_mapping` at all.
+  hand in a `default_para_map` at all.
 * :class:`tsfresh.feature_extraction.settings.MinimalFeatureExtractionSettings`: includes only few features
   and can be used for quick tests. The features which have the "minimal" attribute are used here.
 * :class:`tsfresh.feature_extraction.settings.ReasonableFeatureExtractionSettings`: Mostly the same features as in the
@@ -55,14 +55,14 @@ For convenience, there are already three dict predefined, which can be used righ
 It is also possible, to control the features to be extracted for the different kinds of time series individually.
 You can do so by passing another dictionary to the extract function as a
 
-`kind_to_calculation_settings_mapping` = {"kind" : `calculation_settings_mapping`}
+`kind_to_para_map` = {"kind" : `para_map`}
 
-parameter. This dict must be a mapping from kind names (as string) to `calculation_settings_mapping` objects,
-which you would normally pass as an argument to the `default_calculation_settings_mapping` parameter.
+parameter. This dict must be a mapping from kind names (as string) to `para_map` objects,
+which you would normally pass as an argument to the `default_para_map` parameter.
 
-This dominating behavior of the `kind_to_calculation_settings_mapping` argument works partly. So, if you include a kind
-name in the `kind_to_calculation_settings_mapping` parameter, its value will override the
-`default_calculation_settings_mapping`. Otherwise, the `default_calculation_settings_mapping` if the kind name could
+This dominating behavior of the `kind_to_para_map` argument works partly. So, if you include a kind
+name in the `kind_to_para_map` parameter, its value will override the
+`default_para_map`. Otherwise, the `default_para_map` if the kind name could
 not be found.
 
 

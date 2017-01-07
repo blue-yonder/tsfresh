@@ -11,9 +11,9 @@ from tsfresh.transformers.relevant_feature_augmenter import RelevantFeatureAugme
 class RelevantFeatureAugmenterTestCase(DataTestCase):
     def setUp(self):
         self.test_df = self.create_test_data_sample()
-        calculation_settings_mapping = {"length": None}
-        self.kind_to_calculation_settings_mapping = {"a": calculation_settings_mapping.copy(),
-                                                     "b": calculation_settings_mapping.copy()}
+        para_map = {"length": None}
+        self.kind_to_para_map = {"a": para_map.copy(),
+                                                     "b": para_map.copy()}
 
     def test_not_fitted(self):
         augmenter = RelevantFeatureAugmenter()
@@ -31,7 +31,7 @@ class RelevantFeatureAugmenterTestCase(DataTestCase):
         self.assertRaises(RuntimeError, augmenter.fit, X, y)
 
     def test_nothing_relevant(self):
-        augmenter = RelevantFeatureAugmenter(kind_to_calculation_settings_mapping=self.kind_to_calculation_settings_mapping,
+        augmenter = RelevantFeatureAugmenter(kind_to_para_map=self.kind_to_para_map,
                                              column_value="val", column_id="id", column_sort="sort",
                                              column_kind="kind")
 
@@ -47,9 +47,9 @@ class RelevantFeatureAugmenterTestCase(DataTestCase):
         self.assertEqual(list(transformed_X.index), list(X.index))
 
     def test_impute_works(self):
-        self.kind_to_calculation_settings_mapping["a"].update({"kurtosis": None})
+        self.kind_to_para_map["a"].update({"kurtosis": None})
 
-        augmeter = RelevantFeatureAugmenter(kind_to_calculation_settings_mapping=self.kind_to_calculation_settings_mapping,
+        augmeter = RelevantFeatureAugmenter(kind_to_para_map=self.kind_to_para_map,
                                             column_value="val", column_id="id", column_sort="sort",
                                             column_kind="kind")
 
