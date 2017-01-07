@@ -129,3 +129,10 @@ feature calculators to use. You can control, which feature extraction settings o
 feature calculator by giving your function attributes like "minimal" or "high_comp_cost". Please see the
 classes in :mod:`tsfresh.feature_extraction.settings` for more information.
 
+
+Step 4. Add a pull request
+--------------------------
+
+We would very happy if you contribute your implemented features to tsfresh. So make sure to create a pull request at our
+`github page <https://github.com/blue-yonder/tsfresh>`_. We happily accept partly implemented features that we can
+finalize.
