@@ -3,13 +3,14 @@
 Parallelization
 ===============
 
-The feature extraction as well as the feature selection offer the possibility of parallelization.
-Out of the box both tasks are parallelized by tsfresh. However, the overhead introduced with the
-parallelization should not be underestimated. Here we discuss the different settings to control
-the parallelization. To achieve best results for your use-case you should experiment with the parameters.
+Because tsfresh calculates a lot of features, the extraction and selection processes can take quite some time. To make
+them faster, both can be parallelized. However, the overhead introduced with the parallelization should not be
+underestimated.
 
-Please let us know about your results tuning the below mentioned parameters! It will help improve this document as
-well as the default settings.
+This chapter discuss the different settings to control the parallelization. To achieve the best results for your use-case
+you should experiment with the parameters.
+We are also interested in your experience while tuning the mentioned parameters! Write us your experience so we can
+improve this document as well as the default settings.
 
 Parallelization of Feature Selection
 ------------------------------------
@@ -18,10 +19,12 @@ We use a :class:`multiprocessing.Pool` to parallelize the calculation of the p-v
 change it manually, the number of pools defaults to half the number of processors on the current system.
 We recommend setting it to the maximum number of available (and otherwise idle) processors.
 
-The chunksize of the Pool's map function is another important parameter to consider. It can be set via the
-`chunksize` field. By default it is calculated using the
-:func:`tsfresh.feature_extraction.extraction._calculate_best_chunksize`
-function.
+The chunksize of the Pool's map function is another important parameter to consider. It corresponds to the number of
+tested features by the Pools processes. If you set it to 5, every process will get 5 features (and of course the target
+vector).
+
+It can be set via the `chunksize` field. By default it is calculated using the
+:func:`tsfresh.feature_extraction.extraction._calculate_best_chunksize` function.
 
 Parallelization of Feature Extraction
 -------------------------------------
@@ -35,7 +38,7 @@ Additionally there are two options for how the parallelization is done:
 2.  ``'per_sample'`` parallelizes per kind and per sample.
 
 To enforce an option, either pass ``'per_kind'`` or ``'per_sample'`` as the ``parallelization=`` parameter of the
-:func:`tsfresh.extract_features` function. By default the option is chosen with a rule of thumb:
+:func:`tsfresh.extract_features` function. If you do not specify this parameter, tsfresh choses it with a rule of thumb:
 
 If the number of different time series (kinds) is less than half of the number of available worker
 processes (``n_processes``) then ``'per_sample'`` is chosen, otherwise ``'per_kind'``.
@@ -45,7 +48,7 @@ as the work is better distributed among the computers resources. On the other ha
 introduces overheads such as copying data to the worker processes, splitting the data to enable the distribution and
 combining the results.
 
-Implementing the parallelization we observed the following points:
+While implementing the parallelization and working with it, we observed the following aspects:
 
 -   For small data sets the difference between parallelization per kind or per sample should be negligible.
 -   For data sets with one kind of time series parallelization per sample results in a decent speed up that grows
