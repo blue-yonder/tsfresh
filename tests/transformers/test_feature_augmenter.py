@@ -5,7 +5,7 @@
 from __future__ import print_function
 import pandas as pd
 from tests.fixtures import DataTestCase
-from tsfresh.feature_extraction.settings import FeatureExtractionSettings
+from tsfresh.feature_extraction.settings import ExtendedParaMap
 from tsfresh.transformers import FeatureAugmenter
 import six
 import numpy as np
