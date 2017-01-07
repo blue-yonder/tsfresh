@@ -32,7 +32,8 @@ module_path = os.path.dirname(__file__)
 data_file_name = os.path.join(module_path, 'data')
 data_file_name_dataset = os.path.join(module_path, 'data', 'UCI HAR Dataset', 'train', 'Inertial Signals',
                                       'body_acc_x_train.txt')
-data_file_name_classes = os.path.join(module_path, 'data','UCI HAR Dataset', 'train', 'y_train.txt')
+data_file_name_classes = os.path.join(module_path, 'data', 'UCI HAR Dataset', 'train', 'y_train.txt')
+
 
 def download_har_dataset():
     """
@@ -44,7 +45,7 @@ def download_har_dataset():
     >>> from tsfresh.examples import har_dataset
     >>> download_har_dataset()
     """
-    
+
     zipurl = 'https://github.com/MaxBenChrist/human-activity-dataset/blob/master/UCI%20HAR%20Dataset.zip?raw=true'
 
     if os.path.exists(data_file_name_dataset) and os.path.exists(data_file_name_classes):
@@ -62,7 +63,7 @@ def load_har_dataset():
         return pd.read_csv(data_file_name_dataset, delim_whitespace=True, header=None)
     except IOError:
         raise IOError('File {} was not found. Have you downloaded the dataset with download_har_dataset() '
-                       'before?'.format(data_file_name_dataset))
+                      'before?'.format(data_file_name_dataset))
 
 
 def load_har_classes():
@@ -70,4 +71,4 @@ def load_har_classes():
         return pd.read_csv(data_file_name_classes, delim_whitespace=True, header=None, squeeze=True)
     except IOError:
         raise IOError('File {} was not found. Have you downloaded the dataset with download_har_dataset() '
-                       'before?'.format(data_file_name_classes))
+                      'before?'.format(data_file_name_classes))

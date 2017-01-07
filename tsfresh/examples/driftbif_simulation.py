@@ -7,6 +7,7 @@
 import pandas as pd
 import numpy as np
 
+
 # todo: add possibility to extract data set for regression problem (estimation of tau parameter)
 # todo: add unit test
 
@@ -103,6 +104,7 @@ class velocity(object):
         v_vec = np.array(v)
         return v_vec
 
+
 def sample_tau(n=10):
     """
     Return list of control parameters
@@ -110,8 +112,9 @@ def sample_tau(n=10):
     :param n: number of samples 
     :type n: int    
     """
-    tau = 2.87 + (3.8-2.87) * np.random.rand(n)
+    tau = 2.87 + (3.8 - 2.87) * np.random.rand(n)
     return tau.tolist()
+
 
 def load_driftbif(n, l, m=2, classification=True):
     """
@@ -153,5 +156,5 @@ def load_driftbif(n, l, m=2, classification=True):
     df = pd.DataFrame({'id': id, "time": time, "value": np.stack(values).flatten(), "dimension": dimensions})
     y = pd.Series(labels)
     y.index = range(n)
-    
+
     return df, y

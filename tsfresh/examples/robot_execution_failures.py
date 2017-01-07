@@ -28,15 +28,12 @@ import pandas as pd
 import requests
 import logging
 
-
 _logger = logging.getLogger(__name__)
-
 
 UCI_MLD_REF_MSG = ("The example data could not be found. You need to download the Robot Execution Failures "
                    "LP1 Data Set from the UCI Machine Learning Repository. To do so, you can call the function "
-                  "tsfresh.examples.robot_execution_failures.download_robot_execution_failures")
+                   "tsfresh.examples.robot_execution_failures.download_robot_execution_failures")
 UCI_MLD_REF_URL = "https://raw.githubusercontent.com/MaxBenChrist/robot-failure-dataset/master/lp1.data.txt"
-
 
 module_path = os.path.dirname(__file__)
 data_file_name = os.path.join(module_path, 'data', 'robotfailure-mld', 'lp1.data')
@@ -56,7 +53,7 @@ def download_robot_execution_failures():
     if os.path.exists(data_file_name):
         _logger.warning("You have already downloaded the Robot Execution Failures LP1 Data Set.")
         return
-    
+
     if not os.access(module_path, os.W_OK):
         raise RuntimeError("You don't have the necessary permissions to download the Robot Execution Failures LP1 Data "
                            "Set into the module path. Consider installing the module in a virtualenv virtualenv you "
