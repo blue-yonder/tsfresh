@@ -39,8 +39,8 @@ Further, there are some technical decisions we made:
     6. Clear the Output of iPython notebooks. This improves the readability of related Git diffs.
 
 
-Testing setup
-'''''''''''''
+Test framework
+''''''''''''''
 
 After making your changes, you probably want to test your changes locally. To run our comprehensive suit of unit tests
 you have to install all the relevant python packages with
