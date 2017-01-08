@@ -208,7 +208,7 @@ def _get_config_from_string(parts):
 
 
 # todo: this classes' docstrings are not completely up-to-date
-class FeatureExtractionSettings(dict):
+class ExtendedParaMap(dict):
     def __init__(self):
         """
         Create a new FeatureExtractionSettings instance. You have to pass this instance to the
@@ -223,8 +223,8 @@ class FeatureExtractionSettings(dict):
 
         You can use the settings object with
 
-        >>> from tsfresh.feature_extraction import extract_features, FeatureExtractionSettings
-        >>> extract_features(df, default_calculation_settings_mapping=FeatureExtractionSettings())
+        >>> from tsfresh.feature_extraction import extract_features, ExtendedParaMap
+        >>> extract_features(df, default_calculation_settings_mapping=ExtendedParaMap())
 
         to extract all features (which is the default nevertheless) or you change the FeatureExtractionSettings
         object to other types (see below).
@@ -259,10 +259,10 @@ class FeatureExtractionSettings(dict):
             "approximate_entropy": [{"m": 2, "r": r} for r in [.1, .3, .5, .7, .9]]
         })
 
-        super(FeatureExtractionSettings, self).__init__(name_to_param)
+        super(ExtendedParaMap, self).__init__(name_to_param)
 
 
-class MinimalFeatureExtractionSettings(FeatureExtractionSettings):
+class MinimalParaMap(ExtendedParaMap):
     """
     This class is a child class of the FeatureExtractionSettings class
     and has the same functionality as its base class. The only difference is,
@@ -274,18 +274,18 @@ class MinimalFeatureExtractionSettings(FeatureExtractionSettings):
 
     You should use this object when calling the extract function, like so:
 
-    >>> from tsfresh.feature_extraction import extract_features, MinimalFeatureExtractionSettings
-    >>> extract_features(df, default_calculation_settings_mapping=MinimalFeatureExtractionSettings())
+    >>> from tsfresh.feature_extraction import extract_features, MinimalParaMap
+    >>> extract_features(df, default_calculation_settings_mapping=MinimalParaMap())
     """
     def __init__(self):
-        FeatureExtractionSettings.__init__(self)
+        ExtendedParaMap.__init__(self)
 
         for fname, f in feature_calculators.__dict__.items():
             if fname in self and (not hasattr(f, "minimal") or not getattr(f, "minimal")):
                 del self[fname]
 
 
-class ReasonableFeatureExtractionSettings(FeatureExtractionSettings):
+class RecommendedParaMap(ExtendedParaMap):
     """
     This class is a child class of the FeatureExtractionSettings class
     and has the same functionality as its base class.
@@ -295,12 +295,12 @@ class ReasonableFeatureExtractionSettings(FeatureExtractionSettings):
 
     You should use this object when calling the extract function, like so:
 
-    >>> from tsfresh.feature_extraction import extract_features, ReasonableFeatureExtractionSettings
-    >>> extract_features(df, default_calculation_settings_mapping=ReasonableFeatureExtractionSettings())
+    >>> from tsfresh.feature_extraction import extract_features, RecommendedParaMap
+    >>> extract_features(df, default_calculation_settings_mapping=RecommendedParaMap())
     """
 
     def __init__(self):
-        FeatureExtractionSettings.__init__(self)
+        ExtendedParaMap.__init__(self)
 
         # drop all features with high computational costs
         for fname, f in feature_calculators.__dict__.items():

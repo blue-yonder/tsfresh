@@ -17,7 +17,7 @@ import pandas as pd
 from builtins import str
 from six.moves.queue import Queue
 from tqdm import tqdm
-from tsfresh.feature_extraction.settings import FeatureExtractionSettings, get_aggregate_functions, get_apply_functions
+from tsfresh.feature_extraction.settings import ExtendedParaMap, get_aggregate_functions, get_apply_functions
 import tsfresh.defaults
 from tsfresh.utilities import dataframe_functions, profiling
 
@@ -132,7 +132,7 @@ def extract_features(timeseries_container, default_calculation_settings_mapping=
 
     # Use the standard setting if the user did not supply ones himself.
     if default_calculation_settings_mapping is None:
-        default_calculation_settings_mapping = FeatureExtractionSettings()
+        default_calculation_settings_mapping = ExtendedParaMap()
 
     # Choose the parallelization according to a rule-of-thumb
     if parallelization is None:

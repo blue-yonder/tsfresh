@@ -103,7 +103,7 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
         Create a new RelevantFeatureAugmenter instance.
 
         :param settings: The extraction settings to use. Leave empty to use the default ones.
-        :type settings: tsfresh.feature_extraction.settings.FeatureExtractionSettings
+        :type settings: tsfresh.feature_extraction.settings.ExtendedParaMap
 
         :param filter_only_tsfresh_features: Whether to touch the manually-created features during feature selection or
                                              not.
@@ -111,7 +111,7 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
         :param feature_selection_settings: The feature selection settings.
         :type feature_selection_settings: tsfresh.feature_selection.settings.FeatureSelectionSettings
         :param feature_extraction_settings: The feature extraction settings.
-        :type feature_selection_settings: tsfresh.feature_extraction.settings.FeatureExtractionSettings
+        :type feature_selection_settings: tsfresh.feature_extraction.settings.ExtendedParaMap
         :param column_id: The column with the id. See :mod:`~tsfresh.feature_extraction.extraction`.
         :type column_id: basestring
         :param column_sort: The column with the sort data. See :mod:`~tsfresh.feature_extraction.extraction`.

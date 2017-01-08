@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 from tests.fixtures import DataTestCase
 from tsfresh.feature_extraction.extraction import extract_features, _extract_features_for_one_time_series
-from tsfresh.feature_extraction.settings import FeatureExtractionSettings
+from tsfresh.feature_extraction.settings import ExtendedParaMap
 import six
 import os
 
@@ -75,7 +75,7 @@ class ExtractionTestCase(DataTestCase):
     def test_extract_features_for_one_time_series(self):
         # todo: implement more methods and test more aspects
         df = self.create_test_data_sample()
-        settings = FeatureExtractionSettings()
+        settings = ExtendedParaMap()
 
         extracted_features = _extract_features_for_one_time_series(["b", df.loc[df.kind == "b", ["val", "id"]]],
                                                                    default_calculation_settings_mapping=settings,
