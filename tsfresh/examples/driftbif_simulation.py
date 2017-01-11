@@ -98,14 +98,28 @@ class velocity(object):
         v_vec = np.array(v)
         return v_vec
 
-def sample_tau(n=10):
+def sample_tau(n=10, kappa_3=0.3, ratio=0.5, rel_increase=0.15):
     """
     Return list of control parameters
 
     :param n: number of samples 
     :type n: int    
+    :param kappa_3: inverse bifurcation point
+    :type kappa_3: float
+    :param ratio: ratio (default 0.5) of samples before and beyond drift-bifurcation
+    :type ratio: float
+    :param rel_increase: relative increase from bifurcation point
+    :type rel_increase: float
+    :return: tau. List of sampled bifurcation parameter
+    :rtype tau: list
     """
-    tau = 2.87 + (3.8-2.87) * np.random.rand(n)
+    assert ratio > 0 and ratio <= 1
+    assert kappa_3 > 0
+    assert rel_increase > 0 and rel_increase <= 1
+    tau_c = 1.0/kappa_3
+    
+    tau_max = tau_c * (1.0 + rel_increase)
+    tau = tau_c + (tau_max - tau_c) * (np.random.rand(n)-ratio)
     return tau.tolist()
 
 def load_driftbif(n, l, m=2, classification=True, kappa_3=0.3, seed=False):
@@ -144,7 +158,7 @@ def load_driftbif(n, l, m=2, classification=True, kappa_3=0.3, seed=False):
     labels = list()
     values = list()
 
-    ls_tau = sample_tau(n)
+    ls_tau = sample_tau(n, kappa_3=kappa_3)
 
     for i, tau in enumerate(ls_tau):
         ds = velocity(tau=tau, kappa_3=kappa_3, seed=seed)

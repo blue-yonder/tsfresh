@@ -64,9 +64,16 @@ class DriftBifSimlationTestCase(unittest.TestCase):
 
 class SampleTauTestCase(unittest.TestCase):
     def test_range(self):
-        tau = sample_tau(10)
+        tau = sample_tau(100)
         self.assertTrue(min(tau) >= 2.87)
         self.assertTrue(max(tau) <= 3.8)
+
+    def test_ratio(self):
+        tau = sample_tau(100000, ratio=0.4)
+        sample = np.array(tau)
+        before = np.sum(sample <= 1/0.3)
+        beyond = np.sum(sample > 1/0.3)
+        self.assertTrue(abs(0.4 - float(before)/(before+beyond))<0.001)
         
 class LoadDriftBifTestCase(unittest.TestCase):
     def test_classification_labels(self):
