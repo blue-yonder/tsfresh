@@ -14,8 +14,6 @@ class velocity(object):
     """
     Simulates the velocity of a two-dimensional dissipative soliton (kind of self organized particle)
 
-    label 0 means tau<=1/0.3, Dissipative Soliton with Brownian motion (purely noise driven)
-    label 1 means tau> 1/0.3, Dissipative Soliton with Active Brownian motion (intrinsiv velocity with overlaid noise)
 
     References
     ----------
@@ -117,6 +115,12 @@ def load_driftbif(n, l, m=2, classification=True):
     """
     Simulates n time-series with l time steps each for the m-dimensional velocity of a dissipative soliton
 
+    classification=True:
+    target 0 means tau<=1/0.3, Dissipative Soliton with Brownian motion (purely noise driven)
+    target 1 means tau> 1/0.3, Dissipative Soliton with Active Brownian motion (intrinsiv velocity with overlaid noise)
+
+    classification=False:
+    target is bifurcation parameter tau
     :param n: number of samples 
     :type n: int
     :param l: length of the time series
