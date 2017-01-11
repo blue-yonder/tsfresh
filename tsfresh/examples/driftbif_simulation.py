@@ -69,14 +69,11 @@ class velocity(object):
         """
         returns deterministic dynamic = acceleration (without noise)
 
-        :param v: vector of velocity
-        :rtype v:
-        :return:
-        :return type:
+        :param v: initial velocity vector
+        :rtype v: ndarray
+        :return: velocity vector of next time step
+        :return type: ndarray
         """
-
-        # todo: which type v, array?
-        # todo: descripton of return?
 
         return v * (1.0 + self.a - self.b * np.dot(v, v))
 
@@ -84,14 +81,12 @@ class velocity(object):
         """
 
         :param N: number of time steps
-        :type N:
-        :param v0: initial velocity
-        :return:
-        :rtype:
+        :type N: int
+        :param v0: initial velocity vector 
+        :type v0: ndarray
+        :return: time series of velocity vectors with shape (N, v0.shape[0])
+        :rtype: ndarray
         """
-
-        # todo: fill out docstring
-        # todo: complete parameter description
 
         v = [v0]                        # first value is initial condition
         n = N - 1                       # Because we are returning the initial condition,
@@ -123,13 +118,14 @@ def load_driftbif(n, l, m=2, classification=True, kappa_3=0.3, seed=False):
 
     classification=False:
     target is bifurcation parameter tau
+
     :param n: number of samples 
     :type n: int
     :param l: length of the time series
     :type l: int
-    :param m: number of spatial dimensions the dissipative soliton is propagating in
+    :param m: number of spatial dimensions (default m=2) the dissipative soliton is propagating in
     :type m: int
-    :param classification: distinguish between classification and regression target
+    :param classification: distinguish between classification (default True) and regression target
     :type classification: bool
     :param kappa_3: inverse bifurcation parameter (default 0.3)
     :type kappa_3: float
