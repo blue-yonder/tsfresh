@@ -17,15 +17,15 @@ import pandas as pd
 from builtins import str
 from six.moves.queue import Queue
 from tqdm import tqdm
-from tsfresh.feature_extraction.settings import FeatureExtractionSettings, get_aggregate_functions, get_apply_functions
+from tsfresh.feature_extraction.settings import ComprehensiveFCParameters, get_aggregate_functions, get_apply_functions
 import tsfresh.defaults
 from tsfresh.utilities import dataframe_functions, profiling
 
 _logger = logging.getLogger(__name__)
 
 
-def extract_features(timeseries_container, default_calculation_settings_mapping=None,
-                     kind_to_calculation_settings_mapping=None,
+def extract_features(timeseries_container, default_fc_parameters=None,
+                     kind_to_fc_parameters=None,
                      column_id=None, column_sort=None, column_kind=None, column_value=None,
                      parallelization=None, chunksize=tsfresh.defaults.CHUNKSIZE,
                      n_processes=tsfresh.defaults.N_PROCESSES, show_warnings=tsfresh.defaults.SHOW_WARNINGS,
@@ -46,7 +46,7 @@ def extract_features(timeseries_container, default_calculation_settings_mapping=
     In both cases a :class:`pandas.DataFrame` with the calculated features will be returned.
 
     For a list of all the calculated time series features, please see the
-    :class:`~tsfresh.feature_extraction.settings.FeatureExtractionSettings` class,
+    :class:`~tsfresh.feature_extraction.settings.ComprehensiveFCParameters` class,
     which is used to control which features with which parameters are calculated.
 
     For a detailed explanation of the different parameters and data formats please see :ref:`data-formats-label`.
@@ -66,15 +66,15 @@ def extract_features(timeseries_container, default_calculation_settings_mapping=
             dictionary of pandas.DataFrames.
     :type timeseries_container: pandas.DataFrame or dict
 
-    :param default_calculation_settings_mapping: mapping from feature calculator names to parameters. Only those names
-           which are keys in this dict will be calculated. See the class:`FeatureExtractionSettings` for
+    :param default_fc_parameters: mapping from feature calculator names to parameters. Only those names
+           which are keys in this dict will be calculated. See the class:`ComprehensiveFCParameters` for
            more information.
-    :type default_calculation_settings_mapping: dict
+    :type default_fc_parameters: dict
 
-    :param kind_to_calculation_settings_mapping: mapping from kind names to objects of the same type as the ones for
-            default_calculation_settings_mapping. If you put a kind as a key here, the calculation_settings_mapping
-            object (which is the value), will be used instead of the default_calculation_settings_mapping.
-    :type kind_to_calculation_settings_mapping: dict
+    :param kind_to_fc_parameters: mapping from kind names to objects of the same type as the ones for
+            default_fc_parameters. If you put a kind as a key here, the fc_parameters
+            object (which is the value), will be used instead of the default_fc_parameters.
+    :type kind_to_fc_parameters: dict
 
     :param column_id: The name of the id column to group by.
     :type column_id: str
@@ -131,8 +131,8 @@ def extract_features(timeseries_container, default_calculation_settings_mapping=
                                                                        column_kind, column_value)
 
     # Use the standard setting if the user did not supply ones himself.
-    if default_calculation_settings_mapping is None:
-        default_calculation_settings_mapping = FeatureExtractionSettings()
+    if default_fc_parameters is None:
+        default_fc_parameters = ComprehensiveFCParameters()
 
     # Choose the parallelization according to a rule-of-thumb
     if parallelization is None:
@@ -153,8 +153,8 @@ def extract_features(timeseries_container, default_calculation_settings_mapping=
         raise ValueError("Argument parallelization must be one of: 'per_kind', 'per_sample'")
 
     result = calculation_function(kind_to_df_map,
-                                  default_calculation_settings_mapping=default_calculation_settings_mapping,
-                                  kind_to_calculation_settings_mapping=kind_to_calculation_settings_mapping,
+                                  default_fc_parameters=default_fc_parameters,
+                                  kind_to_fc_parameters=kind_to_fc_parameters,
                                   column_id=column_id,
                                   column_value=column_value,
                                   chunksize=chunksize,
@@ -174,8 +174,8 @@ def extract_features(timeseries_container, default_calculation_settings_mapping=
 
 def _extract_features_parallel_per_kind(kind_to_df_map,
                                         column_id, column_value,
-                                        default_calculation_settings_mapping,
-                                        kind_to_calculation_settings_mapping=None,
+                                        default_fc_parameters,
+                                        kind_to_fc_parameters=None,
                                         chunksize=tsfresh.defaults.CHUNKSIZE,
                                         n_processes=tsfresh.defaults.N_PROCESSES, show_warnings=tsfresh.defaults.SHOW_WARNINGS,
                                         disable_progressbar=tsfresh.defaults.DISABLE_PROGRESSBAR,
@@ -192,15 +192,15 @@ def _extract_features_parallel_per_kind(kind_to_df_map,
     :param column_value: The name for the column keeping the value itself.
     :type column_value: str
 
-    :param default_calculation_settings_mapping: mapping from feature calculator names to parameters. Only those names
-           which are keys in this dict will be calculated. See the class:`FeatureExtractionSettings` for
+    :param default_fc_parameters: mapping from feature calculator names to parameters. Only those names
+           which are keys in this dict will be calculated. See the class:`ComprehensiveFCParameters` for
            more information.
-    :type default_calculation_settings_mapping: dict
+    :type default_fc_parameters: dict
 
-    :param kind_to_calculation_settings_mapping: mapping from kind names to objects of the same type as the ones for
-            default_calculation_settings_mapping. If you put a kind as a key here, the calculation_settings_mapping
-            object (which is the value), will be used instead of the default_calculation_settings_mapping.
-    :type kind_to_calculation_settings_mapping: dict
+    :param kind_to_fc_parameters: mapping from kind names to objects of the same type as the ones for
+            default_fc_parameters. If you put a kind as a key here, the fc_parameters
+            object (which is the value), will be used instead of the default_fc_parameters.
+    :type kind_to_fc_parameters: dict
 
     :param chunksize: The size of one chunk for the parallelisation
     :type chunksize: None or int
@@ -223,8 +223,8 @@ def _extract_features_parallel_per_kind(kind_to_df_map,
     partial_extract_features_for_one_time_series = partial(_extract_features_for_one_time_series,
                                                            column_id=column_id,
                                                            column_value=column_value,
-                                                           default_calculation_settings_mapping=default_calculation_settings_mapping,
-                                                           kind_to_calculation_settings_mapping=kind_to_calculation_settings_mapping,
+                                                           default_fc_parameters=default_fc_parameters,
+                                                           kind_to_fc_parameters=kind_to_fc_parameters,
                                                            show_warnings=show_warnings)
     pool = Pool(n_processes)
 
@@ -250,8 +250,8 @@ def _extract_features_parallel_per_kind(kind_to_df_map,
 
 def _extract_features_parallel_per_sample(kind_to_df_map,
                                           column_id, column_value,
-                                          default_calculation_settings_mapping,
-                                          kind_to_calculation_settings_mapping=None,
+                                          default_fc_parameters,
+                                          kind_to_fc_parameters=None,
                                           chunksize=tsfresh.defaults.CHUNKSIZE,
                                           n_processes=tsfresh.defaults.N_PROCESSES, show_warnings=tsfresh.defaults.SHOW_WARNINGS,
                                           disable_progressbar=tsfresh.defaults.DISABLE_PROGRESSBAR,
@@ -272,15 +272,15 @@ def _extract_features_parallel_per_sample(kind_to_df_map,
     :param column_value: The name for the column keeping the value itself.
     :type column_value: str
 
-    :param default_calculation_settings_mapping: mapping from feature calculator names to parameters. Only those names
-           which are keys in this dict will be calculated. See the class:`FeatureExtractionSettings` for
+    :param default_fc_parameters: mapping from feature calculator names to parameters. Only those names
+           which are keys in this dict will be calculated. See the class:`ComprehensiveFCParameters` for
            more information.
-    :type default_calculation_settings_mapping: dict
+    :type default_fc_parameters: dict
 
-    :param kind_to_calculation_settings_mapping: mapping from kind names to objects of the same type as the ones for
-            default_calculation_settings_mapping. If you put a kind as a key here, the calculation_settings_mapping
-            object (which is the value), will be used instead of the default_calculation_settings_mapping.
-    :type kind_to_calculation_settings_mapping: dict
+    :param kind_to_fc_parameters: mapping from kind names to objects of the same type as the ones for
+            default_fc_parameters. If you put a kind as a key here, the fc_parameters
+            object (which is the value), will be used instead of the default_fc_parameters.
+    :type kind_to_fc_parameters: dict
 
     :param chunksize: The size of one chunk for the parallelisation
     :type chunksize: None or int
@@ -303,8 +303,8 @@ def _extract_features_parallel_per_sample(kind_to_df_map,
     partial_extract_features_for_one_time_series = partial(_extract_features_for_one_time_series,
                                                            column_id=column_id,
                                                            column_value=column_value,
-                                                           default_calculation_settings_mapping=default_calculation_settings_mapping,
-                                                           kind_to_calculation_settings_mapping=kind_to_calculation_settings_mapping,
+                                                           default_fc_parameters=default_fc_parameters,
+                                                           kind_to_fc_parameters=kind_to_fc_parameters,
                                                            show_warnings=show_warnings)
     pool = Pool(n_processes)
     total_number_of_expected_results = 0
@@ -376,8 +376,8 @@ def _calculate_best_chunksize(iterable_list, n_processes):
 
 
 def _extract_features_for_one_time_series(prefix_and_dataframe, column_id, column_value,
-                                          default_calculation_settings_mapping,
-                                          kind_to_calculation_settings_mapping=None,
+                                          default_fc_parameters,
+                                          kind_to_fc_parameters=None,
                                           show_warnings=tsfresh.defaults.SHOW_WARNINGS):
     """
     Extract time series features for a given data frame based on the passed settings.
@@ -421,7 +421,7 @@ def _extract_features_for_one_time_series(prefix_and_dataframe, column_id, colum
         +-------+------------------+------------------+-----+------------------+
 
     where N is the number of features that were calculated. Which features are calculated is controlled by the
-    passed settings instance (see :class:`~tsfresh.feature_extraction.settings.FeatureExtractionSettings` for a list of
+    passed settings instance (see :class:`~tsfresh.feature_extraction.settings.ComprehensiveFCParameters` for a list of
     all possible features to calculate).
 
     The parameter `dataframe` is not allowed to have any NaN value in it. It is possible to have different numbers
@@ -439,15 +439,15 @@ def _extract_features_for_one_time_series(prefix_and_dataframe, column_id, colum
     :param column_value: The name of the column with the values.
     :type column_value: str
 
-    :param default_calculation_settings_mapping: mapping from feature calculator names to parameters. Only those names
-           which are keys in this dict will be calculated. See the class:`FeatureExtractionSettings` for
+    :param default_fc_parameters: mapping from feature calculator names to parameters. Only those names
+           which are keys in this dict will be calculated. See the class:`ComprehensiveFCParameters` for
            more information.
-    :type default_calculation_settings_mapping: dict
+    :type default_fc_parameters: dict
 
-    :param kind_to_calculation_settings_mapping: mapping from kind names to objects of the same type as the ones for
-            default_calculation_settings_mapping. If you put a kind as a key here, the calculation_settings_mapping
-            object (which is the value), will be used instead of the default_calculation_settings_mapping.
-    :type kind_to_calculation_settings_mapping: dict
+    :param kind_to_fc_parameters: mapping from kind names to objects of the same type as the ones for
+            default_fc_parameters. If you put a kind as a key here, the fc_parameters
+            object (which is the value), will be used instead of the default_fc_parameters.
+    :type kind_to_fc_parameters: dict
 
     :param show_warnings: Show warnings during the feature extraction (needed for debugging of calculators).
     :type show_warnings: bool
@@ -455,8 +455,8 @@ def _extract_features_for_one_time_series(prefix_and_dataframe, column_id, colum
     :return: A dataframe with the extracted features as the columns (prefixed with column_prefix) and as many
         rows as their are unique values in the id column.
     """
-    if kind_to_calculation_settings_mapping is None:
-        kind_to_calculation_settings_mapping = {}
+    if kind_to_fc_parameters is None:
+        kind_to_fc_parameters = {}
 
     column_prefix, dataframe = prefix_and_dataframe
     column_prefix = str(column_prefix)
@@ -465,10 +465,10 @@ def _extract_features_for_one_time_series(prefix_and_dataframe, column_id, colum
     dataframe[column_value] = dataframe[column_value].astype(np.float64)
 
     # If there are no special settings for this column_prefix, use the default ones.
-    if column_prefix in kind_to_calculation_settings_mapping:
-        calculation_settings_mapping = kind_to_calculation_settings_mapping[column_prefix]
+    if column_prefix in kind_to_fc_parameters:
+        fc_parameters = kind_to_fc_parameters[column_prefix]
     else:
-        calculation_settings_mapping = default_calculation_settings_mapping
+        fc_parameters = default_fc_parameters
 
     with warnings.catch_warnings():
         if not show_warnings:
@@ -477,7 +477,7 @@ def _extract_features_for_one_time_series(prefix_and_dataframe, column_id, colum
             warnings.simplefilter("default")
 
         # Calculate the aggregation functions
-        column_name_to_aggregate_function = get_aggregate_functions(calculation_settings_mapping, column_prefix)
+        column_name_to_aggregate_function = get_aggregate_functions(fc_parameters, column_prefix)
 
         if column_name_to_aggregate_function:
             extracted_features = dataframe.groupby(column_id)[column_value].aggregate(column_name_to_aggregate_function)
@@ -485,7 +485,7 @@ def _extract_features_for_one_time_series(prefix_and_dataframe, column_id, colum
             extracted_features = pd.DataFrame(index=dataframe[column_id].unique())
 
         # Calculate the apply functions
-        apply_functions = get_apply_functions(calculation_settings_mapping, column_prefix)
+        apply_functions = get_apply_functions(fc_parameters, column_prefix)
 
         if apply_functions:
             list_of_extracted_feature_dataframes = [extracted_features]

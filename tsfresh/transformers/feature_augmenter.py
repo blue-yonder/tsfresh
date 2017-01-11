@@ -45,7 +45,7 @@ class FeatureAugmenter(BaseEstimator, TransformerMixin):
     >>> df_with_time_series_features = augmenter.transform(df)
 
     The settings for the feature calculation can be controlled with the settings object. If you pass ``None``, the default
-    settings are used. Please refer to :class:`~tsfresh.feature_extraction.settings.FeatureExtractionSettings` for
+    settings are used. Please refer to :class:`~tsfresh.feature_extraction.settings.ComprehensiveFCParameters` for
     more information.
 
     This estimator does not select the relevant features, but calculates and adds all of them to the DataFrame. See the
@@ -55,8 +55,8 @@ class FeatureAugmenter(BaseEstimator, TransformerMixin):
     For a description what the parameters column_id, column_sort, column_kind and column_value mean, please see
     :mod:`~tsfresh.feature_extraction.extraction`.
     """
-    def __init__(self, default_calculation_settings_mapping=None,
-                 kind_to_calculation_settings_mapping=None, column_id=None, column_sort=None,
+    def __init__(self, default_fc_parameters=None,
+                 kind_to_fc_parameters=None, column_id=None, column_sort=None,
                  column_kind=None, column_value=None, timeseries_container=None,
                  parallelization=None, chunksize=tsfresh.defaults.CHUNKSIZE,
                  n_processes=tsfresh.defaults.N_PROCESSES, show_warnings=tsfresh.defaults.SHOW_WARNINGS,
@@ -70,7 +70,7 @@ class FeatureAugmenter(BaseEstimator, TransformerMixin):
         Create a new FeatureAugmenter instance.
 
         :param settings: The extraction settings to use. Leave empty to use the default ones.
-        :type settings: tsfresh.feature_extraction.settings.FeatureExtractionSettings
+        :type settings: tsfresh.feature_extraction.settings.ComprehensiveFCParameters
 
         :param column_id: The column with the id. See :mod:`~tsfresh.feature_extraction.extraction`.
         :type column_id: basestring
@@ -114,8 +114,8 @@ class FeatureAugmenter(BaseEstimator, TransformerMixin):
         :param profiling_filename: Where to save the profiling results.
         :type profiling_filename: basestring
         """
-        self.default_calculation_settings_mapping = default_calculation_settings_mapping
-        self.kind_to_calculation_settings_mapping = kind_to_calculation_settings_mapping
+        self.default_fc_parameters = default_fc_parameters
+        self.kind_to_fc_parameters = kind_to_fc_parameters
 
         self.column_id = column_id
         self.column_sort = column_sort
@@ -187,8 +187,8 @@ class FeatureAugmenter(BaseEstimator, TransformerMixin):
         timeseries_container_X = restrict_input_to_index(self.timeseries_container, self.column_id, X.index)
 
         extracted_features = extract_features(timeseries_container_X,
-                                              default_calculation_settings_mapping=self.default_calculation_settings_mapping,
-                                              kind_to_calculation_settings_mapping=self.kind_to_calculation_settings_mapping,
+                                              default_fc_parameters=self.default_fc_parameters,
+                                              kind_to_fc_parameters=self.kind_to_fc_parameters,
                                               column_id=self.column_id, column_sort=self.column_sort,
                                               column_kind=self.column_kind, column_value=self.column_value,
                                               parallelization=self.parallelization, chunksize=self.chunksize,

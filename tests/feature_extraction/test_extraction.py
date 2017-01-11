@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 from tests.fixtures import DataTestCase
 from tsfresh.feature_extraction.extraction import extract_features, _extract_features_for_one_time_series
-from tsfresh.feature_extraction.settings import FeatureExtractionSettings
+from tsfresh.feature_extraction.settings import ComprehensiveFCParameters
 import six
 import os
 
@@ -75,10 +75,10 @@ class ExtractionTestCase(DataTestCase):
     def test_extract_features_for_one_time_series(self):
         # todo: implement more methods and test more aspects
         df = self.create_test_data_sample()
-        settings = FeatureExtractionSettings()
+        settings = ComprehensiveFCParameters()
 
         extracted_features = _extract_features_for_one_time_series(["b", df.loc[df.kind == "b", ["val", "id"]]],
-                                                                   default_calculation_settings_mapping=settings,
+                                                                   default_fc_parameters=settings,
                                                                    column_value="val", column_id="id")
 
         self.assertIsInstance(extracted_features, pd.DataFrame)
@@ -90,7 +90,7 @@ class ExtractionTestCase(DataTestCase):
 
         df_sts = self.create_one_valued_time_series()
         extracted_features_sts = _extract_features_for_one_time_series(["a", df_sts[["val", "id"]]],
-                                                                       default_calculation_settings_mapping=settings,
+                                                                       default_fc_parameters=settings,
                                                                        column_value="val", column_id="id")
 
         self.assertIsInstance(extracted_features_sts, pd.DataFrame)

@@ -11,8 +11,8 @@ from tsfresh.utilities.dataframe_functions import restrict_input_to_index, imput
 
 
 def extract_relevant_features(timeseries_container, y, X=None,
-                              default_calculation_settings_mapping=None,
-                              kind_to_calculation_settings_mapping=None,
+                              default_fc_parameters=None,
+                              kind_to_fc_parameters=None,
                               column_id=None, column_sort=None, column_kind=None, column_value=None,
                               parallelization=defaults.PARALLELISATION, show_warnings=defaults.SHOW_WARNINGS,
                               disable_progressbar=defaults.DISABLE_PROGRESSBAR,
@@ -50,15 +50,15 @@ def extract_relevant_features(timeseries_container, y, X=None,
     :param y: The target vector
     :type y: pandas.Series
 
-    :param default_calculation_settings_mapping: mapping from feature calculator names to parameters. Only those names
-           which are keys in this dict will be calculated. See the class:`FeatureExtractionSettings` for
+    :param default_fc_parameters: mapping from feature calculator names to parameters. Only those names
+           which are keys in this dict will be calculated. See the class:`ComprehensiveFCParameters` for
            more information.
-    :type default_calculation_settings_mapping: dict
+    :type default_fc_parameters: dict
 
-    :param kind_to_calculation_settings_mapping: mapping from kind names to objects of the same type as the ones for
-            default_calculation_settings_mapping. If you put a kind as a key here, the calculation_settings_mapping
-            object (which is the value), will be used instead of the default_calculation_settings_mapping.
-    :type kind_to_calculation_settings_mapping: dict
+    :param kind_to_fc_parameters: mapping from kind names to objects of the same type as the ones for
+            default_fc_parameters. If you put a kind as a key here, the fc_parameters
+            object (which is the value), will be used instead of the default_fc_parameters.
+    :type kind_to_fc_parameters: dict
 
     :param column_id: The name of the id column to group by.
     :type column_id: str
@@ -136,8 +136,8 @@ def extract_relevant_features(timeseries_container, y, X=None,
         timeseries_container = restrict_input_to_index(timeseries_container, column_id, X.index)
 
     X_ext = extract_features(timeseries_container,
-                             default_calculation_settings_mapping=default_calculation_settings_mapping,
-                             kind_to_calculation_settings_mapping=kind_to_calculation_settings_mapping,
+                             default_fc_parameters=default_fc_parameters,
+                             kind_to_fc_parameters=kind_to_fc_parameters,
                              parallelization=parallelization, show_warnings=show_warnings,
                              disable_progressbar=disable_progressbar,
                              profile=profile,

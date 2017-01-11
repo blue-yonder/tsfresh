@@ -5,7 +5,7 @@
 from __future__ import print_function
 import pandas as pd
 from tests.fixtures import DataTestCase
-from tsfresh.feature_extraction.settings import FeatureExtractionSettings
+from tsfresh.feature_extraction.settings import ComprehensiveFCParameters
 from tsfresh.transformers import FeatureAugmenter
 import six
 import numpy as np
@@ -14,14 +14,14 @@ class FeatureAugmenterTestCase(DataTestCase):
     def setUp(self):
         self.test_df = self.create_test_data_sample()
 
-        calculation_settings_mapping = {"length": None}
-        self.kind_to_calculation_settings_mapping = {"a": calculation_settings_mapping.copy(),
-                                                     "b": calculation_settings_mapping.copy()}
+        fc_parameters = {"length": None}
+        self.kind_to_fc_parameters = {"a": fc_parameters.copy(),
+                                                     "b": fc_parameters.copy()}
 
     def test_fit_and_transform(self):
         augmenter = FeatureAugmenter(column_value="val", column_id="id", column_sort="sort",
                                      column_kind="kind",
-                                     kind_to_calculation_settings_mapping=self.kind_to_calculation_settings_mapping)
+                                     kind_to_fc_parameters=self.kind_to_fc_parameters)
 
         # Fit should do nothing
         returned_df = augmenter.fit()
@@ -55,7 +55,7 @@ class FeatureAugmenterTestCase(DataTestCase):
     def test_add_features_to_only_a_part(self):
         augmenter = FeatureAugmenter(column_value="val", column_id="id", column_sort="sort",
                                      column_kind="kind",
-                                     kind_to_calculation_settings_mapping=self.kind_to_calculation_settings_mapping)
+                                     kind_to_fc_parameters=self.kind_to_fc_parameters)
 
         augmenter.set_timeseries_container(self.test_df)
 

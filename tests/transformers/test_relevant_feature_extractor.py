@@ -4,16 +4,16 @@
 
 import pandas as pd
 from tests.fixtures import DataTestCase
-from tsfresh.feature_extraction import FeatureExtractionSettings
+from tsfresh.feature_extraction import ComprehensiveFCParameters
 from tsfresh.transformers.relevant_feature_augmenter import RelevantFeatureAugmenter
 
 
 class RelevantFeatureAugmenterTestCase(DataTestCase):
     def setUp(self):
         self.test_df = self.create_test_data_sample()
-        calculation_settings_mapping = {"length": None}
-        self.kind_to_calculation_settings_mapping = {"a": calculation_settings_mapping.copy(),
-                                                     "b": calculation_settings_mapping.copy()}
+        fc_parameters = {"length": None}
+        self.kind_to_fc_parameters = {"a": fc_parameters.copy(),
+                                                     "b": fc_parameters.copy()}
 
     def test_not_fitted(self):
         augmenter = RelevantFeatureAugmenter()
@@ -31,7 +31,7 @@ class RelevantFeatureAugmenterTestCase(DataTestCase):
         self.assertRaises(RuntimeError, augmenter.fit, X, y)
 
     def test_nothing_relevant(self):
-        augmenter = RelevantFeatureAugmenter(kind_to_calculation_settings_mapping=self.kind_to_calculation_settings_mapping,
+        augmenter = RelevantFeatureAugmenter(kind_to_fc_parameters=self.kind_to_fc_parameters,
                                              column_value="val", column_id="id", column_sort="sort",
                                              column_kind="kind")
 
@@ -47,9 +47,9 @@ class RelevantFeatureAugmenterTestCase(DataTestCase):
         self.assertEqual(list(transformed_X.index), list(X.index))
 
     def test_impute_works(self):
-        self.kind_to_calculation_settings_mapping["a"].update({"kurtosis": None})
+        self.kind_to_fc_parameters["a"].update({"kurtosis": None})
 
-        augmeter = RelevantFeatureAugmenter(kind_to_calculation_settings_mapping=self.kind_to_calculation_settings_mapping,
+        augmeter = RelevantFeatureAugmenter(kind_to_fc_parameters=self.kind_to_fc_parameters,
                                             column_value="val", column_id="id", column_sort="sort",
                                             column_kind="kind")
 

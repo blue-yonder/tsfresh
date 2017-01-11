@@ -24,7 +24,7 @@ The following chapters will explain the tsfresh package in detail:
    Data Formats <text/data_formats>
    scikit-learn Transformers <text/sklearn_transformers>
    Feature Calculation <text/feature_calculation>
-   Feature Extraction Settings <text/feature_extraction_settings>
+   Feature Calculator Settings <text/feature_extraction_settings>
    Feature Filtering <text/feature_filtering>
    How to write custom Feature Calculators <text/how_to_add_custom_feature>
    Parallelization <text/parallelization>

@@ -32,7 +32,7 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
     This estimator is a wrapper around most of the functionality in the tsfresh package. For more information on the
     subtasks, please refer to the single modules and functions, which are:
 
-    * Settings for the feature extraction: :class:`~tsfresh.feature_extraction.settings.FeatureExtractionSettings`
+    * Settings for the feature extraction: :class:`~tsfresh.feature_extraction.settings.ComprehensiveFCParameters`
     * Feature extraction method: :func:`~tsfresh.feature_extraction.extraction.extract_features`
     * Extracted features: :mod:`~tsfresh.feature_extraction.feature_calculators`
     * Feature selection: :func:`~tsfresh.feature_selection.feature_selector.check_fs_sig_bh`
@@ -83,8 +83,8 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
 
     def __init__(self,
                  filter_only_tsfresh_features=True,
-                 default_calculation_settings_mapping=None,
-                 kind_to_calculation_settings_mapping=None,
+                 default_fc_parameters=None,
+                 kind_to_fc_parameters=None,
                  column_id=None, column_sort=None, column_kind=None, column_value=None,
                  timeseries_container=None,
                  parallelization=defaults.PARALLELISATION, chunksize=defaults.CHUNKSIZE,
@@ -103,7 +103,7 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
         Create a new RelevantFeatureAugmenter instance.
 
         :param settings: The extraction settings to use. Leave empty to use the default ones.
-        :type settings: tsfresh.feature_extraction.settings.FeatureExtractionSettings
+        :type settings: tsfresh.feature_extraction.settings.ExtendedFCParameters
 
         :param filter_only_tsfresh_features: Whether to touch the manually-created features during feature selection or
                                              not.
@@ -111,7 +111,7 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
         :param feature_selection_settings: The feature selection settings.
         :type feature_selection_settings: tsfresh.feature_selection.settings.FeatureSelectionSettings
         :param feature_extraction_settings: The feature extraction settings.
-        :type feature_selection_settings: tsfresh.feature_extraction.settings.FeatureExtractionSettings
+        :type feature_selection_settings: tsfresh.feature_extraction.settings.ComprehensiveFCParameters
         :param column_id: The column with the id. See :mod:`~tsfresh.feature_extraction.extraction`.
         :type column_id: basestring
         :param column_sort: The column with the sort data. See :mod:`~tsfresh.feature_extraction.extraction`.
@@ -178,8 +178,8 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
 
         self.feature_extractor = FeatureAugmenter(column_id=column_id, column_sort=column_sort, column_kind=column_kind,
                                                   column_value=column_value,
-                                                  default_calculation_settings_mapping=default_calculation_settings_mapping,
-                                                  kind_to_calculation_settings_mapping=kind_to_calculation_settings_mapping,
+                                                  default_fc_parameters=default_fc_parameters,
+                                                  kind_to_fc_parameters=kind_to_fc_parameters,
                                                   parallelization=parallelization, chunksize=chunksize,
                                                   n_processes=n_processes, show_warnings=show_warnings,
                                                   disable_progressbar=disable_progressbar,
@@ -289,8 +289,8 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
         impute_function = partial(impute_dataframe_range, col_to_max=self.col_to_max,
                                   col_to_min=self.col_to_min, col_to_median=self.col_to_median)
 
-        relevant_feature_extractor = FeatureAugmenter(kind_to_calculation_settings_mapping=relevant_extraction_settings,
-                                                      default_calculation_settings_mapping={},
+        relevant_feature_extractor = FeatureAugmenter(kind_to_fc_parameters=relevant_extraction_settings,
+                                                      default_fc_parameters={},
                                                       column_id=self.feature_extractor.column_id,
                                                       column_sort=self.feature_extractor.column_sort,
                                                       column_kind=self.feature_extractor.column_kind,
