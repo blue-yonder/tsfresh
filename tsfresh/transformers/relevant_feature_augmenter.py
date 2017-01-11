@@ -83,8 +83,8 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
 
     def __init__(self,
                  filter_only_tsfresh_features=True,
-                 default_para_map=None,
-                 kind_to_para_map=None,
+                 default_fc_parameters=None,
+                 kind_to_fc_parameters=None,
                  column_id=None, column_sort=None, column_kind=None, column_value=None,
                  timeseries_container=None,
                  parallelization=defaults.PARALLELISATION, chunksize=defaults.CHUNKSIZE,
@@ -178,8 +178,8 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
 
         self.feature_extractor = FeatureAugmenter(column_id=column_id, column_sort=column_sort, column_kind=column_kind,
                                                   column_value=column_value,
-                                                  default_para_map=default_para_map,
-                                                  kind_to_para_map=kind_to_para_map,
+                                                  default_fc_parameters=default_fc_parameters,
+                                                  kind_to_fc_parameters=kind_to_fc_parameters,
                                                   parallelization=parallelization, chunksize=chunksize,
                                                   n_processes=n_processes, show_warnings=show_warnings,
                                                   disable_progressbar=disable_progressbar,
@@ -289,8 +289,8 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
         impute_function = partial(impute_dataframe_range, col_to_max=self.col_to_max,
                                   col_to_min=self.col_to_min, col_to_median=self.col_to_median)
 
-        relevant_feature_extractor = FeatureAugmenter(kind_to_para_map=relevant_extraction_settings,
-                                                      default_para_map={},
+        relevant_feature_extractor = FeatureAugmenter(kind_to_fc_parameters=relevant_extraction_settings,
+                                                      default_fc_parameters={},
                                                       column_id=self.feature_extractor.column_id,
                                                       column_sort=self.feature_extractor.column_sort,
                                                       column_kind=self.feature_extractor.column_kind,

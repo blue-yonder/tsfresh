@@ -19,14 +19,14 @@ from past.builtins import basestring
 from tsfresh.feature_extraction import feature_calculators
 
 
-def get_aggregate_functions(para_map, column_prefix):
+def get_aggregate_functions(fc_parameters, column_prefix):
     """
     Returns a dictionary with some of the column name mapped to the feature calculators that are
-    specified in the para_map. This dictionary includes those calculators,
+    specified in the fc_parameters. This dictionary includes those calculators,
     that can be used in a pandas group by command to extract all aggregate features at the same time.
 
-    :param para_map: mapping from feature calculator names to settings.
-    :type para_map: ComprehensiveFCParameters or child class
+    :param fc_parameters: mapping from feature calculator names to settings.
+    :type fc_parameters: ComprehensiveFCParameters or child class
 
     :param column_prefix: the prefix for all column names.
     :type column_prefix: basestring
@@ -37,7 +37,7 @@ def get_aggregate_functions(para_map, column_prefix):
 
     aggregate_functions = {}
 
-    for name, param in para_map.items():
+    for name, param in fc_parameters.items():
 
         func = getattr(feature_calculators, name)
 
@@ -69,14 +69,14 @@ def get_aggregate_functions(para_map, column_prefix):
     return aggregate_functions
 
 
-def get_apply_functions(para_map, column_prefix):
+def get_apply_functions(fc_parameters, column_prefix):
     """
     Returns a dictionary with some of the column name mapped to the feature calculators that are
-    specified in the para_map. This dictionary includes those calculators,
+    specified in the fc_parameters. This dictionary includes those calculators,
     that can *not* be used in a pandas group by command to extract all aggregate features at the same time.
 
-    :param para_map: mapping from feature calculator names to settings.
-    :type para_map: ComprehensiveFCParameters or child class
+    :param fc_parameters: mapping from feature calculator names to settings.
+    :type fc_parameters: ComprehensiveFCParameters or child class
 
     :param column_prefix: the prefix for all column names.
     :type column_prefix: basestring
@@ -87,7 +87,7 @@ def get_apply_functions(para_map, column_prefix):
 
     apply_functions = []
 
-    for name, param in para_map.items():
+    for name, param in fc_parameters.items():
 
         func = getattr(feature_calculators, name)
 
@@ -108,7 +108,7 @@ def get_apply_functions(para_map, column_prefix):
 
 def from_columns(columns):
     """
-    Creates a mapping from kind names to para_map objects
+    Creates a mapping from kind names to fc_parameters objects
     (which are itself mappings from feature calculators to settings)
     to extract only the features contained in the columns.
     To do so, for every feature name in columns this method
@@ -121,11 +121,11 @@ def from_columns(columns):
     :param columns: containing the feature names
     :type columns: list of str
 
-    :return: The kind_to_para_map object ready to be used in the extract_features function.
+    :return: The kind_to_fc_parameters object ready to be used in the extract_features function.
     :rtype: dict
     """
 
-    kind_to_para_map = {}
+    kind_to_fc_parameters = {}
 
     for col in columns:
 
@@ -142,8 +142,8 @@ def from_columns(columns):
         kind = parts[0]
         feature_name = parts[1]
 
-        if kind not in kind_to_para_map:
-            kind_to_para_map[kind] = {}
+        if kind not in kind_to_fc_parameters:
+            kind_to_fc_parameters[kind] = {}
 
         if not hasattr(feature_calculators, feature_name):
             raise ValueError("Unknown feature name {}".format(feature_name))
@@ -152,27 +152,27 @@ def from_columns(columns):
 
         if func.fctype == "aggregate":
 
-            kind_to_para_map[kind][feature_name] = None
+            kind_to_fc_parameters[kind][feature_name] = None
 
         elif func.fctype == "aggregate_with_parameters":
 
             config = _get_config_from_string(parts)
 
-            if feature_name in kind_to_para_map[kind]:
-                kind_to_para_map[kind][feature_name].append(config)
+            if feature_name in kind_to_fc_parameters[kind]:
+                kind_to_fc_parameters[kind][feature_name].append(config)
             else:
-                kind_to_para_map[kind][feature_name] = [config]
+                kind_to_fc_parameters[kind][feature_name] = [config]
 
         elif func.fctype == "apply":
 
             config = _get_config_from_string(parts)
 
-            if feature_name in kind_to_para_map[kind]:
-                kind_to_para_map[kind][feature_name].append(config)
+            if feature_name in kind_to_fc_parameters[kind]:
+                kind_to_fc_parameters[kind][feature_name].append(config)
             else:
-                kind_to_para_map[kind][feature_name] = [config]
+                kind_to_fc_parameters[kind][feature_name] = [config]
 
-    return kind_to_para_map
+    return kind_to_fc_parameters
 
 
 def _get_config_from_string(parts):
@@ -224,7 +224,7 @@ class ComprehensiveFCParameters(dict):
         You can use the settings object with
 
         >>> from tsfresh.feature_extraction import extract_features, ComprehensiveFCParameters
-        >>> extract_features(df, default_para_map=ComprehensiveFCParameters())
+        >>> extract_features(df, default_fc_parameters=ComprehensiveFCParameters())
 
         to extract all features (which is the default nevertheless) or you change the ComprehensiveFCParameters
         object to other types (see below).
@@ -275,7 +275,7 @@ class MinimalFCParameters(ComprehensiveFCParameters):
     You should use this object when calling the extract function, like so:
 
     >>> from tsfresh.feature_extraction import extract_features, MinimalFCParameters
-    >>> extract_features(df, default_para_map=MinimalFCParameters())
+    >>> extract_features(df, default_fc_parameters=MinimalFCParameters())
     """
     def __init__(self):
         ComprehensiveFCParameters.__init__(self)
@@ -296,7 +296,7 @@ class EfficientFCParameters(ComprehensiveFCParameters):
     You should use this object when calling the extract function, like so:
 
     >>> from tsfresh.feature_extraction import extract_features, EfficientFCParameters
-    >>> extract_features(df, default_para_map=EfficientFCParameters())
+    >>> extract_features(df, default_fc_parameters=EfficientFCParameters())
     """
 
     def __init__(self):

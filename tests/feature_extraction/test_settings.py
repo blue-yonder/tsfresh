@@ -40,17 +40,17 @@ class TestSettingsObject(TestCase):
         # Apply functions
         feature_names += [tsn + '__ar_coefficient__k_20__coeff_4', tsn + '__ar_coefficient__coeff_10__k_-1']
 
-        kind_to_para_map = from_columns(feature_names)
+        kind_to_fc_parameters = from_columns(feature_names)
 
-        six.assertCountEqual(self, list(kind_to_para_map[tsn].keys()),
+        six.assertCountEqual(self, list(kind_to_fc_parameters[tsn].keys()),
           ["sum_values", "median", "length", "sample_entropy", "quantile", "number_peaks", "ar_coefficient",
                                   "value_count"])
         
-        self.assertEqual(kind_to_para_map[tsn]["sum_values"], None)
-        self.assertEqual(kind_to_para_map[tsn]["ar_coefficient"],
+        self.assertEqual(kind_to_fc_parameters[tsn]["sum_values"], None)
+        self.assertEqual(kind_to_fc_parameters[tsn]["ar_coefficient"],
                          [{"k": 20, "coeff": 4}, {"k": -1, "coeff": 10}])
 
-        self.assertEqual(kind_to_para_map[tsn]["value_count"],
+        self.assertEqual(kind_to_fc_parameters[tsn]["value_count"],
                          [{"value": np.PINF}, {"value": np.NINF}, {"value": np.NaN}])
 
     def test_default_calculates_all_features(self):
@@ -77,7 +77,7 @@ class TestEfficientFCParameters(TestCase):
         rfs = EfficientFCParameters()
         data = pd.DataFrame([[0, 0, 0, 0], [1, 0, 0, 0]], columns=["id", "time", "kind", "value"])
 
-        extracted_features = extract_features(data, default_para_map=rfs,
+        extracted_features = extract_features(data, default_fc_parameters=rfs,
                                               column_kind="kind", column_value="value",
                                               column_sort="time", column_id="id")
 
@@ -116,7 +116,7 @@ class TestMinimalSettingsObject(TestCase):
 
         data = pd.DataFrame([[0, 0, 0, 0], [1, 0, 0, 0]], columns=["id", "time", "kind", "value"])
 
-        extracted_features = extract_features(data, default_para_map=mfs,
+        extracted_features = extract_features(data, default_fc_parameters=mfs,
                                               column_kind="kind", column_value="value",
                                               column_sort="time", column_id="id")
 
@@ -130,7 +130,7 @@ class TestMinimalSettingsObject(TestCase):
 
         data = pd.DataFrame([[0, 0, 0, 0], [1, 0, 0, 0]], columns=["id", "time", "kind", "value"])
         extracted_features = _extract_features_for_one_time_series([0, data],
-                                                                   default_para_map=mfs,
+                                                                   default_fc_parameters=mfs,
                                                                    column_value="value", column_id="id")
         six.assertCountEqual(self, extracted_features.columns,
                              ["0__median", "0__standard_deviation", "0__sum_values", "0__maximum", "0__variance",
