@@ -17,7 +17,7 @@ import pandas as pd
 from builtins import str
 from six.moves.queue import Queue
 from tqdm import tqdm
-from tsfresh.feature_extraction.settings import FeatureExtractionSettings, get_aggregate_functions, get_apply_functions
+from tsfresh.feature_extraction.settings import ComprehensiveFCParameters, get_aggregate_functions, get_apply_functions
 import tsfresh.defaults
 from tsfresh.utilities import dataframe_functions, profiling
 
@@ -46,7 +46,7 @@ def extract_features(timeseries_container, default_para_map=None,
     In both cases a :class:`pandas.DataFrame` with the calculated features will be returned.
 
     For a list of all the calculated time series features, please see the
-    :class:`~tsfresh.feature_extraction.settings.FeatureExtractionSettings` class,
+    :class:`~tsfresh.feature_extraction.settings.ComprehensiveFCParameters` class,
     which is used to control which features with which parameters are calculated.
 
     For a detailed explanation of the different parameters and data formats please see :ref:`data-formats-label`.
@@ -67,7 +67,7 @@ def extract_features(timeseries_container, default_para_map=None,
     :type timeseries_container: pandas.DataFrame or dict
 
     :param default_para_map: mapping from feature calculator names to parameters. Only those names
-           which are keys in this dict will be calculated. See the class:`FeatureExtractionSettings` for
+           which are keys in this dict will be calculated. See the class:`ComprehensiveFCParameters` for
            more information.
     :type default_para_map: dict
 
@@ -132,7 +132,7 @@ def extract_features(timeseries_container, default_para_map=None,
 
     # Use the standard setting if the user did not supply ones himself.
     if default_para_map is None:
-        default_para_map = FeatureExtractionSettings()
+        default_para_map = ComprehensiveFCParameters()
 
     # Choose the parallelization according to a rule-of-thumb
     if parallelization is None:
@@ -193,7 +193,7 @@ def _extract_features_parallel_per_kind(kind_to_df_map,
     :type column_value: str
 
     :param default_para_map: mapping from feature calculator names to parameters. Only those names
-           which are keys in this dict will be calculated. See the class:`FeatureExtractionSettings` for
+           which are keys in this dict will be calculated. See the class:`ComprehensiveFCParameters` for
            more information.
     :type default_para_map: dict
 
@@ -273,7 +273,7 @@ def _extract_features_parallel_per_sample(kind_to_df_map,
     :type column_value: str
 
     :param default_para_map: mapping from feature calculator names to parameters. Only those names
-           which are keys in this dict will be calculated. See the class:`FeatureExtractionSettings` for
+           which are keys in this dict will be calculated. See the class:`ComprehensiveFCParameters` for
            more information.
     :type default_para_map: dict
 
@@ -421,7 +421,7 @@ def _extract_features_for_one_time_series(prefix_and_dataframe, column_id, colum
         +-------+------------------+------------------+-----+------------------+
 
     where N is the number of features that were calculated. Which features are calculated is controlled by the
-    passed settings instance (see :class:`~tsfresh.feature_extraction.settings.FeatureExtractionSettings` for a list of
+    passed settings instance (see :class:`~tsfresh.feature_extraction.settings.ComprehensiveFCParameters` for a list of
     all possible features to calculate).
 
     The parameter `dataframe` is not allowed to have any NaN value in it. It is possible to have different numbers
@@ -440,7 +440,7 @@ def _extract_features_for_one_time_series(prefix_and_dataframe, column_id, colum
     :type column_value: str
 
     :param default_para_map: mapping from feature calculator names to parameters. Only those names
-           which are keys in this dict will be calculated. See the class:`FeatureExtractionSettings` for
+           which are keys in this dict will be calculated. See the class:`ComprehensiveFCParameters` for
            more information.
     :type default_para_map: dict
 

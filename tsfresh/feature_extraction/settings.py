@@ -26,7 +26,7 @@ def get_aggregate_functions(para_map, column_prefix):
     that can be used in a pandas group by command to extract all aggregate features at the same time.
 
     :param para_map: mapping from feature calculator names to settings.
-    :type para_map: FeatureExtractionSettings or child class
+    :type para_map: ComprehensiveFCParameters or child class
 
     :param column_prefix: the prefix for all column names.
     :type column_prefix: basestring
@@ -76,7 +76,7 @@ def get_apply_functions(para_map, column_prefix):
     that can *not* be used in a pandas group by command to extract all aggregate features at the same time.
 
     :param para_map: mapping from feature calculator names to settings.
-    :type para_map: FeatureExtractionSettings or child class
+    :type para_map: ComprehensiveFCParameters or child class
 
     :param column_prefix: the prefix for all column names.
     :type column_prefix: basestring
@@ -208,10 +208,10 @@ def _get_config_from_string(parts):
 
 
 # todo: this classes' docstrings are not completely up-to-date
-class FeatureExtractionSettings(dict):
+class ComprehensiveFCParameters(dict):
     def __init__(self):
         """
-        Create a new FeatureExtractionSettings instance. You have to pass this instance to the
+        Create a new ComprehensiveFCParameters instance. You have to pass this instance to the
         extract_feature instance.
 
         It is basically a dictionary (and also based on one), which is a mapping from
@@ -223,10 +223,10 @@ class FeatureExtractionSettings(dict):
 
         You can use the settings object with
 
-        >>> from tsfresh.feature_extraction import extract_features, FeatureExtractionSettings
-        >>> extract_features(df, default_para_map=FeatureExtractionSettings())
+        >>> from tsfresh.feature_extraction import extract_features, ComprehensiveFCParameters
+        >>> extract_features(df, default_para_map=ComprehensiveFCParameters())
 
-        to extract all features (which is the default nevertheless) or you change the FeatureExtractionSettings
+        to extract all features (which is the default nevertheless) or you change the ComprehensiveFCParameters
         object to other types (see below).
         """
         name_to_param = {}
@@ -259,12 +259,12 @@ class FeatureExtractionSettings(dict):
             "approximate_entropy": [{"m": 2, "r": r} for r in [.1, .3, .5, .7, .9]]
         })
 
-        super(FeatureExtractionSettings, self).__init__(name_to_param)
+        super(ComprehensiveFCParameters, self).__init__(name_to_param)
 
 
-class MinimalFeatureExtractionSettings(FeatureExtractionSettings):
+class MinimalFCParameters(ComprehensiveFCParameters):
     """
-    This class is a child class of the FeatureExtractionSettings class
+    This class is a child class of the ComprehensiveFCParameters class
     and has the same functionality as its base class. The only difference is,
     that most of the feature calculators are disabled and only a small
     subset of calculators will be calculated at all. Those are donated by an attribute called "minimal".
@@ -274,20 +274,20 @@ class MinimalFeatureExtractionSettings(FeatureExtractionSettings):
 
     You should use this object when calling the extract function, like so:
 
-    >>> from tsfresh.feature_extraction import extract_features, MinimalFeatureExtractionSettings
-    >>> extract_features(df, default_para_map=MinimalFeatureExtractionSettings())
+    >>> from tsfresh.feature_extraction import extract_features, MinimalFCParameters
+    >>> extract_features(df, default_para_map=MinimalFCParameters())
     """
     def __init__(self):
-        FeatureExtractionSettings.__init__(self)
+        ComprehensiveFCParameters.__init__(self)
 
         for fname, f in feature_calculators.__dict__.items():
             if fname in self and (not hasattr(f, "minimal") or not getattr(f, "minimal")):
                 del self[fname]
 
 
-class ReasonableFeatureExtractionSettings(FeatureExtractionSettings):
+class EfficientFCParameters(ComprehensiveFCParameters):
     """
-    This class is a child class of the FeatureExtractionSettings class
+    This class is a child class of the ComprehensiveFCParameters class
     and has the same functionality as its base class.
 
     The only difference is, that the features with high computational costs are not calculated. Those are denoted by
@@ -295,12 +295,12 @@ class ReasonableFeatureExtractionSettings(FeatureExtractionSettings):
 
     You should use this object when calling the extract function, like so:
 
-    >>> from tsfresh.feature_extraction import extract_features, ReasonableFeatureExtractionSettings
-    >>> extract_features(df, default_para_map=ReasonableFeatureExtractionSettings())
+    >>> from tsfresh.feature_extraction import extract_features, EfficientFCParameters
+    >>> extract_features(df, default_para_map=EfficientFCParameters())
     """
 
     def __init__(self):
-        FeatureExtractionSettings.__init__(self)
+        ComprehensiveFCParameters.__init__(self)
 
         # drop all features with high computational costs
         for fname, f in feature_calculators.__dict__.items():

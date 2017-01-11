@@ -45,7 +45,7 @@ class FeatureAugmenter(BaseEstimator, TransformerMixin):
     >>> df_with_time_series_features = augmenter.transform(df)
 
     The settings for the feature calculation can be controlled with the settings object. If you pass ``None``, the default
-    settings are used. Please refer to :class:`~tsfresh.feature_extraction.settings.FeatureExtractionSettings` for
+    settings are used. Please refer to :class:`~tsfresh.feature_extraction.settings.ComprehensiveFCParameters` for
     more information.
 
     This estimator does not select the relevant features, but calculates and adds all of them to the DataFrame. See the
@@ -70,7 +70,7 @@ class FeatureAugmenter(BaseEstimator, TransformerMixin):
         Create a new FeatureAugmenter instance.
 
         :param settings: The extraction settings to use. Leave empty to use the default ones.
-        :type settings: tsfresh.feature_extraction.settings.FeatureExtractionSettings
+        :type settings: tsfresh.feature_extraction.settings.ComprehensiveFCParameters
 
         :param column_id: The column with the id. See :mod:`~tsfresh.feature_extraction.extraction`.
         :type column_id: basestring

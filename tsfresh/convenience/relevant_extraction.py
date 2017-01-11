@@ -51,7 +51,7 @@ def extract_relevant_features(timeseries_container, y, X=None,
     :type y: pandas.Series
 
     :param default_para_map: mapping from feature calculator names to parameters. Only those names
-           which are keys in this dict will be calculated. See the class:`FeatureExtractionSettings` for
+           which are keys in this dict will be calculated. See the class:`ComprehensiveFCParameters` for
            more information.
     :type default_para_map: dict
 

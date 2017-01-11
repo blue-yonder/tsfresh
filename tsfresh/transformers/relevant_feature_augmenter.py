@@ -32,7 +32,7 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
     This estimator is a wrapper around most of the functionality in the tsfresh package. For more information on the
     subtasks, please refer to the single modules and functions, which are:
 
-    * Settings for the feature extraction: :class:`~tsfresh.feature_extraction.settings.FeatureExtractionSettings`
+    * Settings for the feature extraction: :class:`~tsfresh.feature_extraction.settings.ComprehensiveFCParameters`
     * Feature extraction method: :func:`~tsfresh.feature_extraction.extraction.extract_features`
     * Extracted features: :mod:`~tsfresh.feature_extraction.feature_calculators`
     * Feature selection: :func:`~tsfresh.feature_selection.feature_selector.check_fs_sig_bh`
@@ -103,7 +103,7 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
         Create a new RelevantFeatureAugmenter instance.
 
         :param settings: The extraction settings to use. Leave empty to use the default ones.
-        :type settings: tsfresh.feature_extraction.settings.FeatureExtractionSettings
+        :type settings: tsfresh.feature_extraction.settings.ExtendedFCParameters
 
         :param filter_only_tsfresh_features: Whether to touch the manually-created features during feature selection or
                                              not.
@@ -111,7 +111,7 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
         :param feature_selection_settings: The feature selection settings.
         :type feature_selection_settings: tsfresh.feature_selection.settings.FeatureSelectionSettings
         :param feature_extraction_settings: The feature extraction settings.
-        :type feature_selection_settings: tsfresh.feature_extraction.settings.FeatureExtractionSettings
+        :type feature_selection_settings: tsfresh.feature_extraction.settings.ComprehensiveFCParameters
         :param column_id: The column with the id. See :mod:`~tsfresh.feature_extraction.extraction`.
         :type column_id: basestring
         :param column_sort: The column with the sort data. See :mod:`~tsfresh.feature_extraction.extraction`.

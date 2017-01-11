@@ -4,7 +4,7 @@
 
 import pandas as pd
 from tests.fixtures import DataTestCase
-from tsfresh.feature_extraction import FeatureExtractionSettings
+from tsfresh.feature_extraction import ComprehensiveFCParameters
 from tsfresh.transformers.relevant_feature_augmenter import RelevantFeatureAugmenter
 
 
