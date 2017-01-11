@@ -32,7 +32,7 @@ class velocity(object):
     >>> v = ds.simulate(20000) # Simulate velocity time series with 20000 time steps being disturbed by Gaussian white noise
     """
 
-    def __init__(self, tau=2.87, kappa_3=0.3, Q=1950.0, R=3e-4, delta_t=0.005):
+    def __init__(self, tau=3.8, kappa_3=0.3, Q=1950.0, R=1e-4, delta_t=0.05, seed=None):
         """
         :param tau: Bifurcation parameter determining the intrinsic velocity of the dissipative soliton, which is zero for tau<=1.0/kappa_3 and np.sqrt(kappa_3**3/Q * (tau - 1.0/kappa_3)) otherwise
         :type tau: float
@@ -45,7 +45,7 @@ class velocity(object):
         :param delta_t: temporal discretization
         :type delta_t: float
         """
-        # todo: add start seed
+        # done: add start seed
 
         self.delta_t = delta_t
         self.kappa_3 = kappa_3
@@ -57,6 +57,9 @@ class velocity(object):
         self.c = np.sqrt(self.delta_t) * R
         self.delta_t = self.delta_t
 
+        if not seed is None:
+            np.random.seed(seed)
+            
         if tau <= 1.0 / kappa_3:
             self.deterministic = 0.0
         else:
@@ -110,7 +113,7 @@ def sample_tau(n=10):
     tau = 2.87 + (3.8-2.87) * np.random.rand(n)
     return tau.tolist()
 
-def load_driftbif(n, l, m=2, classification=True):
+def load_driftbif(n, l, m=2, classification=True, kappa_3=0.3, seed=False):
     """
     Simulates n time-series with l time steps each for the m-dimensional velocity of a dissipative soliton
 
@@ -128,13 +131,16 @@ def load_driftbif(n, l, m=2, classification=True):
     :type m: int
     :param classification: distinguish between classification and regression target
     :type classification: bool
+    :param kappa_3: inverse bifurcation parameter (default 0.3)
+    :type kappa_3: float
+    :param seed: random seed (default False)
+    :type seed: float
     :return: X, y. Time series container and target vector
     :rtype X: pandas.DataFrame
     :rtype y: pandas.DataFrame
     """
 
     # todo: add ratio of classes
-    # todo: add start seed
 
     id = np.repeat(range(n), l * m)
     dimensions = list(np.repeat(range(m), l)) * n
@@ -145,7 +151,7 @@ def load_driftbif(n, l, m=2, classification=True):
     ls_tau = sample_tau(n)
 
     for i, tau in enumerate(ls_tau):
-        ds = velocity(tau=tau)
+        ds = velocity(tau=tau, kappa_3=kappa_3, seed=seed)
         if classification:
             labels.append(ds.label)
         else:
