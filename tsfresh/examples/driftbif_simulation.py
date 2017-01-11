@@ -12,8 +12,8 @@ import numpy as np
 
 class velocity(object):
     """
-    Simulates the velocity of a two-dimensional dissipative soliton (kind of self organized particle)
-
+    Simulates the velocity of a dissipative soliton (kind of self organized particle). 
+    The equilibrium velocity without noise R=0 for $\tau>1.0/\kappa_3$ is $\kappa_3 \sqrt{(tau - 1.0/\kappa_3)/Q}. Before the drift-bifurcation $\tau \le 1.0/\kappa_3$ the velocity is zero.
 
     References
     ----------
@@ -34,9 +34,9 @@ class velocity(object):
 
     def __init__(self, tau=2.87, kappa_3=0.3, Q=1950.0, R=3e-4, delta_t=0.005):
         """
-        :param tau: time-scale constant
+        :param tau: Bifurcation parameter determining the intrinsic velocity of the dissipative soliton, which is zero for tau<=1.0/kappa_3 and np.sqrt(kappa_3**3/Q * (tau - 1.0/kappa_3)) otherwise
         :type tau: float
-        :param kappa_3: Feedback of fast inhibitor
+        :param kappa_3: Inverse bifurcation point. 
         :type kappa_3:
         :param Q: Shape parameter of dissipative soliton
         :type Q: float
@@ -45,7 +45,6 @@ class velocity(object):
         :param delta_t: temporal discretization
         :type delta_t: float
         """
-        # todo: improve description of constants
         # todo: add start seed
 
         self.delta_t = delta_t
