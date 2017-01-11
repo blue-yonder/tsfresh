@@ -21,9 +21,9 @@ class DriftBifSimlationTestCase(unittest.TestCase):
         """
         Test accuracy of integrating the deterministic dynamics [6, p. 116]
         """
-        v0 = velocity(tau=1.1/0.3).deterministic
-
         ds = velocity(tau=1.01/0.3, R=0)
+        v0 = 1.01 * ds.deterministic
+
         Nt = 100 # Number of time steps
         v = ds.simulate(Nt, v0=np.array([v0, 0.]))
 
@@ -36,6 +36,20 @@ class DriftBifSimlationTestCase(unittest.TestCase):
         t = ds.delta_t * np.arange(Nt)
         return np.testing.assert_array_almost_equal(v[:,0], np.vectorize(acceleration)(t),
                                                     decimal=8)
+
+    def test_equlibrium_velocity(self):
+        """
+        Test accuracy of integrating the deterministic dynamics for equilibrium velocity [6, p. 116]
+        """
+        ds = velocity(tau=1.01/0.3, R=0)
+        v0 = ds.deterministic
+
+        Nt = 100 # Number of time steps
+        v = ds.simulate(Nt, v0=np.array([v0, 0.]))
+
+        return np.testing.assert_array_almost_equal(v[:,0]-v0, np.zeros(Nt),
+                                                    decimal=8)
+
 
     def test_dimensionality(self):
         ds = velocity(tau=1.0/0.3)
