@@ -2,13 +2,11 @@
 # This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
-# Thanks to Andreas Kempa-Liehr for providing this snippet
+# Thanks to Andreas W. Kempa-Liehr for providing this snippet
 
 import pandas as pd
 import numpy as np
 
-# todo: add possibility to extract data set for regression problem (estimation of tau parameter)
-# todo: add unit test
 
 class velocity(object):
     """
