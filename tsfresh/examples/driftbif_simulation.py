@@ -30,7 +30,7 @@ class velocity(object):
     >>> v = ds.simulate(20000) # Simulate velocity time series with 20000 time steps being disturbed by Gaussian white noise
     """
 
-    def __init__(self, tau=3.8, kappa_3=0.3, Q=1950.0, R=1e-4, delta_t=0.05, seed=None):
+    def __init__(self, tau=3.8, kappa_3=0.3, Q=1950.0, R=3e-4, delta_t=0.05, seed=None):
         """
         :param tau: Bifurcation parameter determining the intrinsic velocity of the dissipative soliton, which is zero for tau<=1.0/kappa_3 and np.sqrt(kappa_3**3/Q * (tau - 1.0/kappa_3)) otherwise
         :type tau: float
