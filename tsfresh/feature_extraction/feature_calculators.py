@@ -1261,7 +1261,7 @@ def max_fixed_point(x, r, m):
     :type x: pandas.Series
     :param m: order of polynom to fit for estimating fixed points of dynamics
     :type m: int
-    :param r: number of quantils to use for averging
+    :param r: number of quantils to use for averaging
     :type r: float
 
     :return: Largest fixed point of deterministic dynamics
