@@ -1269,12 +1269,12 @@ def max_fixed_point(x, r=3, m=30):
     :return type: float
     """
 
-    df = pd.DataFrame({'signal': x[:-1,0], 'diff': np.diff(v[:,0])})
+    df = pd.DataFrame({'signal': x[:-1], 'delta': np.diff(x)})
     df['quantiles']=pd.qcut(df.signal, r)
     quantiles = df.groupby('quantiles')
     result = pd.DataFrame({'x_mean': quantiles.signal.mean(),
-                           'y_mean': quantiles.diff.mean()
+                           'y_mean': quantiles.delta.mean()
     })
-    coeff = np.polyfit(quantiles.x_mean, quantiles.y_mean, deg=m)
+    coeff = np.polyfit(result.x_mean, result.y_mean, deg=m)
     
     return np.max(np.real(np.roots(coeff)))
