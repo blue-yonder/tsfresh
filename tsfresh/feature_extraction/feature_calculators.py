@@ -1247,8 +1247,7 @@ def approximate_entropy(x, m, r):
     return np.abs(_phi(m) - _phi(m + 1))
 
 @set_property("fctype", "aggregate_with_parameters")
-@not_apply_to_raw_numbers
-def max_fixed_point(x, r=3, m=30):
+def max_fixed_point(x, r, m):
     """
     Largest fixed point of dynamics estimated from polynomial, which has been fitted to 
     the deterministic dynamics of Langevin model as described by
