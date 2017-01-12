@@ -10,7 +10,6 @@ from tsfresh.feature_extraction.extraction import extract_features, _extract_fea
 from tsfresh.feature_extraction.settings import FeatureExtractionSettings
 import six
 import os
-import unittest
 
 class ExtractionTestCase(DataTestCase):
     """The unit tests in this module make sure if the time series features are created properly"""
@@ -202,6 +201,3 @@ class ParallelExtractionTestCase(DataTestCase):
         self.assertTrue(np.all(extracted_features.b__abs_energy == np.array([36619, 35483])))
         self.assertTrue(np.all(extracted_features.b__mean == np.array([37.85, 34.75])))
         self.assertTrue(np.all(extracted_features.b__median == np.array([39.5, 28.0])))
-
-if __name__ == '__main__':
-    unittest.main()
