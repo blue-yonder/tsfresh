@@ -1245,3 +1245,36 @@ def approximate_entropy(x, m, r):
         return np.sum(np.log(C)) / (N - m + 1.0)
 
     return np.abs(_phi(m) - _phi(m + 1))
+
+@set_property("fctype", "aggregate_with_parameters")
+@not_apply_to_raw_numbers
+def max_fixed_point(x, r=3, m=30):
+    """
+    Largest fixed point of dynamics estimated from polynomial, which has been fitted to 
+    the deterministic dynamics of Langevin model as described by
+
+        Friedrich et al. (2000): Physics Letters A 271, p. 217-222
+        *Extracting model equations from experimental data*
+
+    For short time-series this method is highly dependent on the parameters.
+
+    :param x: the time series to calculate the feature of
+    :type x: pandas.Series
+    :param m: order of polynom to fit for estimating fixed points of dynamics
+    :type m: int
+    :param r: number of quantils to use for averging
+    :type r: float
+
+    :return: Largest fixed point of deterministic dynamics
+    :return type: float
+    """
+
+    df = pd.DataFrame({'signal': x[:-1,0], 'diff': np.diff(v[:,0])})
+    df['quantiles']=pd.qcut(df.signal, r)
+    quantiles = df.groupby('quantiles')
+    result = pd.DataFrame({'x_mean': quantiles.signal.mean(),
+                           'y_mean': quantiles.diff.mean()
+    })
+    coeff = np.polyfit(quantiles.x_mean, quantiles.y_mean, deg=m)
+    
+    return np.max(np.real(np.roots(coeff)))
