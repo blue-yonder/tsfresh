@@ -1267,8 +1267,12 @@ def max_fixed_point(x, r, m):
     :return: Largest fixed point of deterministic dynamics
     :return type: float
     """
+    
     df = pd.DataFrame({'signal': x[:-1], 'delta': np.diff(x)})
-    df['quantiles']=pd.qcut(df.signal, r)
+    try:
+        df['quantiles']=pd.qcut(df.signal, r)
+    except ValueError:
+        return x.mean()
     quantiles = df.groupby('quantiles')
     
     result = pd.DataFrame({'x_mean': quantiles.signal.mean(),
