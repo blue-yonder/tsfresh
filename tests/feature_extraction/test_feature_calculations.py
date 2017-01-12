@@ -6,7 +6,7 @@ from __future__ import absolute_import, division
 from __future__ import print_function
 from builtins import range
 from random import shuffle
-from unittest import TestCase, main
+from unittest import TestCase
 from tsfresh.feature_extraction.feature_calculators import *
 from tsfresh.feature_extraction.feature_calculators import _get_length_sequences_where
 from tsfresh.feature_extraction import FeatureExtractionSettings
@@ -507,7 +507,6 @@ class FeatureCalculationTestCase(TestCase):
         self.assertEqualOnAllArrayTypes(approximate_entropy, [1, 2, 3], 0, m=2, r=0.5)
         self.assertAlmostEqualOnAllArrayTypes(approximate_entropy, [12, 13, 15, 16, 17]*10, 0.282456191, m=2, r=0.9)
         self.assertRaises(ValueError, approximate_entropy, x=[12, 13, 15, 16, 17]*10, m=2, r=-0.5)
-
         
     def test_max_fixed_point(self):
         """
@@ -528,5 +527,3 @@ class FeatureCalculationTestCase(TestCase):
         v0 = max_fixed_point(v[:,0], **default_params)
         self.assertTrue(v0<0.001)
 
-if __name__ == '__main__':
-    main()
