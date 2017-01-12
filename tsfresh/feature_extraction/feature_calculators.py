@@ -1267,13 +1267,17 @@ def max_fixed_point(x, r, m):
     :return: Largest fixed point of deterministic dynamics
     :return type: float
     """
-
     df = pd.DataFrame({'signal': x[:-1], 'delta': np.diff(x)})
     df['quantiles']=pd.qcut(df.signal, r)
     quantiles = df.groupby('quantiles')
+    
     result = pd.DataFrame({'x_mean': quantiles.signal.mean(),
                            'y_mean': quantiles.delta.mean()
     })
-    coeff = np.polyfit(result.x_mean, result.y_mean, deg=m)
+    
+    try:
+        coeff = np.polyfit(result.x_mean, result.y_mean, deg=m)
+    except np.linalg.LinAlgError:
+        return 0.
     
     return np.max(np.real(np.roots(coeff)))
