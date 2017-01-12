@@ -523,7 +523,7 @@ class FeatureCalculationTestCase(TestCase):
         self.assertTrue(abs(ds.deterministic-v0)<0.0001)
 
         # Brownian motion
-        ds = velocity(tau=1.0/0.3-3.8, delta_t=0.05, R=3e-4, seed=0)
+        ds = velocity(tau=2.0/0.3-3.8, delta_t=0.05, R=3e-4, seed=0)
         v = ds.simulate(1000000, v0=np.zeros(1))
         v0 = max_fixed_point(v[:,0], **default_params)
         self.assertTrue(v0<0.001)
