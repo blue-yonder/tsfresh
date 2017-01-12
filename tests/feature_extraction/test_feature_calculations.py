@@ -9,7 +9,6 @@ from random import shuffle
 from unittest import TestCase
 from tsfresh.feature_extraction.feature_calculators import *
 from tsfresh.feature_extraction.feature_calculators import _get_length_sequences_where
-from tsfresh.feature_extraction import FeatureExtractionSettings
 from tsfresh.examples.driftbif_simulation import velocity
 import six
 import math
@@ -512,8 +511,7 @@ class FeatureCalculationTestCase(TestCase):
         """
         Estimating the intrinsic velocity of a dissipative soliton
         """
-        settings = FeatureExtractionSettings()
-        default_params = settings.name_to_param['max_fixed_point'][0]
+        default_params = {"m": 3, "r": 30}
         
         # active Brownian motion
         ds = velocity(tau=3.8, delta_t=0.05, R=3e-4, seed=0)
