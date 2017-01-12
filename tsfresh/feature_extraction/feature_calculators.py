@@ -1281,7 +1281,7 @@ def max_fixed_point(x, r, m):
     
     try:
         coeff = np.polyfit(result.x_mean, result.y_mean, deg=m)
-    except np.linalg.LinAlgError:
+    except:
         return 0.
     
     return np.max(np.real(np.roots(coeff)))
