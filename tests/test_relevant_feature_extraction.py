@@ -29,10 +29,9 @@ class RelevantFeatureExtractionDataTestCase(DataTestCase):
         relevant_features = extract_relevant_features(df, y, column_id='id', column_value='val', column_kind='kind',
                                                       column_sort='sort')
 
-        extraction_settings = FeatureExtractionSettings()
-        extraction_settings.IMPUTE = impute
-        extracted_features = extract_features(df, feature_extraction_settings=extraction_settings, column_id='id',
-                                              column_value='val', column_kind='kind', column_sort='sort')
+        extracted_features = extract_features(df, column_id='id',
+                                              column_value='val', column_kind='kind', column_sort='sort',
+                                              impute_function=impute)
         selected_features = select_features(extracted_features, y)
 
         self.assertEqual(

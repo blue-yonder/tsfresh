@@ -5,7 +5,7 @@
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from functools import partial
-from tsfresh.feature_extraction.settings import FeatureExtractionSettings
+from tsfresh.feature_extraction.settings import *
 from tsfresh.transformers.feature_augmenter import FeatureAugmenter
 from tsfresh.transformers.feature_selector import FeatureSelector
 from tsfresh.utilities.dataframe_functions import impute_dataframe_range, get_range_values_per_column
@@ -93,7 +93,14 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
                  feature_selection_settings=None,
                  feature_extraction_settings=None,
                  column_id=None, column_sort=None, column_kind=None, column_value=None,
-                 timeseries_container=None):
+                 timeseries_container=None,
+                 parallelization=DEFAULT_PARALLELIZATION, chunksize=DEFAULT_CHUNKSIZE,
+                 n_processes=DEFAULT_N_PROCESSES, show_warnings=DEFAULT_SHOW_WARNINGS,
+                 disable_progressbar=DEFAULT_DISABLE_PROGRESSBAR,
+                 profile=DEFAULT_PROFILING,
+                 profiling_filename=DEFAULT_PROFILING_FILENAME,
+                 profiling_sorting=DEFAULT_PROFILING_SORTING
+                 ):
 
         """
         Create a new RelevantFeatureAugmenter instance.
@@ -116,17 +123,44 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
         :type column_kind: basestring
         :param column_value: The column with the values. See :mod:`~tsfresh.feature_extraction.extraction`.
         :type column_value: basestring
+
+        :param parallelization: Either ``'per_sample'`` or ``'per_kind'``   , see
+                            :func:`~tsfresh.feature_extraction.extraction._extract_features_parallel_per_sample`,
+                            :func:`~tsfresh.feature_extraction.extraction._extract_features_parallel_per_kind` and
+                            :ref:`parallelization-label` for details.
+                            Choosing None makes the algorithm look for the best parallelization technique by applying
+                            some general remarks.
+        :type parallelization: str
+
+        :param chunksize: The size of one chunk for the parallelisation
+        :type chunksize: None or int
+
+        :param n_processes: The number of processes to use for parallelisation.
+        :type n_processes: int
+
+        :param: show_warnings: Show warnings during the feature extraction (needed for debugging of calculators).
+        :type show_warnings: bool
+
+        :param disable_progressbar: Do not show a progressbar while doing the calculation.
+        :type disable_progressbar: bool
+
+        :param impute_function: None, if no imputing should happen or the function to call for imputing.
+        :type impute_function: None or function
         """
 
-        # We require to have IMPUTE!
-        if feature_extraction_settings is None:
-            feature_extraction_settings = FeatureExtractionSettings()
-
         # Range will be our default imputation strategy
-        feature_extraction_settings.IMPUTE = impute_dataframe_range
+        impute_function = impute_dataframe_range
 
         self.feature_extractor = FeatureAugmenter(feature_extraction_settings,
-                                                  column_id, column_sort, column_kind, column_value)
+                                                  column_id, column_sort, column_kind, column_value,
+                                                  parallelization=parallelization, chunksize=chunksize,
+                                                  n_processes=n_processes, show_warnings=show_warnings,
+                                                  disable_progressbar=disable_progressbar,
+                                                  impute_function=impute_function,
+                                                  profile=profile,
+                                                  profiling_filename=profiling_filename,
+                                                  profiling_sorting=profiling_sorting
+                                                  )
 
         self.feature_selector = FeatureSelector(feature_selection_settings)
 
@@ -184,7 +218,7 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
 
         X_augmented = self.feature_extractor.transform(X_tmp)
 
-        if self.feature_extractor.settings.IMPUTE is impute_dataframe_range:
+        if self.feature_extractor.impute_function is impute_dataframe_range:
             self.col_to_max, self.col_to_min, self.col_to_median = get_range_values_per_column(X_augmented)
 
         self.feature_selector.fit(X_augmented, y)
@@ -219,17 +253,26 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
         relevant_extraction_settings.set_default = False
 
         # Set imputing strategy
-        if self.feature_extractor.settings.IMPUTE is impute_dataframe_range:
-            relevant_extraction_settings.IMPUTE = partial(impute_dataframe_range, col_to_max=self.col_to_max,
+        if self.feature_extractor.impute_function is impute_dataframe_range:
+            impute_function = partial(impute_dataframe_range, col_to_max=self.col_to_max,
                                                           col_to_min=self.col_to_min, col_to_median=self.col_to_median)
         else:
-            relevant_extraction_settings.IMPUTE = self.feature_extractor.settings.IMPUTE
+            impute_function = self.feature_extractor.settings.IMPUTE
 
         relevant_feature_extractor = FeatureAugmenter(settings=relevant_extraction_settings,
                                                       column_id=self.feature_extractor.column_id,
                                                       column_sort=self.feature_extractor.column_sort,
                                                       column_kind=self.feature_extractor.column_kind,
-                                                      column_value=self.feature_extractor.column_value)
+                                                      column_value=self.feature_extractor.column_value,
+                                                      parallelization=self.feature_extractor.parallelization,
+                                                      chunksize=self.feature_extractor.chunksize,
+                                                      n_processes=self.feature_extractor.n_processes,
+                                                      show_warnings=self.feature_extractor.show_warnings,
+                                                      disable_progressbar=self.feature_extractor.disable_progressbar,
+                                                      impute_function=impute_function,
+                                                      profile=self.feature_extractor.profile,
+                                                      profiling_filename=self.feature_extractor.profiling_filename,
+                                                      profiling_sorting=self.feature_extractor.profiling_sorting)
 
         relevant_feature_extractor.set_timeseries_container(self.feature_extractor.timeseries_container)
 
