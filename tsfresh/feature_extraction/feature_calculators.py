@@ -477,7 +477,7 @@ def absolute_sum_of_changes(x):
 @not_apply_to_raw_numbers
 def longest_strike_below_mean(x):
     """
-    Returns the length of the longest consecutive subsequence that in x that is smaller than the mean of x
+    Returns the length of the longest consecutive subsequence in x that is smaller than the mean of x
 
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
@@ -492,7 +492,7 @@ def longest_strike_below_mean(x):
 @not_apply_to_raw_numbers
 def longest_strike_above_mean(x):
     """
-    Returns the length of the longest consecutive subsequence that in x that is bigger than the mean of x
+    Returns the length of the longest consecutive subsequence in x that is bigger than the mean of x
 
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
