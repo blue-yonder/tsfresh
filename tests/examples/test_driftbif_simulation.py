@@ -21,9 +21,9 @@ class DriftBifSimlationTestCase(unittest.TestCase):
         """
         Test accuracy of integrating the deterministic dynamics [6, p. 116]
         """
-        v0 = velocity(tau=1.1/0.3).deterministic
-
         ds = velocity(tau=1.01/0.3, R=0)
+        v0 = 1.01 * ds.deterministic
+
         Nt = 100 # Number of time steps
         v = ds.simulate(Nt, v0=np.array([v0, 0.]))
 
@@ -36,6 +36,20 @@ class DriftBifSimlationTestCase(unittest.TestCase):
         t = ds.delta_t * np.arange(Nt)
         return np.testing.assert_array_almost_equal(v[:,0], np.vectorize(acceleration)(t),
                                                     decimal=8)
+
+    def test_equlibrium_velocity(self):
+        """
+        Test accuracy of integrating the deterministic dynamics for equilibrium velocity [6, p. 116]
+        """
+        ds = velocity(tau=1.01/0.3, R=0)
+        v0 = ds.deterministic
+
+        Nt = 100 # Number of time steps
+        v = ds.simulate(Nt, v0=np.array([v0, 0.]))
+
+        return np.testing.assert_array_almost_equal(v[:,0]-v0, np.zeros(Nt),
+                                                    decimal=8)
+
 
     def test_dimensionality(self):
         ds = velocity(tau=1.0/0.3)
@@ -50,9 +64,16 @@ class DriftBifSimlationTestCase(unittest.TestCase):
 
 class SampleTauTestCase(unittest.TestCase):
     def test_range(self):
-        tau = sample_tau(10)
+        tau = sample_tau(100)
         self.assertTrue(min(tau) >= 2.87)
         self.assertTrue(max(tau) <= 3.8)
+
+    def test_ratio(self):
+        tau = sample_tau(100000, ratio=0.4)
+        sample = np.array(tau)
+        before = np.sum(sample <= 1/0.3)
+        beyond = np.sum(sample > 1/0.3)
+        self.assertTrue(abs(0.4 - float(before)/(before+beyond))<0.001)
         
 class LoadDriftBifTestCase(unittest.TestCase):
     def test_classification_labels(self):
