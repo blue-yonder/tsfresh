@@ -39,7 +39,7 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
     >>> []
 
     The same holds for the feature importance:
-    >>> selector.feature_importance_
+    >>> selector.feature_importances_
     >>> array([], dtype=float64)
 
     The estimator keeps track on those features, that were relevant in the training step. If you
@@ -91,7 +91,7 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
         :type chunksize: int
         """
         self.relevant_features = None
-        self.feature_importance_ = None
+        self.feature_importances_ = None
         self.p_values = None
 
         self.test_for_binary_target_binary_feature = test_for_binary_target_binary_feature
@@ -132,7 +132,7 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
                                 self.fdr_level, self.hypotheses_independent,
                                 self.test_for_binary_target_real_feature)
         self.relevant_features = df_bh.loc[df_bh.rejected].Feature.tolist()
-        self.feature_importance_ = 1.0 - df_bh.p_value.values
+        self.feature_importances_ = 1.0 - df_bh.p_value.values
         self.p_values = df_bh.p_value.values
 
         return self

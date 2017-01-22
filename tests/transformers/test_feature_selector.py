@@ -102,7 +102,7 @@ class FeatureSelectorTestCase(TestCase):
         
     def test_feature_importance(self):
         selector = FeatureSelector()
-        self.assertTrue(selector.feature_importance_ is None)
+        self.assertTrue(selector.feature_importances_ is None)
         
         y = pd.Series(np.random.binomial(1, 0.5, 1000))
         X = pd.DataFrame(index=list(range(1000)))
@@ -112,7 +112,7 @@ class FeatureSelectorTestCase(TestCase):
 
         selector.fit(X, y)
 
-        self.assertEqual(selector.feature_importance_.shape, (2,))
+        self.assertEqual(selector.feature_importances_.shape, (2,))
 
     def test_feature_importance(self):
         selector = FeatureSelector()
@@ -128,5 +128,5 @@ class FeatureSelectorTestCase(TestCase):
 
         self.assertEqual(selector.p_values.shape, (2,))
         np.testing.assert_almost_equal(selector.p_values,
-                                       1.0-selector.feature_importance_)
+                                       1.0-selector.feature_importances_)
 
