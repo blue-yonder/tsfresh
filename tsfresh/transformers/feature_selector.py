@@ -93,6 +93,7 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
         self.relevant_features = None
         self.feature_importances_ = None
         self.p_values = None
+        self.features = None
 
         self.test_for_binary_target_binary_feature = test_for_binary_target_binary_feature
         self.test_for_binary_target_real_feature = test_for_binary_target_real_feature
@@ -134,6 +135,7 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
         self.relevant_features = df_bh.loc[df_bh.rejected].Feature.tolist()
         self.feature_importances_ = 1.0 - df_bh.p_value.values
         self.p_values = df_bh.p_value.values
+        self.features = df_bh.Feature.tolist()
 
         return self
 

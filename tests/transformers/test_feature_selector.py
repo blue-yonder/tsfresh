@@ -61,6 +61,8 @@ class FeatureSelectorTestCase(TestCase):
 
         self.assertEqual(sorted(selector.relevant_features), sorted(list(selected_X.columns)))
 
+        self.assertEqual(len(selector.features), len(X.columns))
+
     def test_nothing_relevant(self):
         selector = FeatureSelector()
 
@@ -98,7 +100,6 @@ class FeatureSelectorTestCase(TestCase):
         self.assertTrue((selected_X_numpy == selected_X.values).all())
 
         self.assertTrue(selected_X_numpy.shape, (1, 1000))
-
         
     def test_feature_importance(self):
         selector = FeatureSelector()
