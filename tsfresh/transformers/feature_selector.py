@@ -28,10 +28,19 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
     This estimator - as most of the sklearn estimators - works in a two step procedure. First, it is fitted
     on training data, where the target is known:
 
+    >>> import pandas as pd
     >>> X_train, y_train = pd.DataFrame(), pd.Series() # fill in with your features and target
     >>> from tsfresh.transformers import FeatureSelector
     >>> selector = FeatureSelector()
     >>> selector.fit(X_train, y_train)
+
+    In this example the list of relevant features is empty:
+    >>> selector.relevant_features
+    >>> []
+
+    The same holds for the feature importance:
+    >>> selector.feature_importance_
+    >>> array([], dtype=float64)
 
     The estimator keeps track on those features, that were relevant in the training step. If you
     apply the estimator after the training, it will delete all other features in the testing
