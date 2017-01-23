@@ -94,7 +94,8 @@ def set_property(key, value):
 @not_apply_to_raw_numbers
 def variance_larger_than_standard_deviation(x):
     """
-    Boolean variable denoting if the variance of x is greater than its standard deviation.
+    Boolean variable denoting if the variance of x is greater than its standard deviation. Is equal to variance of x
+    being larger than 1
 
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
@@ -687,9 +688,8 @@ def ratio_value_number_to_time_series_length(x):
 @not_apply_to_raw_numbers
 def fft_coefficient(x, c, param):
     """
-    Calculates the fourier coefficients of
-    the one-dimensional discrete Fourier Transform for real input 
-    by fast fourier transformation algorithm
+    Calculates the fourier coefficients of the one-dimensional discrete Fourier Transform for real input by fast
+    fourier transformation algorithm
 
     :param x: the time series to calculate the feature of
     :type x: pandas.Series

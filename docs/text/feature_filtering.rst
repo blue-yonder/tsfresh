@@ -11,7 +11,7 @@ To limit the number of irrelevant features, tsfresh deploys the fresh algorithm 
 based on Scalable Hypothesis tests`) [1]_.
 
 The algorithm is called by :func:`tsfresh.feature_selection.feature_selector.check_fs_sig_bh`.
-It is a nefficient, scalable feature extraction algorithm, which filters the available features in an early stage of the
+It is an efficient, scalable feature extraction algorithm, which filters the available features in an early stage of the
 machine learning pipeline with respect to their significance for the classification or regression task, while
 controlling the expected percentage of selected but irrelevant features.
 

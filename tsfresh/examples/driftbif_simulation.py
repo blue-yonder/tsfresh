@@ -27,7 +27,7 @@ class velocity(object):
     1
     >>> print(ds.deterministic) # Equilibrium velocity
     0.0015191090506254991
-    >>> v = ds.simulate(20000) # Simulate velocity. Time series with 20000 time steps being disturbed by Gaussian white noise
+    >>> v = ds.simulate(20000) #Simulated velocity as a time series with 20000 time steps being disturbed by Gaussian white noise
     """
 
     def __init__(self, tau=3.8, kappa_3=0.3, Q=1950.0, R=3e-4, delta_t=0.05, seed=None):
