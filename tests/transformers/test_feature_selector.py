@@ -53,13 +53,15 @@ class FeatureSelectorTestCase(TestCase):
         returned_selector = selector.fit(X, y)
         self.assertIs(returned_selector, selector)
 
-        self.assertEqual(sorted(list(selector.relevant_features.index)), ["rel1", "rel2", "rel3", "rel4", "rel5"])
+        self.assertEqual(sorted(selector.relevant_features), ["rel1", "rel2", "rel3", "rel4", "rel5"])
 
         new_X = X.copy()
 
         selected_X = selector.transform(new_X)
 
-        self.assertEqual(sorted(list(selector.relevant_features.index)), sorted(list(selected_X.columns)))
+        self.assertEqual(sorted(selector.relevant_features), sorted(list(selected_X.columns)))
+
+        self.assertEqual(len(selector.features), len(X.columns))
 
     def test_nothing_relevant(self):
         selector = FeatureSelector()
@@ -98,6 +100,34 @@ class FeatureSelectorTestCase(TestCase):
         self.assertTrue((selected_X_numpy == selected_X.values).all())
 
         self.assertTrue(selected_X_numpy.shape, (1, 1000))
+        
+    def test_feature_importance(self):
+        selector = FeatureSelector()
+        self.assertTrue(selector.feature_importances_ is None)
+        
+        y = pd.Series(np.random.binomial(1, 0.5, 1000))
+        X = pd.DataFrame(index=list(range(1000)))
 
+        X["irr1"] = np.random.normal(0, 1, 1000)
+        X["rel1"] = y
 
+        selector.fit(X, y)
+
+        self.assertEqual(selector.feature_importances_.shape, (2,))
+
+    def test_feature_importance(self):
+        selector = FeatureSelector()
+        self.assertTrue(selector.p_values is None)
+        
+        y = pd.Series(np.random.binomial(1, 0.5, 1000))
+        X = pd.DataFrame(index=list(range(1000)))
+
+        X["irr1"] = np.random.normal(0, 1, 1000)
+        X["rel1"] = y
+
+        selector.fit(X, y)
+
+        self.assertEqual(selector.p_values.shape, (2,))
+        np.testing.assert_almost_equal(selector.p_values,
+                                       1.0-selector.feature_importances_)
 

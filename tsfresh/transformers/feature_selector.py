@@ -28,10 +28,19 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
     This estimator - as most of the sklearn estimators - works in a two step procedure. First, it is fitted
     on training data, where the target is known:
 
+    >>> import pandas as pd
     >>> X_train, y_train = pd.DataFrame(), pd.Series() # fill in with your features and target
     >>> from tsfresh.transformers import FeatureSelector
     >>> selector = FeatureSelector()
     >>> selector.fit(X_train, y_train)
+
+    In this example the list of relevant features is empty:
+    >>> selector.relevant_features
+    >>> []
+
+    The same holds for the feature importance:
+    >>> selector.feature_importances_
+    >>> array([], dtype=float64)
 
     The estimator keeps track on those features, that were relevant in the training step. If you
     apply the estimator after the training, it will delete all other features in the testing
@@ -82,6 +91,10 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
         :type chunksize: int
         """
         self.relevant_features = None
+        self.feature_importances_ = None
+        self.p_values = None
+        self.features = None
+
         self.test_for_binary_target_binary_feature = test_for_binary_target_binary_feature
         self.test_for_binary_target_real_feature = test_for_binary_target_real_feature
         self.test_for_real_target_binary_feature = test_for_real_target_binary_feature
@@ -116,9 +129,13 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
         if not isinstance(y, pd.Series):
             y = pd.Series(y.copy())
 
-        df_bh = check_fs_sig_bh(X, y, self.n_processes, self.chunksize, self.fdr_level, self.hypotheses_independent,
+        df_bh = check_fs_sig_bh(X, y, self.n_processes, self.chunksize,
+                                self.fdr_level, self.hypotheses_independent,
                                 self.test_for_binary_target_real_feature)
-        self.relevant_features = df_bh.loc[df_bh.rejected].Feature
+        self.relevant_features = df_bh.loc[df_bh.rejected].Feature.tolist()
+        self.feature_importances_ = 1.0 - df_bh.p_value.values
+        self.p_values = df_bh.p_value.values
+        self.features = df_bh.Feature.tolist()
 
         return self
 
@@ -138,4 +155,4 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
         if isinstance(X, pd.DataFrame):
             return X.copy().loc[:, self.relevant_features]
         else:
-            return X[:, self.relevant_features.index]
+            return X[:, self.relevant_features]
