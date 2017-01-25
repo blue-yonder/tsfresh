@@ -53,13 +53,13 @@ class FeatureSelectorTestCase(TestCase):
         returned_selector = selector.fit(X, y)
         self.assertIs(returned_selector, selector)
 
-        self.assertEqual(sorted(list(selector.relevant_features.index)), ["rel1", "rel2", "rel3", "rel4", "rel5"])
+        self.assertEqual(sorted(selector.relevant_features), ["rel1", "rel2", "rel3", "rel4", "rel5"])
 
         new_X = X.copy()
 
         selected_X = selector.transform(new_X)
 
-        self.assertEqual(sorted(list(selector.relevant_features.index)), sorted(list(selected_X.columns)))
+        self.assertEqual(sorted(selector.relevant_features), sorted(list(selected_X.columns)))
 
     def test_nothing_relevant(self):
         selector = FeatureSelector()

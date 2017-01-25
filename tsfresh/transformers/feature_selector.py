@@ -116,9 +116,10 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
         if not isinstance(y, pd.Series):
             y = pd.Series(y.copy())
 
-        df_bh = check_fs_sig_bh(X, y, self.n_processes, self.chunksize, self.fdr_level, self.hypotheses_independent,
+        df_bh = check_fs_sig_bh(X, y, self.n_processes, self.chunksize,
+                                self.fdr_level, self.hypotheses_independent,
                                 self.test_for_binary_target_real_feature)
-        self.relevant_features = df_bh.loc[df_bh.rejected].Feature
+        self.relevant_features = df_bh.loc[df_bh.rejected].Feature.tolist()
 
         return self
 
@@ -138,4 +139,4 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
         if isinstance(X, pd.DataFrame):
             return X.copy().loc[:, self.relevant_features]
         else:
-            return X[:, self.relevant_features.index]
+            return X[:, self.relevant_features]
