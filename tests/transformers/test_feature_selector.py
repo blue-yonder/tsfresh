@@ -99,5 +99,18 @@ class FeatureSelectorTestCase(TestCase):
 
         self.assertTrue(selected_X_numpy.shape, (1, 1000))
 
+        
+    def test_feature_importance(self):
+        selector = FeatureSelector()
+        self.assertTrue(selector.feature_importance_ is None)
+        
+        y = pd.Series(np.random.binomial(1, 0.5, 1000))
+        X = pd.DataFrame(index=list(range(1000)))
 
+        X["irr1"] = np.random.normal(0, 1, 1000)
+        X["rel1"] = y
 
+        selector.fit(X, y)
+
+        self.assertEqual(selector.feature_importance_.shape, (2,))
+        
