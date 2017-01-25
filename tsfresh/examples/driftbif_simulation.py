@@ -2,7 +2,7 @@
 # This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
-# Thanks to Andreas Kempa-Liehr for providing this snippet
+# Thanks to Andreas W. Kempa-Liehr for providing this snippet
 
 import pandas as pd
 import numpy as np
@@ -10,12 +10,11 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
+
 class velocity(object):
     """
-    Simulates the velocity of a two-dimensional dissipative soliton (kind of self organized particle)
-
-    label 0 means tau<=1/0.3, Dissipative Soliton with Brownian motion (purely noise driven)
-    label 1 means tau> 1/0.3, Dissipative Soliton with Active Brownian motion (intrinsiv velocity with overlaid noise)
+    Simulates the velocity of a dissipative soliton (kind of self organized particle). 
+    The equilibrium velocity without noise R=0 for $\tau>1.0/\kappa_3$ is $\kappa_3 \sqrt{(tau - 1.0/\kappa_3)/Q}. Before the drift-bifurcation $\tau \le 1.0/\kappa_3$ the velocity is zero.
 
     References
     ----------
@@ -34,11 +33,11 @@ class velocity(object):
     >>> v = ds.simulate(20000) # Simulate velocity time series with 20000 time steps being disturbed by Gaussian white noise
     """
 
-    def __init__(self, tau=2.87, kappa_3=0.3, Q=1950.0, R=3e-4, delta_t=0.005):
+    def __init__(self, tau=3.8, kappa_3=0.3, Q=1950.0, R=3e-4, delta_t=0.05, seed=None):
         """
-        :param tau: time-scale constant
+        :param tau: Bifurcation parameter determining the intrinsic velocity of the dissipative soliton, which is zero for tau<=1.0/kappa_3 and np.sqrt(kappa_3**3/Q * (tau - 1.0/kappa_3)) otherwise
         :type tau: float
-        :param kappa_3: Feedback of fast inhibitor
+        :param kappa_3: Inverse bifurcation point. 
         :type kappa_3:
         :param Q: Shape parameter of dissipative soliton
         :type Q: float
@@ -47,8 +46,7 @@ class velocity(object):
         :param delta_t: temporal discretization
         :type delta_t: float
         """
-        # todo: improve description of constants
-        # todo: add start seed
+        # done: add start seed
 
         self.delta_t = delta_t
         self.kappa_3 = kappa_3
@@ -60,6 +58,9 @@ class velocity(object):
         self.c = np.sqrt(self.delta_t) * R
         self.delta_t = self.delta_t
 
+        if not seed is None:
+            np.random.seed(seed)
+            
         if tau <= 1.0 / kappa_3:
             self.deterministic = 0.0
         else:
@@ -69,14 +70,11 @@ class velocity(object):
         """
         returns deterministic dynamic = acceleration (without noise)
 
-        :param v: vector of velocity
-        :rtype v:
-        :return:
-        :return type:
+        :param v: initial velocity vector
+        :rtype v: ndarray
+        :return: velocity vector of next time step
+        :return type: ndarray
         """
-
-        # todo: which type v, array?
-        # todo: descripton of return?
 
         return v * (1.0 + self.a - self.b * np.dot(v, v))
 
@@ -84,14 +82,12 @@ class velocity(object):
         """
 
         :param N: number of time steps
-        :type N:
-        :param v0: initial velocity
-        :return:
-        :rtype:
+        :type N: int
+        :param v0: initial velocity vector 
+        :type v0: ndarray
+        :return: time series of velocity vectors with shape (N, v0.shape[0])
+        :rtype: ndarray
         """
-
-        # todo: fill out docstring
-        # todo: complete parameter description
 
         v = [v0]                        # first value is initial condition
         n = N - 1                       # Because we are returning the initial condition,
@@ -104,36 +100,59 @@ class velocity(object):
         return v_vec
 
 
-def sample_tau(n=10):
+def sample_tau(n=10, kappa_3=0.3, ratio=0.5, rel_increase=0.15):
     """
     Return list of control parameters
 
     :param n: number of samples 
     :type n: int    
+    :param kappa_3: inverse bifurcation point
+    :type kappa_3: float
+    :param ratio: ratio (default 0.5) of samples before and beyond drift-bifurcation
+    :type ratio: float
+    :param rel_increase: relative increase from bifurcation point
+    :type rel_increase: float
+    :return: tau. List of sampled bifurcation parameter
+    :rtype tau: list
     """
-    tau = 2.87 + (3.8 - 2.87) * np.random.rand(n)
+    assert ratio > 0 and ratio <= 1
+    assert kappa_3 > 0
+    assert rel_increase > 0 and rel_increase <= 1
+    tau_c = 1.0/kappa_3
+    
+    tau_max = tau_c * (1.0 + rel_increase)
+    tau = tau_c + (tau_max - tau_c) * (np.random.rand(n)-ratio)
     return tau.tolist()
 
-
-def load_driftbif(n, l, m=2, classification=True):
+def load_driftbif(n, l, m=2, classification=True, kappa_3=0.3, seed=False):
     """
     Simulates n time-series with l time steps each for the m-dimensional velocity of a dissipative soliton
+
+    classification=True:
+    target 0 means tau<=1/0.3, Dissipative Soliton with Brownian motion (purely noise driven)
+    target 1 means tau> 1/0.3, Dissipative Soliton with Active Brownian motion (intrinsiv velocity with overlaid noise)
+
+    classification=False:
+    target is bifurcation parameter tau
 
     :param n: number of samples 
     :type n: int
     :param l: length of the time series
     :type l: int
-    :param m: number of spatial dimensions the dissipative soliton is propagating in
+    :param m: number of spatial dimensions (default m=2) the dissipative soliton is propagating in
     :type m: int
-    :param classification: distinguish between classification and regression target
+    :param classification: distinguish between classification (default True) and regression target
     :type classification: bool
+    :param kappa_3: inverse bifurcation parameter (default 0.3)
+    :type kappa_3: float
+    :param seed: random seed (default False)
+    :type seed: float
     :return: X, y. Time series container and target vector
     :rtype X: pandas.DataFrame
     :rtype y: pandas.DataFrame
     """
 
     # todo: add ratio of classes
-    # todo: add start seed
 
     if m > 2:
         logging.warning("You set the dimension parameter for the dissipative soliton to m={}, however it is only"
@@ -145,10 +164,10 @@ def load_driftbif(n, l, m=2, classification=True):
     labels = list()
     values = list()
 
-    ls_tau = sample_tau(n)
+    ls_tau = sample_tau(n, kappa_3=kappa_3)
 
     for i, tau in enumerate(ls_tau):
-        ds = velocity(tau=tau)
+        ds = velocity(tau=tau, kappa_3=kappa_3, seed=seed)
         if classification:
             labels.append(ds.label)
         else:
