@@ -69,7 +69,7 @@ def select_features(X, y, feature_selection_settings=None):
               It can contain both binary or real-valued features at the same time.
     :type X: pandas.DataFrame
 
-    :param y: Target vector which is needed to test, which features are relevant. Can be binary or real-valued.
+    :param y: Target vector which is needed to test which features are relevant. Can be binary or real-valued.
     :type y: pandas.Series or numpy.ndarray
 
     :param feature_selection_settings: The settings to control the feature selection algorithms. See

@@ -223,7 +223,7 @@ def _extract_features_parallel_per_sample(kind_to_df_map, settings, column_id, c
     # Do this all with a progress bar
     with tqdm(total=total_number_of_expected_results, desc="Feature Extraction", disable=settings.disable_progressbar) as progress_bar:
         # We need some sort of measure, when a new result is there. So we wrap the
-        # map_results into another iterable which updates the progress bar each time,
+        # map_results into another iterable which updates the progress bar each time
         # a new result is there
         def iterable_with_tqdm_update(queue, progress_bar):
             for element in queue:

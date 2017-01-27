@@ -44,7 +44,7 @@ If both `column_value` and `column_kind` are set to ``None``, the  time series d
 DataFrame. This means that each different time series is saved as its own column.
 
 Example: Imagine you record the values of time series x and y for different objects A and B for three different times t1, t2 and
-t3. Now you want to calculate some feature with tsfresh. Your resulting DataFrame have to look like this:
+t3. Now you want to calculate some feature with tsfresh. Your resulting DataFrame has to look like this:
 
 +----+------+----------+----------+
 | id | time | x        | y        |

@@ -28,7 +28,7 @@ There are three general coding paradigms that we believe in:
 
 There are two important copyright guidelines:
 
-    4. Please do include any data sets for which a licence is not available or commercial use is even prohibited. Those
+    4. Please do not include any data sets for which a licence is not available or commercial use is even prohibited. Those
        can undermine the licence of the whole projects.
 
     5. Do not use code snippets for which a licence is not available (e.g. from stackoverflow) or commercial use is
@@ -42,7 +42,7 @@ Further, there are some technical decisions we made:
 Testing setup
 '''''''''''''
 
-After making your changes, you probably want to test your changes locally. To run our comprehensive suit of unit tests
+After making your changes, you probably want to test your changes locally. To run our comprehensive suite of unit tests
 you have to install all the relevant python packages with
 
 

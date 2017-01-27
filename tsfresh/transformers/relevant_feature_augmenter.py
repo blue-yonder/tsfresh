@@ -39,8 +39,8 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
     * Settings for the feature selection: :class:`~tsfresh.feature_selection.settings.FeatureSignificanceTestsSettings`
     * Feature selection: :func:`~tsfresh.feature_selection.feature_selector.check_fs_sig_bh`
 
-    This estimator works quite analogues to the :class:`~tsfresh.transformers.feature_augmenter.FeatureAugmenter` with
-    the difference that this estimator does only output and calculate the relevant features,
+    This estimator works in a similar fashion as the :class:`~tsfresh.transformers.feature_augmenter.FeatureAugmenter` with
+    the difference that this estimator only output and calculate the relevant features,
     whereas the other outputs all features.
 
     Also for this estimator, two datasets play a crucial role:
@@ -193,7 +193,7 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
 
     def transform(self, X):
         """
-        After the fit step, it is known which features are relevant, Only extract those from the time series handed in
+        After the fit step, it is known which features are relevant. Only extract those from the time series handed in
         with the function :func:`~set_timeseries_container`.
 
         If evaluate_only_added_features is False, also delete the irrelevant, already present features in the data frame.
