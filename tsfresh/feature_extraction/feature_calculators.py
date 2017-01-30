@@ -620,9 +620,7 @@ def percentage_of_reoccurring_datapoints_to_all_datapoints(x):
     """
 
     unique, counts = np.unique(x, return_counts=True)
-    counts[counts < 2] = 0
-    counts[counts > 0] = 1
-    return np.sum(counts) / float(counts.shape[0])
+    return np.sum(counts > 1) / float(counts.shape[0])
 
 
 @set_property("fctype", "aggregate")
@@ -665,8 +663,8 @@ def sum_of_reoccurring_values(x):
     """
 
     unique, counts = np.unique(x, return_counts=True)
-    counts[counts < 2] = 0
-    return np.sum(counts * unique)
+    return np.sum(counts > 1)
+
 
 
 @set_property("fctype", "aggregate")
