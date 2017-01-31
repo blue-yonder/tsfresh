@@ -515,7 +515,9 @@ def count_above_mean(x):
     :return type: float
     """
 
-    return sum(x > np.mean(x))
+    x = np.asarray(x)
+    m = np.mean(x)
+    return np.where(x > m)[0].shape[0]
 
 
 @set_property("fctype", "aggregate")
@@ -530,7 +532,9 @@ def count_below_mean(x):
     :return type: float
     """
 
-    return sum(x < np.mean(x))
+    x = np.asarray(x)
+    m = np.mean(x)
+    return np.where(x < m)[0].shape[0]
 
 
 @set_property("fctype", "aggregate")
@@ -614,8 +618,9 @@ def percentage_of_reoccurring_datapoints_to_all_datapoints(x):
     :return: the value of this feature
     :return type: float
     """
-    x = pd.Series(x)
-    return (x.value_counts() > 1).mean()
+
+    unique, counts = np.unique(x, return_counts=True)
+    return np.sum(counts > 1) / float(counts.shape[0])
 
 
 @set_property("fctype", "aggregate")
@@ -656,10 +661,11 @@ def sum_of_reoccurring_values(x):
     :return: the value of this feature
     :return type: float
     """
-    x = pd.Series(x)
-    value_counts = x.value_counts()
-    doubled_values = value_counts[value_counts > 1]
-    return sum(doubled_values.index * doubled_values)
+
+    unique, counts = np.unique(x, return_counts=True)
+    counts[counts < 2] = 0
+    return np.sum(counts * unique)
+
 
 
 @set_property("fctype", "aggregate")
