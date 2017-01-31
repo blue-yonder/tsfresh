@@ -663,7 +663,8 @@ def sum_of_reoccurring_values(x):
     """
 
     unique, counts = np.unique(x, return_counts=True)
-    return np.sum(counts > 1)
+    counts[counts < 2] = 0
+    return np.sum(counts * unique)
 
 
 
