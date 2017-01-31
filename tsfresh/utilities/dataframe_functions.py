@@ -33,7 +33,7 @@ def check_for_nans_in_columns(df, columns=None):
     if pd.isnull(df.loc[:, columns]).any().any():
         if not isinstance(columns, list):
             columns = list(columns)
-        raise ValueError("Columns {} of dataframe must not contain NaN values".format(
+        raise ValueError("Columns {} of DataFrame must not contain NaN values".format(
             df.loc[:, columns].columns[pd.isnull(df.loc[:, columns]).sum() > 0].tolist()))
 
 
