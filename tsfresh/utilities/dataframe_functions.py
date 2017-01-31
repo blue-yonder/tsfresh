@@ -30,9 +30,11 @@ def check_for_nans_in_columns(df, columns=None):
     if columns is None:
         columns = df.columns
 
-    for key in columns:
-        if df[key].isnull().any():
-            raise ValueError("Column {} of dataframe must not contain NaN values".format(key))
+    if pd.isnull(df.loc[:, columns]).any().any():
+        if not isinstance(columns, list):
+            columns = list(columns)
+        raise ValueError("Columns {} of dataframe must not contain NaN values".format(
+            df.loc[:, columns].columns[pd.isnull(df.loc[:, columns]).sum() > 0].tolist()))
 
 
 def impute(df_impute):
