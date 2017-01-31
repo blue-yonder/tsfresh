@@ -96,6 +96,7 @@ def impute_dataframe_range(df_impute, col_to_max, col_to_min, col_to_median):
         * ``NaN`` -> by value in col_to_median
 
     If a column of df_impute is not found in the one of the dictionaries, this method will raise a ValueError.
+    Also, if one of the values to replace is not finite a ValueError is returned
 
     This function modifies `df_impute` in place. Unless the dictionaries contain ``NaNs`` or ``infs``, df_impute is
     guaranteed to not contain any non-finite values.
@@ -112,7 +113,8 @@ def impute_dataframe_range(df_impute, col_to_max, col_to_min, col_to_median):
 
     :return df_impute: imputed DataFrame
     :rtype df_impute: pandas.DataFrame
-    :raise ValueError: if a column of df_impute is missing in col_to_max, col_to_min or col_to_median
+    :raise ValueError: if a column of df_impute is missing in col_to_max, col_to_min or col_to_median or a value
+                       to replace is non finite
     """
     columns = df_impute.columns
 
@@ -122,6 +124,13 @@ def impute_dataframe_range(df_impute, col_to_max, col_to_min, col_to_median):
                     set(col_to_min.keys()) != set(columns):
         ValueError("Some of the dictionaries col_to_median, col_to_max, col_to_min contains more or less keys "
                    "than the column names in df")
+
+    # check if there are non finite values for the replacement
+    if np.any(~np.isfinite(col_to_median.values())) or \
+        np.any(~np.isfinite(col_to_min.values())) or \
+        np.any(~np.isfinite(col_to_max.values())):
+        ValueError("Some of the dictionaries col_to_median, col_to_max, col_to_min contains non finite values to to "
+                   "replace")
 
     # Replacing values
     # +inf -> max
