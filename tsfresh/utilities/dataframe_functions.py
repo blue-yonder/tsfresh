@@ -57,27 +57,7 @@ def impute(df_impute):
     :rtype df_impute: pandas.DataFrame
     """
     col_to_max, col_to_min, col_to_median = get_range_values_per_column(df_impute)
-
-    # +inf -> max
-    columns = df_impute.columns
-    indices = np.nonzero(df_impute.values == np.PINF)
-    if len(indices[0]) > 0:
-        newValues = [ col_to_max[ columns[i] ] for i in indices[1]]
-        df_impute.values[ indices ] = newValues
-
-    # -inf -> min
-    columns = df_impute.columns
-    indices = np.nonzero(df_impute.values == np.NINF)
-    if len(indices[0]) > 0:
-        newValues = [ col_to_min[ columns[i] ] for i in indices[1]]
-        df_impute.values[ indices ] = newValues
-
-    # NaN -> median
-    columns = df_impute.columns
-    indices = np.nonzero(np.isnan(df_impute.values))
-    if len(indices[0]) > 0:
-        newValues = [ col_to_median[ columns[i] ] for i in indices[1]]
-        df_impute.values[ indices ] = newValues
+    df_impute = impute_dataframe_range(df_impute, col_to_max, col_to_min, col_to_median)
 
     # Ensure a type of "np.float64"
     df_impute.astype(np.float64, copy=False)
@@ -104,20 +84,22 @@ def impute_dataframe_zero(df_impute):
     return df_impute
 
 
-def impute_dataframe_range(df_impute, col_to_max=None, col_to_min=None, col_to_median=None):
+def impute_dataframe_range(df_impute, col_to_max, col_to_min, col_to_median):
     """
-    Columnwise replaces all ``NaNs`` and ``infs`` from the DataFrame `df_impute` with average/extreme values from
-    the provided dictionaries. This is done as follows: Each occurring ``inf`` or ``NaN`` in `df_impute` is replaced by
+    Columnwise replaces all ``NaNs``, ``-inf`` and ``+inf`` from the DataFrame `df_impute` with average/extreme values
+    from the provided dictionaries.
 
-        * ``-inf`` -> ``min``
-        * ``+inf`` -> ``max``
-        * ``NaN`` -> ``median``
+    This is done as follows: Each occurring ``inf`` or ``NaN`` in `df_impute` is replaced by
 
-    If a column is not found in the one of the dictionaries, the values are calculated from the columns finite values.
-    If the column does not contain finite values at all, it is filled with zeros.
+        * ``-inf`` -> by value in col_to_min
+        * ``+inf`` -> by value in col_to_max
+        * ``NaN`` -> by value in col_to_median
+
+    If a column of df_impute is not found in the one of the dictionaries, this method will raise a ValueError.
 
     This function modifies `df_impute` in place. Unless the dictionaries contain ``NaNs`` or ``infs``, df_impute is
-    guaranteed to not contain any non-finite values. Also, all columns will be guaranteed to be of type ``np.float64``.
+    guaranteed to not contain any non-finite values.
+    Also, all columns will be guaranteed to be of type ``np.float64``.
 
     :param df_impute: DataFrame to impute
     :type df_impute: pandas.DataFrame
@@ -130,42 +112,37 @@ def impute_dataframe_range(df_impute, col_to_max=None, col_to_min=None, col_to_m
 
     :return df_impute: imputed DataFrame
     :rtype df_impute: pandas.DataFrame
+    :raise ValueError: if a column of df_impute is missing in col_to_max, col_to_min or col_to_median
     """
+    columns = df_impute.columns
 
-    if col_to_median is None:
-        col_to_median = {}
-    if col_to_min is None:
-        col_to_min = {}
-    if col_to_max is None:
-        col_to_max = {}
-    for column_name in df_impute.columns:
-        column = df_impute[column_name]
+    # Making sure col_to_median, col_to_max and col_to_min have entries for every column
+    if set(col_to_median.keys()) != set(columns) or \
+       set(col_to_max.keys()) != set(columns) or \
+       set(col_to_min.keys()) != set(columns):
+        ValueError("Some of the dictionaries col_to_median, col_to_max, col_to_min contains more or less keys "
+                   "than the column names in df")
 
-        # If we do not have all three values (max, min, median) we have to get them
-        if not (column_name in col_to_max and column_name in col_to_median and column_name in col_to_min):
-            finite_values_in_column = column[np.isfinite(column)]
+    # Replacing values
+    # +inf -> max
+    indices = np.nonzero(df_impute.values == np.PINF)
+    if len(indices[0]) > 0:
+        replacement = [col_to_max[columns[i]] for i in indices[1]]
+        df_impute.values[indices] = replacement
 
-            if len(finite_values_in_column) == 0:
-                _logger.warning(
-                    "The replacement column {} did not have any finite values. Filling with zeros.".format(column_name))
-                df_impute[column_name] = [0] * len(column)
-                continue
+    # -inf -> min
+    indices = np.nonzero(df_impute.values == np.NINF)
+    if len(indices[0]) > 0:
+        replacement = [col_to_min[columns[i]] for i in indices[1]]
+        df_impute.values[indices] = replacement
 
-        if column_name not in col_to_max:
-            col_to_max[column_name] = max(finite_values_in_column)
+    # NaN -> median
+    indices = np.nonzero(np.isnan(df_impute.values))
+    if len(indices[0]) > 0:
+        replacement = [col_to_median[columns[i]] for i in indices[1]]
+        df_impute.values[indices] = replacement
 
-        if column_name not in col_to_min:
-            col_to_min[column_name] = min(finite_values_in_column)
-
-        if column_name not in col_to_median:
-            col_to_median[column_name] = np.median(finite_values_in_column)
-
-        # Finally, replace
-        df_impute[column_name] = df_impute[column_name].replace(np.PINF, col_to_max[column_name]). \
-            replace(np.NINF, col_to_min[column_name]). \
-            fillna(col_to_median[column_name]). \
-            astype(np.float64)
-
+    df_impute.astype(np.float64, copy=False)
     return df_impute
 
 
