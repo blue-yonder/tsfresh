@@ -183,20 +183,26 @@ def get_range_values_per_column(df):
     :return: Dictionaries mapping column names to max, min, mean values
     :rtype: (dict, dict, dict)
     """
-    column = df.get_values()
-    masked = np.ma.masked_invalid(column)
-
+    data = df.get_values()
+    masked = np.ma.masked_invalid(data)
     columns = df.columns
 
-        
-    # If a column does not contain finite value, 0 is stored instead.
-    masked.data[:,masked.mask.sum(axis=0) == masked.data.shape[0]] = 0         # Set the values of the columns to 0
-    masked.mask[:,masked.mask.sum(axis=0) == masked.data.shape[0]] = False     # Remove the mask for this column
-    
-    col_to_max     = dict( zip(columns, np.max(masked,axis=0) ) )
-    col_to_min     = dict( zip(columns, np.min(masked,axis=0) ) )
-    col_to_median  = dict( zip(columns, np.ma.median(masked,axis=0) ) )
-        
+    is_col_non_finite = masked.mask.sum(axis=0) == masked.data.shape[0]
+
+    if np.any(is_col_non_finite):
+
+        # We have columns that does not contain any finite value at all, so we will store 0 instead.
+        _logger.warning("The columns {} did not have any finite values. Filling with zeros.".format(
+            df.iloc[:, np.where(is_col_non_finite)[0]].columns.values))
+
+        masked.data[:, is_col_non_finite] = 0         # Set the values of the columns to 0
+        masked.mask[:, is_col_non_finite] = False     # Remove the mask for this column
+
+    # fetch max, min and median for all columns
+    col_to_max = dict(zip(columns, np.max(masked, axis=0)))
+    col_to_min = dict(zip(columns, np.min(masked, axis=0)))
+    col_to_median = dict(zip(columns, np.ma.median(masked, axis=0)))
+
     return col_to_max, col_to_min, col_to_median
 
 
