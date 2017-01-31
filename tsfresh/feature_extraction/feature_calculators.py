@@ -661,9 +661,9 @@ def sum_of_reoccurring_values(x):
     :return: the value of this feature
     :return type: float
     """
-
     unique, counts = np.unique(x, return_counts=True)
     counts[counts < 2] = 0
+    counts[counts > 1] = 1
     return np.sum(counts * unique)
 
 
