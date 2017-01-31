@@ -10,7 +10,6 @@ import numpy as np
 import pandas as pd
 import logging
 
-
 _logger = logging.getLogger(__name__)
 
 
@@ -53,8 +52,9 @@ def impute(df_impute):
 
     :param df_impute: DataFrame to impute
     :type df_impute: pandas.DataFrame
-    :return: df_impute: imputed DataFrame
-    :rtype: df_impute: pandas.DataFrame
+
+    :return df_impute: imputed DataFrame
+    :rtype df_impute: pandas.DataFrame
     """
     col_to_max, col_to_min, col_to_median = get_range_values_per_column(df_impute)
 
@@ -91,8 +91,9 @@ def impute_dataframe_zero(df_impute):
 
     :param df_impute: DataFrame to impute
     :type df_impute: pandas.DataFrame
-    :return: df_impute: imputed DataFrame
-    :rtype: df_impute: pandas.DataFrame
+
+    :return df_impute: imputed DataFrame
+    :rtype df_impute: pandas.DataFrame
     """
 
     df_impute.replace([np.PINF, np.NINF], 0, inplace=True)
@@ -126,6 +127,9 @@ def impute_dataframe_range(df_impute, col_to_max=None, col_to_min=None, col_to_m
     :type col_to_max: dict
     :param col_to_median: Dictionary mapping column names to median values
     :type col_to_max: dict
+
+    :return df_impute: imputed DataFrame
+    :rtype df_impute: pandas.DataFrame
     """
 
     if col_to_median is None:
@@ -164,17 +168,21 @@ def impute_dataframe_range(df_impute, col_to_max=None, col_to_min=None, col_to_m
 
     return df_impute
 
+
 def get_range_values_per_column(df):
     """
     Retrieves the finite max, min and mean values per column in `df` and stores them in three dictionaries, each mapping
     from column name to value. If a column does not contain finite value, 0 is stored instead.
 
-    :param df: ``Dataframe``
+    :param df: the Dataframe to get columnswise max, min and median from
+    :type df: pandas.DataFrame
+
     :return: Dictionaries mapping column names to max, min, mean values
+    :rtype: (dict, dict, dict)
     """
     column = df.get_values()
     masked = np.ma.masked_invalid(column)
-    
+
     columns = df.columns
 
         
@@ -200,8 +208,9 @@ def restrict_input_to_index(df_or_dict, column_id, index):
     :type column_id: basestring
     :param index: Index containing the ids
     :type index: Iterable or pandas.Series
-    :return: the restricted df_or_dict
-    :rtype: dict or pandas.DataFrame
+
+    :return df_or_dict_restricted: the restricted df_or_dict
+    :rtype df_or_dict_restricted: dict or pandas.DataFrame
     :raise: ``TypeError`` if df_or_dict is not of type dict or pandas.DataFrame
     """
     if isinstance(df_or_dict, pd.DataFrame):
@@ -248,6 +257,7 @@ def normalize_input_to_internal_representation(df_or_dict, column_id, column_sor
         DataFrames in the dictionaries). If it is None, it is assumed that there is only a single remaining column
         in the DataFrame(s) (otherwise an exception is raised).
     :type column_value: basestring or None
+
     :return: A tuple of 3 elements: the normalized DataFrame as a dictionary mapping from the kind (as a string) to the
              corresponding DataFrame, the name of the id column and the name of the value column
     :rtype: (dict, basestring, basestring)
