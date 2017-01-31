@@ -118,8 +118,8 @@ def impute_dataframe_range(df_impute, col_to_max, col_to_min, col_to_median):
 
     # Making sure col_to_median, col_to_max and col_to_min have entries for every column
     if set(col_to_median.keys()) != set(columns) or \
-       set(col_to_max.keys()) != set(columns) or \
-       set(col_to_min.keys()) != set(columns):
+                    set(col_to_max.keys()) != set(columns) or \
+                    set(col_to_min.keys()) != set(columns):
         ValueError("Some of the dictionaries col_to_median, col_to_max, col_to_min contains more or less keys "
                    "than the column names in df")
 
@@ -167,13 +167,12 @@ def get_range_values_per_column(df):
     is_col_non_finite = masked.mask.sum(axis=0) == masked.data.shape[0]
 
     if np.any(is_col_non_finite):
-
         # We have columns that does not contain any finite value at all, so we will store 0 instead.
         _logger.warning("The columns {} did not have any finite values. Filling with zeros.".format(
             df.iloc[:, np.where(is_col_non_finite)[0]].columns.values))
 
-        masked.data[:, is_col_non_finite] = 0         # Set the values of the columns to 0
-        masked.mask[:, is_col_non_finite] = False     # Remove the mask for this column
+        masked.data[:, is_col_non_finite] = 0  # Set the values of the columns to 0
+        masked.mask[:, is_col_non_finite] = False  # Remove the mask for this column
 
     # fetch max, min and median for all columns
     col_to_max = dict(zip(columns, np.max(masked, axis=0)))
@@ -203,7 +202,7 @@ def restrict_input_to_index(df_or_dict, column_id, index):
         df_or_dict_restricted = df_or_dict[df_or_dict[column_id].isin(index)]
     elif isinstance(df_or_dict, dict):
         df_or_dict_restricted = {kind: df[df[column_id].isin(index)]
-                                  for kind, df in df_or_dict.items()}
+                                 for kind, df in df_or_dict.items()}
     else:
         raise TypeError("df_or_dict should be of type dict or pandas.DataFrame")
 
@@ -256,7 +255,8 @@ def normalize_input_to_internal_representation(df_or_dict, column_id, column_sor
         kind_to_df_map = {key: df.copy() for key, df in df_or_dict.items()}
     else:
         if column_kind is not None:
-            kind_to_df_map = {key: group.copy().drop(column_kind, axis=1) for key, group in df_or_dict.groupby(column_kind)}
+            kind_to_df_map = {key: group.copy().drop(column_kind, axis=1) for key, group in
+                              df_or_dict.groupby(column_kind)}
         else:
             if column_value is not None:
                 kind_to_df_map = {column_value: df_or_dict.copy()}
@@ -265,7 +265,7 @@ def normalize_input_to_internal_representation(df_or_dict, column_id, column_sor
                 kind_to_df_map = {key: df_or_dict[[key] + id_and_sort_column].copy().rename(columns={key: "_value"})
                                   for key in df_or_dict.columns if key not in id_and_sort_column}
 
-                #todo: is this the right check?
+                # todo: is this the right check?
                 if len(kind_to_df_map) < 1:
                     raise ValueError("You passed in a dataframe without a value column.")
                 column_value = "_value"
@@ -305,11 +305,12 @@ def normalize_input_to_internal_representation(df_or_dict, column_id, column_sor
 
         for kind in kind_to_df_map:
             if not column_value in kind_to_df_map[kind].columns:
-                raise ValueError("You did not pass a column_value and there is not a single candidate in all data frames.")
+                raise ValueError(
+                    "You did not pass a column_value and there is not a single candidate in all data frames.")
 
     # Require no NaNs in value columns
     for kind in kind_to_df_map:
         if kind_to_df_map[kind][column_value].isnull().any():
-                raise ValueError("You have NaN values in your value column.")
+            raise ValueError("You have NaN values in your value column.")
 
     return kind_to_df_map, column_id, column_value
