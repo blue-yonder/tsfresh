@@ -98,6 +98,7 @@ def impute_dataframe_range(df_impute, col_to_max, col_to_min, col_to_median):
     If a column of df_impute is not found in the one of the dictionaries, this method will raise a ValueError.
     Also, if one of the values to replace is not finite a ValueError is returned
 
+
     This function modifies `df_impute` in place. Unless the dictionaries contain ``NaNs`` or ``infs``, df_impute is
     guaranteed to not contain any non-finite values.
     Also, all columns will be guaranteed to be of type ``np.float64``.
@@ -241,7 +242,7 @@ def normalize_input_to_internal_representation(df_or_dict, column_id, column_sor
     :type column_sort: basestring or None
     :param column_kind: It can only be used when passing a pandas DataFrame (the dictionary is already assumed to be
         grouped by the kind). Is must be present in the DataFrame and no NaN values are allowed. The DataFrame
-        will be grouped by the values in the kind column and each grouped will be one entry in the resulting
+        will be grouped by the values in the kind column and each group will be one entry in the resulting
         mapping.
         If the kind column is not passed, it is assumed that each column in the pandas DataFrame (except the id or
         sort column) is a possible kind and the DataFrame is split up into as many DataFrames as there are columns.
@@ -260,7 +261,7 @@ def normalize_input_to_internal_representation(df_or_dict, column_id, column_sor
     """
     if isinstance(df_or_dict, dict):
         if column_kind is not None:
-            raise ValueError("You passed in a dictionary and gave a column name for the kind. Both is not possible.")
+            raise ValueError("You passed in a dictionary and gave a column name for the kind. Both are not possible.")
         kind_to_df_map = {key: df.copy() for key, df in df_or_dict.items()}
     else:
         if column_kind is not None:

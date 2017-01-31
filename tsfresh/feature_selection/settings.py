@@ -12,7 +12,7 @@ class FeatureSignificanceTestsSettings(object):
     The settings object for controlling the feature significance tests.
     Normally, you do not have to handle these settings on your own, as the chosen defaults are quite sensible.
 
-    This object is passed to mostly all functions in the feature_selection submodules.
+    This object is passed to most functions in the feature_selection submodules.
 
     If you want non-default settings, create a new settings object and pass it to the functions, for example if you
     want a less conservative selection of features you could increase the fdr level to 10%.

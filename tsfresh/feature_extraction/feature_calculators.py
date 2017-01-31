@@ -49,9 +49,9 @@ def _get_length_sequences_where(x):
     >>> _get_length_sequences_where(x)
     >>> [1, 3, 1, 2]
 
-    :param x: A iterable containing only 1, True, 0 and False values
+    :param x: An iterable containing only 1, True, 0 and False values
     :return: A list with the length of all sub-sequences where the array is either True or False. If no ones or Trues
-    contained, a the list [0] is returned.
+    contained, the list [0] is returned.
     """
     if len(x) == 0:
         return [0]
@@ -95,7 +95,7 @@ def set_property(key, value):
 def variance_larger_than_standard_deviation(x):
     """
     Boolean variable denoting if the variance of x is greater than its standard deviation. Is equal to variance of x
-    being larger than 1.
+    being larger than 1
 
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
@@ -109,13 +109,13 @@ def variance_larger_than_standard_deviation(x):
 @not_apply_to_raw_numbers
 def large_standard_deviation(x, r):
     """
-    Boolean variable denoting if the variance of x is higher than half of the range, calculated as the half the
-    difference between max and min of x.
+    Boolean variable denoting if the standard dev of x is higher
+    than 'r' times the range = difference between max and min of x.
     Hence it checks if
 
     .. math::
 
-        | std(x) | > r * (max(X)-min(X))
+        std(x) > r * (max(X)-min(X))
 
     According to a rule of the thumb, the standard deviation should be a forth of the range of the values.
 
@@ -247,7 +247,7 @@ def mean_autocorrelation(x):
         return 0
     else:
         r = np.correlate(x - np.mean(x), x - np.mean(x), mode='full')
-        r = r[0: (n-1)] / np.arange(n-1, 0, -1)
+        r = r[0: (n - 1)] / np.arange(n - 1, 0, -1)
         return np.nanmean(r / var)
 
 
@@ -255,7 +255,7 @@ def mean_autocorrelation(x):
 @not_apply_to_raw_numbers
 def augmented_dickey_fuller(x):
     """
-    The Augmented Dickey-Fuller is a hypothesis test which checks whether a unit root is present in a time
+    The Augmented Dickey-Fuller test is a hypothesis test which checks whether a unit root is present in a time
     series sample. This feature calculator returns the value of the respective test statistic.
 
     See the statsmodels implementation for references and more details.
@@ -334,7 +334,7 @@ def mean_change(x):
 @not_apply_to_raw_numbers
 def mean_second_derivate_central(x):
     """
-    Returns the mean value of an central approximation of the second derivate
+    Returns the mean value of a central approximation of the second derivative
 
     .. math::
 
@@ -477,7 +477,7 @@ def absolute_sum_of_changes(x):
 @not_apply_to_raw_numbers
 def longest_strike_below_mean(x):
     """
-    Returns the length of the longest consecutive subsequence that in x that is smaller than the mean of x
+    Returns the length of the longest consecutive subsequence in x that is smaller than the mean of x
 
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
@@ -492,7 +492,7 @@ def longest_strike_below_mean(x):
 @not_apply_to_raw_numbers
 def longest_strike_above_mean(x):
     """
-    Returns the length of the longest consecutive subsequence that in x that is bigger than the mean of x
+    Returns the length of the longest consecutive subsequence in x that is bigger than the mean of x
 
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
@@ -515,7 +515,9 @@ def count_above_mean(x):
     :return type: float
     """
 
-    return sum(x > np.mean(x))
+    x = np.asarray(x)
+    m = np.mean(x)
+    return np.where(x > m)[0].shape[0]
 
 
 @set_property("fctype", "aggregate")
@@ -530,14 +532,17 @@ def count_below_mean(x):
     :return type: float
     """
 
-    return sum(x < np.mean(x))
+    x = np.asarray(x)
+    m = np.mean(x)
+    return np.where(x < m)[0].shape[0]
 
 
 @set_property("fctype", "aggregate")
 @not_apply_to_raw_numbers
 def last_location_of_maximum(x):
     """
-    Returns the relative last location of the maximum value of x. The position is calculated relatively to the length of x.
+    Returns the relative last location of the maximum value of x.
+    The position is calculated relatively to the length of x.
 
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
@@ -552,7 +557,8 @@ def last_location_of_maximum(x):
 @not_apply_to_raw_numbers
 def first_location_of_maximum(x):
     """
-    Returns the first location of the maximum value of x. The position is calculated relatively to the length of x.
+    Returns the first location of the maximum value of x.
+    The position is calculated relatively to the length of x.
 
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
@@ -567,7 +573,8 @@ def first_location_of_maximum(x):
 @not_apply_to_raw_numbers
 def last_location_of_minimum(x):
     """
-    Returns the last location of the minimal value of x. The position is calculated relatively to the length of x.
+    Returns the last location of the minimal value of x.
+    The position is calculated relatively to the length of x.
 
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
@@ -582,7 +589,8 @@ def last_location_of_minimum(x):
 @not_apply_to_raw_numbers
 def first_location_of_minimum(x):
     """
-    Returns the first location of the minimal value of x. The position is calculated relatively to the length of x.
+    Returns the first location of the minimal value of x.
+    The position is calculated relatively to the length of x.
 
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
@@ -610,8 +618,9 @@ def percentage_of_reoccurring_datapoints_to_all_datapoints(x):
     :return: the value of this feature
     :return type: float
     """
-    x = pd.Series(x)
-    return (x.value_counts() > 1).mean()
+
+    unique, counts = np.unique(x, return_counts=True)
+    return np.sum(counts > 1) / float(counts.shape[0])
 
 
 @set_property("fctype", "aggregate")
@@ -652,18 +661,20 @@ def sum_of_reoccurring_values(x):
     :return: the value of this feature
     :return type: float
     """
-    x = pd.Series(x)
-    value_counts = x.value_counts()
-    doubled_values = value_counts[value_counts > 1]
-    return sum(doubled_values.index * doubled_values)
+
+    unique, counts = np.unique(x, return_counts=True)
+    counts[counts < 2] = 0
+    return np.sum(counts * unique)
+
 
 
 @set_property("fctype", "aggregate")
 @not_apply_to_raw_numbers
 def ratio_value_number_to_time_series_length(x):
     """
-    Returns a factor which is 1 if all values in the time series occur only once, and below one if this is not the
-    case. In principle, it just returns
+    Returns a factor which is 1 if all values in the time series occur only once,
+    and below one if this is not the case.
+    In principle, it just returns
 
         # unique values / # values
 
@@ -685,7 +696,6 @@ def fft_coefficient(x, c, param):
     """
     Calculates the fourier coefficients of the one-dimensional discrete Fourier Transform for real input by fast
     fourier transformation algorithm
-
 
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
@@ -821,7 +831,7 @@ def cwt_coefficients(x, c, param):
 
     for widths in df_cfg["widths"].unique():
 
-        # the calculated_cwt will shape (len(widths), len(x)).
+        # the calculated_cwt with shape (len(widths), len(x)).
         calculated_cwt = cwt(x, ricker, widths)
 
         for w in df_cfg[df_cfg["widths"] == widths]["w"].unique():
@@ -833,7 +843,7 @@ def cwt_coefficients(x, c, param):
             i = widths.index(w)
 
             if calculated_cwt.shape[1] <= max(coeff):
-                # The calculated cwt is not width enough, at least one coefficient would cause Index Error
+                # The calculated cwt is not wide enough, at least one coefficient would cause Index Error
                 res_tmp = []
 
                 for j in coeff:
@@ -856,7 +866,7 @@ def cwt_coefficients(x, c, param):
 def spkt_welch_density(x, c, param):
     """
     This feature calculator estimates the cross power spectral density of the time series x at different frequencies.
-    To do so, first the time series is shifted from the time domain to the frequency domain.
+    To do so, the time series is first shifted from the time domain to the frequency domain.
 
     The feature calculators returns the power spectrum of the different frequencies.
 
@@ -891,8 +901,9 @@ def spkt_welch_density(x, c, param):
 @not_apply_to_raw_numbers
 def ar_coefficient(x, c, param):
     """
-    This feature calculator fit the unconditional maximum likelihood of an autoregressive AR(k) process. The k parameter
-    is the maximum lag of the process
+    This feature calculator fits the unconditional maximum likelihood
+    of an autoregressive AR(k) process.
+    The k parameter is the maximum lag of the process
 
     .. math::
 
@@ -992,7 +1003,7 @@ def time_reversal_asymmetry_statistic(x, lag):
 
         \\mathbb{E}[L^2(X)^2 \cdot L(X) - L(X) \cdot X^2]
 
-    where :math:`\\mathbb{E}` is the mean and :math:`L` is the lag operator. It was proposed as a proposed in [1] as a
+    where :math:`\\mathbb{E}` is the mean and :math:`L` is the lag operator. It was proposed in [1] as a
     promising feature to extract from time series.
 
     References
@@ -1024,7 +1035,8 @@ def time_reversal_asymmetry_statistic(x, lag):
 @not_apply_to_raw_numbers
 def binned_entropy(x, max_bins):
     """
-    First bins the values of x into max_bins equidistant bins. Then calculates the value of
+    First bins the values of x into max_bins equidistant bins.
+    Then calculates the value of
 
     .. math::
 
@@ -1122,7 +1134,7 @@ def autocorrelation(x, lag):
 @not_apply_to_raw_numbers
 def quantile(x, q):
     """
-    Calculates the q quantile of x. This is the value of x such that q% of the ordere values from x are lower than.
+    Calculates the q quantile of x. This is the value of x greater than q% of the ordered values from x.
 
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
