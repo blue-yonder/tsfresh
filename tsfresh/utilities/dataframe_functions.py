@@ -86,9 +86,8 @@ def impute(df_impute):
 
 def impute_dataframe_zero(df_impute):
     """
-    Replaces all ``NaNs`` and ``infs`` from the DataFrame `df_impute` with 0s.
-
-    `df_impute` will be modified in place. All its columns will be of datatype ``np.float64``.
+    Replaces all ``NaNs``, ``-infs`` and ``+infs`` from the DataFrame `df_impute` with 0s.
+    The `df_impute` will be modified in place. All its columns will be into converted into dtype ``np.float64``.
 
     :param df_impute: DataFrame to impute
     :type df_impute: pandas.DataFrame
