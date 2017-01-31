@@ -228,12 +228,11 @@ class ImputeTestCase(TestCase):
         self.assertEqual(list(df.value_c), [1, -3, -3, 3])
 
     def test_impute_range(self):
-
         def get_df():
             return pd.DataFrame(np.transpose([[0, 1, 2, np.NaN],
-                                            [1, np.PINF, 2, 3],
-                                            [1, -3, np.NINF, 3]]),
-                              columns=["value_a", "value_b", "value_c"])
+                                              [1, np.PINF, 2, 3],
+                                              [1, -3, np.NINF, 3]]),
+                                columns=["value_a", "value_b", "value_c"])
 
         # check if values are replaced correctly
         df = get_df()
@@ -261,12 +260,11 @@ class ImputeTestCase(TestCase):
         self.assertRaises(ValueError, dataframe_functions.impute_dataframe_range,
                           df, col_to_max, col_to_min, col_to_median)
 
-        # check for error if column key is too much
+        # check for no error if column key is too much
         col_to_max = {"value_a": 200, "value_b": 200, "value_c": 200}
         col_to_min = {"value_a": -134, "value_b": -134, "value_c": -134}
         col_to_median = {"value_a": 55, "value_b": 55, "value_c": 55, "value_d": 55}
-        self.assertRaises(ValueError, dataframe_functions.impute_dataframe_range,
-                          df, col_to_max, col_to_min, col_to_median)
+        dataframe_functions.impute_dataframe_range(df, col_to_max, col_to_min, col_to_median)
 
         # check for error if replacement value is not finite
         df = get_df()
@@ -288,7 +286,6 @@ class ImputeTestCase(TestCase):
         col_to_median = {"value_a": 55, "value_b": 55, "value_c": np.PINF}
         self.assertRaises(ValueError, dataframe_functions.impute_dataframe_range,
                           df, col_to_max, col_to_min, col_to_median)
-
 
 
 class RestrictTestCase(TestCase):
