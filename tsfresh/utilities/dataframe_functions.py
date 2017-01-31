@@ -127,9 +127,9 @@ def impute_dataframe_range(df_impute, col_to_max, col_to_min, col_to_median):
                          "than the column names in df")
 
     # check if there are non finite values for the replacement
-    if np.any(~np.isfinite(col_to_median.values())) or \
-            np.any(~np.isfinite(col_to_min.values())) or \
-            np.any(~np.isfinite(col_to_max.values())):
+    if np.any(~np.isfinite([col_to_median.values()])) or \
+            np.any(~np.isfinite([col_to_min.values()])) or \
+            np.any(~np.isfinite([col_to_max.values()])):
         raise ValueError("Some of the dictionaries col_to_median, col_to_max, col_to_min contains non finite values "
                          "to to replace")
 
