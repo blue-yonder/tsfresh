@@ -92,10 +92,16 @@ def impute_dataframe_zero(df_impute):
 
     :param df_impute: DataFrame to impute
     :type df_impute: pandas.DataFrame
+    :return: df_impute: imputed DataFrame
+    :rtype: df_impute: pandas.DataFrame
     """
 
     df_impute.replace([np.PINF, np.NINF], 0, inplace=True)
     df_impute.fillna(0, inplace=True)
+
+    # Ensure a type of "np.float64"
+    df_impute.astype(np.float64, copy=False)
+    return df_impute
 
 
 def impute_dataframe_range(df_impute, col_to_max=None, col_to_min=None, col_to_median=None):
