@@ -9,8 +9,8 @@ from tsfresh.utilities import dataframe_functions
 import numpy as np
 import six
 
-class NormalizeTestCase(TestCase):
 
+class NormalizeTestCase(TestCase):
     def test_with_dictionaries_one_row(self):
         test_df = pd.DataFrame([{"value": 1, "id": "id_1"}])
         test_dict = {"a": test_df, "b": test_df}
@@ -32,7 +32,7 @@ class NormalizeTestCase(TestCase):
         self.assertEqual(result_dict["a"].iloc[0].to_dict(), {"value": 1, "id": "id_1"})
 
         # The algo should choose the correct value column
-        result_dict, column_id, column_value =\
+        result_dict, column_id, column_value = \
             dataframe_functions.normalize_input_to_internal_representation(test_dict, "id", None, None, None)
         self.assertEqual(column_value, "value")
         self.assertEqual(column_id, "id")
@@ -82,7 +82,6 @@ class NormalizeTestCase(TestCase):
         self.assertEqual(column_id, "id")
 
     def test_with_df(self):
-
         # give everyting
         test_df = pd.DataFrame([{"id": 0, "kind": "a", "value": 3, "sort": 1}])
         result_dict, column_id, column_value = \
@@ -176,9 +175,11 @@ class CheckForNanTestCase(TestCase):
         self.assertRaises(ValueError, dataframe_functions.check_for_nans_in_columns, test_df)
         self.assertRaises(ValueError, dataframe_functions.check_for_nans_in_columns, test_df, ["a", "b"])
         self.assertRaises(ValueError, dataframe_functions.check_for_nans_in_columns, test_df, ["b"])
+        self.assertRaises(ValueError, dataframe_functions.check_for_nans_in_columns, test_df, "b")
         self.assertRaises(ValueError, dataframe_functions.check_for_nans_in_columns, test_df, ["c", "b"])
 
         dataframe_functions.check_for_nans_in_columns(test_df, columns=["a", "c"])
+        dataframe_functions.check_for_nans_in_columns(test_df, columns="a")
 
 
 class ImputeTestCase(TestCase):
