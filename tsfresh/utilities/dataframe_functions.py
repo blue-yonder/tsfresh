@@ -48,13 +48,13 @@ def impute(df_impute):
 
     If the column does not contain finite values at all, it is filled with zeros.
 
-    This function modifies `df_impute` in place. After that, df_impute is
-    guaranteed to not contain any non-finite values. Also, all columns will be guaranteed to be of type ``np.float64``.
+    This function modifies `df_impute` in place. After that, df_impute is guaranteed to not contain any non-finite
+    values. Also, all columns will be guaranteed to be of type ``np.float64``.
 
     :param df_impute: DataFrame to impute
     :type df_impute: pandas.DataFrame
-    :return: None
-    :rtype: None
+    :return: df_impute: imputed DataFrame
+    :rtype: df_impute: pandas.DataFrame
     """
     col_to_max, col_to_min, col_to_median = get_range_values_per_column(df_impute)
 
@@ -80,7 +80,8 @@ def impute(df_impute):
         df_impute.values[ indices ] = newValues
 
     # Ensure a type of "np.float64"
-    df_impute.astype(np.float64,copy=False)
+    df_impute.astype(np.float64, copy=False)
+    return df_impute
 
 
 def impute_dataframe_zero(df_impute):
