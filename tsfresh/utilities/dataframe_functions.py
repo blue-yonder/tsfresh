@@ -171,8 +171,11 @@ def impute_dataframe_range(df_impute, col_to_max=None, col_to_min=None, col_to_m
 
 def get_range_values_per_column(df):
     """
-    Retrieves the finite max, min and mean values per column in `df` and stores them in three dictionaries, each mapping
-    from column name to value. If a column does not contain finite value, 0 is stored instead.
+    Retrieves the finite max, min and mean values per column in the DataFrame `df` and stores them in three
+    dictionaries. Those dictionaries `col_to_max`, `col_to_min`, `col_to_median` map the columnname to the maximal,
+    minimal or median value of that column.
+
+    If a column does not contain any finite values at all, a 0 is stored instead.
 
     :param df: the Dataframe to get columnswise max, min and median from
     :type df: pandas.DataFrame
