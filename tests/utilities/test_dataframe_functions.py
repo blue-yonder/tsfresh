@@ -200,23 +200,6 @@ class ImputeTestCase(TestCase):
         dataframe_functions.impute_dataframe_zero(df)
         self.assertEqual(list(df.value), [0, 0, 0, 1])
 
-    def test_get_range_values(self):
-        df = pd.DataFrame([0, 1, 2, 3, np.NaN], columns=["value"])
-
-        col_to_max, col_to_min, col_to_median = dataframe_functions.get_range_values_per_column(df)
-
-        self.assertEqual(col_to_max, {"value": 3})
-        self.assertEqual(col_to_min, {"value": 0})
-        self.assertEqual(col_to_median, {"value": 1.5})
-
-        df = pd.DataFrame([np.NaN, np.NaN], columns=["value"])
-
-        col_to_max, col_to_min, col_to_median = dataframe_functions.get_range_values_per_column(df)
-
-        self.assertEqual(col_to_max, {"value": 0})
-        self.assertEqual(col_to_min, {"value": 0})
-        self.assertEqual(col_to_median, {"value": 0})
-
     def test_toplevel_impute(self):
         df = pd.DataFrame(np.transpose([[0, 1, 2, np.NaN], [1, np.PINF, 2, 3], [1, -3, np.NINF, 3]]),
                           columns=["value_a", "value_b", "value_c"])
@@ -308,3 +291,41 @@ class RestrictTestCase(TestCase):
         kind_to_df_restricted2 = dataframe_functions.restrict_input_to_index(kind_to_df, 'id', [1, 2, 3, 4, 5])
         self.assertTrue(kind_to_df_restricted2['a'].equals(kind_to_df['a']))
         self.assertTrue(kind_to_df_restricted2['b'].equals(kind_to_df['b']))
+
+
+class GetRangeValuesPerColumnTestCase(TestCase):
+    def test_ignores_non_finite_values(self):
+        df = pd.DataFrame([0, 1, 2, 3, np.NaN, np.PINF, np.NINF], columns=["value"])
+
+        col_to_max, col_to_min, col_to_median = dataframe_functions.get_range_values_per_column(df)
+
+        self.assertEqual(col_to_max, {"value": 3})
+        self.assertEqual(col_to_min, {"value": 0})
+        self.assertEqual(col_to_median, {"value": 1.5})
+
+    def test_range_values_correct_with_even_length(self):
+        df = pd.DataFrame([0, 1, 2, 3], columns=["value"])
+
+        col_to_max, col_to_min, col_to_median = dataframe_functions.get_range_values_per_column(df)
+
+        self.assertEqual(col_to_max, {"value": 3})
+        self.assertEqual(col_to_min, {"value": 0})
+        self.assertEqual(col_to_median, {"value": 1.5})
+
+    def test_range_values_correct_with_uneven_length(self):
+        df = pd.DataFrame([0, 1, 2], columns=["value"])
+
+        col_to_max, col_to_min, col_to_median = dataframe_functions.get_range_values_per_column(df)
+
+        self.assertEqual(col_to_max, {"value": 2})
+        self.assertEqual(col_to_min, {"value": 0})
+        self.assertEqual(col_to_median, {"value": 1})
+
+    def test_no_finite_values_yields_0(self):
+        df = pd.DataFrame([np.NaN, np.PINF, np.NINF], columns=["value"])
+
+        col_to_max, col_to_min, col_to_median = dataframe_functions.get_range_values_per_column(df)
+
+        self.assertEqual(col_to_max, {"value": 0})
+        self.assertEqual(col_to_min, {"value": 0})
+        self.assertEqual(col_to_median, {"value": 0})
