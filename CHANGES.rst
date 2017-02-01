@@ -4,6 +4,15 @@ Changelog
 
 tsfresh uses `Semantic Versioning <http://semver.org/>`_
 
+Version 0.5.0
+=============
+
+- new example: driftbif simulation
+- further improvements of the parallelization
+- language improvements in the documentation
+- performance improvements for some features
+- performance improvements for the impute function
+- new feature and feature renaming: sum_of_recurring_values, sum_of_recurring_data_points
 
 Version 0.4.0
 =============
