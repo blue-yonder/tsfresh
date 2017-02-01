@@ -661,11 +661,27 @@ def sum_of_reoccurring_values(x):
     :return: the value of this feature
     :return type: float
     """
+    unique, counts = np.unique(x, return_counts=True)
+    counts[counts < 2] = 0
+    counts[counts > 1] = 1
+    return np.sum(counts * unique)
 
+
+@set_property("fctype", "aggregate")
+@not_apply_to_raw_numbers
+def sum_of_reoccurring_data_points(x):
+    """
+    Returns the sum of all data points, that are present in the time series
+    more than once.
+
+    :param x: the time series to calculate the feature of
+    :type x: pandas.Series
+    :return: the value of this feature
+    :return type: float
+    """
     unique, counts = np.unique(x, return_counts=True)
     counts[counts < 2] = 0
     return np.sum(counts * unique)
-
 
 
 @set_property("fctype", "aggregate")
