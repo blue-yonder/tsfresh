@@ -227,14 +227,6 @@ class ImputeTestCase(TestCase):
         self.assertEqual(list(df.value_b), [1, 200, 2, 3])
         self.assertEqual(list(df.value_c), [1, -3, -134, 3])
 
-        # now check interplay with get_range_values_per_column
-        df = get_df()
-        col_to_max, col_to_min, col_to_median = dataframe_functions.get_range_values_per_column(df)
-        dataframe_functions.impute_dataframe_range(df, col_to_max, col_to_min, col_to_median)
-        self.assertEqual(list(df.value_a), [0, 1, 2, 1])
-        self.assertEqual(list(df.value_b), [1, 3, 2, 3])
-        self.assertEqual(list(df.value_c), [1, -3, -3, 3])
-
         # check for error if column key is missing
         df = get_df()
         col_to_max = {"value_a": 200, "value_b": 200, "value_c": 200}
