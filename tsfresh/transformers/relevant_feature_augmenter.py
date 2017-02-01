@@ -8,7 +8,7 @@ from functools import partial
 from tsfresh.feature_extraction.settings import FeatureExtractionSettings
 from tsfresh.transformers.feature_augmenter import FeatureAugmenter
 from tsfresh.transformers.feature_selector import FeatureSelector
-from tsfresh.utilities.dataframe_functions import impute_dataframe_range, get_range_values_per_column
+from tsfresh.utilities.dataframe_functions import impute, get_range_values_per_column, impute_dataframe_range
 
 
 # TODO: Add more testcases
@@ -88,6 +88,7 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
     :class:`~tsfresh.feature_selection.settings.FeatureSignificanceTestsSettings`. However, the default settings which
     are used if you pass no objects are often quite sensible.
     """
+
     def __init__(self,
                  evaluate_only_added_features=True,
                  feature_selection_settings=None,
@@ -121,17 +122,14 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
         # We require to have IMPUTE!
         if feature_extraction_settings is None:
             feature_extraction_settings = FeatureExtractionSettings()
-
-        # Range will be our default imputation strategy
-        feature_extraction_settings.IMPUTE = impute_dataframe_range
+            # Range will be our default imputation strategy
+            feature_extraction_settings.IMPUTE = impute
 
         self.feature_extractor = FeatureAugmenter(feature_extraction_settings,
                                                   column_id, column_sort, column_kind, column_value)
-
         self.feature_selector = FeatureSelector(feature_selection_settings)
 
         self.evaluate_only_added_features = evaluate_only_added_features
-
         self.timeseries_container = timeseries_container
 
     def set_timeseries_container(self, timeseries_container):
@@ -181,11 +179,12 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
             X_tmp = pd.DataFrame(index=X.index)
         else:
             X_tmp = X
-
         X_augmented = self.feature_extractor.transform(X_tmp)
 
-        if self.feature_extractor.settings.IMPUTE is impute_dataframe_range:
-            self.col_to_max, self.col_to_min, self.col_to_median = get_range_values_per_column(X_augmented)
+        if self.feature_extractor.settings.IMPUTE is impute:
+            col_to_max, col_to_min, col_to_median = get_range_values_per_column(X_augmented)
+            self.feature_extractor.settings.IMPUTE = partial(impute_dataframe_range, col_to_max=col_to_max,
+                                                             col_to_min=col_to_min, col_to_median=col_to_median)
 
         self.feature_selector.fit(X_augmented, y)
 
@@ -217,14 +216,7 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
 
         relevant_extraction_settings = FeatureExtractionSettings.from_columns(relevant_time_series_features)
         relevant_extraction_settings.set_default = False
-
-        # Set imputing strategy
-        if self.feature_extractor.settings.IMPUTE is impute_dataframe_range:
-            relevant_extraction_settings.IMPUTE = partial(impute_dataframe_range, col_to_max=self.col_to_max,
-                                                          col_to_min=self.col_to_min, col_to_median=self.col_to_median)
-        else:
-            relevant_extraction_settings.IMPUTE = self.feature_extractor.settings.IMPUTE
-
+        relevant_extraction_settings.IMPUTE = self.feature_extractor.settings.IMPUTE
         relevant_feature_extractor = FeatureAugmenter(settings=relevant_extraction_settings,
                                                       column_id=self.feature_extractor.column_id,
                                                       column_sort=self.feature_extractor.column_sort,
