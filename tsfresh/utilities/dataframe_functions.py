@@ -98,8 +98,7 @@ def impute_dataframe_range(df_impute, col_to_max, col_to_min, col_to_median):
     If a column of df_impute is not found in the one of the dictionaries, this method will raise a ValueError.
     Also, if one of the values to replace is not finite a ValueError is returned
 
-
-    This function modifies `df_impute` in place. Unless the dictionaries contain ``NaNs`` or ``infs``, df_impute is
+    This function modifies `df_impute` in place. Afterwards df_impute is
     guaranteed to not contain any non-finite values.
     Also, all columns will be guaranteed to be of type ``np.float64``.
 
