@@ -274,12 +274,19 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqualOnAllArrayTypes(percentage_of_reoccurring_values_to_all_values, [1.111, -2.45, 1.111, 2.45], 0.5)
         self.assertIsNanOnAllArrayTypes(percentage_of_reoccurring_values_to_all_values, [])
 
-    def test_sum_of_doubled_values(self):
-        self.assertAlmostEqualOnAllArrayTypes(sum_of_reoccurring_values, [1, 1, 2, 3, 4], 2)
+    def test_sum_of_reoccurring_values(self):
+        self.assertAlmostEqualOnAllArrayTypes(sum_of_reoccurring_values, [1, 1, 2, 3, 4, 4], 5)
         self.assertAlmostEqualOnAllArrayTypes(sum_of_reoccurring_values, [1, 1.5, 2, 3], 0)
         self.assertAlmostEqualOnAllArrayTypes(sum_of_reoccurring_values, [1], 0)
-        self.assertAlmostEqualOnAllArrayTypes(sum_of_reoccurring_values, [1.111, -2.45, 1.111, 2.45], 2.222)
+        self.assertAlmostEqualOnAllArrayTypes(sum_of_reoccurring_values, [1.111, -2.45, 1.111, 2.45], 1.111)
         self.assertAlmostEqualOnAllArrayTypes(sum_of_reoccurring_values, [], 0)
+
+    def test_sum_of_reoccurring_data_points(self):
+        self.assertAlmostEqualOnAllArrayTypes(sum_of_reoccurring_data_points, [1, 1, 2, 3, 4, 4], 10)
+        self.assertAlmostEqualOnAllArrayTypes(sum_of_reoccurring_data_points, [1, 1.5, 2, 3], 0)
+        self.assertAlmostEqualOnAllArrayTypes(sum_of_reoccurring_data_points, [1], 0)
+        self.assertAlmostEqualOnAllArrayTypes(sum_of_reoccurring_data_points, [1.111, -2.45, 1.111, 2.45], 2.222)
+        self.assertAlmostEqualOnAllArrayTypes(sum_of_reoccurring_data_points, [], 0)
 
     def test_uniqueness_factor(self):
         self.assertAlmostEqualOnAllArrayTypes(ratio_value_number_to_time_series_length, [1, 1, 2, 3, 4], 0.8)

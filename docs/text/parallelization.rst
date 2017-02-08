@@ -29,7 +29,7 @@ Parallelization of Feature Extraction
 
 For the feature extraction tsfresh exposes the parameters
 :attr:`tsfresh.feature_extraction.FeatureExtractionSettings.n_processes` and
-:attr:`tsfresh.feature_extraction.FeatureExtractionSettings.chunksize`. Both behave anlogue to the parameters
+:attr:`tsfresh.feature_extraction.FeatureExtractionSettings.chunksize`. Both behave similarly to the parameters
 for the feature selection.
 
 Additionally there are two options for how the parallelization is done:
