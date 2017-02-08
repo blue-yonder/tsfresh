@@ -1277,11 +1277,16 @@ def approximate_entropy(x, m, r):
 @set_property("fctype", "apply")
 def friedrich_coefficients(x, c, param):
     """
-    Coefficients of polynomial, which has been fitted to 
-    the deterministic dynamics of Langevin model as described by
+    Coefficients of polynomial :math:`h(x)`, which has been fitted to 
+    the deterministic dynamics of Langevin model 
+    .. math::
+        \dot(x)(t) = h(x(t)) + R \mathcal(N)(0,1)
+
+    as described by
 
         Friedrich et al. (2000): Physics Letters A 271, p. 217-222
         *Extracting model equations from experimental data*
+
 
     For short time-series this method is highly dependent on the parameters.
 
@@ -1328,8 +1333,12 @@ def friedrich_coefficients(x, c, param):
 @set_property("fctype", "aggregate_with_parameters")
 def max_langevin_fixed_point(x, r, m):
     """
-    Largest fixed point of dynamics estimated from polynomial, which has been fitted to 
-    the deterministic dynamics of Langevin model as described by
+    Largest fixed point of dynamics  :math:argmax_x {h(x)=0}` estimated from polynomial :math:`h(x)`, 
+    which has been fitted to the deterministic dynamics of Langevin model
+    .. math::
+        \dot(x)(t) = h(x(t)) + R \mathcal(N)(0,1)
+
+    as described by
 
         Friedrich et al. (2000): Physics Letters A 271, p. 217-222
         *Extracting model equations from experimental data*
