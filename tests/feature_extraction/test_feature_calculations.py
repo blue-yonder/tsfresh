@@ -513,6 +513,22 @@ class FeatureCalculationTestCase(TestCase):
         self.assertEqualOnAllArrayTypes(approximate_entropy, [1, 2, 3], 0, m=2, r=0.5)
         self.assertAlmostEqualOnAllArrayTypes(approximate_entropy, [12, 13, 15, 16, 17]*10, 0.282456191, m=2, r=0.9)
         self.assertRaises(ValueError, approximate_entropy, x=[12, 13, 15, 16, 17]*10, m=2, r=-0.5)
+
+    def test_friedrich_coefficients(self):
+        # Test binning error returns vector of NaNs
+        c = "TEST"
+        param = [{"coeff": coeff, "m": 2, "r": 30} for coeff in range(4)]
+        x = np.zeros(1000)
+        
+        res = friedrich_coefficients(x, c, param)
+        expected_index = ["TEST__friedrich_coefficients__m_2__r_30__coeff_0",
+                          "TEST__friedrich_coefficients__m_2__r_30__coeff_1",
+                          "TEST__friedrich_coefficients__m_2__r_30__coeff_2"]]
+
+        self.assertIsInstance(res, pd.Series)
+        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertTrue(np.sum(np.isnan(res)), 3)
+
         
     def test_max_langevin_fixed_point(self):
         """
