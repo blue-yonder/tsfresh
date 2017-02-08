@@ -103,7 +103,7 @@ class FeatureExtractionSettings(object):
                 "value_count": [{"value": value} for value in [0, 1, np.NaN, np.PINF, np.NINF]],
                 "range_count": [{"min": -1, "max": 1}],
                 "approximate_entropy": [{"m": 2, "r": r} for r in [.1, .3, .5, .7, .9]],
-                "max_fixed_point": [{"m": 3, "r": 30}],
+                "max_langevin_fixed_point": [{"m": 3, "r": 30}],
             })
 
         # default None means one process per cpu

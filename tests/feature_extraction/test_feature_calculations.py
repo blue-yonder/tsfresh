@@ -514,7 +514,7 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqualOnAllArrayTypes(approximate_entropy, [12, 13, 15, 16, 17]*10, 0.282456191, m=2, r=0.9)
         self.assertRaises(ValueError, approximate_entropy, x=[12, 13, 15, 16, 17]*10, m=2, r=-0.5)
         
-    def test_max_fixed_point(self):
+    def test_max_langevin_fixed_point(self):
         """
         Estimating the intrinsic velocity of a dissipative soliton
         """
@@ -523,12 +523,12 @@ class FeatureCalculationTestCase(TestCase):
         # active Brownian motion
         ds = velocity(tau=3.8, delta_t=0.05, R=3e-4, seed=0)
         v = ds.simulate(1000000, v0=np.zeros(1))
-        v0 = max_fixed_point(v[:,0], **default_params)
+        v0 = max_langevin_fixed_point(v[:,0], **default_params)
         self.assertTrue(abs(ds.deterministic-v0)<0.0001)
 
         # Brownian motion
         ds = velocity(tau=2.0/0.3-3.8, delta_t=0.05, R=3e-4, seed=0)
         v = ds.simulate(1000000, v0=np.zeros(1))
-        v0 = max_fixed_point(v[:,0], **default_params)
+        v0 = max_langevin_fixed_point(v[:,0], **default_params)
         self.assertTrue(v0<0.001)
 
