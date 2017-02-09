@@ -1279,9 +1279,9 @@ def _estimate_friedrich_coefficients(x, m, r):
     Coefficients of polynomial :math:`h(x)`, which has been fitted to 
     the deterministic dynamics of Langevin model 
     .. math::
-        \dot(x)(t) = h(x(t)) + R \mathcal(N)(0,1)
+        \dot{x}(t) = h(x(t)) + \mathcal{N}(0,R)
 
-    as described by
+    As described by
 
         Friedrich et al. (2000): Physics Letters A 271, p. 217-222
         *Extracting model equations from experimental data*
@@ -1325,7 +1325,7 @@ def friedrich_coefficients(x, c, param):
     Coefficients of polynomial :math:`h(x)`, which has been fitted to 
     the deterministic dynamics of Langevin model 
     .. math::
-        \dot(x)(t) = h(x(t)) + R \mathcal(N)(0,1)
+        \dot{x}(t) = h(x(t)) + \mathcal{N}(0,R)
 
     as described by
 
