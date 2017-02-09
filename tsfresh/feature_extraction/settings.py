@@ -103,7 +103,8 @@ class FeatureExtractionSettings(object):
                 "value_count": [{"value": value} for value in [0, 1, np.NaN, np.PINF, np.NINF]],
                 "range_count": [{"min": -1, "max": 1}],
                 "approximate_entropy": [{"m": 2, "r": r} for r in [.1, .3, .5, .7, .9]],
-                "friedrich_coefficients": [{"coeff": coeff, "m": 3, "r": 30} for coeff in range(4)],
+                "friedrich_coefficients": (lambda m: [{"coeff": coeff, "m": m, "r": 30}
+                                                      for coeff in range(m+1)])(3),
                 "max_langevin_fixed_point": [{"m": 3, "r": 30}],
             })
 
