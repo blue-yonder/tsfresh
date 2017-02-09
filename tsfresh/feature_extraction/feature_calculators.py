@@ -1355,7 +1355,7 @@ def friedrich_coefficients(x, c, param):
     coeff = _estimate_friedrich_coefficients(x, m, r)
 
     name = lambda q: "{}__friedrich_coefficients__m_{}__r_{}__coeff_{}".format(c,m,r,q)
-    return pd.Series(coeff, index=[name(q) for q in range(m+1)])
+    return pd.Series(coeff, index=[name(q) for q in range(m,-1,-1)])
 
 @set_property("fctype", "aggregate_with_parameters")
 def max_langevin_fixed_point(x, r, m):
