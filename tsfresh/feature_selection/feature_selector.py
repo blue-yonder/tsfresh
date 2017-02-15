@@ -119,9 +119,8 @@ def check_fs_sig_bh(X, y, settings=None):
     # Helper function which wraps the _calculate_p_value with many arguments already set
     f = partial(_calculate_p_value, y=y, settings=settings, target_is_binary=target_is_binary)
 
-    chunksize = helper_functions.calculate_best_chunksize(X, settings)
-
-    total_number_of_features = len(X.columns)
+    chunksize = helper_functions.calculate_best_chunksize(df_features, settings)
+    total_number_of_features = len(df_features)
     results = tqdm(pool.imap_unordered(f, [X[feature] for feature in df_features['Feature']], chunksize=chunksize),
                    total=total_number_of_features, desc="Feature Selection")
 
