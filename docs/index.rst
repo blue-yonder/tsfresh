@@ -40,3 +40,9 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+
+Acknowledgements
+================
+
+The research and development of TSFRESH was funded in part by the German Federal Ministry of Education and Research under grant number 01IS14004 (project iPRODICT).
