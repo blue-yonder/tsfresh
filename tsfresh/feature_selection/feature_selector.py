@@ -22,6 +22,7 @@ import numpy as np
 import pandas as pd
 import logging
 from multiprocessing import Pool
+from tsfresh.utilities import helper_functions
 from tsfresh.feature_selection.significance_tests import target_binary_feature_real_test, \
     target_real_feature_binary_test, target_real_feature_real_test, target_binary_feature_binary_test
 
@@ -118,8 +119,10 @@ def check_fs_sig_bh(X, y, settings=None):
     # Helper function which wraps the _calculate_p_value with many arguments already set
     f = partial(_calculate_p_value, y=y, settings=settings, target_is_binary=target_is_binary)
 
+    chunksize = helper_functions.calculate_best_chunksize(X, settings)
+
     total_number_of_features = len(X.columns)
-    results = tqdm(pool.imap_unordered(f, [X[feature] for feature in df_features['Feature']]),
+    results = tqdm(pool.imap_unordered(f, [X[feature] for feature in df_features['Feature']], chunksize=chunksize),
                    total=total_number_of_features, desc="Feature Selection")
 
     p_values_of_features = pd.DataFrame(list(results))
