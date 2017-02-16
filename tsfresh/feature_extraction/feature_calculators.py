@@ -1273,3 +1273,123 @@ def approximate_entropy(x, m, r):
         return np.sum(np.log(C)) / (N - m + 1.0)
 
     return np.abs(_phi(m) - _phi(m + 1))
+
+def _estimate_friedrich_coefficients(x, m, r):
+    """
+    Coefficients of polynomial :math:`h(x)`, which has been fitted to 
+    the deterministic dynamics of Langevin model 
+    .. math::
+        \dot{x}(t) = h(x(t)) + \mathcal{N}(0,R)
+
+    As described by
+
+        Friedrich et al. (2000): Physics Letters A 271, p. 217-222
+        *Extracting model equations from experimental data*
+
+    For short time-series this method is highly dependent on the parameters.
+
+    :param x: the time series to calculate the feature of
+    :type x: pandas.Series
+    :param m: order of polynom to fit for estimating fixed points of dynamics
+    :type m: int
+    :param r: number of quantils to use for averaging
+    :type r: float
+
+    :return: coefficients of polynomial of deterministic dynamics
+    :return type: ndarray
+    """
+    df = pd.DataFrame({'signal': x[:-1], 'delta': np.diff(x)})
+    try:
+        df['quantiles']=pd.qcut(df.signal, r)
+        binned = True
+    except ValueError:
+        binned = False
+        coeff = [np.NaN] * (m+1)
+
+    if binned:
+        quantiles = df.groupby('quantiles')
+        
+        result = pd.DataFrame({'x_mean': quantiles.signal.mean(),
+                               'y_mean': quantiles.delta.mean()
+        })
+    
+        try:
+            coeff = np.polyfit(result.x_mean, result.y_mean, deg=m)
+        except (np.linalg.LinAlgError, ValueError):
+            coeff = [np.NaN] * (m+1)
+    return coeff
+
+@set_property("fctype", "apply")
+def friedrich_coefficients(x, c, param):
+    """
+    Coefficients of polynomial :math:`h(x)`, which has been fitted to 
+    the deterministic dynamics of Langevin model 
+    .. math::
+        \dot{x}(t) = h(x(t)) + \mathcal{N}(0,R)
+
+    as described by
+
+        Friedrich et al. (2000): Physics Letters A 271, p. 217-222
+        *Extracting model equations from experimental data*
+
+
+    For short time-series this method is highly dependent on the parameters.
+
+    :param x: the time series to calculate the feature of
+    :type x: pandas.Series
+    :param c: the time series name
+    :type c: str
+    :param param: contains dictionaries {"coeff": x} with x int and x >= 0
+    :type param: list
+    :return: the different feature values
+    :return type: pandas.Series
+    """
+    coefficients = set([config["coeff"] for config in param])
+    for coeff in coefficients:
+        if coeff < 0:
+            raise ValueError("Coefficients must be positive or zero.")
+
+    m = param[0]['m']
+    r = param[0]['r']
+
+    coeff = _estimate_friedrich_coefficients(x, m, r)
+
+    name = lambda q: "{}__friedrich_coefficients__m_{}__r_{}__coeff_{}".format(c,m,r,q)
+    return pd.Series(coeff, index=[name(q) for q in range(m,-1,-1)])
+
+@set_property("fctype", "aggregate_with_parameters")
+def max_langevin_fixed_point(x, r, m):
+    """
+    Largest fixed point of dynamics  :math:argmax_x {h(x)=0}` estimated from polynomial :math:`h(x)`, 
+    which has been fitted to the deterministic dynamics of Langevin model
+    .. math::
+        \dot(x)(t) = h(x(t)) + R \mathcal(N)(0,1)
+
+    as described by
+
+        Friedrich et al. (2000): Physics Letters A 271, p. 217-222
+        *Extracting model equations from experimental data*
+
+    For short time-series this method is highly dependent on the parameters.
+
+    :param x: the time series to calculate the feature of
+    :type x: pandas.Series
+    :param m: order of polynom to fit for estimating fixed points of dynamics
+    :type m: int
+    :param r: number of quantils to use for averaging
+    :type r: float
+
+    :return: Largest fixed point of deterministic dynamics
+    :return type: float
+    """
+
+    coeff = _estimate_friedrich_coefficients(x, m, r)
+
+    try:
+        max_fixed_point = np.max(np.real(np.roots(coeff)))
+    except (np.linalg.LinAlgError, ValueError):
+        return np.nan
+    
+    return max_fixed_point
+
+
