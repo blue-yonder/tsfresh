@@ -83,6 +83,9 @@ def extract_features(timeseries_container, feature_extraction_settings=None,
     :return: The (maybe imputed) DataFrame containing extracted features.
     :rtype: pandas.DataFrame
     """
+    import logging
+    logging.basicConfig()
+    
     # Always use the standardized way of storing the data.
     # See the function normalize_input_to_internal_representation for more information.
     kind_to_df_map, column_id, column_value = \
