@@ -214,7 +214,7 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
 
         # We can only extract features that originate from time series
         relevant_extraction_settings = FeatureExtractionSettings.from_columns(
-            set(self.feature_selector.relevant_features) - set(pd.DataFrame(X).columns))
+            list(set(self.feature_selector.relevant_features) - set(pd.DataFrame(X).columns)))
 
         relevant_extraction_settings.set_default = False
         relevant_extraction_settings.IMPUTE = self.feature_extractor.settings.IMPUTE
@@ -232,5 +232,4 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
             return pd.concat([X_tsfresh, X], axis=1)
         else:
             X_tsfresh = feature_augmenter_restricted.transform(X)
-            X_tsfresh  = pd.concat([X_tsfresh, X], axis=1)
             return X_tsfresh.loc[:, self.feature_selector.relevant_features]
