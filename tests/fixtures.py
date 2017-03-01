@@ -24,7 +24,6 @@ class DataTestCase(TestCase):
         df = pd.DataFrame({"id": cid, "kind": ckind, "sort": csort, "val": cval})
         return df.set_index("id", drop=False)
 
-
     def create_one_valued_time_series(self):
         cid = [1, 2, 2]
         ckind = ["a", "a", "a"]
@@ -32,7 +31,6 @@ class DataTestCase(TestCase):
         cval = [1.0, 5.0, 6.0]
         df = pd.DataFrame({"id": cid, "kind": ckind, "sort": csort, "val": cval})
         return df
-
 
     def create_test_data_sample_with_target(self):
         """
