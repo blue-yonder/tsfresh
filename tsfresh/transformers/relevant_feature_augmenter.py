@@ -126,7 +126,8 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
             feature_extraction_settings.IMPUTE = impute
 
         self.feature_extractor = FeatureAugmenter(feature_extraction_settings,
-                                                  column_id, column_sort, column_kind, column_value)
+                                                  column_id=column_id, column_sort=column_sort,
+                                                  column_kind=column_kind, column_value=column_value)
         self.feature_selector = FeatureSelector(feature_selection_settings)
 
         self.evaluate_only_added_features = evaluate_only_added_features
@@ -176,10 +177,9 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
 
         if self.evaluate_only_added_features:
             # Do not merge the time series features to the old features
-            X_tmp = pd.DataFrame(index=X.index)
+            X_augmented = self.feature_extractor.transform(pd.DataFrame(index=X.index))
         else:
-            X_tmp = X
-        X_augmented = self.feature_extractor.transform(X_tmp)
+            X_augmented = self.feature_extractor.transform(X)
 
         if self.feature_extractor.settings.IMPUTE is impute:
             col_to_max, col_to_min, col_to_median = get_range_values_per_column(X_augmented)
@@ -212,19 +212,20 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
 
         self.feature_extractor.set_timeseries_container(self.timeseries_container)
 
-        relevant_time_series_features = set(self.feature_selector.relevant_features) - set(pd.DataFrame(X).columns)
+        # We can only extract features that originate from time series
+        relevant_extraction_settings = FeatureExtractionSettings.from_columns(
+            set(self.feature_selector.relevant_features) - set(pd.DataFrame(X).columns))
 
-        relevant_extraction_settings = FeatureExtractionSettings.from_columns(relevant_time_series_features)
         relevant_extraction_settings.set_default = False
         relevant_extraction_settings.IMPUTE = self.feature_extractor.settings.IMPUTE
-        relevant_feature_extractor = FeatureAugmenter(settings=relevant_extraction_settings,
-                                                      column_id=self.feature_extractor.column_id,
-                                                      column_sort=self.feature_extractor.column_sort,
-                                                      column_kind=self.feature_extractor.column_kind,
-                                                      column_value=self.feature_extractor.column_value)
 
-        relevant_feature_extractor.set_timeseries_container(self.feature_extractor.timeseries_container)
+        feature_augmenter_restricted = FeatureAugmenter(settings=relevant_extraction_settings,
+                                                        column_id=self.feature_extractor.column_id,
+                                                        column_sort=self.feature_extractor.column_sort,
+                                                        column_kind=self.feature_extractor.column_kind,
+                                                        column_value=self.feature_extractor.column_value)
 
-        X_augmented = relevant_feature_extractor.transform(X)
+        feature_augmenter_restricted.set_timeseries_container(self.feature_extractor.timeseries_container)
+        X_augmented = feature_augmenter_restricted.transform(X)
 
         return X_augmented.copy().loc[:, self.feature_selector.relevant_features]
