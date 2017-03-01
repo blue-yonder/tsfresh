@@ -3,6 +3,7 @@
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
 import pandas as pd
+import numpy as np
 from tests.fixtures import DataTestCase
 from tsfresh.feature_extraction import FeatureExtractionSettings
 from tsfresh.transformers.relevant_feature_augmenter import RelevantFeatureAugmenter
@@ -67,7 +68,7 @@ class RelevantFeatureAugmenterTestCase(DataTestCase):
         self.assertEqual(list(transformed_X.columns), [])
         self.assertEqual(list(transformed_X.index), list(X.index))
 
-    def test_evaluate_only_added_features(self):
+    def test_evaluate_only_added_features_true(self):
         """
         The boolean flag `evaluate_only_extracted_features` makes sure that only the time series based features are
         filtered. This unit tests checks that
@@ -86,3 +87,25 @@ class RelevantFeatureAugmenterTestCase(DataTestCase):
         transformed_X = augmenter.transform(X.copy())
 
         self.assertTrue("pre_feature" in list(transformed_X.columns))
+
+    def test_evaluate_only_added_features_false(self):
+        """
+        The boolean flag `evaluate_only_extracted_features` makes sure that only the time series based features are
+        filtered. This unit tests checks that
+        """
+
+        augmenter = RelevantFeatureAugmenter(feature_extraction_settings=self.extraction_settings,
+                                             evaluate_only_added_features=False,
+                                             column_value="val", column_id="id", column_sort="sort", column_kind="kind")
+
+        df, y = self.create_test_data_sample_with_target()
+        X = pd.DataFrame(index=np.unique(df.id))
+        X["pre_drop"] = 0
+        X["pre_keep"] = y
+
+        augmenter.set_timeseries_container(df)
+        augmenter.fit(X, y)
+        transformed_X = augmenter.transform(X.copy())
+
+        self.assertTrue("pre_keep" in list(transformed_X.columns))
+        self.assertFalse("pre_drop" in list(transformed_X.columns))
