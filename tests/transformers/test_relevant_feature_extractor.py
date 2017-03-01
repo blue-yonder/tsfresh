@@ -35,8 +35,8 @@ class RelevantFeatureAugmenterTestCase(DataTestCase):
 
     def test_nothing_relevant(self):
         augmenter = RelevantFeatureAugmenter(feature_extraction_settings=self.extraction_settings,
-                                            column_value="val", column_id="id", column_sort="sort",
-                                            column_kind="kind")
+                                             column_value="val", column_id="id", column_sort="sort",
+                                             column_kind="kind")
 
         y = pd.Series({10: 1, 500: 0})
         X = pd.DataFrame(index=[10, 500])
@@ -67,25 +67,22 @@ class RelevantFeatureAugmenterTestCase(DataTestCase):
         self.assertEqual(list(transformed_X.columns), [])
         self.assertEqual(list(transformed_X.index), list(X.index))
 
+    def test_evaluate_only_added_features(self):
+        """
+        The boolean flag `evaluate_only_extracted_features` makes sure that only the time series based features are
+        filtered. This unit tests checks that
+        """
 
-    # def test_with_numpy_array(self):
-    #     selector = FeatureSelector()
-    #
-    #     y = pd.Series(np.random.binomial(1, 0.5, 1000))
-    #     X = pd.DataFrame(index=range(1000))
-    #
-    #     X["irr1"] = np.random.normal(0, 1, 1000)
-    #     X["rel1"] = y
-    #
-    #     y_numpy = y.values
-    #     X_numpy = X.as_matrix()
-    #
-    #     selector.fit(X, y)
-    #     selected_X = selector.transform(X)
-    #
-    #     selector.fit(X_numpy, y_numpy)
-    #     selected_X_numpy = selector.transform(X_numpy)
-    #
-    #     self.assertTrue((selected_X_numpy == selected_X.values).all())
-    #
-    #     self.assertTrue(selected_X_numpy.shape, (1, 1000))
+        augmenter = RelevantFeatureAugmenter(feature_extraction_settings=self.extraction_settings,
+                                             evaluate_only_added_features=True,
+                                             column_value="val", column_id="id", column_sort="sort", column_kind="kind")
+
+        y = pd.Series({10: 1, 500: 0})
+        X = pd.DataFrame(index=[10, 500])
+        X["pre_feature"] = 0
+
+        augmenter.set_timeseries_container(self.test_df)
+        augmenter.fit(X, y)
+        transformed_X = augmenter.transform(X.copy())
+
+        self.assertTrue("pre_feature" in list(transformed_X.columns))
