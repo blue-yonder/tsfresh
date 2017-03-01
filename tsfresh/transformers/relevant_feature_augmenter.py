@@ -226,6 +226,11 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
                                                         column_value=self.feature_extractor.column_value)
 
         feature_augmenter_restricted.set_timeseries_container(self.feature_extractor.timeseries_container)
-        X_augmented = feature_augmenter_restricted.transform(X)
 
-        return X_augmented.copy().loc[:, self.feature_selector.relevant_features]
+        if self.evaluate_only_added_features:
+            X_tsfresh = feature_augmenter_restricted.transform(X).loc[:, self.feature_selector.relevant_features]
+            return pd.concat([X_tsfresh, X], axis=1)
+        else:
+            X_tsfresh = feature_augmenter_restricted.transform(X)
+            X_tsfresh  = pd.concat([X_tsfresh, X], axis=1)
+            return X_tsfresh.loc[:, self.feature_selector.relevant_features]
