@@ -86,7 +86,7 @@ class RelevantFeatureAugmenterTestCase(DataTestCase):
         augmenter.fit(X, y)
         transformed_X = augmenter.transform(X.copy())
 
-        self.assertEqual(sum(["pre_feature" == x for x in transformed_X.columns]), 1)
+        self.assertEqual(sum(["pre_feature" == column for column in transformed_X.columns]), 1)
 
     def test_evaluate_only_added_features_false(self):
         """
@@ -107,5 +107,5 @@ class RelevantFeatureAugmenterTestCase(DataTestCase):
         augmenter.fit(X, y)
         transformed_X = augmenter.transform(X.copy())
 
-        self.assertEqual(sum(["pre_keep" == x for x in transformed_X.columns]), 1)
-        self.assertEqual(sum(["pre_drop" == x for x in transformed_X.columns]), 0)
+        self.assertEqual(sum(["pre_keep" == column for column in transformed_X.columns]), 1)
+        self.assertEqual(sum(["pre_drop" == column for column in transformed_X.columns]), 0)
