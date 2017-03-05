@@ -4,6 +4,15 @@ Changelog
 
 tsfresh uses `Semantic Versioning <http://semver.org/>`_
 
+Version 0.6.0
+=============
+
+- progress bar for feature selection
+- new feature: estimation of largest fixed point of deterministic dynamics
+- new notebook: demonstration how to use tsfresh in a pipeline with train and test datasets
+- remove no logging handler warning
+- fix bug in the RelevantFeatureAugmenter regarding the evaluate_only_added_features parameterqq
+
 Version 0.5.0
 =============
 
