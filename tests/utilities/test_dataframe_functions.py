@@ -9,31 +9,31 @@ from tsfresh.utilities import dataframe_functions
 import numpy as np
 import six
 
-class NormalizeTestCase(TestCase):
 
+class NormalizeTestCase(TestCase):
     def test_with_dictionaries_one_row(self):
         test_df = pd.DataFrame([{"value": 1, "id": "id_1"}])
         test_dict = {"a": test_df, "b": test_df}
 
         # A kind is not allowed with dicts
         self.assertRaises(ValueError, dataframe_functions.normalize_input_to_internal_representation, test_dict,
-                          "id", None, "a kind", None)
+                          "id", None, "a kind", None, 0)
 
         # The value must be present
         self.assertRaises(ValueError, dataframe_functions.normalize_input_to_internal_representation, test_dict,
-                          "id", None, None, "something other")
+                          "id", None, None, "something other", 0)
 
         # Nothing should have changed compared to the input data
         result_dict, column_id, column_value = \
-            dataframe_functions.normalize_input_to_internal_representation(test_dict, "id", None, None, "value")
+            dataframe_functions.normalize_input_to_internal_representation(test_dict, "id", None, None, "value", 0)
         self.assertEqual(column_value, "value")
         self.assertEqual(column_id, "id")
         six.assertCountEqual(self, list(test_dict.keys()), list(result_dict.keys()))
         self.assertEqual(result_dict["a"].iloc[0].to_dict(), {"value": 1, "id": "id_1"})
 
         # The algo should choose the correct value column
-        result_dict, column_id, column_value =\
-            dataframe_functions.normalize_input_to_internal_representation(test_dict, "id", None, None, None)
+        result_dict, column_id, column_value = \
+            dataframe_functions.normalize_input_to_internal_representation(test_dict, "id", None, None, None, 0)
         self.assertEqual(column_value, "value")
         self.assertEqual(column_id, "id")
 
@@ -44,11 +44,11 @@ class NormalizeTestCase(TestCase):
 
         # If there are more than one column, the algorithm can not choose the correct column
         self.assertRaises(ValueError, dataframe_functions.normalize_input_to_internal_representation, test_dict,
-                          "id", None, None, None)
+                          "id", None, None, None, 0)
 
         # Sorting should work
         result_dict, column_id, column_value = \
-            dataframe_functions.normalize_input_to_internal_representation(test_dict, "id", "sort", None, "value")
+            dataframe_functions.normalize_input_to_internal_representation(test_dict, "id", "sort", None, "value", 0)
         self.assertEqual(column_value, "value")
         self.assertEqual(column_id, "id")
 
@@ -58,7 +58,7 @@ class NormalizeTestCase(TestCase):
 
         # Assert the algo has found the correct column
         result_dict, column_id, column_value = \
-            dataframe_functions.normalize_input_to_internal_representation(test_dict, "id", "sort", None, None)
+            dataframe_functions.normalize_input_to_internal_representation(test_dict, "id", "sort", None, None, 0)
         self.assertEqual(column_value, "value")
         self.assertEqual(column_id, "id")
 
@@ -69,7 +69,7 @@ class NormalizeTestCase(TestCase):
 
         # Pass the id
         result_dict, column_id, column_value = \
-            dataframe_functions.normalize_input_to_internal_representation(test_dict, "id", None, None, "value")
+            dataframe_functions.normalize_input_to_internal_representation(test_dict, "id", None, None, "value", 0)
         self.assertEqual(column_value, "value")
         self.assertEqual(column_id, "id")
 
@@ -77,16 +77,15 @@ class NormalizeTestCase(TestCase):
 
         # The algo should have found the correct value column
         result_dict, column_id, column_value = \
-            dataframe_functions.normalize_input_to_internal_representation(test_dict, "id", None, None, None)
+            dataframe_functions.normalize_input_to_internal_representation(test_dict, "id", None, None, None, 0)
         self.assertEqual(column_value, "value")
         self.assertEqual(column_id, "id")
 
     def test_with_df(self):
-
         # give everyting
         test_df = pd.DataFrame([{"id": 0, "kind": "a", "value": 3, "sort": 1}])
         result_dict, column_id, column_value = \
-            dataframe_functions.normalize_input_to_internal_representation(test_df, "id", "sort", "kind", "value")
+            dataframe_functions.normalize_input_to_internal_representation(test_df, "id", "sort", "kind", "value", 0)
 
         self.assertEqual(column_id, "id")
         self.assertEqual(column_value, "value")
@@ -98,7 +97,7 @@ class NormalizeTestCase(TestCase):
         # give no kind
         test_df = pd.DataFrame([{"id": 0, "value": 3, "sort": 1}])
         result_dict, column_id, column_value = \
-            dataframe_functions.normalize_input_to_internal_representation(test_df, "id", "sort", None, "value")
+            dataframe_functions.normalize_input_to_internal_representation(test_df, "id", "sort", None, "value", 0)
 
         self.assertEqual(column_id, "id")
         self.assertEqual(column_value, "value")
@@ -110,7 +109,7 @@ class NormalizeTestCase(TestCase):
         # Let the function find the values
         test_df = pd.DataFrame([{"id": 0, "a": 3, "b": 5, "sort": 1}])
         result_dict, column_id, column_value = \
-            dataframe_functions.normalize_input_to_internal_representation(test_df, "id", "sort", None, None)
+            dataframe_functions.normalize_input_to_internal_representation(test_df, "id", "sort", None, None, 0)
 
         self.assertEqual(column_id, "id")
         self.assertEqual(column_value, "_value")
@@ -126,37 +125,103 @@ class NormalizeTestCase(TestCase):
     def test_with_wrong_input(self):
         test_df = pd.DataFrame([{"id": 0, "kind": "a", "value": 3, "sort": np.NaN}])
         self.assertRaises(ValueError, dataframe_functions.normalize_input_to_internal_representation, test_df,
-                          "id", "sort", "kind", "value")
+                          "id", "sort", "kind", "value", 0)
 
         test_df = pd.DataFrame([{"id": 0, "kind": "a", "value": 3, "sort": 1}])
         self.assertRaises(AttributeError, dataframe_functions.normalize_input_to_internal_representation, test_df,
-                          "strange_id", "sort", "kind", "value")
+                          "strange_id", "sort", "kind", "value", 0)
 
         test_df = pd.DataFrame([{"id": np.NaN, "kind": "a", "value": 3, "sort": 1}])
         self.assertRaises(ValueError, dataframe_functions.normalize_input_to_internal_representation, test_df,
-                          "id", "sort", "kind", "value")
+                          "id", "sort", "kind", "value", 0)
 
         test_df = pd.DataFrame([{"id": 0}])
         self.assertRaises(ValueError, dataframe_functions.normalize_input_to_internal_representation, test_df,
-                          "id", None, None, None)
+                          "id", None, None, None, 0)
 
         test_df = pd.DataFrame([{"id": 2}, {"id": 1}])
         test_dict = {"a": test_df, "b": test_df}
 
         # If there are more than one column, the algorithm can not choose the correct column
         self.assertRaises(ValueError, dataframe_functions.normalize_input_to_internal_representation, test_dict,
-                          "id", None, None, None)
+                          "id", None, None, None, 0)
 
         test_dict = {"a": pd.DataFrame([{"id": 2, "value_a": 3}, {"id": 1, "value_a": 4}]),
                      "b": pd.DataFrame([{"id": 2}, {"id": 1}])}
 
         # If there are more than one column, the algorithm can not choose the correct column
         self.assertRaises(ValueError, dataframe_functions.normalize_input_to_internal_representation, test_dict,
-                          "id", None, None, None)
+                          "id", None, None, None, 0)
 
         test_df = pd.DataFrame([{"id": 0, "value": np.NaN}])
         self.assertRaises(ValueError, dataframe_functions.normalize_input_to_internal_representation, test_df,
-                          "id", None, None, "value")
+                          "id", None, None, "value", 0)
+
+
+class RollingTestCase(TestCase):
+    def test_positive_rolling(self):
+        first_class = pd.DataFrame({"a": [1, 2, 3, 4], "b": [5, 6, 7, 8], "time": range(4)})
+        second_class = pd.DataFrame({"a": [10, 11], "b": [12, 13], "time": range(20, 22)})
+
+        first_class["id"] = 1
+        second_class["id"] = 2
+
+        df_full = pd.concat([first_class, second_class], ignore_index=True)
+
+        kind_to_df_map, column_id, column_value = \
+            dataframe_functions.normalize_input_to_internal_representation(df_full, column_id="id", column_sort="time",
+                                                                           column_kind=None,
+                                                                           column_value=None, rolling=1)
+
+        self.assertEqual(column_id, "id")
+        self.assertEqual(column_value, "_value")
+
+        correct_indices = (["id=1, shift=3"] * 1 +
+                           ["id=1, shift=2"] * 2 +
+                           ["id=1, shift=1"] * 3 +
+                           ["id=2, shift=1"] * 1 +
+                           ["id=1, shift=0"] * 4 +
+                           ["id=2, shift=0"] * 2)
+
+        self.assertListEqual(list(kind_to_df_map["a"]["id"].values), correct_indices)
+        self.assertListEqual(list(kind_to_df_map["b"]["id"].values), correct_indices)
+
+        self.assertListEqual(list(kind_to_df_map["a"]["_value"].values),
+                             [1, 1, 2, 1, 2, 3, 10, 1, 2, 3, 4, 10, 11])
+        self.assertListEqual(list(kind_to_df_map["b"]["_value"].values),
+                             [5, 5, 6, 5, 6, 7, 12, 5, 6, 7, 8, 12, 13])
+
+    def test_negative_rolling(self):
+        first_class = pd.DataFrame({"a": [1, 2, 3, 4], "b": [5, 6, 7, 8], "time": range(4)})
+        second_class = pd.DataFrame({"a": [10, 11], "b": [12, 13], "time": range(20, 22)})
+
+        first_class["id"] = 1
+        second_class["id"] = 2
+
+        df_full = pd.concat([first_class, second_class], ignore_index=True)
+
+        kind_to_df_map, column_id, column_value = \
+            dataframe_functions.normalize_input_to_internal_representation(df_full, column_id="id", column_sort="time",
+                                                                           column_kind=None,
+                                                                           column_value=None, rolling=-1)
+
+        self.assertEqual(column_id, "id")
+        self.assertEqual(column_value, "_value")
+
+        correct_indices = (["id=1, shift=-3"] * 1 +
+                           ["id=1, shift=-2"] * 2 +
+                           ["id=1, shift=-1"] * 3 +
+                           ["id=2, shift=-1"] * 1 +
+                           ["id=1, shift=0"] * 4 +
+                           ["id=2, shift=0"] * 2)
+
+        self.assertListEqual(list(kind_to_df_map["a"]["id"].values), correct_indices)
+        self.assertListEqual(list(kind_to_df_map["b"]["id"].values), correct_indices)
+
+        self.assertListEqual(list(kind_to_df_map["a"]["_value"].values),
+                             [4, 3, 4, 2, 3, 4, 11, 1, 2, 3, 4, 10, 11])
+        self.assertListEqual(list(kind_to_df_map["b"]["_value"].values),
+                             [8, 7, 8, 6, 7, 8, 13, 5, 6, 7, 8, 12, 13])
 
 
 class CheckForNanTestCase(TestCase):

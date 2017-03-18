@@ -297,7 +297,7 @@ def normalize_input_to_internal_representation(df_or_dict, column_id, column_sor
 
         for kind, df in kind_to_df_map.items():
             grouped_data = df.groupby(column_id)
-            maximum_number_of_timeshifts = grouped_data.time.count().max()
+            maximum_number_of_timeshifts = grouped_data[column_value].count().max()
 
             if rolling > 0:
                 range_of_shifts = range(maximum_number_of_timeshifts, -1, -1)
@@ -307,7 +307,7 @@ def normalize_input_to_internal_representation(df_or_dict, column_id, column_sor
             def roll_out_time_series(time_shift):
                 # Shift out only the first "time_shift" rows
                 df_temp = grouped_data.shift(time_shift)
-                df_temp["id"] = "id=" + df.id.map(str) + ", shift={}".format(abs(time_shift))
+                df_temp[column_id] = "id=" + df[column_id].map(str) + ", shift={}".format(time_shift)
                 return df_temp.dropna()
 
             kind_to_df_map[kind] = pd.concat([roll_out_time_series(time_shift) for time_shift in range_of_shifts],
