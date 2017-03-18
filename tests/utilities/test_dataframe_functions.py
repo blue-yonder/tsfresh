@@ -157,6 +157,10 @@ class NormalizeTestCase(TestCase):
         self.assertRaises(ValueError, dataframe_functions.normalize_input_to_internal_representation, test_df,
                           "id", None, None, "value", 0)
 
+        test_df = pd.DataFrame([{"id": 0, "value": np.NaN}])
+        self.assertRaises(ValueError, dataframe_functions.normalize_input_to_internal_representation, test_df,
+                          None, None, None, "value", 0)
+
 
 class RollingTestCase(TestCase):
     def test_positive_rolling(self):
@@ -344,3 +348,8 @@ class RestrictTestCase(TestCase):
         kind_to_df_restricted2 = dataframe_functions.restrict_input_to_index(kind_to_df, 'id', [1, 2, 3, 4, 5])
         self.assertTrue(kind_to_df_restricted2['a'].equals(kind_to_df['a']))
         self.assertTrue(kind_to_df_restricted2['b'].equals(kind_to_df['b']))
+
+    def test_restring_wrong(self):
+        other_type = np.array([1, 2, 3])
+
+        self.assertRaises(TypeError, dataframe_functions.restrict_input_to_index, other_type, "id", [1, 2, 3])
