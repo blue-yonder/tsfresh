@@ -217,6 +217,12 @@ def normalize_input_to_internal_representation(df_or_dict, column_id, column_sor
         DataFrames in the dictionaries). If it is None, it is assumed that there is only a single remaining column
         in the DataFrame(s) (otherwise an exception is raised).
     :type column_value: basestring or None
+    :param rolling: If non-zero, roll the (sorted) data frames for each kind and each id separately in "time"
+        (time is here the abstract sort order defined by the sort column). For each rolling step a new id will be
+        created, with the name "id={id}, shift={shift}" where the id is the former id of the column and shift is the
+        amount of "time" shifts. ATTENTION: This will (obviously) create new IDs! The sign of rolling defines the
+        direction of time rolling.
+    :type rolling: int
     :return: A tuple of 3 elements: the normalized DataFrame as a dictionary mapping from the kind (as a string) to the
              corresponding DataFrame, the name of the id column and the name of the value column
     :rtype: (dict, basestring, basestring)
@@ -287,23 +293,24 @@ def normalize_input_to_internal_representation(df_or_dict, column_id, column_sor
 
     # Roll the data frames if requested
     if rolling:
+        rolling = np.sign(rolling)
+
         for kind, df in kind_to_df_map.items():
             grouped_data = df.groupby(column_id)
             maximum_number_of_timeshifts = grouped_data.time.count().max()
-            rolling = np.sign(rolling)
 
             if rolling > 0:
                 range_of_shifts = range(maximum_number_of_timeshifts, -1, -1)
             else:
                 range_of_shifts = range(-maximum_number_of_timeshifts, 1)
 
-            def f():
-                for time_shift in range_of_shifts:
-                    # Shift out only the first "time_shift" rows
-                    df_temp = grouped_data.shift(time_shift)
-                    df_temp["id"] = "id=" + df.id.map(str) + ", shift={}".format(abs(time_shift))
-                    yield df_temp.dropna()
+            def roll_out_time_series(time_shift):
+                # Shift out only the first "time_shift" rows
+                df_temp = grouped_data.shift(time_shift)
+                df_temp["id"] = "id=" + df.id.map(str) + ", shift={}".format(abs(time_shift))
+                return df_temp.dropna()
 
-            kind_to_df_map[kind] = pd.concat(f(), ignore_index=True)
+            kind_to_df_map[kind] = pd.concat([roll_out_time_series(time_shift) for time_shift in range_of_shifts],
+                                             ignore_index=True)
 
     return kind_to_df_map, column_id, column_value

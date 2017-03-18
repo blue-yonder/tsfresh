@@ -36,6 +36,7 @@ def extract_relevant_features(timeseries_container, y, X=None,
     :param column_sort: See parameter `column_sort` in :func:`~tsfresh.feature_extraction.extraction.extract_features`
     :param column_kind: See parameter `column_kind` in :func:`~tsfresh.feature_extraction.extraction.extract_features`
     :param column_value: See parameter `column_value` in :func:`~tsfresh.feature_extraction.extraction.extract_features`
+    :param rolling: See parameter `rolling` in :func:`~tsfresh.feature_extraction.extraction.extract_features`
     :param feature_extraction_settings: See parameter `feature_extraction_settings` in :func:`~tsfresh.feature_extraction.extraction.extract_features`
     :param feature_selection_settings: See parameter `feature_selection_settings` in :func:`~tsfresh.feature_selection.selection.select_features`
 
