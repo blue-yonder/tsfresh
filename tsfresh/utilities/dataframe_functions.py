@@ -188,7 +188,7 @@ def restrict_input_to_index(df_or_dict, column_id, index):
 
 # todo: add more testcases
 # todo: rewrite in a more straightforward way
-def normalize_input_to_internal_representation(df_or_dict, column_id, column_sort, column_kind, column_value):
+def normalize_input_to_internal_representation(df_or_dict, column_id, column_sort, column_kind, column_value, rolling):
     """
     Try to transform any given input to the internal representation of time series, which is a mapping from string
     (the kind) to a pandas DataFrame with exactly two columns (the value and the id).
@@ -199,12 +199,10 @@ def normalize_input_to_internal_representation(df_or_dict, column_id, column_sor
     :param df_or_dict: a pandas DataFrame or a dictionary. The required shape/form of the object depends on the rest of
         the passed arguments.
     :type df_or_dict: pandas.DataFrame or dict
-    :param column_id: if not None, it must be present in the pandas DataFrame or in all DataFrames in the dictionary.
+    :param column_id: it must be present in the pandas DataFrame or in all DataFrames in the dictionary.
         It is not allowed to have NaN values in this column.
-        If this column name is None, a new column will be added to the pandas DataFrame (or all pandas DataFrames in
-        the dictionary) and the same id for all entries is assumed.
     :type column_id: basestring or None
-    :param column_sort: if not None, sort the rows by this column. Then, the column is dropped. It is not allowed to
+    :param column_sort: if not None, sort the rows by this column. It is not allowed to
         have NaN values in this column.
     :type column_sort: basestring or None
     :param column_kind: It can only be used when passing a pandas DataFrame (the dictionary is already assumed to be
@@ -240,7 +238,7 @@ def normalize_input_to_internal_representation(df_or_dict, column_id, column_sor
                 kind_to_df_map = {key: df_or_dict[[key] + id_and_sort_column].copy().rename(columns={key: "_value"})
                                   for key in df_or_dict.columns if key not in id_and_sort_column}
 
-                #todo: is this the right check?
+                # TODO: is this the right check?
                 if len(kind_to_df_map) < 1:
                     raise ValueError("You passed in a dataframe without a value column.")
                 column_value = "_value"
@@ -286,5 +284,26 @@ def normalize_input_to_internal_representation(df_or_dict, column_id, column_sor
     for kind in kind_to_df_map:
         if kind_to_df_map[kind][column_value].isnull().any():
                 raise ValueError("You have NaN values in your value column.")
+
+    # Roll the data frames if requested
+    if rolling:
+        for kind, df in kind_to_df_map.items():
+            grouped_data = df.groupby(column_id)
+            maximum_number_of_timeshifts = grouped_data.time.count().max()
+            rolling = np.sign(rolling)
+
+            if rolling > 0:
+                range_of_shifts = range(maximum_number_of_timeshifts, -1, -1)
+            else:
+                range_of_shifts = range(-maximum_number_of_timeshifts, 1)
+
+            def f():
+                for time_shift in range_of_shifts:
+                    # Shift out only the first "time_shift" rows
+                    df_temp = grouped_data.shift(time_shift)
+                    df_temp["id"] = "id=" + df.id.map(str) + ", shift={}".format(abs(time_shift))
+                    yield df_temp.dropna()
+
+            kind_to_df_map[kind] = pd.concat(f(), ignore_index=True)
 
     return kind_to_df_map, column_id, column_value

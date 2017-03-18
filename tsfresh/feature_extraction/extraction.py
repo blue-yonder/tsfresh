@@ -26,6 +26,7 @@ _logger = logging.getLogger(__name__)
 
 def extract_features(timeseries_container, feature_extraction_settings=None,
                      column_id=None, column_sort=None, column_kind=None, column_value=None,
+                     rolling=0,
                      parallelization=None):
     """
     Extract features from
@@ -86,8 +87,12 @@ def extract_features(timeseries_container, feature_extraction_settings=None,
     # Always use the standardized way of storing the data.
     # See the function normalize_input_to_internal_representation for more information.
     kind_to_df_map, column_id, column_value = \
-        dataframe_functions.normalize_input_to_internal_representation(timeseries_container, column_id, column_sort,
-                                                                       column_kind, column_value)
+        dataframe_functions.normalize_input_to_internal_representation(df_or_dict=timeseries_container,
+                                                                       column_id=column_id,
+                                                                       column_sort=column_sort,
+                                                                       column_kind=column_kind,
+                                                                       column_value=column_value,
+                                                                       rolling=rolling)
 
     # Use the standard setting if the user did not supply ones himself.
     if feature_extraction_settings is None:
