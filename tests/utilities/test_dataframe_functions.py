@@ -245,9 +245,11 @@ class CheckForNanTestCase(TestCase):
         self.assertRaises(ValueError, dataframe_functions.check_for_nans_in_columns, test_df)
         self.assertRaises(ValueError, dataframe_functions.check_for_nans_in_columns, test_df, ["a", "b"])
         self.assertRaises(ValueError, dataframe_functions.check_for_nans_in_columns, test_df, ["b"])
+        self.assertRaises(ValueError, dataframe_functions.check_for_nans_in_columns, test_df, "b")
         self.assertRaises(ValueError, dataframe_functions.check_for_nans_in_columns, test_df, ["c", "b"])
 
         dataframe_functions.check_for_nans_in_columns(test_df, columns=["a", "c"])
+        dataframe_functions.check_for_nans_in_columns(test_df, columns="a")
 
 
 class ImputeTestCase(TestCase):
@@ -268,23 +270,6 @@ class ImputeTestCase(TestCase):
         dataframe_functions.impute_dataframe_zero(df)
         self.assertEqual(list(df.value), [0, 0, 0, 1])
 
-    def test_get_range_values(self):
-        df = pd.DataFrame([0, 1, 2, 3, np.NaN], columns=["value"])
-
-        col_to_max, col_to_min, col_to_median = dataframe_functions.get_range_values_per_column(df)
-
-        self.assertEqual(col_to_max, {"value": 3})
-        self.assertEqual(col_to_min, {"value": 0})
-        self.assertEqual(col_to_median, {"value": 1.5})
-
-        df = pd.DataFrame([np.NaN, np.NaN], columns=["value"])
-
-        col_to_max, col_to_min, col_to_median = dataframe_functions.get_range_values_per_column(df)
-
-        self.assertEqual(col_to_max, {"value": 0})
-        self.assertEqual(col_to_min, {"value": 0})
-        self.assertEqual(col_to_median, {"value": 0})
-
     def test_toplevel_impute(self):
         df = pd.DataFrame(np.transpose([[0, 1, 2, np.NaN], [1, np.PINF, 2, 3], [1, -3, np.NINF, 3]]),
                           columns=["value_a", "value_b", "value_c"])
@@ -296,36 +281,56 @@ class ImputeTestCase(TestCase):
         self.assertEqual(list(df.value_c), [1, -3, -3, 3])
 
     def test_impute_range(self):
-        df = pd.DataFrame(np.transpose([[0, 1, 2, np.NaN], [1, np.PINF, 2, 3], [1, -3, np.NINF, 3]]),
-                          columns=["value_a", "value_b", "value_c"])
+        def get_df():
+            return pd.DataFrame(np.transpose([[0, 1, 2, np.NaN],
+                                              [1, np.PINF, 2, 3],
+                                              [1, -3, np.NINF, 3]]),
+                                columns=["value_a", "value_b", "value_c"])
 
-        col_to_max = {"value_b": 200}
-        col_to_min = {"value_c": -134}
-        col_to_median = {"value_a": 55}
-
+        # check if values are replaced correctly
+        df = get_df()
+        col_to_max = {"value_a": 200, "value_b": 200, "value_c": 200}
+        col_to_min = {"value_a": -134, "value_b": -134, "value_c": -134}
+        col_to_median = {"value_a": 55, "value_b": 55, "value_c": 55}
         dataframe_functions.impute_dataframe_range(df, col_to_max, col_to_min, col_to_median)
-
         self.assertEqual(list(df.value_a), [0, 1, 2, 55])
         self.assertEqual(list(df.value_b), [1, 200, 2, 3])
         self.assertEqual(list(df.value_c), [1, -3, -134, 3])
 
-        df = pd.DataFrame(np.transpose([[0, 1, 2, np.NaN], [1, np.PINF, 2, 3], [1, -3, np.NINF, 3]]),
-                          columns=["value_a", "value_b", "value_c"])
+        # check for error if column key is missing
+        df = get_df()
+        col_to_max = {"value_a": 200, "value_b": 200, "value_c": 200}
+        col_to_min = {"value_a": -134, "value_b": -134, "value_c": -134}
+        col_to_median = {"value_a": 55, "value_c": 55}
+        self.assertRaises(ValueError, dataframe_functions.impute_dataframe_range,
+                          df, col_to_max, col_to_min, col_to_median)
 
-        dataframe_functions.impute_dataframe_range(df)
+        # check for no error if column key is too much
+        col_to_max = {"value_a": 200, "value_b": 200, "value_c": 200}
+        col_to_min = {"value_a": -134, "value_b": -134, "value_c": -134}
+        col_to_median = {"value_a": 55, "value_b": 55, "value_c": 55, "value_d": 55}
+        dataframe_functions.impute_dataframe_range(df, col_to_max, col_to_min, col_to_median)
 
-        self.assertEqual(list(df.value_a), [0, 1, 2, 1])
-        self.assertEqual(list(df.value_b), [1, 3, 2, 3])
-        self.assertEqual(list(df.value_c), [1, -3, -3, 3])
+        # check for error if replacement value is not finite
+        df = get_df()
+        col_to_max = {"value_a": 200, "value_b": np.NaN, "value_c": 200}
+        col_to_min = {"value_a": -134, "value_b": -134, "value_c": -134}
+        col_to_median = {"value_a": 55, "value_b": 55, "value_c": 55}
+        self.assertRaises(ValueError, dataframe_functions.impute_dataframe_range,
+                          df, col_to_max, col_to_min, col_to_median)
+        df = get_df()
+        col_to_max = {"value_a": 200, "value_b": 200, "value_c": 200}
+        col_to_min = {"value_a": -134, "value_b": np.NINF, "value_c": -134}
+        col_to_median = {"value_a": 55, "value_b": 55, "value_c": 55}
+        self.assertRaises(ValueError, dataframe_functions.impute_dataframe_range,
+                          df, col_to_max, col_to_min, col_to_median)
 
-        df = pd.DataFrame(np.transpose([[np.NaN, np.NaN, np.NaN, np.NaN], [1, np.PINF, 2, 3], [1, -3, np.NINF, 3]]),
-                          columns=["value_a", "value_b", "value_c"])
-
-        dataframe_functions.impute_dataframe_range(df)
-
-        self.assertEqual(list(df.value_a), [0, 0, 0, 0])
-        self.assertEqual(list(df.value_b), [1, 3, 2, 3])
-        self.assertEqual(list(df.value_c), [1, -3, -3, 3])
+        df = get_df()
+        col_to_max = {"value_a": 200, "value_b": 200, "value_c": 200}
+        col_to_min = {"value_a": -134, "value_b": -134, "value_c": -134}
+        col_to_median = {"value_a": 55, "value_b": 55, "value_c": np.PINF}
+        self.assertRaises(ValueError, dataframe_functions.impute_dataframe_range,
+                          df, col_to_max, col_to_min, col_to_median)
 
 
 class RestrictTestCase(TestCase):
@@ -349,7 +354,44 @@ class RestrictTestCase(TestCase):
         self.assertTrue(kind_to_df_restricted2['a'].equals(kind_to_df['a']))
         self.assertTrue(kind_to_df_restricted2['b'].equals(kind_to_df['b']))
 
-    def test_restring_wrong(self):
+    def test_restrict_wrong(self):
         other_type = np.array([1, 2, 3])
 
         self.assertRaises(TypeError, dataframe_functions.restrict_input_to_index, other_type, "id", [1, 2, 3])
+
+class GetRangeValuesPerColumnTestCase(TestCase):
+    def test_ignores_non_finite_values(self):
+        df = pd.DataFrame([0, 1, 2, 3, np.NaN, np.PINF, np.NINF], columns=["value"])
+
+        col_to_max, col_to_min, col_to_median = dataframe_functions.get_range_values_per_column(df)
+
+        self.assertEqual(col_to_max, {"value": 3})
+        self.assertEqual(col_to_min, {"value": 0})
+        self.assertEqual(col_to_median, {"value": 1.5})
+
+    def test_range_values_correct_with_even_length(self):
+        df = pd.DataFrame([0, 1, 2, 3], columns=["value"])
+
+        col_to_max, col_to_min, col_to_median = dataframe_functions.get_range_values_per_column(df)
+
+        self.assertEqual(col_to_max, {"value": 3})
+        self.assertEqual(col_to_min, {"value": 0})
+        self.assertEqual(col_to_median, {"value": 1.5})
+
+    def test_range_values_correct_with_uneven_length(self):
+        df = pd.DataFrame([0, 1, 2], columns=["value"])
+
+        col_to_max, col_to_min, col_to_median = dataframe_functions.get_range_values_per_column(df)
+
+        self.assertEqual(col_to_max, {"value": 2})
+        self.assertEqual(col_to_min, {"value": 0})
+        self.assertEqual(col_to_median, {"value": 1})
+
+    def test_no_finite_values_yields_0(self):
+        df = pd.DataFrame([np.NaN, np.PINF, np.NINF], columns=["value"])
+
+        col_to_max, col_to_min, col_to_median = dataframe_functions.get_range_values_per_column(df)
+
+        self.assertEqual(col_to_max, {"value": 0})
+        self.assertEqual(col_to_min, {"value": 0})
+        self.assertEqual(col_to_median, {"value": 0})

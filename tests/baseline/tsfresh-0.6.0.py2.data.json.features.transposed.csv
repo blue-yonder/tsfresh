@@ -68,7 +68,7 @@ value__mean_abs_change_quantiles__qh_1.0__ql_0.4,45.0740740741
 value__time_reversal_asymmetry_statistic__lag_3,1993963105.11
 value__mean_abs_change_quantiles__qh_1.0__ql_0.6,41.125
 value__mean_abs_change_quantiles__qh_1.0__ql_0.8,58.3333333333
-value__sum_of_reoccurring_values,109822.0
+value__sum_of_reoccurring_values,49922.0
 value__abs_energy,5983503421.0
 value__variance_larger_than_standard_deviation,1.0
 value__mean_abs_change_quantiles__qh_0.6__ql_0.8,0.0
@@ -121,6 +121,7 @@ value__sample_entropy,2.22646139752
 value__has_duplicate_min,0.0
 value__symmetry_looking__r_0.55,1.0
 value__count_below_mean,31.0
+value__sum_of_reoccurring_data_points,109822.0
 value__quantile__q_0.1,9909.9
 value__quantile__q_0.2,9937.8
 value__quantile__q_0.3,9962.7
@@ -215,3 +216,8 @@ value__fft_coefficient__coeff_6,13.0
 value__fft_coefficient__coeff_7,112.235306522
 value__fft_coefficient__coeff_8,118.187822328
 value__fft_coefficient__coeff_9,-248.0
+value__friedrich_coefficients__m_3__r_30__coeff_0,nan
+value__friedrich_coefficients__m_3__r_30__coeff_1,nan
+value__friedrich_coefficients__m_3__r_30__coeff_2,nan
+value__friedrich_coefficients__m_3__r_30__coeff_3,nan
+value__max_langevin_fixed_point__m_3__r_30,nan

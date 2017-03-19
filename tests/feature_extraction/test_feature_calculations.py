@@ -9,6 +9,8 @@ from random import shuffle
 from unittest import TestCase
 from tsfresh.feature_extraction.feature_calculators import *
 from tsfresh.feature_extraction.feature_calculators import _get_length_sequences_where
+from tsfresh.feature_extraction.feature_calculators import _estimate_friedrich_coefficients
+from tsfresh.examples.driftbif_simulation import velocity
 import six
 import math
 
@@ -273,12 +275,19 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqualOnAllArrayTypes(percentage_of_reoccurring_values_to_all_values, [1.111, -2.45, 1.111, 2.45], 0.5)
         self.assertIsNanOnAllArrayTypes(percentage_of_reoccurring_values_to_all_values, [])
 
-    def test_sum_of_doubled_values(self):
-        self.assertAlmostEqualOnAllArrayTypes(sum_of_reoccurring_values, [1, 1, 2, 3, 4], 2)
+    def test_sum_of_reoccurring_values(self):
+        self.assertAlmostEqualOnAllArrayTypes(sum_of_reoccurring_values, [1, 1, 2, 3, 4, 4], 5)
         self.assertAlmostEqualOnAllArrayTypes(sum_of_reoccurring_values, [1, 1.5, 2, 3], 0)
         self.assertAlmostEqualOnAllArrayTypes(sum_of_reoccurring_values, [1], 0)
-        self.assertAlmostEqualOnAllArrayTypes(sum_of_reoccurring_values, [1.111, -2.45, 1.111, 2.45], 2.222)
+        self.assertAlmostEqualOnAllArrayTypes(sum_of_reoccurring_values, [1.111, -2.45, 1.111, 2.45], 1.111)
         self.assertAlmostEqualOnAllArrayTypes(sum_of_reoccurring_values, [], 0)
+
+    def test_sum_of_reoccurring_data_points(self):
+        self.assertAlmostEqualOnAllArrayTypes(sum_of_reoccurring_data_points, [1, 1, 2, 3, 4, 4], 10)
+        self.assertAlmostEqualOnAllArrayTypes(sum_of_reoccurring_data_points, [1, 1.5, 2, 3], 0)
+        self.assertAlmostEqualOnAllArrayTypes(sum_of_reoccurring_data_points, [1], 0)
+        self.assertAlmostEqualOnAllArrayTypes(sum_of_reoccurring_data_points, [1.111, -2.45, 1.111, 2.45], 2.222)
+        self.assertAlmostEqualOnAllArrayTypes(sum_of_reoccurring_data_points, [], 0)
 
     def test_uniqueness_factor(self):
         self.assertAlmostEqualOnAllArrayTypes(ratio_value_number_to_time_series_length, [1, 1, 2, 3, 4], 0.8)
@@ -505,3 +514,56 @@ class FeatureCalculationTestCase(TestCase):
         self.assertEqualOnAllArrayTypes(approximate_entropy, [1, 2, 3], 0, m=2, r=0.5)
         self.assertAlmostEqualOnAllArrayTypes(approximate_entropy, [12, 13, 15, 16, 17]*10, 0.282456191, m=2, r=0.9)
         self.assertRaises(ValueError, approximate_entropy, x=[12, 13, 15, 16, 17]*10, m=2, r=-0.5)
+
+    def test_estimate_friedrich_coefficients(self):
+        """
+        Estimate friedrich coefficients
+        """
+        default_params = {"m": 3, "r": 30}
+        
+        # active Brownian motion
+        ds = velocity(tau=3.8, delta_t=0.05, R=3e-4, seed=0)
+        v = ds.simulate(1000000, v0=np.zeros(1))
+        coeff = _estimate_friedrich_coefficients(v[:,0], **default_params)
+        self.assertTrue(abs(coeff[-1])<0.0001)
+
+        # Brownian motion
+        ds = velocity(tau=2.0/0.3-3.8, delta_t=0.05, R=3e-4, seed=0)
+        v = ds.simulate(1000000, v0=np.zeros(1))
+        coeff = _estimate_friedrich_coefficients(v[:,0], **default_params)
+        self.assertTrue(abs(coeff[-1])<0.0001)
+
+    def test_friedrich_coefficients(self):
+        # Test binning error returns vector of NaNs
+        c = "TEST"
+        param = [{"coeff": coeff, "m": 2, "r": 30} for coeff in range(4)]
+        x = np.zeros(1000)
+        
+        res = friedrich_coefficients(x, c, param)
+        expected_index = ["TEST__friedrich_coefficients__m_2__r_30__coeff_0",
+                          "TEST__friedrich_coefficients__m_2__r_30__coeff_1",
+                          "TEST__friedrich_coefficients__m_2__r_30__coeff_2"]
+
+        self.assertIsInstance(res, pd.Series)
+        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertTrue(np.sum(np.isnan(res)), 3)
+
+        
+    def test_max_langevin_fixed_point(self):
+        """
+        Estimating the intrinsic velocity of a dissipative soliton
+        """
+        default_params = {"m": 3, "r": 30}
+        
+        # active Brownian motion
+        ds = velocity(tau=3.8, delta_t=0.05, R=3e-4, seed=0)
+        v = ds.simulate(1000000, v0=np.zeros(1))
+        v0 = max_langevin_fixed_point(v[:,0], **default_params)
+        self.assertTrue(abs(ds.deterministic-v0)<0.0001)
+
+        # Brownian motion
+        ds = velocity(tau=2.0/0.3-3.8, delta_t=0.05, R=3e-4, seed=0)
+        v = ds.simulate(1000000, v0=np.zeros(1))
+        v0 = max_langevin_fixed_point(v[:,0], **default_params)
+        self.assertTrue(v0<0.001)
+

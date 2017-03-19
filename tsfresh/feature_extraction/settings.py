@@ -35,7 +35,7 @@ class FeatureExtractionSettings(object):
     3. apply features with parameters that emit several features per function calculator (usually one feature per parameter value)
 
     These three types are stored in different dictionaries. For the feature types with parameters there is also a
-    dictionaries containing the parameters.
+    dictionary containing the parameters.
 
     It is possible to obtain a `FeatureExtractionSettings` object from a feature matrix,
     see func:`~tsfresh.feature_extraction.settings.FeatureExtractionSettings.from_columns`. This is useful to reproduce
@@ -102,10 +102,13 @@ class FeatureExtractionSettings(object):
                 "fft_coefficient": [{"coeff": coeff} for coeff in range(0, 10)],
                 "value_count": [{"value": value} for value in [0, 1, np.NaN, np.PINF, np.NINF]],
                 "range_count": [{"min": -1, "max": 1}],
-                "approximate_entropy": [{"m": 2, "r": r} for r in [.1, .3, .5, .7, .9]]
+                "approximate_entropy": [{"m": 2, "r": r} for r in [.1, .3, .5, .7, .9]],
+                "friedrich_coefficients": (lambda m: [{"coeff": coeff, "m": m, "r": 30}
+                                                      for coeff in range(m+1)])(3),
+                "max_langevin_fixed_point": [{"m": 3, "r": 30}],
             })
 
-        # default None means one procesqs per cpu
+        # default None means one process per cpu
         n_cores = int(os.getenv("NUMBER_OF_CPUS") or cpu_count())
         self.n_processes = max(1, n_cores//2)
 
@@ -124,7 +127,7 @@ class FeatureExtractionSettings(object):
 
     def do_not_calculate(self, kind, identifier):
         """
-        Delete the all features of type identifier for time series of type kind.
+        Delete all features of type identifier for time series of type kind.
 
         :param kind: the type of the time series
         :type kind: basestring
@@ -145,8 +148,8 @@ class FeatureExtractionSettings(object):
     @staticmethod
     def from_columns(columns):
         """
-        Creates a FeatureExtractionSettings object set to extract only the features contained in the list columns. to
-        do so, for every feature name in columns this method
+        Creates a FeatureExtractionSettings object set to extract only the features contained in the list columns. To
+        do so, for every feature name in columns, this method will:
 
         1. split the column name into col, feature, params part
         2. decide which feature we are dealing with (aggregate with/without params or apply)
@@ -247,9 +250,9 @@ class FeatureExtractionSettings(object):
 
     def get_aggregate_functions(self, kind):
         """
-        For the tyme series Returns a dictionary with the column name mapped to the feature calculators that are
+        For the time series, returns a dictionary with the column name mapped to the feature calculators that are
         specified in the FeatureExtractionSettings object. This dictionary can be used in a pandas group by command to
-        extract the all aggregate features at the same time.
+        extract all aggregate features at the same time.
 
         :param kind: the type of the time series
         :type kind: basestring
@@ -296,7 +299,7 @@ class FeatureExtractionSettings(object):
     def get_apply_functions(self, column_prefix):
         """
         Convenience function to return a list with all the functions to apply on a data frame and extract features.
-        Only adds those functions to the dictionary, that are enabled in the settings.
+        Only adds those functions to the dictionary that are enabled in the settings.
 
         :param column_prefix: the prefix all column names.
         :type column_prefix: basestring

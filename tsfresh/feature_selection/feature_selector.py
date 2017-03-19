@@ -16,11 +16,13 @@ from functools import partial
 
 from builtins import zip
 from builtins import range
+from tqdm import tqdm
 import os
 import numpy as np
 import pandas as pd
 import logging
 from multiprocessing import Pool
+from tsfresh.utilities import helper_functions
 from tsfresh.feature_selection.significance_tests import target_binary_feature_real_test, \
     target_real_feature_binary_test, target_real_feature_real_test, target_binary_feature_binary_test
 
@@ -33,13 +35,13 @@ _logger = logging.getLogger(__name__)
 def check_fs_sig_bh(X, y, settings=None):
     """
     The wrapper function that calls the significance test functions in this package.
-    In total, for each feature from the input pandas.DataFrame an univariate feature significance test is conducted.
+    In total, for each feature from the input pandas.DataFrame a univariate feature significance test is conducted.
     Those tests generate p values that are then evaluated by the Benjamini Hochberg procedure to decide which features
     to keep and which to delete.
 
     We are testing
     
-        :math:`H_0` = the Feature is not relevant and can not be added
+        :math:`H_0` = the Feature is not relevant and cannot be added
 
     against
 
@@ -75,7 +77,7 @@ def check_fs_sig_bh(X, y, settings=None):
     :param y: The target vector
     :type y: pandas.Series
 
-    :param settings: The feature selection settings to use for performing the tests.
+    :param settings: The feature selection settings to use to perform the tests.
     :type settings: FeatureSignificanceTestsSettings
 
     :return: A pandas.DataFrame with each column of the input DataFrame X as index with information on the significance
@@ -114,10 +116,15 @@ def check_fs_sig_bh(X, y, settings=None):
     # Calculate the feature significance in parallel
     pool = Pool(settings.n_processes)
 
-    # Helper function which wrapps the _calculate_p_value with many arguments already set
+    # Helper function which wraps the _calculate_p_value with many arguments already set
     f = partial(_calculate_p_value, y=y, settings=settings, target_is_binary=target_is_binary)
-    results = pool.map(f, [X[feature] for feature in df_features['Feature']], chunksize=settings.chunksize)
-    p_values_of_features = pd.DataFrame(results)
+
+    chunksize = helper_functions.calculate_best_chunksize(df_features, settings)
+    total_number_of_features = len(df_features)
+    results = tqdm(pool.imap_unordered(f, [X[feature] for feature in df_features['Feature']], chunksize=chunksize),
+                   total=total_number_of_features, desc="Feature Selection")
+
+    p_values_of_features = pd.DataFrame(list(results))
     df_features.update(p_values_of_features)
 
     pool.close()
@@ -217,7 +224,7 @@ def benjamini_hochberg_test(df_pvalues, settings):
     :type df_pvalues: pandas.DataFrame
 
     :param settings: The settings object to use for controlling the false discovery rate (FDR_level) and
-           whether to threat the hypothesis independent or not (hypotheses_independent).
+           whether to treat the hypothesis as independent or not (hypotheses_independent).
     :type settings: FeatureSignificanceTestsSettings
 
     :return: The same DataFrame as the input, but with an added boolean column "rejected".

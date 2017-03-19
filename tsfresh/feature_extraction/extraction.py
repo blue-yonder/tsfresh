@@ -18,7 +18,7 @@ import numpy as np
 
 from tqdm import tqdm
 
-from tsfresh.utilities import dataframe_functions, profiling
+from tsfresh.utilities import dataframe_functions, helper_functions, profiling
 from tsfresh.feature_extraction.settings import FeatureExtractionSettings
 
 _logger = logging.getLogger(__name__)
@@ -91,6 +91,9 @@ def extract_features(timeseries_container, feature_extraction_settings=None,
     :return: The (maybe imputed) DataFrame containing extracted features.
     :rtype: pandas.DataFrame
     """
+    import logging
+    logging.basicConfig()
+    
     # Always use the standardized way of storing the data.
     # See the function normalize_input_to_internal_representation for more information.
     kind_to_df_map, column_id, column_value = \
@@ -160,7 +163,7 @@ def _extract_features_parallel_per_kind(kind_to_df_map, settings, column_id, col
                                                            settings=settings)
     pool = Pool(settings.n_processes)
 
-    chunksize = _calculate_best_chunksize(kind_to_df_map, settings)
+    chunksize = helper_functions.calculate_best_chunksize(kind_to_df_map, settings)
 
     total_number_of_expected_results = len(kind_to_df_map)
     extracted_features = tqdm(pool.imap_unordered(partial_extract_features_for_one_time_series, kind_to_df_map.items(),
@@ -217,7 +220,7 @@ def _extract_features_parallel_per_sample(kind_to_df_map, settings, column_id, c
 
         total_number_of_expected_results += len(df_grouped_by_id)
 
-        chunksize = _calculate_best_chunksize(df_grouped_by_id, settings)
+        chunksize = helper_functions.calculate_best_chunksize(df_grouped_by_id, settings)
 
         results_fifo.put(
             pool.imap_unordered(
@@ -235,7 +238,7 @@ def _extract_features_parallel_per_sample(kind_to_df_map, settings, column_id, c
     # Do this all with a progress bar
     with tqdm(total=total_number_of_expected_results, desc="Feature Extraction", disable=settings.disable_progressbar) as progress_bar:
         # We need some sort of measure, when a new result is there. So we wrap the
-        # map_results into another iterable which updates the progress bar each time,
+        # map_results into another iterable which updates the progress bar each time
         # a new result is there
         def iterable_with_tqdm_update(queue, progress_bar):
             for element in queue:
@@ -256,27 +259,6 @@ def _extract_features_parallel_per_sample(kind_to_df_map, settings, column_id, c
 
     pool.join()
     return result
-
-
-def _calculate_best_chunksize(iterable_list, settings):
-    """
-    Helper function to calculate the best chunksize for a given number of elements to calculate,
-    or use the one in the settings object.
-
-    The formula is more or less an empirical result.
-    :param iterable_list: A list which defines how many calculations there need to be.
-    :param settings: The settings object where the chunksize may already be given (or not).
-    :return: The chunksize which should be used.
-
-    TODO: Investigate which is the best chunk size for different settings.
-    """
-    if not settings.chunksize:
-        chunksize, extra = divmod(len(iterable_list), settings.n_processes * 5)
-        if extra:
-            chunksize += 1
-    else:
-        chunksize = settings.chunksize
-    return chunksize
 
 
 def _extract_features_for_one_time_series(prefix_and_dataframe, column_id, column_value, settings):

@@ -10,7 +10,6 @@ import numpy as np
 import pandas as pd
 import logging
 
-
 _logger = logging.getLogger(__name__)
 
 
@@ -30,9 +29,11 @@ def check_for_nans_in_columns(df, columns=None):
     if columns is None:
         columns = df.columns
 
-    for key in columns:
-        if df[key].isnull().any():
-            raise ValueError("Column {} of dataframe must not contain NaN values".format(key))
+    if pd.isnull(df.loc[:, columns]).any().any():
+        if not isinstance(columns, list):
+            columns = list(columns)
+        raise ValueError("Columns {} of DataFrame must not contain NaN values".format(
+            df.loc[:, columns].columns[pd.isnull(df.loc[:, columns]).sum() > 0].tolist()))
 
 
 def impute(df_impute):
@@ -46,46 +47,60 @@ def impute(df_impute):
 
     If the column does not contain finite values at all, it is filled with zeros.
 
-    This function modifies `df_impute` in place. After that, df_impute is
-    guaranteed to not contain any non-finite values. Also, all columns will be guaranteed to be of type ``np.float64``.
+    This function modifies `df_impute` in place. After that, df_impute is guaranteed to not contain any non-finite
+    values. Also, all columns will be guaranteed to be of type ``np.float64``.
 
     :param df_impute: DataFrame to impute
     :type df_impute: pandas.DataFrame
-    :return: None
-    :rtype: None
+
+    :return df_impute: imputed DataFrame
+    :rtype df_impute: pandas.DataFrame
     """
     col_to_max, col_to_min, col_to_median = get_range_values_per_column(df_impute)
-    impute_dataframe_range(df_impute, col_to_max, col_to_min, col_to_median)
+    df_impute = impute_dataframe_range(df_impute, col_to_max, col_to_min, col_to_median)
+
+    # Ensure a type of "np.float64"
+    df_impute.astype(np.float64, copy=False)
+    return df_impute
 
 
 def impute_dataframe_zero(df_impute):
     """
-    Replaces all ``NaNs`` and ``infs`` from the DataFrame `df_impute` with 0s.
-
-    `df_impute` will be modified in place. All its columns will be of datatype ``np.float64``.
+    Replaces all ``NaNs``, ``-infs`` and ``+infs`` from the DataFrame `df_impute` with 0s.
+    The `df_impute` will be modified in place. All its columns will be into converted into dtype ``np.float64``.
 
     :param df_impute: DataFrame to impute
     :type df_impute: pandas.DataFrame
+
+    :return df_impute: imputed DataFrame
+    :rtype df_impute: pandas.DataFrame
     """
 
     df_impute.replace([np.PINF, np.NINF], 0, inplace=True)
     df_impute.fillna(0, inplace=True)
 
+    # Ensure a type of "np.float64"
+    df_impute.astype(np.float64, copy=False)
+    return df_impute
 
-def impute_dataframe_range(df_impute, col_to_max=None, col_to_min=None, col_to_median=None):
+
+def impute_dataframe_range(df_impute, col_to_max, col_to_min, col_to_median):
     """
-    Columnwise replaces all ``NaNs`` and ``infs`` from the DataFrame `df_impute` with average/extreme values from
-    the provided dictionaries. This is done as follows: Each occurring ``inf`` or ``NaN`` in `df_impute` is replaced by
+    Columnwise replaces all ``NaNs``, ``-inf`` and ``+inf`` from the DataFrame `df_impute` with average/extreme values
+    from the provided dictionaries.
 
-        * ``-inf`` -> ``min``
-        * ``+inf`` -> ``max``
-        * ``NaN`` -> ``median``
+    This is done as follows: Each occurring ``inf`` or ``NaN`` in `df_impute` is replaced by
 
-    If a column is not found in the one of the dictionaries, the values are calculated from the columns finite values.
-    If the column does not contain finite values at all, it is filled with zeros.
+        * ``-inf`` -> by value in col_to_min
+        * ``+inf`` -> by value in col_to_max
+        * ``NaN`` -> by value in col_to_median
 
-    This function modifies `df_impute` in place. Unless the dictionaries contain ``NaNs`` or ``infs``, df_impute is
-    guaranteed to not contain any non-finite values. Also, all columns will be guaranteed to be of type ``np.float64``.
+    If a column of df_impute is not found in the one of the dictionaries, this method will raise a ValueError.
+    Also, if one of the values to replace is not finite a ValueError is returned
+
+    This function modifies `df_impute` in place. Afterwards df_impute is
+    guaranteed to not contain any non-finite values.
+    Also, all columns will be guaranteed to be of type ``np.float64``.
 
     :param df_impute: DataFrame to impute
     :type df_impute: pandas.DataFrame
@@ -95,67 +110,83 @@ def impute_dataframe_range(df_impute, col_to_max=None, col_to_min=None, col_to_m
     :type col_to_max: dict
     :param col_to_median: Dictionary mapping column names to median values
     :type col_to_max: dict
+
+    :return df_impute: imputed DataFrame
+    :rtype df_impute: pandas.DataFrame
+    :raise ValueError: if a column of df_impute is missing in col_to_max, col_to_min or col_to_median or a value
+                       to replace is non finite
     """
+    columns = df_impute.columns
 
-    if col_to_median is None:
-        col_to_median = {}
-    if col_to_min is None:
-        col_to_min = {}
-    if col_to_max is None:
-        col_to_max = {}
-    for column_name in df_impute.columns:
-        column = df_impute[column_name]
+    # Making sure col_to_median, col_to_max and col_to_min have entries for every column
+    if not set(columns) <= set(col_to_median.keys()) or \
+            not set(columns) <= set(col_to_max.keys()) or \
+            not set(columns) <= set(col_to_min.keys()):
+        raise ValueError("Some of the dictionaries col_to_median, col_to_max, col_to_min contains more or less keys "
+                         "than the column names in df")
 
-        # If we do not have all three values (max, min, median) we have to get them
-        if not (column_name in col_to_max and column_name in col_to_median and column_name in col_to_min):
-            finite_values_in_column = column[np.isfinite(column)]
+    # check if there are non finite values for the replacement
+    if np.any(~np.isfinite(list(col_to_median.values()))) or \
+            np.any(~np.isfinite(list(col_to_min.values()))) or \
+            np.any(~np.isfinite(list(col_to_max.values()))):
+        raise ValueError("Some of the dictionaries col_to_median, col_to_max, col_to_min contains non finite values "
+                         "to replace")
 
-            if len(finite_values_in_column) == 0:
-                _logger.warning(
-                    "The replacement column {} did not have any finite values. Filling with zeros.".format(column_name))
-                df_impute[column_name] = [0] * len(column)
-                continue
+    # Replacing values
+    # +inf -> max
+    indices = np.nonzero(df_impute.values == np.PINF)
+    if len(indices[0]) > 0:
+        replacement = [col_to_max[columns[i]] for i in indices[1]]
+        df_impute.values[indices] = replacement
 
-        if column_name not in col_to_max:
-            col_to_max[column_name] = max(finite_values_in_column)
+    # -inf -> min
+    indices = np.nonzero(df_impute.values == np.NINF)
+    if len(indices[0]) > 0:
+        replacement = [col_to_min[columns[i]] for i in indices[1]]
+        df_impute.values[indices] = replacement
 
-        if column_name not in col_to_min:
-            col_to_min[column_name] = min(finite_values_in_column)
+    # NaN -> median
+    indices = np.nonzero(np.isnan(df_impute.values))
+    if len(indices[0]) > 0:
+        replacement = [col_to_median[columns[i]] for i in indices[1]]
+        df_impute.values[indices] = replacement
 
-        if column_name not in col_to_median:
-            col_to_median[column_name] = np.median(finite_values_in_column)
-
-        # Finally, replace
-        df_impute[column_name] = df_impute[column_name].replace(np.PINF, col_to_max[column_name]). \
-            replace(np.NINF, col_to_min[column_name]). \
-            fillna(col_to_median[column_name]). \
-            astype(np.float64)
-
+    df_impute.astype(np.float64, copy=False)
     return df_impute
 
 
 def get_range_values_per_column(df):
     """
-    Retrieves the finite max, min and mean values per column in `df` and stores them in three dictionaries, each mapping
-    from column name to value. If a column does not contain finite value, 0 is stored instead.
+    Retrieves the finite max, min and mean values per column in the DataFrame `df` and stores them in three
+    dictionaries. Those dictionaries `col_to_max`, `col_to_min`, `col_to_median` map the columnname to the maximal,
+    minimal or median value of that column.
 
-    :param df: ``Dataframe``
+    If a column does not contain any finite values at all, a 0 is stored instead.
+
+    :param df: the Dataframe to get columnswise max, min and median from
+    :type df: pandas.DataFrame
+
     :return: Dictionaries mapping column names to max, min, mean values
+    :rtype: (dict, dict, dict)
     """
-    col_to_max = {}
-    col_to_min = {}
-    col_to_median = {}
+    data = df.get_values()
+    masked = np.ma.masked_invalid(data)
+    columns = df.columns
 
-    for column_name in df.columns:
-        column = df[column_name]
-        finite_values_in_column = column[np.isfinite(column)]
+    is_col_non_finite = masked.mask.sum(axis=0) == masked.data.shape[0]
 
-        if len(finite_values_in_column) == 0:
-            finite_values_in_column = [0]
+    if np.any(is_col_non_finite):
+        # We have columns that does not contain any finite value at all, so we will store 0 instead.
+        _logger.warning("The columns {} did not have any finite values. Filling with zeros.".format(
+            df.iloc[:, np.where(is_col_non_finite)[0]].columns.values))
 
-        col_to_max[column_name] = max(finite_values_in_column)
-        col_to_min[column_name] = min(finite_values_in_column)
-        col_to_median[column_name] = np.median(finite_values_in_column)
+        masked.data[:, is_col_non_finite] = 0  # Set the values of the columns to 0
+        masked.mask[:, is_col_non_finite] = False  # Remove the mask for this column
+
+    # fetch max, min and median for all columns
+    col_to_max = dict(zip(columns, np.max(masked, axis=0)))
+    col_to_min = dict(zip(columns, np.min(masked, axis=0)))
+    col_to_median = dict(zip(columns, np.ma.median(masked, axis=0)))
 
     return col_to_max, col_to_min, col_to_median
 
@@ -171,15 +202,16 @@ def restrict_input_to_index(df_or_dict, column_id, index):
     :type column_id: basestring
     :param index: Index containing the ids
     :type index: Iterable or pandas.Series
-    :return: the restricted df_or_dict
-    :rtype: dict or pandas.DataFrame
+
+    :return df_or_dict_restricted: the restricted df_or_dict
+    :rtype df_or_dict_restricted: dict or pandas.DataFrame
     :raise: ``TypeError`` if df_or_dict is not of type dict or pandas.DataFrame
     """
     if isinstance(df_or_dict, pd.DataFrame):
         df_or_dict_restricted = df_or_dict[df_or_dict[column_id].isin(index)]
     elif isinstance(df_or_dict, dict):
         df_or_dict_restricted = {kind: df[df[column_id].isin(index)]
-                                  for kind, df in df_or_dict.items()}
+                                 for kind, df in df_or_dict.items()}
     else:
         raise TypeError("df_or_dict should be of type dict or pandas.DataFrame")
 
@@ -207,7 +239,7 @@ def normalize_input_to_internal_representation(df_or_dict, column_id, column_sor
     :type column_sort: basestring or None
     :param column_kind: It can only be used when passing a pandas DataFrame (the dictionary is already assumed to be
         grouped by the kind). Is must be present in the DataFrame and no NaN values are allowed. The DataFrame
-        will be grouped by the values in the kind column and each grouped will be one entry in the resulting
+        will be grouped by the values in the kind column and each group will be one entry in the resulting
         mapping.
         If the kind column is not passed, it is assumed that each column in the pandas DataFrame (except the id or
         sort column) is a possible kind and the DataFrame is split up into as many DataFrames as there are columns.
@@ -223,6 +255,7 @@ def normalize_input_to_internal_representation(df_or_dict, column_id, column_sor
         amount of "time" shifts. ATTENTION: This will (obviously) create new IDs! The sign of rolling defines the
         direction of time rolling.
     :type rolling: int
+
     :return: A tuple of 3 elements: the normalized DataFrame as a dictionary mapping from the kind (as a string) to the
              corresponding DataFrame, the name of the id column and the name of the value column
     :rtype: (dict, basestring, basestring)
@@ -231,11 +264,12 @@ def normalize_input_to_internal_representation(df_or_dict, column_id, column_sor
     """
     if isinstance(df_or_dict, dict):
         if column_kind is not None:
-            raise ValueError("You passed in a dictionary and gave a column name for the kind. Both is not possible.")
+            raise ValueError("You passed in a dictionary and gave a column name for the kind. Both are not possible.")
         kind_to_df_map = {key: df.copy() for key, df in df_or_dict.items()}
     else:
         if column_kind is not None:
-            kind_to_df_map = {key: group.copy().drop(column_kind, axis=1) for key, group in df_or_dict.groupby(column_kind)}
+            kind_to_df_map = {key: group.copy().drop(column_kind, axis=1) for key, group in
+                              df_or_dict.groupby(column_kind)}
         else:
             if column_value is not None:
                 kind_to_df_map = {column_value: df_or_dict.copy()}
@@ -284,12 +318,13 @@ def normalize_input_to_internal_representation(df_or_dict, column_id, column_sor
 
         for kind in kind_to_df_map:
             if not column_value in kind_to_df_map[kind].columns:
-                raise ValueError("You did not pass a column_value and there is not a single candidate in all data frames.")
+                raise ValueError(
+                    "You did not pass a column_value and there is not a single candidate in all data frames.")
 
     # Require no NaNs in value columns
     for kind in kind_to_df_map:
         if kind_to_df_map[kind][column_value].isnull().any():
-                raise ValueError("You have NaN values in your value column.")
+            raise ValueError("You have NaN values in your value column.")
 
     # Roll the data frames if requested
     if rolling:
