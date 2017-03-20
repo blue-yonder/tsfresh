@@ -5,6 +5,7 @@
 Utility functions for handling the DataFrame conversions to the internal normalized format
 (see ``normalize_input_to_internal_representation``) or on how to handle ``NaN`` and ``inf`` in the DataFrames.
 """
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -283,13 +284,6 @@ def normalize_input_to_internal_representation(df_or_dict, column_id, column_sor
                     raise ValueError("You passed in a dataframe without a value column.")
                 column_value = "_value"
 
-    if column_sort is not None:
-        for kind in kind_to_df_map:
-            # Require no Nans in column
-            if kind_to_df_map[kind][column_sort].isnull().any():
-                raise ValueError("You have NaN values in your sort column.")
-            kind_to_df_map[kind] = kind_to_df_map[kind].sort_values(column_sort).drop(column_sort, axis=1)
-
     if column_id is not None:
         for kind in kind_to_df_map:
             if column_id not in kind_to_df_map[kind].columns:
@@ -298,6 +292,26 @@ def normalize_input_to_internal_representation(df_or_dict, column_id, column_sor
                 raise ValueError("You have NaN values in your id column.")
     else:
         raise ValueError("You have to set the column_id which contains the ids of the different time series")
+
+    if column_sort is not None:
+        for kind in kind_to_df_map:
+            # Require no Nans in column
+            if kind_to_df_map[kind][column_sort].isnull().any():
+                raise ValueError("You have NaN values in your sort column.")
+
+            kind_to_df_map[kind] = kind_to_df_map[kind].sort_values(column_sort)
+
+            # if rolling is enabled, the data should be uniformly sampled in this column
+            # Build the differences between consecutive time sort values
+            differences = kind_to_df_map[kind].groupby(column_id)[column_sort].apply(lambda x: x.values[:-1] - x.values[1:])
+            # Write all of them into one big list
+            differences = sum(map(list, differences), [])
+            # Test if all differences are the same
+            if differences and min(differences) != max(differences):
+                warnings.warn("Your time stamps are not uniformly sampled, which makes rolling "
+                              "nonsensical in some domains.")
+
+            kind_to_df_map[kind] = kind_to_df_map[kind].drop(column_sort, axis=1)
 
     # Either the column for the value must be given...
     if column_value is not None:

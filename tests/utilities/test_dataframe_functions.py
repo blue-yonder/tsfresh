@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
-
+import warnings
 from unittest import TestCase
 
 import pandas as pd
@@ -227,6 +227,26 @@ class RollingTestCase(TestCase):
         self.assertListEqual(list(kind_to_df_map["b"]["_value"].values),
                              [8, 7, 8, 6, 7, 8, 13, 5, 6, 7, 8, 12, 13])
 
+    def test_warning_on_non_uniform_time_steps(self):
+        with warnings.catch_warnings(record=True) as w:
+            first_class = pd.DataFrame({"a": [1, 2, 3, 4], "b": [5, 6, 7, 8], "time": [1, 2, 4, 5]})
+            second_class = pd.DataFrame({"a": [10, 11], "b": [12, 13], "time": range(20, 22)})
+
+            first_class["id"] = 1
+            second_class["id"] = 2
+
+            df_full = pd.concat([first_class, second_class], ignore_index=True)
+
+            dataframe_functions.normalize_input_to_internal_representation(df_full, column_id="id",
+                                                                           column_sort="time",
+                                                                           column_kind=None,
+                                                                           column_value=None, rolling=1)
+
+            self.assertEqual(len(w), 1)
+            self.assertEqual(str(w[0].message),
+                             "Your time stamps are not uniformly sampled, which makes rolling "
+                             "nonsensical in some domains.")
+
 
 class CheckForNanTestCase(TestCase):
     def test_all_columns(self):
@@ -358,6 +378,7 @@ class RestrictTestCase(TestCase):
         other_type = np.array([1, 2, 3])
 
         self.assertRaises(TypeError, dataframe_functions.restrict_input_to_index, other_type, "id", [1, 2, 3])
+
 
 class GetRangeValuesPerColumnTestCase(TestCase):
     def test_ignores_non_finite_values(self):
