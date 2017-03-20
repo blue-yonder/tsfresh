@@ -26,7 +26,6 @@ _logger = logging.getLogger(__name__)
 
 def extract_features(timeseries_container, feature_extraction_settings=None,
                      column_id=None, column_sort=None, column_kind=None, column_value=None,
-                     rolling=0,
                      parallelization=None):
     """
     Extract features from
@@ -81,13 +80,6 @@ def extract_features(timeseries_container, feature_extraction_settings=None,
                             :ref:`parallelization-label` for details.
     :type parallelization: str
 
-    :param rolling: If non-zero, roll the (sorted) data frames for each kind and each id separately in "time"
-        (time is here the abstract sort order defined by the sort column). For each rolling step a new id will be
-        created, with the name "id={id}, shift={shift}" where the id is the former id of the column and shift is the
-        amount of "time" shifts. ATTENTION: This will (obviously) create new IDs! The sign of rolling defines the
-        direction of time rolling.
-    :type rolling: int
-
     :return: The (maybe imputed) DataFrame containing extracted features.
     :rtype: pandas.DataFrame
     """
@@ -101,8 +93,7 @@ def extract_features(timeseries_container, feature_extraction_settings=None,
                                                                        column_id=column_id,
                                                                        column_sort=column_sort,
                                                                        column_kind=column_kind,
-                                                                       column_value=column_value,
-                                                                       rolling=rolling)
+                                                                       column_value=column_value)
 
     # Use the standard setting if the user did not supply ones himself.
     if feature_extraction_settings is None:

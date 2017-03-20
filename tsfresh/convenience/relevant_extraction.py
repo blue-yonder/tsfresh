@@ -12,7 +12,6 @@ from tsfresh.utilities.dataframe_functions import restrict_input_to_index, imput
 def extract_relevant_features(timeseries_container, y, X=None,
                               feature_extraction_settings=None,
                               feature_selection_settings=None,
-                              rolling=0,
                               column_id=None, column_sort=None, column_kind=None, column_value=None):
     """
     High level convenience function to extract time series features from `timeseries_container`. Then return feature
@@ -36,7 +35,6 @@ def extract_relevant_features(timeseries_container, y, X=None,
     :param column_sort: See parameter `column_sort` in :func:`~tsfresh.feature_extraction.extraction.extract_features`
     :param column_kind: See parameter `column_kind` in :func:`~tsfresh.feature_extraction.extraction.extract_features`
     :param column_value: See parameter `column_value` in :func:`~tsfresh.feature_extraction.extraction.extract_features`
-    :param rolling: See parameter `rolling` in :func:`~tsfresh.feature_extraction.extraction.extract_features`
     :param feature_extraction_settings: See parameter `feature_extraction_settings` in :func:`~tsfresh.feature_extraction.extraction.extract_features`
     :param feature_selection_settings: See parameter `feature_selection_settings` in :func:`~tsfresh.feature_selection.selection.select_features`
 
@@ -51,8 +49,7 @@ def extract_relevant_features(timeseries_container, y, X=None,
 
     X_ext = extract_features(timeseries_container, feature_extraction_settings=feature_extraction_settings,
                              column_id=column_id, column_sort=column_sort,
-                             column_kind=column_kind, column_value=column_value,
-                             rolling=rolling)
+                             column_kind=column_kind, column_value=column_value)
     X_sel = select_features(X_ext, y, feature_selection_settings=feature_selection_settings)
 
     if X is None:
