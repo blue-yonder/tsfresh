@@ -221,7 +221,7 @@ def restrict_input_to_index(df_or_dict, column_id, index):
 
 # todo: add more testcases
 # todo: rewrite in a more straightforward way
-def normalize_input_to_internal_representation(df_or_dict, column_id, column_sort, column_kind, column_value, rolling):
+def normalize_input_to_internal_representation(df_or_dict, column_id, column_sort, column_kind, column_value):
     """
     Try to transform any given input to the internal representation of time series, which is a mapping from string
     (the kind) to a pandas DataFrame with exactly two columns (the value and the id).
@@ -250,12 +250,6 @@ def normalize_input_to_internal_representation(df_or_dict, column_id, column_sor
         DataFrames in the dictionaries). If it is None, it is assumed that there is only a single remaining column
         in the DataFrame(s) (otherwise an exception is raised).
     :type column_value: basestring or None
-    :param rolling: If non-zero, roll the (sorted) data frames for each kind and each id separately in "time"
-        (time is here the abstract sort order defined by the sort column). For each rolling step a new id will be
-        created, with the name "id={id}, shift={shift}" where the id is the former id of the column and shift is the
-        amount of "time" shifts. ATTENTION: This will (obviously) create new IDs! The sign of rolling defines the
-        direction of time rolling.
-    :type rolling: int
 
     :return: A tuple of 3 elements: the normalized DataFrame as a dictionary mapping from the kind (as a string) to the
              corresponding DataFrame, the name of the id column and the name of the value column
@@ -299,20 +293,7 @@ def normalize_input_to_internal_representation(df_or_dict, column_id, column_sor
             if kind_to_df_map[kind][column_sort].isnull().any():
                 raise ValueError("You have NaN values in your sort column.")
 
-            kind_to_df_map[kind] = kind_to_df_map[kind].sort_values(column_sort)
-
-            if rolling:
-                # if rolling is enabled, the data should be uniformly sampled in this column
-                # Build the differences between consecutive time sort values
-                differences = kind_to_df_map[kind].groupby(column_id)[column_sort].apply(lambda x: x.values[:-1] - x.values[1:])
-                # Write all of them into one big list
-                differences = sum(map(list, differences), [])
-                # Test if all differences are the same
-                if differences and min(differences) != max(differences):
-                    warnings.warn("Your time stamps are not uniformly sampled, which makes rolling "
-                                  "nonsensical in some domains.")
-
-            kind_to_df_map[kind] = kind_to_df_map[kind].drop(column_sort, axis=1)
+            kind_to_df_map[kind] = kind_to_df_map[kind].sort_values(column_sort).drop(column_sort, axis=1)
 
     # Either the column for the value must be given...
     if column_value is not None:
@@ -341,26 +322,110 @@ def normalize_input_to_internal_representation(df_or_dict, column_id, column_sor
         if kind_to_df_map[kind][column_value].isnull().any():
             raise ValueError("You have NaN values in your value column.")
 
-    # Roll the data frames if requested
-    if rolling:
-        rolling = np.sign(rolling)
-
-        for kind, df in kind_to_df_map.items():
-            grouped_data = df.groupby(column_id)
-            maximum_number_of_timeshifts = grouped_data[column_value].count().max()
-
-            if rolling > 0:
-                range_of_shifts = range(maximum_number_of_timeshifts, -1, -1)
-            else:
-                range_of_shifts = range(-maximum_number_of_timeshifts, 1)
-
-            def roll_out_time_series(time_shift):
-                # Shift out only the first "time_shift" rows
-                df_temp = grouped_data.shift(time_shift)
-                df_temp[column_id] = "id=" + df[column_id].map(str) + ", shift={}".format(time_shift)
-                return df_temp.dropna()
-
-            kind_to_df_map[kind] = pd.concat([roll_out_time_series(time_shift) for time_shift in range_of_shifts],
-                                             ignore_index=True)
-
     return kind_to_df_map, column_id, column_value
+
+
+def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_direction):
+    """
+    Roll the (sorted) data frames for each kind and each id separately in "time"
+    (time is here the abstract sort order defined by the sort column). For each rolling step a new id will be
+    created, with the name "id={id}, shift={shift}" where the id is the former id of the column and shift is the
+    amount of "time" shifts. ATTENTION: This will (obviously) create new IDs! The sign of rolling defines the
+    direction of time rolling.
+    For more information, please see :ref:`rolling-label`.
+
+    :param df_or_dict: a pandas DataFrame or a dictionary. The required shape/form of the object depends on the rest of
+        the passed arguments.
+    :type df_or_dict: pandas.DataFrame or dict
+    :param column_id: it must be present in the pandas DataFrame or in all DataFrames in the dictionary.
+        It is not allowed to have NaN values in this column.
+    :type column_id: basestring or None
+    :param column_sort: if not None, sort the rows by this column. It is not allowed to
+        have NaN values in this column.
+    :type column_sort: basestring or None
+    :param column_kind: It can only be used when passing a pandas DataFrame (the dictionary is already assumed to be
+        grouped by the kind). Is must be present in the DataFrame and no NaN values are allowed.
+        If the kind column is not passed, it is assumed that each column in the pandas DataFrame (except the id or
+        sort column) is a possible kind.
+    :type column_kind: basestring or None
+    :param rolling_direction: The sign decides, if to roll backwards or forwards in "time"
+    :type rolling_direction: int
+
+    :return The rolled data frame or dictionary of data frames
+    :rtype the one from df_or_dict
+    """
+
+    if isinstance(df_or_dict, dict):
+        if column_kind is not None:
+            raise ValueError("You passed in a dictionary and gave a column name for the kind. Both are not possible.")
+
+        return {key: roll_time_series(df_or_dict=df_or_dict[key],
+                                      column_id=column_id,
+                                      column_sort=column_sort,
+                                      column_kind=column_kind,
+                                      rolling_direction=rolling_direction)
+                for key in df_or_dict}
+
+    # Now we know that this is a pandas data frame
+    df = df_or_dict
+
+    if column_id is not None:
+        if column_id not in df:
+                raise AttributeError("The given column for the id is not present in the data.")
+    else:
+        raise ValueError("You have to set the column_id which contains the ids of the different time series")
+
+    if column_kind is not None:
+        grouper = (column_kind, column_id)
+    else:
+        grouper = (column_id,)
+
+    if column_sort is not None:
+        # Require no Nans in column
+        if df[column_sort].isnull().any():
+            raise ValueError("You have NaN values in your sort column.")
+
+        df = df.sort_values(column_sort)
+
+        # if rolling is enabled, the data should be uniformly sampled in this column
+        # Build the differences between consecutive time sort values
+
+        differences = df.groupby(grouper)[column_sort].apply(
+            lambda x: x.values[:-1] - x.values[1:])
+        # Write all of them into one big list
+        differences = sum(map(list, differences), [])
+        # Test if all differences are the same
+        if differences and min(differences) != max(differences):
+            warnings.warn("Your time stamps are not uniformly sampled, which makes rolling "
+                          "nonsensical in some domains.")
+
+    # Roll the data frames if requested
+    rolling_direction = np.sign(rolling_direction)
+
+    if rolling_direction == 0:
+        raise ValueError("Rolling direction of 0 is not possible")
+
+    grouped_data = df.groupby(grouper)
+    maximum_number_of_timeshifts = grouped_data.count().max().max()
+
+    if np.isnan(maximum_number_of_timeshifts):
+        maximum_number_of_timeshifts = 0
+
+    if rolling_direction > 0:
+        range_of_shifts = range(maximum_number_of_timeshifts, -1, -1)
+    else:
+        range_of_shifts = range(-maximum_number_of_timeshifts, 1)
+
+    def roll_out_time_series(time_shift):
+        # Shift out only the first "time_shift" rows
+        df_temp = grouped_data.shift(time_shift)
+        df_temp[column_id] = "id=" + df[column_id].map(str) + ", shift={}".format(time_shift)
+        if column_kind:
+            df_temp[column_kind] = df[column_kind]
+        return df_temp.dropna()
+
+    return pd.concat([roll_out_time_series(time_shift) for time_shift in range_of_shifts],
+                     ignore_index=True)
+
+
+
