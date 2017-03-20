@@ -301,15 +301,16 @@ def normalize_input_to_internal_representation(df_or_dict, column_id, column_sor
 
             kind_to_df_map[kind] = kind_to_df_map[kind].sort_values(column_sort)
 
-            # if rolling is enabled, the data should be uniformly sampled in this column
-            # Build the differences between consecutive time sort values
-            differences = kind_to_df_map[kind].groupby(column_id)[column_sort].apply(lambda x: x.values[:-1] - x.values[1:])
-            # Write all of them into one big list
-            differences = sum(map(list, differences), [])
-            # Test if all differences are the same
-            if differences and min(differences) != max(differences):
-                warnings.warn("Your time stamps are not uniformly sampled, which makes rolling "
-                              "nonsensical in some domains.")
+            if rolling:
+                # if rolling is enabled, the data should be uniformly sampled in this column
+                # Build the differences between consecutive time sort values
+                differences = kind_to_df_map[kind].groupby(column_id)[column_sort].apply(lambda x: x.values[:-1] - x.values[1:])
+                # Write all of them into one big list
+                differences = sum(map(list, differences), [])
+                # Test if all differences are the same
+                if differences and min(differences) != max(differences):
+                    warnings.warn("Your time stamps are not uniformly sampled, which makes rolling "
+                                  "nonsensical in some domains.")
 
             kind_to_df_map[kind] = kind_to_df_map[kind].drop(column_sort, axis=1)
 
