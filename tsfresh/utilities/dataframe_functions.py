@@ -351,8 +351,8 @@ def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_di
     :param rolling_direction: The sign decides, if to roll backwards or forwards in "time"
     :type rolling_direction: int
 
-    :return The rolled data frame or dictionary of data frames
-    :rtype the one from df_or_dict
+    :return: The rolled data frame or dictionary of data frames
+    :rtype: the one from df_or_dict
     """
 
     if isinstance(df_or_dict, dict):

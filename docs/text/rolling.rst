@@ -21,8 +21,8 @@ you could act as if you would stream the data, by feeding your classifier the da
 the data after the first two time steps etc.
 
 Both examples imply, that you extract the features not only on the full data set, but also
-on all temporal coherent subsets of data, which is the process of *rolling*. You can do this easily, by giving
-the option `rolling` of the :func:`tsfresh.feature_extraction.extract_features` a non-zero value.
+on all temporal coherent subsets of data, which is the process of *rolling*. You can do this easily,
+by calling the function :func:`tsfresh.utilities.dataframe_functions.roll_time_series`.
 
 The rolling mechanism takes a time series :math:`x` with its data rows :math:`[x_1, x_2, x_3, ..., x_n]`
 and creates :math:`n` new time series :math:`\hat x^k`, each of them with a different consecutive part
