@@ -11,9 +11,9 @@ more input data out of single time series, by *rolling* over the data.
 Imagine the following situation: you have the data of EEG measurements, that
 you want to use to classify patients into healthy and not healthy (we oversimplify the problem here).
 You have e.g. 100 time steps of data, so you can extract features that may forecast the healthiness
-of the patients. But what would happen if you have stopped the measurement after 50 time steps? The patients
-would be as healthy as with 100 time steps. So you can easily increase the amount of training data by
-reusing time series cut into smaller pieces.
+of the patients. But what would happen if you had only the recorded measurement for 50 time steps?
+The patients would be as healthy as with 100 time steps. So you can easily increase the amount of
+training data by reusing time series cut into smaller pieces.
 
 Another example is streaming data, e.g. in Industry 4.0 applications. Here you typically get one
 new data row at a time and use this to predict machine failures for example. To train you model,
@@ -24,7 +24,14 @@ Both examples imply, that you extract the features not only on the full data set
 on all temporal coherent subsets of data, which is the process of *rolling*. You can do this easily, by giving
 the option `rolling` of the :func:`tsfresh.feature_extraction.extract_features` a non-zero value.
 
-To see what this does, we look into the following example data frame (we show only one possible data format,
+The rolling mechanism takes a time series :math:`x` with its data rows :math:`[x_1, x_2, x_3, ..., x_n]`
+and creates :math:`n` new time series :math:`\hat x^k`, each of them with a different consecutive part
+of :math:`x`:
+
+.. math::
+    \hat x^k = [x_k, x_{k-1}, x_{k-2}, ..., x_1]
+
+To see what this does in real-world applications, we look into the following example data frame (we show only one possible data format,
 but rolling works on all 3 data formats :ref:`data-formats-label`):
 
 +----+------+----+----+
