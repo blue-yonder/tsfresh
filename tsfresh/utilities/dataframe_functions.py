@@ -287,6 +287,9 @@ def normalize_input_to_internal_representation(df_or_dict, column_id, column_sor
     else:
         raise ValueError("You have to set the column_id which contains the ids of the different time series")
 
+    for kind in kind_to_df_map:
+        kind_to_df_map[kind].index.name = None
+
     if column_sort is not None:
         for kind in kind_to_df_map:
             # Require no Nans in column
