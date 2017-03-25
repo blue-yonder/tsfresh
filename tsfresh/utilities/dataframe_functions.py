@@ -327,12 +327,20 @@ def normalize_input_to_internal_representation(df_or_dict, column_id, column_sor
 
 def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_direction):
     """
-    Roll the (sorted) data frames for each kind and each id separately in "time"
-    (time is here the abstract sort order defined by the sort column). For each rolling step a new id will be
-    created, with the name "id={id}, shift={shift}" where the id is the former id of the column and shift is the
-    amount of "time" shifts. ATTENTION: This will (obviously) create new IDs! The sign of rolling defines the
-    direction of time rolling.
-    For more information, please see :ref:`rolling-label`.
+    Roll the (sorted) data frames for each kind and each id separately in the "time" domain
+    (which is represented by the sort order of the sort column given by `column_sort`).
+
+    For each rolling step, a new id with the scheme "id={id}, shift={shift}" where the id is the former id of the
+    column and shift is the amount of "time" shifts.
+
+    A few remarks:
+
+     * This method will create new IDs!
+     * The sign of rolling defines the direction of time rolling, a positive value means we are going back in time
+     * It is possible to shift time series of different lenghts but
+     * We assume that the time series are uniformly sampled
+     * The shift parameter should not be larger than the longest length of the individual time series
+     * For more information, please see :ref:`rolling-label`.
 
     :param df_or_dict: a pandas DataFrame or a dictionary. The required shape/form of the object depends on the rest of
         the passed arguments.
