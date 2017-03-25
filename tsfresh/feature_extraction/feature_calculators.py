@@ -1300,7 +1300,7 @@ def _estimate_friedrich_coefficients(x, m, r):
     """
     df = pd.DataFrame({'signal': x[:-1], 'delta': np.diff(x)})
     try:
-        df['quantiles']=pd.qcut(df.signal, r)
+        df['quantiles'] = pd.qcut(df.signal, r)
         binned = True
     except ValueError:
         binned = False
@@ -1312,7 +1312,9 @@ def _estimate_friedrich_coefficients(x, m, r):
         result = pd.DataFrame({'x_mean': quantiles.signal.mean(),
                                'y_mean': quantiles.delta.mean()
         })
-    
+
+        result.dropna(inplace=True)
+
         try:
             coeff = np.polyfit(result.x_mean, result.y_mean, deg=m)
         except (np.linalg.LinAlgError, ValueError):
