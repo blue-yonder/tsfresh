@@ -164,13 +164,13 @@ class NormalizeTestCase(TestCase):
 
 class RollingTestCase(TestCase):
     def test_with_wrong_input(self):
-        test_df = pd.DataFrame([{"id": [0, 0], "kind": ["a", "b"], "value": [3, 3], "sort": [np.NaN, np.NaN]}])
+        test_df = pd.DataFrame({"id": [0, 0], "kind": ["a", "b"], "value": [3, 3], "sort": [np.NaN, np.NaN]})
         self.assertRaises(ValueError, dataframe_functions.roll_time_series,
                           df_or_dict=test_df, column_id="id",
                           column_sort="sort", column_kind="kind",
                           rolling_direction=1)
 
-        test_df = pd.DataFrame([{"id": [0, 0], "kind": ["a", "b"], "value": [3, 3], "sort": [1, 1]}])
+        test_df = pd.DataFrame({"id": [0, 0], "kind": ["a", "b"], "value": [3, 3], "sort": [1, 1]})
         self.assertRaises(AttributeError, dataframe_functions.roll_time_series,
                           df_or_dict=test_df, column_id="strange_id",
                           column_sort="sort", column_kind="kind",
