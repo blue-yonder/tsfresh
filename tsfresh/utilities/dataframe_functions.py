@@ -363,8 +363,7 @@ def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_di
     """
 
     if rolling_direction == 0:
-        warnings.warn("Rolling direction of 0 does nothing. Returning time series container unchanged.")
-        return df_or_dict
+        raise ValueError("Rolling direction of 0 is not possible")
 
     if isinstance(df_or_dict, dict):
         if column_kind is not None:
