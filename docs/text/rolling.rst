@@ -6,19 +6,20 @@ How to handle rolling time series
 Lets assume that we have a DataFrame of one of the tsfresh :ref:`data-formats-label`.
 The "sort" column of such a container gives a sequential state to the individual measurements.
 In the case of time series this can be the *time* dimension while in the case of spectra the order is given by the
-*wavelength* or *frequencies* dimensions.
+*wavelength* or *frequency* dimensions.
 We can exploit this sequence to generate more input data out of single time series, by *rolling* over the data.
 
 Imagine the following situation:
-You have the data of certain sensors (e.g. EEG measurements) as the base to classify patients into healthy and not
-healthy (we oversimplify the problem here).
-Lets say you have data of 100 time steps of data, so you can extract features that may forecast the healthiness
-of the patients.
-If you also have target values for 100 time steps, then you could predict the healthiness of the patient in every
-time step.
-But then, you want to extract features for time series in every time step.
-The rolling mechanism creates such time series for every time step by adding for example the values of the sensors of
-the last 10 time steps.
+You have the data of certain sensors (e.g. EEG measurements) as the base to classify patients into a healthy and not
+healthy group (we oversimplify the problem here).
+Lets say you have sensor data of 100 time steps, so you may extract features for the forecasting of the patients
+healthiness by a classification algorithm.
+If you also have measurements of the healthiness for those 100 time steps (this is the target vector), then you could
+predict the healthiness of the patient in every time step, which essentially states a time series forecasting problem.
+So, to do that, you want to extract features in every time step of the original time series while for example looking at
+the last 10 steps.
+A rolling mechanism creates such time series for every time step by creating sub time series of the sensor data of the
+last 10 time steps.
 
 Another example can be found in streaming data, e.g. in Industry 4.0 applications.
 Here you typically get one new data row at a time and use this to for example predict machine failures. To train your model,
