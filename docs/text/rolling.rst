@@ -18,7 +18,7 @@ The rolling mechanism creates such time series for every time step by adding for
 the last 10 time steps.
 
 Another example can be found in streaming data, e.g. in Industry 4.0 applications.
-Here you typically get one new data row at a time and use this to predict machine failures for example. To train you model,
+Here you typically get one new data row at a time and use this to for example predict machine failures. To train your model,
 you could act as if you would stream the data, by feeding your classifier the data after one time step,
 the data after the first two time steps etc.
 
