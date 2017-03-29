@@ -55,7 +55,9 @@ where you have measured the values from two sensors x and y for two different en
 steps (t1 to t9).
 
 Now, we can use :func:`tsfresh.utilities.dataframe_functions.roll_time_series` to get consecutive sub-time series.
-E.g. if you set `rolling` to 0, the feature extraction works on
+E.g. if you set `rolling` to 0, the feature extraction works on the original time series without any rolling.
+
+So it extracts 2 set of features,
 
 +----+------+----+----+
 | id | time | x  | y  |
@@ -78,8 +80,6 @@ and
 +----+------+----+----+
 | 2  | t9   | 11 | 13 |
 +----+------+----+----+
-
-So it extracts 2 set of features.
 
 If you set rolling to 1, the feature extraction works with all of the following time series:
 
