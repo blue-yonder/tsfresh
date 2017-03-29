@@ -330,12 +330,19 @@ def normalize_input_to_internal_representation(df_or_dict, column_id, column_sor
 
 def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_direction):
     """
-    Roll the (sorted) data frames for each kind and each id separately in "time"
-    (time is here the abstract sort order defined by the sort column). For each rolling step a new id will be
-    created, with the name "id={id}, shift={shift}" where the id is the former id of the column and shift is the
-    amount of "time" shifts. ATTENTION: This will (obviously) create new IDs! The sign of rolling defines the
-    direction of time rolling.
-    For more information, please see :ref:`rolling-label`.
+    Roll the (sorted) data frames for each kind and each id separately in the "time" domain
+    (which is represented by the sort order of the sort column given by `column_sort`).
+
+    For each rolling step, a new id is created by the scheme "id={id}, shift={shift}", here id is the former id of the
+    column and shift is the amount of "time" shifts.
+
+    A few remarks:
+
+     * This method will create new IDs!
+     * The sign of rolling defines the direction of time rolling, a positive value means we are going back in time
+     * It is possible to shift time series of different lenghts but
+     * We assume that the time series are uniformly sampled
+     * For more information, please see :ref:`rolling-label`.
 
     :param df_or_dict: a pandas DataFrame or a dictionary. The required shape/form of the object depends on the rest of
         the passed arguments.
@@ -357,6 +364,9 @@ def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_di
     :return: The rolled data frame or dictionary of data frames
     :rtype: the one from df_or_dict
     """
+
+    if rolling_direction == 0:
+        raise ValueError("Rolling direction of 0 is not possible")
 
     if isinstance(df_or_dict, dict):
         if column_kind is not None:
@@ -405,14 +415,12 @@ def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_di
     # Roll the data frames if requested
     rolling_direction = np.sign(rolling_direction)
 
-    if rolling_direction == 0:
-        raise ValueError("Rolling direction of 0 is not possible")
-
     grouped_data = df.groupby(grouper)
     maximum_number_of_timeshifts = grouped_data.count().max().max()
 
     if np.isnan(maximum_number_of_timeshifts):
-        maximum_number_of_timeshifts = 0
+        raise ValueError("Somehow the maximum length of your time series is NaN (Does your time series container have "
+                         "only one row?). Can not perform rolling.")
 
     if rolling_direction > 0:
         range_of_shifts = range(maximum_number_of_timeshifts, -1, -1)

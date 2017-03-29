@@ -3,26 +3,32 @@
 How to handle rolling time series
 =================================
 
-In many application with time series on real-world problems, the "time" column
-(we will call it time in the following, although it can be anything)
-gives a certain sequential order to the data. We can exploit this sequence to generate
-more input data out of single time series, by *rolling* over the data.
+Lets assume that we have a DataFrame of one of the tsfresh :ref:`data-formats-label`.
+The "sort" column of such a container gives a sequential state to the individual measurements.
+In the case of time series this can be the *time* dimension while in the case of spectra the order is given by the
+*wavelength* or *frequency* dimensions.
+We can exploit this sequence to generate more input data out of single time series, by *rolling* over the data.
 
-Imagine the following situation: you have the data of EEG measurements, that
-you want to use to classify patients into healthy and not healthy (we oversimplify the problem here).
-You have e.g. 100 time steps of data, so you can extract features that may forecast the healthiness
-of the patients. But what would happen if you had only the recorded measurement for 50 time steps?
-The patients would be as healthy as with 100 time steps. So you can easily increase the amount of
-training data by reusing time series cut into smaller pieces.
+Imagine the following situation:
+You have the data of certain sensors (e.g. EEG measurements) as the base to classify patients into a healthy and not
+healthy group (we oversimplify the problem here).
+Lets say you have sensor data of 100 time steps, so you may extract features for the forecasting of the patients
+healthiness by a classification algorithm.
+If you also have measurements of the healthiness for those 100 time steps (this is the target vector), then you could
+predict the healthiness of the patient in every time step, which essentially states a time series forecasting problem.
+So, to do that, you want to extract features in every time step of the original time series while for example looking at
+the last 10 steps.
+A rolling mechanism creates such time series for every time step by creating sub time series of the sensor data of the
+last 10 time steps.
 
-Another example is streaming data, e.g. in Industry 4.0 applications. Here you typically get one
-new data row at a time and use this to predict machine failures for example. To train you model,
+Another example can be found in streaming data, e.g. in Industry 4.0 applications.
+Here you typically get one new data row at a time and use this to for example predict machine failures. To train your model,
 you could act as if you would stream the data, by feeding your classifier the data after one time step,
 the data after the first two time steps etc.
 
 Both examples imply, that you extract the features not only on the full data set, but also
-on all temporal coherent subsets of data, which is the process of *rolling*. You can do this easily,
-by calling the function :func:`tsfresh.utilities.dataframe_functions.roll_time_series`.
+on all temporal coherent subsets of data, which is the process of *rolling*. In tsfresh, this is implemented in the
+function :func:`tsfresh.utilities.dataframe_functions.roll_time_series`.
 
 The rolling mechanism takes a time series :math:`x` with its data rows :math:`[x_1, x_2, x_3, ..., x_n]`
 and creates :math:`n` new time series :math:`\hat x^k`, each of them with a different consecutive part
@@ -31,8 +37,7 @@ of :math:`x`:
 .. math::
     \hat x^k = [x_k, x_{k-1}, x_{k-2}, ..., x_1]
 
-To see what this does in real-world applications, we look into the following example data frame (we show only one possible data format,
-but rolling works on all 3 data formats :ref:`data-formats-label`):
+To see what this does in real-world applications, we look into the following example flat DataFrame in tsfresh format
 
 +----+------+----+----+
 | id | time | x  | y  |
@@ -50,9 +55,13 @@ but rolling works on all 3 data formats :ref:`data-formats-label`):
 | 2  | t9   | 11 | 13 |
 +----+------+----+----+
 
-where you have measured two values (x and y) for two different entities (1 and 2) in 4 or 2 time steps.
+where you have measured the values from two sensors x and y for two different entities (id 1 and 2) in 4 or 2 time
+steps (t1 to t9).
 
-If you set `rolling` to 0, the feature extraction works on
+Now, we can use :func:`tsfresh.utilities.dataframe_functions.roll_time_series` to get consecutive sub-time series.
+E.g. if you set `rolling` to 0, the feature extraction works on the original time series without any rolling.
+
+So it extracts 2 set of features,
 
 +----+------+----+----+
 | id | time | x  | y  |
@@ -75,8 +84,6 @@ and
 +----+------+----+----+
 | 2  | t9   | 11 | 13 |
 +----+------+----+----+
-
-So it extracts 2 set of features.
 
 If you set rolling to 1, the feature extraction works with all of the following time series:
 
@@ -165,3 +172,6 @@ If you set rolling to -1, you end up with features for the time series, rolled i
 +----+------+----+----+
 | 2  | t9   | 11 | 13 |
 +----+------+----+----+
+
+We only gave an example for the flat DataFrame format, but rolling actually works on all 3 :ref:`data-formats-label`
+that are supported by tsfresh.
