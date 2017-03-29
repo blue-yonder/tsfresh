@@ -330,7 +330,7 @@ def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_di
     Roll the (sorted) data frames for each kind and each id separately in the "time" domain
     (which is represented by the sort order of the sort column given by `column_sort`).
 
-    For each rolling step, a new id with the scheme "id={id}, shift={shift}" where the id is the former id of the
+    For each rolling step, a new id is created by the scheme "id={id}, shift={shift}", here id is the former id of the
     column and shift is the amount of "time" shifts.
 
     A few remarks:
