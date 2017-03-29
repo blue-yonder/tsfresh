@@ -363,6 +363,9 @@ def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_di
     :rtype: the one from df_or_dict
     """
 
+    if rolling_direction == 0:
+        raise ValueError("Rolling direction of 0 is not possible")
+
     if isinstance(df_or_dict, dict):
         if column_kind is not None:
             raise ValueError("You passed in a dictionary and gave a column name for the kind. Both are not possible.")
@@ -409,9 +412,6 @@ def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_di
 
     # Roll the data frames if requested
     rolling_direction = np.sign(rolling_direction)
-
-    if rolling_direction == 0:
-        raise ValueError("Rolling direction of 0 is not possible")
 
     grouped_data = df.groupby(grouper)
     maximum_number_of_timeshifts = grouped_data.count().max().max()
