@@ -416,7 +416,8 @@ def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_di
     maximum_number_of_timeshifts = grouped_data.count().max().max()
 
     if np.isnan(maximum_number_of_timeshifts):
-        raise ValueError("Somehow the maximum length of your time series is NaN. Can not perform rolling.")
+        raise ValueError("Somehow the maximum length of your time series is NaN (Does your time series container have "
+                         "only one row?). Can not perform rolling.")
 
     if rolling_direction > 0:
         range_of_shifts = range(maximum_number_of_timeshifts, -1, -1)
