@@ -95,7 +95,7 @@ class ExtractionTestCase(DataTestCase):
 
     def test_extract_features_after_randomisation_per_kind(self):
         df = self.create_test_data_sample()
-        df_random = df.copy().sample(frac=1)
+        df_random = df.copy().sample(frac=1).reset_index(drop=True)
 
         extracted_features = extract_features(df, self.settings, "id", "sort", "kind", "val",
                                               parallelization='per_kind').sort_index()
@@ -111,7 +111,7 @@ class ExtractionTestCase(DataTestCase):
 
     def test_extract_features_after_randomisation_per_sample(self):
         df = self.create_test_data_sample()
-        df_random = df.copy().sample(frac=1)
+        df_random = df.copy().sample(frac=1).reset_index(drop=True)
 
         extracted_features = extract_features(df, self.settings, "id", "sort", "kind", "val",
                                               parallelization='per_sample').sort_index()

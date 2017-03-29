@@ -320,6 +320,16 @@ class FeatureCalculationTestCase(TestCase):
         six.assertCountEqual(self, list(res.index), expected_index)
         self.assertAlmostEqual(res["TEST__index_mass_quantile__q_0.5"], 0.5, places=1)
 
+        # Test for parts of pandas series
+        x = pd.Series([0] * 55 + [1] * 101)
+        c = "TEST"
+        param = [{"q": 0.5}]
+        expected_index = ["TEST__index_mass_quantile__q_0.5"]
+        res = index_mass_quantile(x[x > 0], c, param)
+        self.assertIsInstance(res, pd.Series)
+        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertAlmostEqual(res["TEST__index_mass_quantile__q_0.5"], 0.5, places=1)
+
         x = [0] * 1000 + [1]
         c = "TEST"
         param = [{"q": 0.5}, {"q": 0.99}]
