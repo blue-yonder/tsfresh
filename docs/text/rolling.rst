@@ -3,7 +3,10 @@
 How to handle rolling time series
 =================================
 
-The "time" column of a time series container gives a sequential order to the data.
+Lets assume that we have a DataFrame of one of the tsfresh :ref:`data-formats-label`.
+The "sort" column of such a container gives a sequential state to the individual measurements.
+In the case of time series this can be the *time* dimension while in the case of spectra the order is given by the
+*wavelength* or *frequencies* dimensions.
 We can exploit this sequence to generate more input data out of single time series, by *rolling* over the data.
 
 Imagine the following situation:
