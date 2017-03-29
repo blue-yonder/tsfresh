@@ -164,13 +164,13 @@ class NormalizeTestCase(TestCase):
 
 class RollingTestCase(TestCase):
     def test_with_wrong_input(self):
-        test_df = pd.DataFrame([{"id": 0, "kind": "a", "value": 3, "sort": np.NaN}])
+        test_df = pd.DataFrame([{"id": [0, 0], "kind": ["a", "b"], "value": [3, 3], "sort": [np.NaN, np.NaN]}])
         self.assertRaises(ValueError, dataframe_functions.roll_time_series,
                           df_or_dict=test_df, column_id="id",
                           column_sort="sort", column_kind="kind",
                           rolling_direction=1)
 
-        test_df = pd.DataFrame([{"id": 0, "kind": "a", "value": 3, "sort": 1}])
+        test_df = pd.DataFrame([{"id": [0, 0], "kind": ["a", "b"], "value": [3, 3], "sort": [1, 1]}])
         self.assertRaises(AttributeError, dataframe_functions.roll_time_series,
                           df_or_dict=test_df, column_id="strange_id",
                           column_sort="sort", column_kind="kind",
@@ -197,12 +197,12 @@ class RollingTestCase(TestCase):
                           column_sort=None, column_kind=None,
                           rolling_direction=0)
 
-    def test_single_row(self):
+    def test_assert_single_row(self):
         test_df = pd.DataFrame([{"id": np.NaN, "kind": "a", "value": 3, "sort": 1}])
-        dataframe_functions.roll_time_series(
-            df_or_dict=test_df, column_id="id",
-            column_sort="sort", column_kind="kind",
-            rolling_direction=1)
+        self.assertRaises(ValueError, dataframe_functions.roll_time_series,
+                          df_or_dict=test_df, column_id="id",
+                          column_sort="sort", column_kind="kind",
+                          rolling_direction=1)
 
     def test_positive_rolling(self):
         first_class = pd.DataFrame({"a": [1, 2, 3, 4], "b": [5, 6, 7, 8], "time": range(4)})
