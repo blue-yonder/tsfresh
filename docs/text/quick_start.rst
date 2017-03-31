@@ -86,7 +86,8 @@ And for id 20 reporting a failure:
    :alt: the time series for id 20 (failure)
    :align: center
 
-You can already see some differences by eye - but for successful machines we have to put these differences into numbers.
+You can already see some differences by eye - but for successful machine learning we have to put these differences into
+numbers.
 
 For this, tsfresh comes into place.
 It allows us to automatically extract over 1200 features from those six different time series for each robot.
@@ -99,7 +100,8 @@ For extracting all features, we do:
     extracted_features = extract_features(timeseries, column_id="id", column_sort="time")
 
 You end up with a DataFrame `extracted_features` with all more than 1200 different extracted features.
-We will now remove all ``NaN`` values and select only the relevant features next
+We will now remove all ``NaN`` values (that were created by feature calculators, than can not be used on the given
+data, e.g. because it has too low statistics) and select only the relevant features next:
 
 .. code-block:: python
 
@@ -119,13 +121,14 @@ Further, you can even perform the extraction, imputing and filtering at the same
 
     from tsfresh import extract_relevant_features
 
-    features_filtered_direct = extract_relevant_features(timeseries, y, column_id='id', column_sort='time')
+    features_filtered_direct = extract_relevant_features(timeseries, y,
+                                                         column_id='id', column_sort='time')
 
 
-You can now use the features contained in the Data Frame `features_filtered` (which is equal to
-`features_filtered_direct`) in conjunction with `y` to train your model. Please see the `robot_failure_example.ipynb`
-Jupyter Notebook in the folder named notebook. In this notebook a RandomForestClassifier is trained on the extracted
-features.
+You can now use the features contained in the DataFrame `features_filtered` (which is equal to
+`features_filtered_direct`) in conjunction with `y` to train your classification model.
+Please see the `robot_failure_example.ipynb` Jupyter Notebook in the folder named notebook for this.
+In this notebook a RandomForestClassifier is trained on the extracted features.
 
 References
 
