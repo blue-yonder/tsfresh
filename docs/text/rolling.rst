@@ -31,8 +31,8 @@ of :math:`x`:
 .. math::
     \hat x^k = [x_k, x_{k-1}, x_{k-2}, ..., x_1]
 
-To see what this does in real-world applications, we look into the following example data frame (we show only one possible data format,
-but rolling works on all 3 data formats :ref:`data-formats-label`):
+To see what this does in real-world applications, we look into the following example data frame (we show only one
+possible data format, but rolling works on all 3 data formats :ref:`data-formats-label`):
 
 +----+------+----+----+
 | id | time | x  | y  |

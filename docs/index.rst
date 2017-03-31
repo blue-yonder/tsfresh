@@ -9,6 +9,7 @@ so called features.
 Further the package contains methods to evaluate the explaining power and importance of such characteristics for
 regression or classification tasks.
 
+You can jump right into the package by looking into our :ref:`quick-start-label`.
 
 Contents
 ========
@@ -46,4 +47,5 @@ Indices and tables
 Acknowledgements
 ================
 
-The research and development of TSFRESH was funded in part by the German Federal Ministry of Education and Research under grant number 01IS14004 (project iPRODICT).
+The research and development of TSFRESH was funded in part by the German Federal Ministry of Education and Research
+under grant number 01IS14004 (project iPRODICT).

@@ -98,7 +98,7 @@ For extracting all features, we do:
     from tsfresh import extract_features
     extracted_features = extract_features(timeseries, column_id="id", column_sort="time")
 
-You end up with a dataframe `extracted_features` with all more than 1200 different extracted features.
+You end up with a DataFrame `extracted_features` with all more than 1200 different extracted features.
 We will now remove all ``NaN`` values and select only the relevant features next
 
 .. code-block:: python
