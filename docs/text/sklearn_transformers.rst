@@ -22,9 +22,10 @@ extraction and filtering of the features in a single step.
 Example
 -------
 
-In the following example you see how we combine tsfresh's :class:`~tsfresh.transformers.relevant_feature_augmenter.RelevantFeatureAugmenter`
-and a :class:`~sklearn.ensemble.RandomForestClassifier` into a single pipeline.
-This pipeline can then fit both our transformer and the classifier in one step.
+In the following example you see how we combine tsfresh's
+:class:`~tsfresh.transformers.relevant_feature_augmenter.RelevantFeatureAugmenter` and a
+:class:`~sklearn.ensemble.RandomForestClassifier` into a single pipeline. This pipeline can then fit both our
+transformer and the classifier in one step.
 
 .. code-block:: python
 
