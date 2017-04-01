@@ -230,6 +230,22 @@ class RollingTestCase(TestCase):
         self.assertListEqual(list(df["b"].values),
                              [5, 5, 6, 5, 6, 7, 12, 5, 6, 7, 8, 12, 13])
 
+        df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
+                                                  column_kind=None, rolling_direction=1,
+                                                  maximum_number_of_timeshifts=1)
+
+        correct_indices = (["id=1, shift=1"] * 3 +
+                           ["id=2, shift=1"] * 1 +
+                           ["id=1, shift=0"] * 4 +
+                           ["id=2, shift=0"] * 2)
+
+        self.assertListEqual(list(df["id"]), correct_indices)
+
+        self.assertListEqual(list(df["a"].values),
+                             [1, 2, 3, 10, 1, 2, 3, 4, 10, 11])
+        self.assertListEqual(list(df["b"].values),
+                             [5, 6, 7, 12, 5, 6, 7, 8, 12, 13])
+
     def test_negative_rolling(self):
         first_class = pd.DataFrame({"a": [1, 2, 3, 4], "b": [5, 6, 7, 8], "time": range(4)})
         second_class = pd.DataFrame({"a": [10, 11], "b": [12, 13], "time": range(20, 22)})
@@ -308,8 +324,6 @@ class RollingTestCase(TestCase):
                              [4, 3, 4, 2, 3, 4, 11, 1, 2, 3, 4, 10, 11])
         self.assertListEqual(list(df["b"]["_value"].values),
                              [8, 7, 8, 6, 7, 8, 13, 5, 6, 7, 8, 12, 13])
-
-
 
     def test_warning_on_non_uniform_time_steps(self):
         with warnings.catch_warnings(record=True) as w:
