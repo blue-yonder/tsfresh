@@ -788,11 +788,13 @@ def index_mass_quantile(x, c, param):
     s = sum(np.abs(x))
     res = pd.Series()
 
+    x = pd.Series(x)
+
     if s == 0: # all values in x are zero or it has length 0
         for config in param:
             res["{}__index_mass_quantile__q_{}".format(c, config["q"])] = np.NaN
     else: # at least one value is not zero
-        mass_centralized = np.cumsum(np.abs(x)) * 1.0 / s
+        mass_centralized = (np.cumsum(np.abs(x)) * 1.0 / s).values
         for config in param:
             res["{}__index_mass_quantile__q_{}".format(c, config["q"])] = \
                 (np.argmax(mass_centralized >= config["q"])+1)/len(x)
@@ -1300,7 +1302,7 @@ def _estimate_friedrich_coefficients(x, m, r):
     """
     df = pd.DataFrame({'signal': x[:-1], 'delta': np.diff(x)})
     try:
-        df['quantiles']=pd.qcut(df.signal, r)
+        df['quantiles'] = pd.qcut(df.signal, r)
         binned = True
     except ValueError:
         binned = False
@@ -1312,7 +1314,9 @@ def _estimate_friedrich_coefficients(x, m, r):
         result = pd.DataFrame({'x_mean': quantiles.signal.mean(),
                                'y_mean': quantiles.delta.mean()
         })
-    
+
+        result.dropna(inplace=True)
+
         try:
             coeff = np.polyfit(result.x_mean, result.y_mean, deg=m)
         except (np.linalg.LinAlgError, ValueError):
