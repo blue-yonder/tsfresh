@@ -361,8 +361,8 @@ def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_di
     :type column_kind: basestring or None
     :param rolling_direction: The sign decides, if to roll backwards or forwards in "time"
     :type rolling_direction: int
-    :param maximum_number_of_timeshifts: If None, shift as often as possible. If not None, shift only
-        maximum_number_of_timeshifts times.
+    :param maximum_number_of_timeshifts: If not None, shift only up to maximum_number_of_timeshifts.
+        If None, shift as often as possible.
     :type maximum_number_of_timeshifts: int
 
     :return: The rolled data frame or dictionary of data frames
