@@ -213,38 +213,53 @@ class RollingTestCase(TestCase):
 
         df_full = pd.concat([first_class, second_class], ignore_index=True)
 
-        df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
-                                                  column_kind=None, rolling_direction=1)
-
         correct_indices = (["id=1, shift=3"] * 1 +
                            ["id=1, shift=2"] * 2 +
                            ["id=1, shift=1"] * 3 +
                            ["id=2, shift=1"] * 1 +
                            ["id=1, shift=0"] * 4 +
                            ["id=2, shift=0"] * 2)
+        correct_values_a = [1, 1, 2, 1, 2, 3, 10, 1, 2, 3, 4, 10, 11]
+        correct_values_b = [5, 5, 6, 5, 6, 7, 12, 5, 6, 7, 8, 12, 13]
+
+        df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
+                                                  column_kind=None, rolling_direction=1)
 
         self.assertListEqual(list(df["id"]), correct_indices)
+        self.assertListEqual(list(df["a"].values), correct_values_a)
+        self.assertListEqual(list(df["b"].values), correct_values_b)
 
-        self.assertListEqual(list(df["a"].values),
-                             [1, 1, 2, 1, 2, 3, 10, 1, 2, 3, 4, 10, 11])
-        self.assertListEqual(list(df["b"].values),
-                             [5, 5, 6, 5, 6, 7, 12, 5, 6, 7, 8, 12, 13])
+        df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
+                                                  column_kind=None, rolling_direction=1,
+                                                  maximum_number_of_timeshifts=None)
+
+        self.assertListEqual(list(df["id"]), correct_indices)
+        self.assertListEqual(list(df["a"].values), correct_values_a)
+        self.assertListEqual(list(df["b"].values), correct_values_b)
 
         df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
                                                   column_kind=None, rolling_direction=1,
                                                   maximum_number_of_timeshifts=1)
 
-        correct_indices = (["id=1, shift=1"] * 3 +
-                           ["id=2, shift=1"] * 1 +
-                           ["id=1, shift=0"] * 4 +
-                           ["id=2, shift=0"] * 2)
+        self.assertListEqual(list(df["id"]), correct_indices[3:])
+        self.assertListEqual(list(df["a"].values), correct_values_a[3:])
+        self.assertListEqual(list(df["b"].values), correct_values_b[3:])
 
-        self.assertListEqual(list(df["id"]), correct_indices)
+        df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
+                                                  column_kind=None, rolling_direction=1,
+                                                  maximum_number_of_timeshifts=2)
 
-        self.assertListEqual(list(df["a"].values),
-                             [1, 2, 3, 10, 1, 2, 3, 4, 10, 11])
-        self.assertListEqual(list(df["b"].values),
-                             [5, 6, 7, 12, 5, 6, 7, 8, 12, 13])
+        self.assertListEqual(list(df["id"]), correct_indices[1:])
+        self.assertListEqual(list(df["a"].values), correct_values_a[1:])
+        self.assertListEqual(list(df["b"].values), correct_values_b[1:])
+
+        df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
+                                                  column_kind=None, rolling_direction=1,
+                                                  maximum_number_of_timeshifts=4)
+
+        self.assertListEqual(list(df["id"]), correct_indices[:])
+        self.assertListEqual(list(df["a"].values), correct_values_a[:])
+        self.assertListEqual(list(df["b"].values), correct_values_b[:])
 
     def test_negative_rolling(self):
         first_class = pd.DataFrame({"a": [1, 2, 3, 4], "b": [5, 6, 7, 8], "time": range(4)})
@@ -255,22 +270,53 @@ class RollingTestCase(TestCase):
 
         df_full = pd.concat([first_class, second_class], ignore_index=True)
 
-        df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
-                                                  column_kind=None, rolling_direction=-1)
-
         correct_indices = (["id=1, shift=-3"] * 1 +
                            ["id=1, shift=-2"] * 2 +
                            ["id=1, shift=-1"] * 3 +
                            ["id=2, shift=-1"] * 1 +
                            ["id=1, shift=0"] * 4 +
                            ["id=2, shift=0"] * 2)
+        correct_values_a = [4, 3, 4, 2, 3, 4, 11, 1, 2, 3, 4, 10, 11]
+        correct_values_b = [8, 7, 8, 6, 7, 8, 13, 5, 6, 7, 8, 12, 13]
+
+        df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
+                                                  column_kind=None, rolling_direction=-1)
 
         self.assertListEqual(list(df["id"].values), correct_indices)
+        self.assertListEqual(list(df["a"].values), correct_values_a)
+        self.assertListEqual(list(df["b"].values), correct_values_b)
 
-        self.assertListEqual(list(df["a"].values),
-                             [4, 3, 4, 2, 3, 4, 11, 1, 2, 3, 4, 10, 11])
-        self.assertListEqual(list(df["b"].values),
-                             [8, 7, 8, 6, 7, 8, 13, 5, 6, 7, 8, 12, 13])
+        df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
+                                                  column_kind=None, rolling_direction=-1,
+                                                  maximum_number_of_timeshifts=None)
+
+        self.assertListEqual(list(df["id"].values), correct_indices)
+        self.assertListEqual(list(df["a"].values), correct_values_a)
+        self.assertListEqual(list(df["b"].values), correct_values_b)
+
+        df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
+                                                  column_kind=None, rolling_direction=-1,
+                                                  maximum_number_of_timeshifts=1)
+
+        self.assertListEqual(list(df["id"].values), correct_indices[3:])
+        self.assertListEqual(list(df["a"].values), correct_values_a[3:])
+        self.assertListEqual(list(df["b"].values), correct_values_b[3:])
+
+        df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
+                                                  column_kind=None, rolling_direction=-1,
+                                                  maximum_number_of_timeshifts=2)
+
+        self.assertListEqual(list(df["id"].values), correct_indices[1:])
+        self.assertListEqual(list(df["a"].values), correct_values_a[1:])
+        self.assertListEqual(list(df["b"].values), correct_values_b[1:])
+
+        df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
+                                                  column_kind=None, rolling_direction=-1,
+                                                  maximum_number_of_timeshifts=4)
+
+        self.assertListEqual(list(df["id"].values), correct_indices[:])
+        self.assertListEqual(list(df["a"].values), correct_values_a[:])
+        self.assertListEqual(list(df["b"].values), correct_values_b[:])
 
     def test_stacked_rolling(self):
         first_class = pd.DataFrame({"a": [1, 2, 3, 4], "b": [5, 6, 7, 8], "time": range(4)})
