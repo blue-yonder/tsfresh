@@ -241,12 +241,11 @@ def _extract_features_parallel_per_sample(kind_to_df_map, settings, column_id, c
             map_result = results_fifo.get()
             dfs_kind = iterable_with_tqdm_update(map_result, progress_bar)
             df_tmp = pd.concat(dfs_kind, axis=0).astype(np.float64)
-
-            # Impute the result if requested
-            if settings.IMPUTE is not None:
-                settings.IMPUTE(df_tmp)
-
             result = pd.concat([result, df_tmp], axis=1).astype(np.float64)
+
+    # Impute the result if requested
+    if settings.IMPUTE is not None:
+        settings.IMPUTE(result)
 
     pool.join()
     return result
