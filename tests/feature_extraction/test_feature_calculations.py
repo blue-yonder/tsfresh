@@ -29,10 +29,20 @@ class FeatureCalculationTestCase(TestCase):
         self.assertTrue(f(np.array(input_to_f), *args, **kwargs), msg="Not true for numpy.arrays")
         self.assertTrue(f(pd.Series(input_to_f), *args, **kwargs), msg="Not true for pandas.Series")
 
+    def assertAllTrueOnAllArrayTypes(self, f, input_to_f, *args, **kwargs):
+        self.assertTrue(all(f(input_to_f, *args, **kwargs)), msg="Not true for lists")
+        self.assertTrue(all(f(np.array(input_to_f), *args, **kwargs)), msg="Not true for numpy.arrays")
+        self.assertTrue(all(f(pd.Series(input_to_f), *args, **kwargs)), msg="Not true for pandas.Series")
+
     def assertFalseOnAllArrayTypes(self, f, input_to_f, *args, **kwargs):
         self.assertFalse(f(input_to_f, *args, **kwargs), msg="Not false for lists")
         self.assertFalse(f(np.array(input_to_f), *args, **kwargs), msg="Not false for numpy.arrays")
         self.assertFalse(f(pd.Series(input_to_f), *args, **kwargs), msg="Not false for pandas.Series")
+
+    def assertAllFalseOnAllArrayTypes(self, f, input_to_f, *args, **kwargs):
+        self.assertFalse(any(f(input_to_f, *args, **kwargs)), msg="Not false for lists")
+        self.assertFalse(any(f(np.array(input_to_f), *args, **kwargs)), msg="Not false for numpy.arrays")
+        self.assertFalse(any(f(pd.Series(input_to_f), *args, **kwargs)), msg="Not false for pandas.Series")
 
     def assertAlmostEqualOnAllArrayTypes(self, f, input_t_f, result, *args, **kwargs):
         self.assertAlmostEqual(f(input_t_f, *args, **kwargs), result,
@@ -86,12 +96,12 @@ class FeatureCalculationTestCase(TestCase):
         self.assertFalseOnAllArrayTypes(large_standard_deviation, [-1, -1, 1, 1], r=0.5)
 
     def test_symmetry_looking(self):
-        self.assertTrueOnAllArrayTypes(symmetry_looking, [-1, -1, 1, 1], r=0.05)
-        self.assertTrueOnAllArrayTypes(symmetry_looking, [-1, -1, 1, 1], r=0.75)
-        self.assertFalseOnAllArrayTypes(symmetry_looking, [-1, -1, 1, 1], r=0)
-        self.assertFalseOnAllArrayTypes(symmetry_looking, [-1, -1, -1, -1, 1], r=0.05)
-        self.assertTrueOnAllArrayTypes(symmetry_looking, [-2, -2, -2, -1, -1, -1], r=0.05)
-        self.assertTrueOnAllArrayTypes(symmetry_looking, [-0.9, -0.900001], r=0.05)
+        self.assertAllTrueOnAllArrayTypes(symmetry_looking, [-1, -1, 1, 1],
+                                          "c", [dict(r=0.05), dict(r=0.75)])
+        self.assertAllFalseOnAllArrayTypes(symmetry_looking, [-1, -1, 1, 1], "c", [dict(r=0)])
+        self.assertAllFalseOnAllArrayTypes(symmetry_looking, [-1, -1, -1, -1, 1], "c", [dict(r=0.05)])
+        self.assertAllTrueOnAllArrayTypes(symmetry_looking, [-2, -2, -2, -1, -1, -1], "c", [dict(r=0.05)])
+        self.assertAllTrueOnAllArrayTypes(symmetry_looking, [-0.9, -0.900001], "c", [dict(r=0.05)])
 
     def test_has_duplicate_max(self):
         self.assertTrueOnAllArrayTypes(has_duplicate_max, [2.1, 0, 0, 2.1, 1.1])

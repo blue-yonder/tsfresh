@@ -130,9 +130,9 @@ def large_standard_deviation(x, r):
     return np.std(x) > (r * (max(x) - min(x)))
 
 
-@set_property("fctype", "aggregate_with_parameters")
+@set_property("fctype", "apply")
 @not_apply_to_raw_numbers
-def symmetry_looking(x, r):
+def symmetry_looking(x, c, param):
     """
     Boolean variable denoting if the distribution of x *looks symmetric*. This is the case if
 
@@ -148,8 +148,10 @@ def symmetry_looking(x, r):
     :return type: bool
     """
     x = np.asarray(x)
-    return abs(np.mean(x) - np.median(x)) < (r * (max(x) - min(x)))
-
+    mean_median_difference = abs(np.mean(x) - np.median(x))
+    max_min_difference = max(x) - min(x)
+    return pd.Series({"{}__symmetry_looking__r_{}".format(c, r["r"]):
+                          mean_median_difference < (r["r"] * max_min_difference) for r in param})
 
 @set_property("fctype", "aggregate")
 @not_apply_to_raw_numbers
