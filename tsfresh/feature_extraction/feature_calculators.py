@@ -146,6 +146,7 @@ def symmetry_looking(x, r):
     :return: the value of this feature
     :return type: bool
     """
+    x = np.asarray(x)
     return abs(np.mean(x) - np.median(x)) < (r * (max(x) - min(x)))
 
 
