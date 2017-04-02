@@ -51,7 +51,7 @@ def download_robot_execution_failures():
     ========
 
     >>> from tsfresh.examples import download_robot_execution_failures
-    >>> download_robot_execution_failures_lp1()
+    >>> download_robot_execution_failures()
     """
     if os.path.exists(data_file_name):
         _logger.warning("You have already downloaded the Robot Execution Failures LP1 Data Set.")
