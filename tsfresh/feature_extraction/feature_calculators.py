@@ -762,11 +762,20 @@ def number_peaks(x, n):
     :return: the value of this feature
     :return type: float
     """
-    res = list()
+    x = np.asarray(x)
+    x_reduced = x[n:-n]
+
+    res = None
     for i in range(1, n + 1):
-        res += [(x > np.roll(x, i))[n:-n]]
-        res += [(x > np.roll(x, -i))[n:-n]]
-    return sum(reduce(lambda a, b: a & b, res))
+        result_first = (x_reduced > np.roll(x, i)[n:-n])
+
+        if res is None:
+            res = result_first
+        else:
+            res &= result_first
+
+        res &= (x_reduced > np.roll(x, -i)[n:-n])
+    return sum(res)
 
 
 @set_property("fctype", "apply")
