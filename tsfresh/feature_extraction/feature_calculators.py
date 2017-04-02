@@ -126,6 +126,7 @@ def large_standard_deviation(x, r):
     :return: the value of this feature
     :return type: bool
     """
+    x = np.asarray(x)
     return np.std(x) > (r * (max(x) - min(x)))
 
 
