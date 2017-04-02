@@ -947,32 +947,36 @@ def ar_coefficient(x, c, param):
     :return x: the different feature values
     :return type: pandas.Series
     """
-    df_cfg = pd.DataFrame(param)
-    df_cfg["k"] = df_cfg["k"].apply(int)
+    calculated_ar_params = {}
 
-    res = pd.Series()
+    x_as_list = list(x)
+    calculated_AR = AR(x_as_list)
 
-    for k in df_cfg["k"].unique():
-        coeff = df_cfg[df_cfg["k"] == k]["coeff"]
+    res = {}
+
+    for parameter_combination in param:
+        k = parameter_combination["k"]
+        p = parameter_combination["coeff"]
+
+        column_name = "{}__ar_coefficient__k_{}__coeff_{}".format(c, k, p)
+
         try:
-            mod = AR(list(x)).fit(maxlag=k, solver="mle").params
-            res_tmp = pd.Series(index=["{}__ar_coefficient__k_{}__coeff_{}".format(c, k, p) for p in coeff])
+            if k not in calculated_ar_params:
+                calculated_ar_params[k] = calculated_AR.fit(maxlag=k, solver="mle").params
 
-            for p in coeff:
-                if p <= k:
-                    try:
-                        res_tmp["{}__ar_coefficient__k_{}__coeff_{}".format(c, k, p)] = mod[p]
-                    except IndexError:
-                        res_tmp["{}__ar_coefficient__k_{}__coeff_{}".format(c, k, p)] = 0
-                else:
-                    res_tmp["{}__ar_coefficient__k_{}__coeff_{}".format(c, k, p)] = np.NaN
+            mod = calculated_ar_params[k]
 
+            if p <= k:
+                try:
+                    res[column_name] = mod[p]
+                except IndexError:
+                    res[column_name] = 0
+            else:
+                res[column_name] = np.NaN
         except (LinAlgError, ValueError):
-            res_tmp = pd.Series([np.NaN] * len(coeff),
-                                index=["{}__ar_coefficient__k_{}__coeff_{}".format(c, k, p) for p in coeff])
+            res[column_name] = np.NaN
 
-        res = res.append(res_tmp)
-    return res
+    return pd.Series(res)
 
 
 @set_property("fctype", "aggregate_with_parameters")
