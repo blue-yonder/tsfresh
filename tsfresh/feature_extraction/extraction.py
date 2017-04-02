@@ -119,6 +119,8 @@ def extract_features(timeseries_container, feature_extraction_settings=None,
     elif parallelization == 'per_sample':
         result = _extract_features_parallel_per_sample(kind_to_df_map, feature_extraction_settings,
                                                        column_id, column_value)
+    elif parallelization == 'no_parallelization':
+        result = _extract_features_serial(kind_to_df_map, feature_extraction_settings, column_id, column_value)
     else:
         raise ValueError("Argument parallelization must be one of: 'per_kind', 'per_sample'")
 
@@ -171,6 +173,44 @@ def _extract_features_parallel_per_kind(kind_to_df_map, settings, column_id, col
         settings.IMPUTE(result)
 
     pool.join()
+    return result
+
+
+def _extract_features_serial(kind_to_df_map, settings, column_id, column_value):
+    """
+    Feature extraction without parallelization.
+
+    :param kind_to_df_map: The time series to compute the features for in our internal format
+    :type kind_to_df_map: dict of pandas.DataFrame
+
+    :param column_id: The name of the id column to group by.
+    :type column_id: str
+    :param column_value: The name for the column keeping the value itself.
+    :type column_value: str
+
+    :param settings: settings object that controls which features are calculated
+    :type settings: tsfresh.feature_extraction.settings.FeatureExtractionSettings
+
+    :return: The (maybe imputed) DataFrame containing extracted features.
+    :rtype: pandas.DataFrame
+    """
+    partial_extract_features_for_one_time_series = partial(_extract_features_for_one_time_series,
+                                                           column_id=column_id,
+                                                           column_value=column_value,
+                                                           settings=settings)
+
+    total_number_of_expected_results = len(kind_to_df_map)
+    extracted_features = tqdm(map(partial_extract_features_for_one_time_series, kind_to_df_map.items()),
+                              total=total_number_of_expected_results,
+                              desc="Feature Extraction", disable=settings.disable_progressbar)
+
+    # Concatenate all partial results
+    result = pd.concat(extracted_features, axis=1, join='outer').astype(np.float64)
+
+    # Impute the result if requested
+    if settings.IMPUTE is not None:
+        settings.IMPUTE(result)
+
     return result
 
 
