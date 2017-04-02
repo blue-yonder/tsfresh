@@ -853,39 +853,30 @@ def cwt_coefficients(x, c, param):
     :return: the different feature values
     :return type: pandas.Series
     """
-    df_cfg = pd.DataFrame(param)
-    res = pd.Series()
 
-    for widths in df_cfg["widths"].unique():
+    calculated_cwt = {}
+    res = []
+    indices = []
 
-        # the calculated_cwt with shape (len(widths), len(x)).
-        calculated_cwt = cwt(x, ricker, widths)
+    for parameter_combination in param:
+        widths = parameter_combination["widths"]
+        w = parameter_combination["w"]
+        coeff = parameter_combination["coeff"]
 
-        for w in df_cfg[df_cfg["widths"] == widths]["w"].unique():
+        if widths not in calculated_cwt:
+            calculated_cwt[widths] = cwt(x, ricker, widths)
 
-            # get the coefficients corresponding to this array of widths
-            coeff = df_cfg[(df_cfg["widths"] == widths) & (df_cfg["w"] == w)]["coeff"].unique()
+        calculated_cwt_for_widths = calculated_cwt[widths]
 
-            # get the row of the current width
-            i = widths.index(w)
+        indices += ["{}__cwt_coefficients__widths_{}__coeff_{}__w_{}".format(c, widths, coeff, w)]
 
-            if calculated_cwt.shape[1] <= max(coeff):
-                # The calculated cwt is not wide enough, at least one coefficient would cause Index Error
-                res_tmp = []
+        i = widths.index(w)
+        if calculated_cwt_for_widths.shape[1] <= coeff:
+            res += [np.NaN]
+        else:
+            res += [calculated_cwt_for_widths[i, coeff]]
 
-                for j in coeff:
-                    if calculated_cwt.shape[1] <= j: # the current index is out of range
-                        res_tmp.append(np.NaN)
-                    else:
-                        res_tmp.append(calculated_cwt[i, j])
-            else:
-                res_tmp = calculated_cwt[i, coeff]
-
-            res = res.append(pd.Series(res_tmp,
-                                       index=["{}__cwt_coefficients__widths_{}__coeff_{}__w_{}".format(
-                                           c, widths, m, w) for m in coeff]))
-
-    return res
+    return pd.Series(res, index=indices)
 
 
 @set_property("fctype", "apply")
