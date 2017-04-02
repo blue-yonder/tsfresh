@@ -795,20 +795,24 @@ def index_mass_quantile(x, c, param):
     :return: the different feature values
     :return type: pandas.Series
     """
-    s = sum(np.abs(x))
-    res = pd.Series()
 
-    x = pd.Series(x)
+    x = np.asarray(x)
+    abs_x = np.abs(x)
+    s = sum(abs_x)
 
-    if s == 0: # all values in x are zero or it has length 0
+    res = {}
+
+    if s == 0:
+        # all values in x are zero or it has length 0
         for config in param:
             res["{}__index_mass_quantile__q_{}".format(c, config["q"])] = np.NaN
-    else: # at least one value is not zero
-        mass_centralized = (np.cumsum(np.abs(x)) * 1.0 / s).values
+    else:
+        # at least one value is not zero
+        mass_centralized = np.cumsum(abs_x) / s
         for config in param:
             res["{}__index_mass_quantile__q_{}".format(c, config["q"])] = \
                 (np.argmax(mass_centralized >= config["q"])+1)/len(x)
-    return res
+    return pd.Series(res)
 
 
 @set_property("fctype", "aggregate_with_parameters")
