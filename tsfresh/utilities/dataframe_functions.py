@@ -328,7 +328,8 @@ def normalize_input_to_internal_representation(df_or_dict, column_id, column_sor
     return kind_to_df_map, column_id, column_value
 
 
-def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_direction):
+def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_direction,
+                     maximum_number_of_timeshifts=None):
     """
     Roll the (sorted) data frames for each kind and each id separately in the "time" domain
     (which is represented by the sort order of the sort column given by `column_sort`).
@@ -360,6 +361,9 @@ def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_di
     :type column_kind: basestring or None
     :param rolling_direction: The sign decides, if to roll backwards or forwards in "time"
     :type rolling_direction: int
+    :param maximum_number_of_timeshifts: If not None, shift only up to maximum_number_of_timeshifts.
+        If None, shift as often as possible.
+    :type maximum_number_of_timeshifts: int
 
     :return: The rolled data frame or dictionary of data frames
     :rtype: the one from df_or_dict
@@ -416,7 +420,7 @@ def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_di
     rolling_direction = np.sign(rolling_direction)
 
     grouped_data = df.groupby(grouper)
-    maximum_number_of_timeshifts = grouped_data.count().max().max()
+    maximum_number_of_timeshifts = maximum_number_of_timeshifts or grouped_data.count().max().max()
 
     if np.isnan(maximum_number_of_timeshifts):
         raise ValueError("Somehow the maximum length of your time series is NaN (Does your time series container have "
