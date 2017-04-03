@@ -138,19 +138,19 @@ def impute_dataframe_range(df_impute, col_to_max, col_to_min, col_to_median):
     indices = np.nonzero(df_impute.values == np.PINF)
     if len(indices[0]) > 0:
         replacement = [col_to_max[columns[i]] for i in indices[1]]
-        df_impute.values[indices] = replacement
+        df_impute.iloc[indices] = replacement
 
     # -inf -> min
     indices = np.nonzero(df_impute.values == np.NINF)
     if len(indices[0]) > 0:
         replacement = [col_to_min[columns[i]] for i in indices[1]]
-        df_impute.values[indices] = replacement
+        df_impute.iloc[indices] = replacement
 
     # NaN -> median
     indices = np.nonzero(np.isnan(df_impute.values))
     if len(indices[0]) > 0:
         replacement = [col_to_median[columns[i]] for i in indices[1]]
-        df_impute.values[indices] = replacement
+        df_impute.iloc[indices] = replacement
 
     df_impute.astype(np.float64, copy=False)
     return df_impute
