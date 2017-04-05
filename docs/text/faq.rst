@@ -24,8 +24,11 @@ FAQ
        .. code:: shell
 
            conda create -n ENV_NAME python=VERSION
+
            conda install -n ENV_NAME pip requests numpy pandas scipy statsmodels patsy scikit-learn future six tqdm
+
            activate ENV_NAME
+
            pip install tsfresh
 
        Please be aware that we're using multiprocessing, which can be `problematic <http://stackoverflow.com/questions/18204782/runtimeerror-on-windows-trying-python-multiprocessing>`_.
