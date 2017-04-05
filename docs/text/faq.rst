@@ -20,10 +20,10 @@ FAQ
        On the following page you can find a detailed description: :ref:`rolling-label`.
 
 
-    3. **How can I tsfresh with windows?**
+    3. **How can I use tsfresh with windows?**
 
-       We recommend to use `Anaconda <https://www.continuum.io/downloads#windows>`_. After installing open the
-       Anaconda prompt, create an environment and set up tsfresh:
+       We recommend to use `Anaconda <https://www.continuum.io/downloads#windows>`_. After installing, open the
+       Anaconda Prompt, create an environment and set up tsfresh:
        ::
            conda create -n ENV_NAME python=VERSION
            conda install -n ENV_NAME pip requests numpy pandas scipy statsmodels patsy scikit-learn future six tqdm
