@@ -3,6 +3,7 @@ FAQ
 
 
     1. **Does tsfresh support different time series lengths?**
+
        Yes, it supports different time series lengths. However, some feature calculators can demand a minimal length
        of the time series. If a shorter time series is passed to the calculator, a NaN is returned for those
        features.
@@ -10,6 +11,7 @@ FAQ
 
 
     2. **Is it possible to extract features from rolling/shifted time series?**
+
        Yes, the :func:`tsfresh.dataframe_functions.roll_time_series` function allows to conviniently create a rolled
        time series datframe from your data. You just have to transform your data into one of the supported tsfresh
        :ref:`data-formats-label`.
@@ -19,6 +21,7 @@ FAQ
 
 
     3. **How can I tsfresh with windows?**
+
        We recommend to use `Anaconda <https://www.continuum.io/downloads#windows>`_. After installing open the
        Anaconda prompt, create an environment and set up tsfresh:
        ::
