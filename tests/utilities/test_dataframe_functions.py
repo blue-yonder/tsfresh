@@ -433,7 +433,13 @@ class ImputeTestCase(TestCase):
         self.assertEqual(list(df.value), [0, 0, 0, 1])
 
         df = pd.DataFrame([{"value": np.NINF}, {"value": np.NaN}, {"value": np.PINF}, {"value": 1}])
-        dataframe_functions.impute_dataframe_zero(df.astype(np.float64))
+        df = df.astype(np.float64)
+        df = dataframe_functions.impute_dataframe_zero(df)
+        self.assertEqual(list(df.value), [0, 0, 0, 1])
+
+        df = pd.DataFrame([{"value": np.NINF}, {"value": np.NaN}, {"value": np.PINF}, {"value": 1}])
+        df = df.astype(np.float32)
+        df = dataframe_functions.impute_dataframe_zero(df)
         self.assertEqual(list(df.value), [0, 0, 0, 1])
 
     def test_toplevel_impute(self):
@@ -448,7 +454,13 @@ class ImputeTestCase(TestCase):
 
         df = pd.DataFrame(np.transpose([[0, 1, 2, np.NaN], [1, np.PINF, 2, 3], [1, -3, np.NINF, 3]]),
                           columns=["value_a", "value_b", "value_c"])
-        dataframe_functions.impute(df.astype(np.float64))
+        df = df.astype(np.float64, inplace=True)
+        dataframe_functions.impute(df)
+
+        df = pd.DataFrame(np.transpose([[0, 1, 2, np.NaN], [1, np.PINF, 2, 3], [1, -3, np.NINF, 3]]),
+                          columns=["value_a", "value_b", "value_c"])
+        df = df.astype(np.float32, inplace=True)
+        dataframe_functions.impute(df)
 
         self.assertEqual(list(df.value_a), [0, 1, 2, 1])
         self.assertEqual(list(df.value_b), [1, 3, 2, 3])
