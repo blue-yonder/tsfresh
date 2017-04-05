@@ -16,3 +16,16 @@ FAQ
        Then, the :func:`tsfresh.dataframe_functions.roll_time_series` give you a DataFrame with the rolled time series,
        that you can pass to tsfresh.
        On the following page you can find a detailed description: :ref:`rolling-label`.
+
+
+    3. **How can I tsfresh with windows?**
+       We recommend to use `Anaconda <https://www.continuum.io/downloads#windows>`_. After installing open the
+       Anaconda prompt, create an environment and set up tsfresh:
+       .. code:: shell
+
+           conda create -n ENV_NAME python=VERSION
+           conda install -n ENV_NAME pip requests numpy pandas scipy statsmodels patsy scikit-learn future six tqdm
+           activate ENV_NAME
+           pip install tsfresh
+
+       Please be aware that we're using multiprocessing, which can be `problematic <http://stackoverflow.com/questions/18204782/runtimeerror-on-windows-trying-python-multiprocessing>`_.
