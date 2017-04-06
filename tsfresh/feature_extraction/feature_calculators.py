@@ -960,20 +960,20 @@ def ar_coefficient(x, c, param):
 
         column_name = "{}__ar_coefficient__k_{}__coeff_{}".format(c, k, p)
 
-        try:
-            if k not in calculated_ar_params:
+        if k not in calculated_ar_params:
+            try:
                 calculated_ar_params[k] = calculated_AR.fit(maxlag=k, solver="mle").params
+            except (LinAlgError, ValueError):
+                calculated_ar_params[k] = [np.NaN]*k
 
-            mod = calculated_ar_params[k]
+        mod = calculated_ar_params[k]
 
-            if p <= k:
-                try:
-                    res[column_name] = mod[p]
-                except IndexError:
-                    res[column_name] = 0
-            else:
-                res[column_name] = np.NaN
-        except (LinAlgError, ValueError):
+        if p <= k:
+            try:
+                res[column_name] = mod[p]
+            except IndexError:
+                res[column_name] = 0
+        else:
             res[column_name] = np.NaN
 
     return pd.Series(res)
