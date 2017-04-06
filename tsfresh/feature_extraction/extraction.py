@@ -114,14 +114,14 @@ def extract_features(timeseries_container, feature_extraction_settings=None,
 
     # Calculate the result
     if parallelization == 'per_kind':
-        result = _extract_features_parallel_per_kind(kind_to_df_map, feature_extraction_settings,
-                                                     column_id, column_value)
+        result = _extract_features_per_kind(kind_to_df_map, feature_extraction_settings,
+                                            column_id, column_value)
     elif parallelization == 'per_sample':
         result = _extract_features_parallel_per_sample(kind_to_df_map, feature_extraction_settings,
                                                        column_id, column_value)
     elif parallelization == 'no_parallelization':
-        result = _extract_features_parallel_per_kind(kind_to_df_map, feature_extraction_settings,
-                                                     column_id, column_value, serial=True)
+        result = _extract_features_per_kind(kind_to_df_map, feature_extraction_settings,
+                                            column_id, column_value, serial=True)
     else:
         raise ValueError("Argument parallelization must be one of: 'per_kind', 'per_sample'")
 
@@ -133,7 +133,7 @@ def extract_features(timeseries_container, feature_extraction_settings=None,
     return result
 
 
-def _extract_features_parallel_per_kind(kind_to_df_map, settings, column_id, column_value, serial=False):
+def _extract_features_per_kind(kind_to_df_map, settings, column_id, column_value, serial=False):
     """
     Parallelize the feature extraction per kind.
 
@@ -184,6 +184,7 @@ def _extract_features_parallel_per_kind(kind_to_df_map, settings, column_id, col
 
     pool.join()
     return result
+
 
 def _extract_features_parallel_per_sample(kind_to_df_map, settings, column_id, column_value):
     """
