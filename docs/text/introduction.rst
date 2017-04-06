@@ -23,8 +23,8 @@ or the number of temporary temperature peaks:
 Without tsfresh, you would have to calculate all those characteristics by hand. With tsfresh this process is automated
 and all those features can be calculated automatically.
 
-Further tsfresh is compatible with pythons :mod:`pandas` and :mod:`scikit-learn` APIs, two important packages for Data Science endeavours
-in python.
+Further tsfresh is compatible with pythons :mod:`pandas` and :mod:`scikit-learn` APIs, two important packages for Data
+Science endeavours in python.
 
 What to do with these features?
 -------------------------------
@@ -46,7 +46,8 @@ Currently, tsfresh is not suitable
     * for usage with streaming data
     * for batch processing over a distributed architecture, where different time series are fragmented over different
       computational units
-    * to train models on the features (we do not want to reinvent the wheel, check out the python package `scikit-learn <http://scikit-learn.org/stable/>`_ for example)
+    * to train models on the features (we do not want to reinvent the wheel, check out the python package
+      `scikit-learn <http://scikit-learn.org/stable/>`_ for example)
 
 However, some of these use cases could be implemented, if you have an application in mind, open
 an issue at `<https://github.com/blue-yonder/tsfresh/issues>`_, or feel free to contact us.
@@ -56,4 +57,5 @@ What else is out there?
 
 There is a matlab package called `hctsa <https://github.com/benfulcher/hctsa>`_ which can be used to automatically
 extract features from time series.
-It is also possible to use hctsa from within python by means of the `pyopy <https://github.com/strawlab/pyopy>`_ package.
+It is also possible to use hctsa from within python by means of the `pyopy <https://github.com/strawlab/pyopy>`_
+package.

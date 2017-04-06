@@ -5,6 +5,7 @@
 Utility functions for handling the DataFrame conversions to the internal normalized format
 (see ``normalize_input_to_internal_representation``) or on how to handle ``NaN`` and ``inf`` in the DataFrames.
 """
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -137,19 +138,19 @@ def impute_dataframe_range(df_impute, col_to_max, col_to_min, col_to_median):
     indices = np.nonzero(df_impute.values == np.PINF)
     if len(indices[0]) > 0:
         replacement = [col_to_max[columns[i]] for i in indices[1]]
-        df_impute.values[indices] = replacement
+        df_impute.iloc[indices] = replacement
 
     # -inf -> min
     indices = np.nonzero(df_impute.values == np.NINF)
     if len(indices[0]) > 0:
         replacement = [col_to_min[columns[i]] for i in indices[1]]
-        df_impute.values[indices] = replacement
+        df_impute.iloc[indices] = replacement
 
     # NaN -> median
     indices = np.nonzero(np.isnan(df_impute.values))
     if len(indices[0]) > 0:
         replacement = [col_to_median[columns[i]] for i in indices[1]]
-        df_impute.values[indices] = replacement
+        df_impute.iloc[indices] = replacement
 
     df_impute.astype(np.float64, copy=False)
     return df_impute
@@ -231,12 +232,10 @@ def normalize_input_to_internal_representation(df_or_dict, column_id, column_sor
     :param df_or_dict: a pandas DataFrame or a dictionary. The required shape/form of the object depends on the rest of
         the passed arguments.
     :type df_or_dict: pandas.DataFrame or dict
-    :param column_id: if not None, it must be present in the pandas DataFrame or in all DataFrames in the dictionary.
+    :param column_id: it must be present in the pandas DataFrame or in all DataFrames in the dictionary.
         It is not allowed to have NaN values in this column.
-        If this column name is None, a new column will be added to the pandas DataFrame (or all pandas DataFrames in
-        the dictionary) and the same id for all entries is assumed.
     :type column_id: basestring or None
-    :param column_sort: if not None, sort the rows by this column. Then, the column is dropped. It is not allowed to
+    :param column_sort: if not None, sort the rows by this column. It is not allowed to
         have NaN values in this column.
     :type column_sort: basestring or None
     :param column_kind: It can only be used when passing a pandas DataFrame (the dictionary is already assumed to be
@@ -274,17 +273,10 @@ def normalize_input_to_internal_representation(df_or_dict, column_id, column_sor
                 kind_to_df_map = {key: df_or_dict[[key] + id_and_sort_column].copy().rename(columns={key: "_value"})
                                   for key in df_or_dict.columns if key not in id_and_sort_column}
 
-                # todo: is this the right check?
+                # TODO: is this the right check?
                 if len(kind_to_df_map) < 1:
                     raise ValueError("You passed in a dataframe without a value column.")
                 column_value = "_value"
-
-    if column_sort is not None:
-        for kind in kind_to_df_map:
-            # Require no Nans in column
-            if kind_to_df_map[kind][column_sort].isnull().any():
-                raise ValueError("You have NaN values in your sort column.")
-            kind_to_df_map[kind] = kind_to_df_map[kind].sort_values(column_sort).drop(column_sort, axis=1)
 
     if column_id is not None:
         for kind in kind_to_df_map:
@@ -294,6 +286,17 @@ def normalize_input_to_internal_representation(df_or_dict, column_id, column_sor
                 raise ValueError("You have NaN values in your id column.")
     else:
         raise ValueError("You have to set the column_id which contains the ids of the different time series")
+
+    for kind in kind_to_df_map:
+        kind_to_df_map[kind].index.name = None
+
+    if column_sort is not None:
+        for kind in kind_to_df_map:
+            # Require no Nans in column
+            if kind_to_df_map[kind][column_sort].isnull().any():
+                raise ValueError("You have NaN values in your sort column.")
+
+            kind_to_df_map[kind] = kind_to_df_map[kind].sort_values(column_sort).drop(column_sort, axis=1)
 
     # Either the column for the value must be given...
     if column_value is not None:
@@ -323,3 +326,121 @@ def normalize_input_to_internal_representation(df_or_dict, column_id, column_sor
             raise ValueError("You have NaN values in your value column.")
 
     return kind_to_df_map, column_id, column_value
+
+
+def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_direction,
+                     maximum_number_of_timeshifts=None):
+    """
+    Roll the (sorted) data frames for each kind and each id separately in the "time" domain
+    (which is represented by the sort order of the sort column given by `column_sort`).
+
+    For each rolling step, a new id is created by the scheme "id={id}, shift={shift}", here id is the former id of the
+    column and shift is the amount of "time" shifts.
+
+    A few remarks:
+
+     * This method will create new IDs!
+     * The sign of rolling defines the direction of time rolling, a positive value means we are going back in time
+     * It is possible to shift time series of different lenghts but
+     * We assume that the time series are uniformly sampled
+     * For more information, please see :ref:`rolling-label`.
+
+    :param df_or_dict: a pandas DataFrame or a dictionary. The required shape/form of the object depends on the rest of
+        the passed arguments.
+    :type df_or_dict: pandas.DataFrame or dict
+    :param column_id: it must be present in the pandas DataFrame or in all DataFrames in the dictionary.
+        It is not allowed to have NaN values in this column.
+    :type column_id: basestring or None
+    :param column_sort: if not None, sort the rows by this column. It is not allowed to
+        have NaN values in this column.
+    :type column_sort: basestring or None
+    :param column_kind: It can only be used when passing a pandas DataFrame (the dictionary is already assumed to be
+        grouped by the kind). Is must be present in the DataFrame and no NaN values are allowed.
+        If the kind column is not passed, it is assumed that each column in the pandas DataFrame (except the id or
+        sort column) is a possible kind.
+    :type column_kind: basestring or None
+    :param rolling_direction: The sign decides, if to roll backwards or forwards in "time"
+    :type rolling_direction: int
+    :param maximum_number_of_timeshifts: If not None, shift only up to maximum_number_of_timeshifts.
+        If None, shift as often as possible.
+    :type maximum_number_of_timeshifts: int
+
+    :return: The rolled data frame or dictionary of data frames
+    :rtype: the one from df_or_dict
+    """
+
+    if rolling_direction == 0:
+        raise ValueError("Rolling direction of 0 is not possible")
+
+    if isinstance(df_or_dict, dict):
+        if column_kind is not None:
+            raise ValueError("You passed in a dictionary and gave a column name for the kind. Both are not possible.")
+
+        return {key: roll_time_series(df_or_dict=df_or_dict[key],
+                                      column_id=column_id,
+                                      column_sort=column_sort,
+                                      column_kind=column_kind,
+                                      rolling_direction=rolling_direction)
+                for key in df_or_dict}
+
+    # Now we know that this is a pandas data frame
+    df = df_or_dict
+
+    if column_id is not None:
+        if column_id not in df:
+                raise AttributeError("The given column for the id is not present in the data.")
+    else:
+        raise ValueError("You have to set the column_id which contains the ids of the different time series")
+
+    if column_kind is not None:
+        grouper = (column_kind, column_id)
+    else:
+        grouper = (column_id,)
+
+    if column_sort is not None:
+        # Require no Nans in column
+        if df[column_sort].isnull().any():
+            raise ValueError("You have NaN values in your sort column.")
+
+        df = df.sort_values(column_sort)
+
+        # if rolling is enabled, the data should be uniformly sampled in this column
+        # Build the differences between consecutive time sort values
+
+        differences = df.groupby(grouper)[column_sort].apply(
+            lambda x: x.values[:-1] - x.values[1:])
+        # Write all of them into one big list
+        differences = sum(map(list, differences), [])
+        # Test if all differences are the same
+        if differences and min(differences) != max(differences):
+            warnings.warn("Your time stamps are not uniformly sampled, which makes rolling "
+                          "nonsensical in some domains.")
+
+    # Roll the data frames if requested
+    rolling_direction = np.sign(rolling_direction)
+
+    grouped_data = df.groupby(grouper)
+    maximum_number_of_timeshifts = maximum_number_of_timeshifts or grouped_data.count().max().max()
+
+    if np.isnan(maximum_number_of_timeshifts):
+        raise ValueError("Somehow the maximum length of your time series is NaN (Does your time series container have "
+                         "only one row?). Can not perform rolling.")
+
+    if rolling_direction > 0:
+        range_of_shifts = range(maximum_number_of_timeshifts, -1, -1)
+    else:
+        range_of_shifts = range(-maximum_number_of_timeshifts, 1)
+
+    def roll_out_time_series(time_shift):
+        # Shift out only the first "time_shift" rows
+        df_temp = grouped_data.shift(time_shift)
+        df_temp[column_id] = "id=" + df[column_id].map(str) + ", shift={}".format(time_shift)
+        if column_kind:
+            df_temp[column_kind] = df[column_kind]
+        return df_temp.dropna()
+
+    return pd.concat([roll_out_time_series(time_shift) for time_shift in range_of_shifts],
+                     ignore_index=True)
+
+
+

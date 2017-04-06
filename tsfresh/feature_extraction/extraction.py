@@ -89,8 +89,11 @@ def extract_features(timeseries_container, feature_extraction_settings=None,
     # Always use the standardized way of storing the data.
     # See the function normalize_input_to_internal_representation for more information.
     kind_to_df_map, column_id, column_value = \
-        dataframe_functions.normalize_input_to_internal_representation(timeseries_container, column_id, column_sort,
-                                                                       column_kind, column_value)
+        dataframe_functions.normalize_input_to_internal_representation(df_or_dict=timeseries_container,
+                                                                       column_id=column_id,
+                                                                       column_sort=column_sort,
+                                                                       column_kind=column_kind,
+                                                                       column_value=column_value)
 
     # Use the standard setting if the user did not supply ones himself.
     if feature_extraction_settings is None:
@@ -111,11 +114,14 @@ def extract_features(timeseries_container, feature_extraction_settings=None,
 
     # Calculate the result
     if parallelization == 'per_kind':
-        result = _extract_features_parallel_per_kind(kind_to_df_map, feature_extraction_settings,
-                                                     column_id, column_value)
+        result = _extract_features_per_kind(kind_to_df_map, feature_extraction_settings,
+                                            column_id, column_value)
     elif parallelization == 'per_sample':
         result = _extract_features_parallel_per_sample(kind_to_df_map, feature_extraction_settings,
                                                        column_id, column_value)
+    elif parallelization == 'no_parallelization':
+        result = _extract_features_per_kind(kind_to_df_map, feature_extraction_settings,
+                                            column_id, column_value, serial=True)
     else:
         raise ValueError("Argument parallelization must be one of: 'per_kind', 'per_sample'")
 
@@ -127,7 +133,7 @@ def extract_features(timeseries_container, feature_extraction_settings=None,
     return result
 
 
-def _extract_features_parallel_per_kind(kind_to_df_map, settings, column_id, column_value):
+def _extract_features_per_kind(kind_to_df_map, settings, column_id, column_value, serial=False):
     """
     Parallelize the feature extraction per kind.
 
@@ -142,6 +148,9 @@ def _extract_features_parallel_per_kind(kind_to_df_map, settings, column_id, col
     :param settings: settings object that controls which features are calculated
     :type settings: tsfresh.feature_extraction.settings.FeatureExtractionSettings
 
+    :param serial: Do not parallelize the extraction. This can be handy if (1) you want to debug something
+       (2) you want to profile something or (3) your environment does not support multiprocessing
+
     :return: The (maybe imputed) DataFrame containing extracted features.
     :rtype: pandas.DataFrame
     """
@@ -154,8 +163,14 @@ def _extract_features_parallel_per_kind(kind_to_df_map, settings, column_id, col
     chunksize = helper_functions.calculate_best_chunksize(kind_to_df_map, settings)
 
     total_number_of_expected_results = len(kind_to_df_map)
-    extracted_features = tqdm(pool.imap_unordered(partial_extract_features_for_one_time_series, kind_to_df_map.items(),
-                                                  chunksize=chunksize), total=total_number_of_expected_results,
+
+    if serial:
+        map_function = map
+    else:
+        map_function = partial(pool.imap_unordered, chunksize=chunksize)
+
+    extracted_features = tqdm(map_function(partial_extract_features_for_one_time_series, kind_to_df_map.items()),
+                              total=total_number_of_expected_results,
                               desc="Feature Extraction", disable=settings.disable_progressbar)
 
     pool.close()
@@ -238,12 +253,11 @@ def _extract_features_parallel_per_sample(kind_to_df_map, settings, column_id, c
             map_result = results_fifo.get()
             dfs_kind = iterable_with_tqdm_update(map_result, progress_bar)
             df_tmp = pd.concat(dfs_kind, axis=0).astype(np.float64)
-
-            # Impute the result if requested
-            if settings.IMPUTE is not None:
-                settings.IMPUTE(df_tmp)
-
             result = pd.concat([result, df_tmp], axis=1).astype(np.float64)
+
+    # Impute the result if requested
+    if settings.IMPUTE is not None:
+        settings.IMPUTE(result)
 
     pool.join()
     return result

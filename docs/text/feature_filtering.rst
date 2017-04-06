@@ -27,7 +27,8 @@ Phase 1 - Feature extraction
 
 Firstly, the algorithm characterizes time series with comprehensive and well-established feature mappings and considers
 additional features describing meta-information.
-The feature calculators used to derive the features are contained in :mod:`tsfresh.feature_extraction.feature_calculators`.
+The feature calculators used to derive the features are contained in
+:mod:`tsfresh.feature_extraction.feature_calculators`.
 
 In the figure from above, this corresponds to the change from raw time series to aggregated features.
 
