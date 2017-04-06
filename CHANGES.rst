@@ -4,11 +4,28 @@ Changelog
 
 tsfresh uses `Semantic Versioning <http://semver.org/>`_
 
+Version 0.7.1
+=============
+
+- added a maximum shift parameter to the rolling utility
+- added a FAQ entry about how to use tsfresh on windows
+- drastically decreased the runtime of the following features
+    - cwt_coefficient
+    - index_mass_quantile
+    - number_peaks
+    - large_standard_deviation
+    - symmetry_looking
+- removed baseline unit tests
+- bugfixes:
+    - per sample parallel imputing was done on chunks which gave non deterministic results
+    - imputing on dtypes other that float32 did not work properly
+- several improvements to documentation
+
 Version 0.7.0
 =============
 
 - new rolling utility to use tsfresh for time series forecasting tasks
-- bugfixes
+- bugfixes:
     - index_mass_quantile was using global index of time series container
     - an index with same name as id_column was breaking parallelization
     - friedrich_coefficients and max_langevin_fixed_point were occasionally stalling
