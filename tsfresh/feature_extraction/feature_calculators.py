@@ -126,12 +126,13 @@ def large_standard_deviation(x, r):
     :return: the value of this feature
     :return type: bool
     """
+    x = np.asarray(x)
     return np.std(x) > (r * (max(x) - min(x)))
 
 
-@set_property("fctype", "aggregate_with_parameters")
+@set_property("fctype", "apply")
 @not_apply_to_raw_numbers
-def symmetry_looking(x, r):
+def symmetry_looking(x, c, param):
     """
     Boolean variable denoting if the distribution of x *looks symmetric*. This is the case if
 
@@ -146,8 +147,11 @@ def symmetry_looking(x, r):
     :return: the value of this feature
     :return type: bool
     """
-    return abs(np.mean(x) - np.median(x)) < (r * (max(x) - min(x)))
-
+    x = np.asarray(x)
+    mean_median_difference = abs(np.mean(x) - np.median(x))
+    max_min_difference = max(x) - min(x)
+    return pd.Series({"{}__symmetry_looking__r_{}".format(c, r["r"]):
+                          mean_median_difference < (r["r"] * max_min_difference) for r in param})
 
 @set_property("fctype", "aggregate")
 @not_apply_to_raw_numbers
@@ -762,11 +766,20 @@ def number_peaks(x, n):
     :return: the value of this feature
     :return type: float
     """
-    res = list()
+    x = np.asarray(x)
+    x_reduced = x[n:-n]
+
+    res = None
     for i in range(1, n + 1):
-        res += [(x > np.roll(x, i))[n:-n]]
-        res += [(x > np.roll(x, -i))[n:-n]]
-    return sum(reduce(lambda a, b: a & b, res))
+        result_first = (x_reduced > np.roll(x, i)[n:-n])
+
+        if res is None:
+            res = result_first
+        else:
+            res &= result_first
+
+        res &= (x_reduced > np.roll(x, -i)[n:-n])
+    return sum(res)
 
 
 @set_property("fctype", "apply")
@@ -785,20 +798,24 @@ def index_mass_quantile(x, c, param):
     :return: the different feature values
     :return type: pandas.Series
     """
-    s = sum(np.abs(x))
-    res = pd.Series()
 
-    x = pd.Series(x)
+    x = np.asarray(x)
+    abs_x = np.abs(x)
+    s = sum(abs_x)
 
-    if s == 0: # all values in x are zero or it has length 0
+    res = {}
+
+    if s == 0:
+        # all values in x are zero or it has length 0
         for config in param:
             res["{}__index_mass_quantile__q_{}".format(c, config["q"])] = np.NaN
-    else: # at least one value is not zero
-        mass_centralized = (np.cumsum(np.abs(x)) * 1.0 / s).values
+    else:
+        # at least one value is not zero
+        mass_centralized = np.cumsum(abs_x) / s
         for config in param:
             res["{}__index_mass_quantile__q_{}".format(c, config["q"])] = \
                 (np.argmax(mass_centralized >= config["q"])+1)/len(x)
-    return res
+    return pd.Series(res)
 
 
 @set_property("fctype", "aggregate_with_parameters")
@@ -844,39 +861,30 @@ def cwt_coefficients(x, c, param):
     :return: the different feature values
     :return type: pandas.Series
     """
-    df_cfg = pd.DataFrame(param)
-    res = pd.Series()
 
-    for widths in df_cfg["widths"].unique():
+    calculated_cwt = {}
+    res = []
+    indices = []
 
-        # the calculated_cwt with shape (len(widths), len(x)).
-        calculated_cwt = cwt(x, ricker, widths)
+    for parameter_combination in param:
+        widths = parameter_combination["widths"]
+        w = parameter_combination["w"]
+        coeff = parameter_combination["coeff"]
 
-        for w in df_cfg[df_cfg["widths"] == widths]["w"].unique():
+        if widths not in calculated_cwt:
+            calculated_cwt[widths] = cwt(x, ricker, widths)
 
-            # get the coefficients corresponding to this array of widths
-            coeff = df_cfg[(df_cfg["widths"] == widths) & (df_cfg["w"] == w)]["coeff"].unique()
+        calculated_cwt_for_widths = calculated_cwt[widths]
 
-            # get the row of the current width
-            i = widths.index(w)
+        indices += ["{}__cwt_coefficients__widths_{}__coeff_{}__w_{}".format(c, widths, coeff, w)]
 
-            if calculated_cwt.shape[1] <= max(coeff):
-                # The calculated cwt is not wide enough, at least one coefficient would cause Index Error
-                res_tmp = []
+        i = widths.index(w)
+        if calculated_cwt_for_widths.shape[1] <= coeff:
+            res += [np.NaN]
+        else:
+            res += [calculated_cwt_for_widths[i, coeff]]
 
-                for j in coeff:
-                    if calculated_cwt.shape[1] <= j: # the current index is out of range
-                        res_tmp.append(np.NaN)
-                    else:
-                        res_tmp.append(calculated_cwt[i, j])
-            else:
-                res_tmp = calculated_cwt[i, coeff]
-
-            res = res.append(pd.Series(res_tmp,
-                                       index=["{}__cwt_coefficients__widths_{}__coeff_{}__w_{}".format(
-                                           c, widths, m, w) for m in coeff]))
-
-    return res
+    return pd.Series(res, index=indices)
 
 
 @set_property("fctype", "apply")
@@ -939,32 +947,36 @@ def ar_coefficient(x, c, param):
     :return x: the different feature values
     :return type: pandas.Series
     """
-    df_cfg = pd.DataFrame(param)
-    df_cfg["k"] = df_cfg["k"].apply(int)
+    calculated_ar_params = {}
 
-    res = pd.Series()
+    x_as_list = list(x)
+    calculated_AR = AR(x_as_list)
 
-    for k in df_cfg["k"].unique():
-        coeff = df_cfg[df_cfg["k"] == k]["coeff"]
-        try:
-            mod = AR(list(x)).fit(maxlag=k, solver="mle").params
-            res_tmp = pd.Series(index=["{}__ar_coefficient__k_{}__coeff_{}".format(c, k, p) for p in coeff])
+    res = {}
 
-            for p in coeff:
-                if p <= k:
-                    try:
-                        res_tmp["{}__ar_coefficient__k_{}__coeff_{}".format(c, k, p)] = mod[p]
-                    except IndexError:
-                        res_tmp["{}__ar_coefficient__k_{}__coeff_{}".format(c, k, p)] = 0
-                else:
-                    res_tmp["{}__ar_coefficient__k_{}__coeff_{}".format(c, k, p)] = np.NaN
+    for parameter_combination in param:
+        k = parameter_combination["k"]
+        p = parameter_combination["coeff"]
 
-        except (LinAlgError, ValueError):
-            res_tmp = pd.Series([np.NaN] * len(coeff),
-                                index=["{}__ar_coefficient__k_{}__coeff_{}".format(c, k, p) for p in coeff])
+        column_name = "{}__ar_coefficient__k_{}__coeff_{}".format(c, k, p)
 
-        res = res.append(res_tmp)
-    return res
+        if k not in calculated_ar_params:
+            try:
+                calculated_ar_params[k] = calculated_AR.fit(maxlag=k, solver="mle").params
+            except (LinAlgError, ValueError):
+                calculated_ar_params[k] = [np.NaN]*k
+
+        mod = calculated_ar_params[k]
+
+        if p <= k:
+            try:
+                res[column_name] = mod[p]
+            except IndexError:
+                res[column_name] = 0
+        else:
+            res[column_name] = np.NaN
+
+    return pd.Series(res)
 
 
 @set_property("fctype", "aggregate_with_parameters")

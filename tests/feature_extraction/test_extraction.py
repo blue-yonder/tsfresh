@@ -164,12 +164,18 @@ class ExtractionTestCase(DataTestCase):
         features_per_sample = extract_features(df, self.settings, "id", "sort", "kind", "val",
                                                parallelization='per_sample')
         features_per_kind = extract_features(df, self.settings, "id", "sort", "kind", "val",
-                                               parallelization='per_kind')
+                                             parallelization='per_kind')
+        features_serial = extract_features(df, self.settings, "id", "sort", "kind", "val",
+                                           parallelization='no_parallelization')
 
         six.assertCountEqual(self, features_per_sample.columns, features_per_kind.columns)
+        six.assertCountEqual(self, features_per_sample.columns, features_serial.columns)
 
         for col in features_per_sample.columns:
             self.assertIsNone(np.testing.assert_array_almost_equal(features_per_sample[col],
+                                                                   features_per_kind[col]))
+        for col in features_per_sample.columns:
+            self.assertIsNone(np.testing.assert_array_almost_equal(features_serial[col],
                                                                    features_per_kind[col]))
 
 
