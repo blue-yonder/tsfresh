@@ -129,6 +129,16 @@ class FeatureCalculationTestCase(TestCase):
         self.assertEqualOnAllArrayTypes(sum_values, [-1.2, -2, -3, -4], -10.2)
         self.assertEqualOnAllArrayTypes(sum_values, [], 0)
 
+        TS_FLOATS = [2.0912, 2.4, 5.09, 1.2, 1.5, 1.9]
+        # TS_NAN = [1, 2, 4, 5, float('nan'), 23]
+        TS_SMALL= [1]
+        TS_UNIFORM = [6] * 60
+
+        self.assertAlmostEqualOnAllArrayTypes(sum_values, TS_FLOATS, 14.181199999999999)
+        # self.assertTrue(np.isnan(sum_values, TS_NAN))
+        self.assertEqualOnAllArrayTypes(sum_values, TS_SMALL, 1)
+        self.assertEqualOnAllArrayTypes(sum_values, TS_UNIFORM, 360)        
+
     def test_large_number_of_peaks(self):
         x = [0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1]
         self.assertTrueOnAllArrayTypes(large_number_of_peaks, x, 1)
@@ -148,8 +158,8 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqualOnAllArrayTypes(mean_autocorrelation, x, expected_res)
 
     def test_augmented_dickey_fuller(self):
-        pass
-        # todo: add unit test
+        x = [1,2,3,4,3,4,2,3]
+        self.assertAlmostEqualOnAllArrayTypes(augmented_dickey_fuller, x, -2.6825663173365015) 
 
     def test_abs_energy(self):
         self.assertEqualOnAllArrayTypes(abs_energy, [1, 1, 1], 3)
@@ -383,8 +393,11 @@ class FeatureCalculationTestCase(TestCase):
 
 
     def test_number_cwt_peaks(self):
-        pass
-        # todo: add unit test
+        # generate a sine wave with three peaks
+        t = np.arange(0, 5* np.pi, 0.05)
+        x = np.sin(t).tolist()
+        self.assertEqualOnAllArrayTypes(number_cwt_peaks, x, 3, 10) # use a 10 unit window
+
 
     def test_spkt_welch_density(self):
         pass
