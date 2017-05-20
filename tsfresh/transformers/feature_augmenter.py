@@ -170,7 +170,7 @@ class FeatureAugmenter(BaseEstimator, TransformerMixin):
         Add the features calculated using the timeseries_container and add them to the corresponding rows in the input
         pandas.DataFrame X.
 
-        To save some computing time, you should only include those timeseries in the container, that you
+        To save some computing time, you should only include those time serieses in the container, that you
         need. You can set the timeseries container with the method :func:`set_timeseries_container`.
 
         :param X: the DataFrame to which the calculated timeseries features will be added. This is *not* the

@@ -79,6 +79,12 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
 
     For a description what the parameters column_id, column_sort, column_kind and column_value mean, please see
     :mod:`~tsfresh.feature_extraction.extraction`.
+
+    You can control the feature extraction in the fit step (the feature extraction in the transform step is done
+    automatically) as well as the feature selection in the fit step by handing in settings objects of the type
+    :class:`~tsfresh.feature_extraction.settings.FeatureExtractionSettings` and
+    :class:`~tsfresh.feature_selection.settings.FeatureSignificanceTestsSettings`.
+    However, the default settings whichare used if you pass no objects are often quite sensible.
     """
 
     def __init__(self,
@@ -87,8 +93,11 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
                  kind_to_fc_parameters=None,
                  column_id=None, column_sort=None, column_kind=None, column_value=None,
                  timeseries_container=None,
-                 parallelization=defaults.PARALLELISATION, chunksize=defaults.CHUNKSIZE,
-                 n_processes=defaults.N_PROCESSES, show_warnings=defaults.SHOW_WARNINGS,
+                 parallelization=defaults.PARALLELISATION,
+                 chunksize=defaults.CHUNKSIZE,
+                 impute_function=defaults.IMPUTE_FUNCTION,
+                 n_processes=defaults.N_PROCESSES,
+                 show_warnings=defaults.SHOW_WARNINGS,
                  disable_progressbar=defaults.DISABLE_PROGRESSBAR,
                  profile=defaults.PROFILING,
                  profiling_filename=defaults.PROFILING_FILENAME,
@@ -97,7 +106,8 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
                  test_for_binary_target_real_feature=defaults.TEST_FOR_BINARY_TARGET_REAL_FEATURE,
                  test_for_real_target_binary_feature=defaults.TEST_FOR_REAL_TARGET_BINARY_FEATURE,
                  test_for_real_target_real_feature=defaults.TEST_FOR_REAL_TARGET_REAL_FEATURE,
-                 fdr_level=defaults.FDR_LEVEL, hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT):
+                 fdr_level=defaults.FDR_LEVEL,
+                 hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT):
 
         """
         Create a new RelevantFeatureAugmenter instance.
@@ -173,9 +183,6 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
         :type hypotheses_independent: bool
         """
 
-        # Range will be our default imputation strategy
-        impute_function = impute_dataframe_range
-
         self.feature_extractor = FeatureAugmenter(column_id=column_id, column_sort=column_sort, column_kind=column_kind,
                                                   column_value=column_value,
                                                   default_fc_parameters=default_fc_parameters,
@@ -199,7 +206,6 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
         )
 
         self.filter_only_tsfresh_features = filter_only_tsfresh_features
-
         self.timeseries_container = timeseries_container
 
     def set_timeseries_container(self, timeseries_container):
@@ -282,12 +288,14 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
         self.feature_extractor.set_timeseries_container(self.timeseries_container)
 
         relevant_time_series_features = set(self.feature_selector.relevant_features) - set(pd.DataFrame(X).columns)
-
         relevant_extraction_settings = from_columns(relevant_time_series_features)
 
         # Set imputing strategy
-        impute_function = partial(impute_dataframe_range, col_to_max=self.col_to_max,
-                                  col_to_min=self.col_to_min, col_to_median=self.col_to_median)
+        if self.feature_extractor.impute_function is impute_dataframe_range:
+            self.feature_extractor.impute_function = partial(impute_dataframe_range,
+                                                             col_to_max=self.col_to_max,
+                                                             col_to_min=self.col_to_min,
+                                                             col_to_median=self.col_to_median)
 
         relevant_feature_extractor = FeatureAugmenter(kind_to_fc_parameters=relevant_extraction_settings,
                                                       default_fc_parameters={},
@@ -300,7 +308,7 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
                                                       n_processes=self.feature_extractor.n_processes,
                                                       show_warnings=self.feature_extractor.show_warnings,
                                                       disable_progressbar=self.feature_extractor.disable_progressbar,
-                                                      impute_function=impute_function,
+                                                      impute_function=self.feature_extractor.impute_function,
                                                       profile=self.feature_extractor.profile,
                                                       profiling_filename=self.feature_extractor.profiling_filename,
                                                       profiling_sorting=self.feature_extractor.profiling_sorting)
@@ -309,4 +317,7 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
 
         X_augmented = relevant_feature_extractor.transform(X)
 
-        return X_augmented.copy().loc[:, self.feature_selector.relevant_features]
+        if self.filter_only_tsfresh_features:
+            return X_augmented.copy().loc[:, self.feature_selector.relevant_features + X.columns.tolist()]
+        else:
+            return X_augmented.copy().loc[:, self.feature_selector.relevant_features]

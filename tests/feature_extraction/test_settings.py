@@ -8,7 +8,7 @@ from unittest import TestCase
 import numpy as np
 import pandas as pd
 from tsfresh.feature_extraction.extraction import extract_features, _extract_features_for_one_time_series
-from tsfresh.feature_extraction.settings import ComprehensiveFCParameters, MinimalFCParameters,\
+from tsfresh.feature_extraction.settings import ComprehensiveFCParameters, MinimalFCParameters, \
     EfficientFCParameters, from_columns
 import six
 from tsfresh.feature_extraction import feature_calculators
@@ -18,6 +18,7 @@ class TestSettingsObject(TestCase):
     """
     This tests the base class ComprehensiveFCParameters
     """
+
     def test_from_columns(self):
         tsn = "TEST_TIME_SERIES"
 
@@ -31,7 +32,6 @@ class TestSettingsObject(TestCase):
         # Aggregate functions
         feature_names = [tsn + '__sum_values', tsn + "__median", tsn + "__length", tsn + "__sample_entropy"]
 
-
         # Aggregate functions with params
         feature_names += [tsn + '__quantile__q_10', tsn + '__quantile__q_70', tsn + '__number_peaks__n_30',
                           tsn + '__value_count__value_inf', tsn + '__value_count__value_-inf',
@@ -43,9 +43,9 @@ class TestSettingsObject(TestCase):
         kind_to_fc_parameters = from_columns(feature_names)
 
         six.assertCountEqual(self, list(kind_to_fc_parameters[tsn].keys()),
-          ["sum_values", "median", "length", "sample_entropy", "quantile", "number_peaks", "ar_coefficient",
-                                  "value_count"])
-        
+                             ["sum_values", "median", "length", "sample_entropy", "quantile", "number_peaks",
+                              "ar_coefficient", "value_count"])
+
         self.assertEqual(kind_to_fc_parameters[tsn]["sum_values"], None)
         self.assertEqual(kind_to_fc_parameters[tsn]["ar_coefficient"],
                          [{"k": 20, "coeff": 4}, {"k": -1, "coeff": 10}])
@@ -121,7 +121,7 @@ class TestMinimalSettingsObject(TestCase):
                                               column_sort="time", column_id="id")
 
         six.assertCountEqual(self, extracted_features.columns, ["0__median", "0__standard_deviation", "0__sum_values",
-                                                                "0__maximum", "0__variance","0__minimum", "0__mean",
+                                                                "0__maximum", "0__variance", "0__minimum", "0__mean",
                                                                 "0__length"])
         six.assertCountEqual(self, extracted_features.index, [0, 1])
 

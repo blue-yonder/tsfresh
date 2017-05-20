@@ -29,8 +29,11 @@ from tsfresh import defaults
 _logger = logging.getLogger(__name__)
 
 
-def check_fs_sig_bh(X, y, n_processes=defaults.N_PROCESSES, chunksize=defaults.CHUNKSIZE,
-                    fdr_level=defaults.FDR_LEVEL, hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
+def check_fs_sig_bh(X, y,
+                    n_processes=defaults.N_PROCESSES,
+                    chunksize=defaults.CHUNKSIZE,
+                    fdr_level=defaults.FDR_LEVEL,
+                    hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
                     test_for_binary_target_real_feature=defaults.TEST_FOR_BINARY_TARGET_REAL_FEATURE):
     """
     The wrapper function that calls the significance test functions in this package.
@@ -128,7 +131,9 @@ def check_fs_sig_bh(X, y, n_processes=defaults.N_PROCESSES, chunksize=defaults.C
     pool = Pool(n_processes)
 
     # Helper function which wrapps the _calculate_p_value with many arguments already set
-    f = partial(_calculate_p_value, y=y, target_is_binary=target_is_binary, test_for_binary_target_real_feature=test_for_binary_target_real_feature)
+    f = partial(_calculate_p_value, y=y,
+                target_is_binary=target_is_binary,
+                test_for_binary_target_real_feature=test_for_binary_target_real_feature)
     results = pool.map(f, [X[feature] for feature in df_features['Feature']], chunksize=chunksize)
     p_values_of_features = pd.DataFrame(results)
     df_features.update(p_values_of_features)
@@ -147,6 +152,16 @@ def check_fs_sig_bh(X, y, n_processes=defaults.N_PROCESSES, chunksize=defaults.C
     # It is very important that we have a boolean "rejected" column, so we do a cast here to be sure
     df_features["rejected"] = df_features["rejected"].astype("bool")
 
+    if defaults.WRITE_SELECTION_REPORT:
+        # Write results of BH - Test to file
+        if not os.path.exists(defaults.RESULT_DIR):
+            os.mkdir(defaults.RESULT_DIR)
+
+        with open(os.path.join(defaults.RESULT_DIR, "fs_bh_results.txt"), 'w') as file_out:
+            file_out.write(("Performed BH Test to control the false discovery rate(FDR); \n"
+                            "FDR-Level={0};Hypothesis independent={1}\n"
+                            ).format(fdr_level, hypotheses_independent))
+            df_features.to_csv(index=False, path_or_buf=file_out, sep=';', float_format='%.4f')
     return df_features
 
 

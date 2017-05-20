@@ -4,6 +4,50 @@ Changelog
 
 tsfresh uses `Semantic Versioning <http://semver.org/>`_
 
+Version 0.7.1
+=============
+
+- added a maximum shift parameter to the rolling utility
+- added a FAQ entry about how to use tsfresh on windows
+- drastically decreased the runtime of the following features
+    - cwt_coefficient
+    - index_mass_quantile
+    - number_peaks
+    - large_standard_deviation
+    - symmetry_looking
+- removed baseline unit tests
+- bugfixes:
+    - per sample parallel imputing was done on chunks which gave non deterministic results
+    - imputing on dtypes other that float32 did not work properly
+- several improvements to documentation
+
+Version 0.7.0
+=============
+
+- new rolling utility to use tsfresh for time series forecasting tasks
+- bugfixes:
+    - index_mass_quantile was using global index of time series container
+    - an index with same name as id_column was breaking parallelization
+    - friedrich_coefficients and max_langevin_fixed_point were occasionally stalling
+
+Version 0.6.0
+=============
+
+- progress bar for feature selection
+- new feature: estimation of largest fixed point of deterministic dynamics
+- new notebook: demonstration how to use tsfresh in a pipeline with train and test datasets
+- remove no logging handler warning
+- fixed bug in the RelevantFeatureAugmenter regarding the evaluate_only_added_features parameters
+
+Version 0.5.0
+=============
+
+- new example: driftbif simulation
+- further improvements of the parallelization
+- language improvements in the documentation
+- performance improvements for some features
+- performance improvements for the impute function
+- new feature and feature renaming: sum_of_recurring_values, sum_of_recurring_data_points
 
 Version 0.4.0
 =============

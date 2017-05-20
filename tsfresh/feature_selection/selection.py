@@ -74,7 +74,7 @@ def select_features(X, y, test_for_binary_target_binary_feature=defaults.TEST_FO
               It can contain both binary or real-valued features at the same time.
     :type X: pandas.DataFrame
 
-    :param y: Target vector which is needed to test, which features are relevant. Can be binary or real-valued.
+    :param y: Target vector which is needed to test which features are relevant. Can be binary or real-valued.
     :type y: pandas.Series or numpy.ndarray
 
     :param test_for_binary_target_binary_feature: Which test to be used for binary target, binary feature (currently unused)

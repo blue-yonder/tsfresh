@@ -182,7 +182,6 @@ class ExtractionTestCase(DataTestCase):
             self.assertIsNone(np.testing.assert_array_almost_equal(features_per_sample[col],
                                                                    features_per_kind[col]))
 
-
 class ParallelExtractionTestCase(DataTestCase):
     def setUp(self):
         self.n_processes = 2

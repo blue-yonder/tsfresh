@@ -28,8 +28,8 @@ There are three general coding paradigms that we believe in:
 
 There are two important copyright guidelines:
 
-    4. Please do include any data sets for which a licence is not available or commercial use is even prohibited. Those
-       can undermine the licence of the whole projects.
+    4. Please do not include any data sets for which a licence is not available or commercial use is even prohibited.
+       Those can undermine the licence of the whole projects.
 
     5. Do not use code snippets for which a licence is not available (e.g. from stackoverflow) or commercial use is
        even prohibited. Those can undermine the licence of the whole projects.
@@ -42,7 +42,7 @@ Further, there are some technical decisions we made:
 Test framework
 ''''''''''''''
 
-After making your changes, you probably want to test your changes locally. To run our comprehensive suit of unit tests
+After making your changes, you probably want to test your changes locally. To run our comprehensive suite of unit tests
 you have to install all the relevant python packages with
 
 
@@ -78,8 +78,8 @@ or build the documentation with
 The finished documentation can be found in the docs/_build/html folder.
 
 On Github we use a Travis CI Folder that runs our test suite every time a commit or pull request is sent. The
-configuration of Travi is controlled by the `.travis.yml <https://github.com/blue-yonder/tsfresh/blob/master/.travis.yml>`_
-file.
+configuration of Travi is controlled by the
+`.travis.yml <https://github.com/blue-yonder/tsfresh/blob/master/.travis.yml>`_ file.
 
 
 We are looking forward to hear from you! =)

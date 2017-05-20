@@ -27,7 +27,6 @@ def get_aggregate_functions(fc_parameters, column_prefix):
 
     :param fc_parameters: mapping from feature calculator names to settings.
     :type fc_parameters: ComprehensiveFCParameters or child class
-
     :param column_prefix: the prefix for all column names.
     :type column_prefix: basestring
 
@@ -256,7 +255,9 @@ class ComprehensiveFCParameters(dict):
             "fft_coefficient": [{"coeff": coeff} for coeff in range(0, 10)],
             "value_count": [{"value": value} for value in [0, 1, np.NaN, np.PINF, np.NINF]],
             "range_count": [{"min": -1, "max": 1}],
-            "approximate_entropy": [{"m": 2, "r": r} for r in [.1, .3, .5, .7, .9]]
+            "approximate_entropy": [{"m": 2, "r": r} for r in [.1, .3, .5, .7, .9]],
+            "friedrich_coefficients": (lambda m: [{"coeff": coeff, "m": m, "r": 30} for coeff in range(m + 1)])(3),
+            "max_langevin_fixed_point": [{"m": 3, "r": 30}],
         })
 
         super(ComprehensiveFCParameters, self).__init__(name_to_param)
@@ -277,6 +278,7 @@ class MinimalFCParameters(ComprehensiveFCParameters):
     >>> from tsfresh.feature_extraction import extract_features, MinimalFCParameters
     >>> extract_features(df, default_fc_parameters=MinimalFCParameters())
     """
+
     def __init__(self):
         ComprehensiveFCParameters.__init__(self)
 
@@ -306,5 +308,3 @@ class EfficientFCParameters(ComprehensiveFCParameters):
         for fname, f in feature_calculators.__dict__.items():
             if hasattr(f, "high_comp_cost"):
                 del self[fname]
-
-

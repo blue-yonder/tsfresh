@@ -205,7 +205,7 @@ def __check_if_pandas_series(x, y):
 
 def __check_for_binary_target(y):
     """
-    Helper function to check, if a target column is binary.
+    Helper function to check if a target column is binary.
     Checks if only the values true and false (or 0 and 1) are present in the values.
 
     :param y: the values to check for.
@@ -225,7 +225,7 @@ def __check_for_binary_target(y):
 
 def __check_for_binary_feature(x):
     """
-    Helper function to check, if a feature column is binary.
+    Helper function to check if a feature column is binary.
     Checks if only the values true and false (or 0 and 1) are present in the values.
 
     :param y: the values to check for.

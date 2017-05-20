@@ -15,10 +15,16 @@ from multiprocessing import Pool
 import numpy as np
 import pandas as pd
 from builtins import str
+from multiprocessing import Pool
+from functools import partial
 from six.moves.queue import Queue
+import logging
+import pandas as pd
+import numpy as np
+
 from tqdm import tqdm
 from tsfresh.feature_extraction.settings import ComprehensiveFCParameters, get_aggregate_functions, get_apply_functions
-import tsfresh.defaults
+from tsfresh import defaults
 from tsfresh.utilities import dataframe_functions, profiling
 
 _logger = logging.getLogger(__name__)
@@ -27,13 +33,13 @@ _logger = logging.getLogger(__name__)
 def extract_features(timeseries_container, default_fc_parameters=None,
                      kind_to_fc_parameters=None,
                      column_id=None, column_sort=None, column_kind=None, column_value=None,
-                     parallelization=None, chunksize=tsfresh.defaults.CHUNKSIZE,
-                     n_processes=tsfresh.defaults.N_PROCESSES, show_warnings=tsfresh.defaults.SHOW_WARNINGS,
-                     disable_progressbar=tsfresh.defaults.DISABLE_PROGRESSBAR,
-                     impute_function=tsfresh.defaults.IMPUTE_FUNCTION,
-                     profile=tsfresh.defaults.PROFILING,
-                     profiling_filename=tsfresh.defaults.PROFILING_FILENAME,
-                     profiling_sorting=tsfresh.defaults.PROFILING_SORTING):
+                     parallelization=None, chunksize=defaults.CHUNKSIZE,
+                     n_processes=defaults.N_PROCESSES, show_warnings=defaults.SHOW_WARNINGS,
+                     disable_progressbar=defaults.DISABLE_PROGRESSBAR,
+                     impute_function=defaults.IMPUTE_FUNCTION,
+                     profile=defaults.PROFILING,
+                     profiling_filename=defaults.PROFILING_FILENAME,
+                     profiling_sorting=defaults.PROFILING_SORTING):
     """
     Extract features from
 
@@ -124,6 +130,9 @@ def extract_features(timeseries_container, default_fc_parameters=None,
     :return: The (maybe imputed) DataFrame containing extracted features.
     :rtype: pandas.DataFrame
     """
+    import logging
+    logging.basicConfig()
+    
     # Always use the standardized way of storing the data.
     # See the function normalize_input_to_internal_representation for more information.
     kind_to_df_map, column_id, column_value = \
@@ -176,10 +185,10 @@ def _extract_features_parallel_per_kind(kind_to_df_map,
                                         column_id, column_value,
                                         default_fc_parameters,
                                         kind_to_fc_parameters=None,
-                                        chunksize=tsfresh.defaults.CHUNKSIZE,
-                                        n_processes=tsfresh.defaults.N_PROCESSES, show_warnings=tsfresh.defaults.SHOW_WARNINGS,
-                                        disable_progressbar=tsfresh.defaults.DISABLE_PROGRESSBAR,
-                                        impute_function=tsfresh.defaults.IMPUTE_FUNCTION):
+                                        chunksize=defaults.CHUNKSIZE,
+                                        n_processes=defaults.N_PROCESSES, show_warnings=defaults.SHOW_WARNINGS,
+                                        disable_progressbar=defaults.DISABLE_PROGRESSBAR,
+                                        impute_function=defaults.IMPUTE_FUNCTION):
     """
     Parallelize the feature extraction per kind.
 
@@ -252,10 +261,10 @@ def _extract_features_parallel_per_sample(kind_to_df_map,
                                           column_id, column_value,
                                           default_fc_parameters,
                                           kind_to_fc_parameters=None,
-                                          chunksize=tsfresh.defaults.CHUNKSIZE,
-                                          n_processes=tsfresh.defaults.N_PROCESSES, show_warnings=tsfresh.defaults.SHOW_WARNINGS,
-                                          disable_progressbar=tsfresh.defaults.DISABLE_PROGRESSBAR,
-                                          impute_function=tsfresh.defaults.IMPUTE_FUNCTION):
+                                          chunksize=defaults.CHUNKSIZE,
+                                          n_processes=defaults.N_PROCESSES, show_warnings=defaults.SHOW_WARNINGS,
+                                          disable_progressbar=defaults.DISABLE_PROGRESSBAR,
+                                          impute_function=defaults.IMPUTE_FUNCTION):
     """
     Parallelize the feature extraction per kind and per sample.
 
@@ -331,6 +340,8 @@ def _extract_features_parallel_per_sample(kind_to_df_map,
     pool.close()
 
     # Wait for the jobs to complete and concatenate the partial results
+    dfs_per_kind = []
+
     # Do this all with a progress bar
     with tqdm(total=total_number_of_expected_results, desc="Feature Extraction",
               disable=disable_progressbar) as progress_bar:
@@ -378,7 +389,7 @@ def _calculate_best_chunksize(iterable_list, n_processes):
 def _extract_features_for_one_time_series(prefix_and_dataframe, column_id, column_value,
                                           default_fc_parameters,
                                           kind_to_fc_parameters=None,
-                                          show_warnings=tsfresh.defaults.SHOW_WARNINGS):
+                                          show_warnings=defaults.SHOW_WARNINGS):
     """
     Extract time series features for a given data frame based on the passed settings.
 

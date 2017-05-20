@@ -105,7 +105,7 @@ submodule. tsfresh will only find feature calculators that are in this submodule
 Step 3. Add custom settings for your feature
 --------------------------------------------
 
-Finally, you have to add custom settings if your feature is a apply or aggregate feature with parameters. To do so,
+Finally, you have to add custom settings if your feature is an apply or aggregate feature with parameters. To do so,
 just append your parameters to the ``name_to_param`` dictionary inside the
 :class:`tsfresh.EfficientFCParameters` constructor:
 
