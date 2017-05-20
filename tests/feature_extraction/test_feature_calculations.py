@@ -383,8 +383,8 @@ class FeatureCalculationTestCase(TestCase):
 
 
     def test_number_cwt_peaks(self):
-        pass
-        # todo: add unit test
+        x = [1,1,1,1,1,1,1,5,1,1,1,1,1,1,5,1,1,1,1,1,1]
+        self.assertEqualOnAllArrayTypes(number_cwt_peaks, x, 2, 2)
 
     def test_spkt_welch_density(self):
         pass
