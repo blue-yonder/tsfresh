@@ -23,7 +23,7 @@ The `default_fc_parameters` is expected to be a dictionary, which maps feature c
 (the function names you can find in the :mod:`tsfresh.feature_extraction.feature_calculators` file) to a list
 of dictionaries, which are the parameters with which the function will be called (as key value pairs). Each function
 parameter combination, that is in this dict will be called during the extraction and will produce a feature.
-If the function does not need any parameters, the list value of the corresponding key can be empty.
+If the function does not take any parameters, the value should be set to `None`.
 
 For example
 
