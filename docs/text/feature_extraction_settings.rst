@@ -13,42 +13,11 @@ type. So, you need to use custom settings for the feature extractors. To do that
 custom settings object, like shown now:
 
 >>> from tsfresh.feature_extraction import ComprehensiveFCParameters
->>> settings = ExtendedFCParameters()
->>> # Set here the options of the settings object as shown in the chapters below
->>> # ...
->>> from tsfresh.feature_extraction import extract_features
->>> extract_features(df, default_fc_parameters=settings)
-
-
-The
-feature calculators in this package).
-
-After digging deeper into your data, you maybe want to calculate more of a certain type of feature and less of another
-type. So, you need to use custom settings for the feature extractors. To do that with tsfresh you will have to use a
-custom settings object, like shown now:
-
->>> from tsfresh.feature_extraction import ComprehensiveFCParameters
 >>> settings = ComprehensiveFCParameters()
 >>> # Set here the options of the settings object as shown in the paragraphs below
 >>> # ...
 >>> from tsfresh.feature_extraction import extract_features
 >>> extract_features(df, default_fc_parameters=settings)
-
-
-The
-feature calculators in this package).
-
-After digging deeper into your data, you maybe want to calculate more of a certain type of feature and less of another
-type. So, you need to use custom settings for the feature extractors. To do that with tsfresh you will have to use a
-custom settings object, like shown now:
-
->>> from tsfresh.feature_extraction import ExtendedFCParameters
->>> settings = ComprehensiveFCParameters()
->>> # Set here the options of the settings object as shown in the chapters below
->>> # ...
->>> from tsfresh.feature_extraction import extract_features
->>> extract_features(df, default_fc_parameters=settings)
-
 
 The `default_fc_parameters` is expected to be a dictionary, which maps feature calculator names
 (the function names you can find in the :mod:`tsfresh.feature_extraction.feature_calculators` file) to a list
