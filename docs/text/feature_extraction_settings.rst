@@ -28,8 +28,8 @@ type. So, you need to use custom settings for the feature extractors. To do that
 custom settings object, like shown now:
 
 >>> from tsfresh.feature_extraction import ComprehensiveFCParameters
->>> settings = ExtendedFCParameters()
->>> # Set here the options of the settings object as shown in the chapters below
+>>> settings = ComprehensiveFCParameters()
+>>> # Set here the options of the settings object as shown in the paragraphs below
 >>> # ...
 >>> from tsfresh.feature_extraction import extract_features
 >>> extract_features(df, default_fc_parameters=settings)
