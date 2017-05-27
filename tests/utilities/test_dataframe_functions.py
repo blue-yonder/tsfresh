@@ -519,6 +519,14 @@ class ImputeTestCase(TestCase):
                           df, col_to_max, col_to_min, col_to_median)
 
 
+        df = pd.DataFrame([0, 1, 2, 3, 4], columns=["test"])
+        col_dict = {"test": 0}
+        dataframe_functions.impute_dataframe_range(df, col_dict, col_dict, col_dict)
+
+        self.assertEqual(df.columns, ["test"])
+        self.assertListEqual(list(df["test"].values), [0, 1, 2, 3, 4])
+
+
 class RestrictTestCase(TestCase):
     def test_restrict_dataframe(self):
         df = pd.DataFrame({'id': [1, 2, 3] * 2})
