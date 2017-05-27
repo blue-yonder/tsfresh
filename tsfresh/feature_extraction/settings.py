@@ -208,26 +208,26 @@ def _get_config_from_string(parts):
 
 # todo: this classes' docstrings are not completely up-to-date
 class ComprehensiveFCParameters(dict):
+    """
+    Create a new ComprehensiveFCParameters instance. You have to pass this instance to the
+    extract_feature instance.
+
+    It is basically a dictionary (and also based on one), which is a mapping from
+    string (the same names that are in the feature_calculators.py file) to a list of dictionary of parameters,
+    which should be used when the function with this name is called.
+
+    Only those strings (function names), that are keys in this dictionary, will be later used to extract
+    features - so whenever you delete a key from this dict, you disable the calculation of this feature.
+
+    You can use the settings object with
+
+    >>> from tsfresh.feature_extraction import extract_features, ComprehensiveFCParameters
+    >>> extract_features(df, default_fc_parameters=ComprehensiveFCParameters())
+
+    to extract all features (which is the default nevertheless) or you change the ComprehensiveFCParameters
+    object to other types (see below).
+    """
     def __init__(self):
-        """
-        Create a new ComprehensiveFCParameters instance. You have to pass this instance to the
-        extract_feature instance.
-
-        It is basically a dictionary (and also based on one), which is a mapping from
-        string (the same names that are in the feature_calculators.py file) to a list of dictionary of parameters,
-        which should be used when the function with this name is called.
-
-        Only those strings (function names), that are keys in this dictionary, will be later used to extract
-        features - so whenever you delete a key from this dict, you disable the calculation of this feature.
-
-        You can use the settings object with
-
-        >>> from tsfresh.feature_extraction import extract_features, ComprehensiveFCParameters
-        >>> extract_features(df, default_fc_parameters=ComprehensiveFCParameters())
-
-        to extract all features (which is the default nevertheless) or you change the ComprehensiveFCParameters
-        object to other types (see below).
-        """
         name_to_param = {}
 
         for name, func in feature_calculators.__dict__.items():

@@ -81,10 +81,8 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
     :mod:`~tsfresh.feature_extraction.extraction`.
 
     You can control the feature extraction in the fit step (the feature extraction in the transform step is done
-    automatically) as well as the feature selection in the fit step by handing in settings objects of the type
-    :class:`~tsfresh.feature_extraction.settings.FeatureExtractionSettings` and
-    :class:`~tsfresh.feature_selection.settings.FeatureSignificanceTestsSettings`.
-    However, the default settings whichare used if you pass no objects are often quite sensible.
+    automatically) as well as the feature selection in the fit step by handing in settings.
+    However, the default settings which are used if you pass no flags are often quite sensible.
     """
 
     def __init__(self,

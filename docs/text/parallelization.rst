@@ -16,20 +16,20 @@ Parallelization of Feature Selection
 
 We use a :class:`multiprocessing.Pool` to parallelize the calculation of the p-values for each feature. On
 instantiation we set the Pool's number of worker processes to
-:attr:`tsfresh.feature_selection.FeatureSignificanceTestsSettings.n_processes`. This field defaults to
+`n_processes`. This field defaults to
 the number of processors on the current system. We recommend setting it to the maximum number of available (and
 otherwise idle) processors.
 
 The chunksize of the Pool's map function is another important parameter to consider. It can be set via the
-:attr:`tsfresh.feature_selection.FeatureSignificanceTestsSettings.chunksize` field. By default it is up to
+`chunksize` field. By default it is up to
 :class:`multiprocessing.Pool` to decide on the chunksize.
 
 Parallelization of Feature Extraction
 -------------------------------------
 
 For the feature extraction tsfresh exposes the parameters
-:attr:`tsfresh.feature_extraction.FeatureExtractionSettings.n_processes` and
-:attr:`tsfresh.feature_extraction.FeatureExtractionSettings.chunksize`. Both behave anlogue to the parameters
+`n_processes` and
+`chunksize`. Both behave anlogue to the parameters
 for the feature selection.
 
 Additionally there are two options for how the parallelization is done:
