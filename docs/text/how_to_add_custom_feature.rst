@@ -106,8 +106,8 @@ Step 3. Add custom settings for your feature
 --------------------------------------------
 
 Finally, you have to add custom settings if your feature is an apply or aggregate feature with parameters. To do so,
-just append your parameters to the ``name_to_param`` dictionary inside the
-:class:`tsfresh.EfficientFCParameters` constructor:
+just append your feature with sane default parameters to the ``name_to_param`` dictionary inside the
+:class:`tsfresh.ComprehensiveFCParameters` constructor:
 
 .. code:: python
 
