@@ -40,16 +40,16 @@ will produce three features: one by calling the
 
 So you can control, which features will be extracted, by adding/removing either keys or parameters from the dict.
 
-For convenience, there are already three dict predefined, which can be used right away:
+For convenience, three dictionaries are predefined and can be used right away:
 
 * :class:`tsfresh.feature_extraction.settings.ComprehensiveFCParameters`: includes all features without parameters and
-  all features will parameters, with quite some different parameter combinations. This is the default of you do not
-  hand in a `default_fc_parameters` at all.
-* :class:`tsfresh.feature_extraction.settings.MinimalFCParameters`: includes only few features
+  all features with parameters, each with different parameter combinations. This is the default for `extract_features`
+  if you do not hand in a `default_fc_parameters` at all.
+* :class:`tsfresh.feature_extraction.settings.MinimalFCParameters`: includes only a handful of features
   and can be used for quick tests. The features which have the "minimal" attribute are used here.
 * :class:`tsfresh.feature_extraction.settings.EfficientFCParameters`: Mostly the same features as in the
-  :class:`tsfresh.feature_extraction.settings.ComprehensiveFCParameters`, except a few exception, which are marked as
-  high_comp_cost. This can be used if runtime performance plays a major role.
+  :class:`tsfresh.feature_extraction.settings.ComprehensiveFCParameters`, but without features which are marked with the
+  "high_comp_cost" attribute. This can be used if runtime performance plays a major role.
 
 It is also possible, to control the features to be extracted for the different kinds of time series individually.
 You can do so by passing another dictionary to the extract function as a
@@ -59,9 +59,6 @@ You can do so by passing another dictionary to the extract function as a
 parameter. This dict must be a mapping from kind names (as string) to `fc_parameters` objects,
 which you would normally pass as an argument to the `default_fc_parameters` parameter.
 
-This dominating behavior of the `kind_to_fc_parameters` argument works partly. So, if you include a kind
-name in the `kind_to_fc_parameters` parameter, its value will override the
-`default_fc_parameters`. Otherwise, the `default_fc_parameters` if the kind name could
-not be found.
-
-
+The `kind_to_fc_parameters` argument will partly override the `default_fc_parameters`. So, if you include a kind
+name in the `kind_to_fc_parameters` parameter, its value will be used for that kind.
+Other kinds will still use the `default_fc_parameters`.
