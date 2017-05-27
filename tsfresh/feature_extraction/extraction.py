@@ -65,9 +65,6 @@ def extract_features(timeseries_container, default_fc_parameters=None,
     >>> df, _ = load_robot_execution_failures()
     >>> X = extract_features(df, column_id='id', column_sort='time')
 
-    which would give the same results as described above. In this case, the column_kind is not allowed.
-    Except that, the same rules for leaving out the columns apply as above.
-
     :param timeseries_container: The pandas.DataFrame with the time series to compute the features for, or a
             dictionary of pandas.DataFrames.
     :type timeseries_container: pandas.DataFrame or dict
@@ -99,7 +96,7 @@ def extract_features(timeseries_container, default_fc_parameters=None,
                             :func:`~tsfresh.feature_extraction.extraction._extract_features_parallel_per_kind` and
                             :ref:`parallelization-label` for details.
                             Choosing None makes the algorithm look for the best parallelization technique by applying
-                            some general remarks.
+                            some general assumptions.
     :type parallelization: str
 
     :param chunksize: The size of one chunk for the parallelisation
@@ -136,8 +133,11 @@ def extract_features(timeseries_container, default_fc_parameters=None,
     # Always use the standardized way of storing the data.
     # See the function normalize_input_to_internal_representation for more information.
     kind_to_df_map, column_id, column_value = \
-        dataframe_functions.normalize_input_to_internal_representation(timeseries_container, column_id, column_sort,
-                                                                       column_kind, column_value)
+        dataframe_functions.normalize_input_to_internal_representation(df_or_dict=timeseries_container,
+                                                                       column_id=column_id,
+                                                                       column_sort=column_sort,
+                                                                       column_kind=column_kind,
+                                                                       column_value=column_value)
 
     # Use the standard setting if the user did not supply ones himself.
     if default_fc_parameters is None:
