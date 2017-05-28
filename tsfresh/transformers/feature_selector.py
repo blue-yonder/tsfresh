@@ -3,6 +3,7 @@
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
 import pandas as pd
+from tsfresh import defaults
 from sklearn.base import BaseEstimator, TransformerMixin
 from tsfresh.feature_selection.feature_selector import check_fs_sig_bh
 
@@ -24,17 +25,22 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
     using several statistical tests (depending on whether the feature or/and the target is binary
     or not). Using the Benjamini Hochberg procedure, only features in :math:`H_0` are rejected.
 
-    You can control how the significance tests are executed by handing in a settings object. Please refer to
-    :class:`~tsfresh.feature_selection.settings.FeatureSignificanceTestsSettings` for more information.
-    If you do not pass a settings object, the defaults are used.
-
     This estimator - as most of the sklearn estimators - works in a two step procedure. First, it is fitted
     on training data, where the target is known:
 
+    >>> import pandas as pd
     >>> X_train, y_train = pd.DataFrame(), pd.Series() # fill in with your features and target
     >>> from tsfresh.transformers import FeatureSelector
     >>> selector = FeatureSelector()
     >>> selector.fit(X_train, y_train)
+
+    In this example the list of relevant features is empty:
+    >>> selector.relevant_features
+    >>> []
+
+    The same holds for the feature importance:
+    >>> selector.feature_importances_
+    >>> array([], dtype=float64)
 
     The estimator keeps track on those features, that were relevant in the training step. If you
     apply the estimator after the training, it will delete all other features in the testing
@@ -48,15 +54,57 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
     If you are interested in more information on the features, you can look into the member
     ``relevant_features`` after the fit.
     """
-    def __init__(self, settings=None):
+    def __init__(self, test_for_binary_target_binary_feature=defaults.TEST_FOR_BINARY_TARGET_BINARY_FEATURE,
+                 test_for_binary_target_real_feature=defaults.TEST_FOR_BINARY_TARGET_REAL_FEATURE,
+                 test_for_real_target_binary_feature=defaults.TEST_FOR_REAL_TARGET_BINARY_FEATURE,
+                 test_for_real_target_real_feature=defaults.TEST_FOR_REAL_TARGET_REAL_FEATURE,
+                 fdr_level=defaults.FDR_LEVEL, hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
+                 n_processes=defaults.N_PROCESSES, chunksize=defaults.CHUNKSIZE):
         """
         Create a new FeatureSelector instance.
 
-        :param settings: The settings to use for feature selection.
-        :type settings: tsfresh.feature_selection.settings.FeatureSelectionSettings
+        :param test_for_binary_target_binary_feature: Which test to be used for binary target, binary feature (currently unused)
+        :type test_for_binary_target_binary_feature: str
+
+        :param test_for_binary_target_real_feature: Which test to be used for binary target, real feature
+        :type test_for_binary_target_real_feature: str
+
+        :param test_for_real_target_binary_feature: Which test to be used for real target, binary feature (currently unused)
+        :type test_for_real_target_binary_feature: str
+
+        :param test_for_real_target_real_feature: Which test to be used for real target, real feature (currently unused)
+        :type test_for_real_target_real_feature: str
+
+        :param fdr_level: The FDR level that should be respected, this is the theoretical expected percentage of irrelevant
+                      features among all created features.
+        :type fdr_level: float
+
+        :param hypotheses_independent: Can the significance of the features be assumed to be independent?
+                                       Normally, this should be set to False as the features are never
+                                       independent (e.g. mean and median)
+        :type hypotheses_independent: bool
+
+        :param n_processes: Number of processes to use during the p-value calculation
+        :type n_processes: int
+
+        :param chunksize: Size of the chunks submitted to the worker processes
+        :type chunksize: int
         """
-        self.settings = settings
         self.relevant_features = None
+        self.feature_importances_ = None
+        self.p_values = None
+        self.features = None
+
+        self.test_for_binary_target_binary_feature = test_for_binary_target_binary_feature
+        self.test_for_binary_target_real_feature = test_for_binary_target_real_feature
+        self.test_for_real_target_binary_feature = test_for_real_target_binary_feature
+        self.test_for_real_target_real_feature = test_for_real_target_real_feature
+
+        self.fdr_level = fdr_level
+        self.hypotheses_independent = hypotheses_independent
+
+        self.n_processes = n_processes
+        self.chunksize = chunksize
 
     def fit(self, X, y):
         """
@@ -66,7 +114,7 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
         function. All columns in the input data sample are treated as feature. The index of all
         rows in X must be present in y.
 
-        :param X: data sample with the features, which will be classified as relevent or not
+        :param X: data sample with the features, which will be classified as relevant or not
         :type X: pandas.DataFrame or numpy.array
 
         :param y: target vecotr to be used, to classify the features
@@ -81,8 +129,13 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
         if not isinstance(y, pd.Series):
             y = pd.Series(y.copy())
 
-        df_bh = check_fs_sig_bh(X, y, self.settings)
-        self.relevant_features = df_bh.loc[df_bh.rejected].Feature
+        df_bh = check_fs_sig_bh(X, y, self.n_processes, self.chunksize,
+                                self.fdr_level, self.hypotheses_independent,
+                                self.test_for_binary_target_real_feature)
+        self.relevant_features = df_bh.loc[df_bh.rejected].Feature.tolist()
+        self.feature_importances_ = 1.0 - df_bh.p_value.values
+        self.p_values = df_bh.p_value.values
+        self.features = df_bh.Feature.tolist()
 
         return self
 
@@ -102,4 +155,4 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
         if isinstance(X, pd.DataFrame):
             return X.copy().loc[:, self.relevant_features]
         else:
-            return X[:, self.relevant_features.index]
+            return X[:, self.relevant_features]

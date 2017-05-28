@@ -6,6 +6,9 @@
 
 import pandas as pd
 import numpy as np
+import logging
+
+_logger = logging.getLogger(__name__)
 
 
 class velocity(object):
@@ -96,6 +99,7 @@ class velocity(object):
         v_vec = np.array(v)
         return v_vec
 
+
 def sample_tau(n=10, kappa_3=0.3, ratio=0.5, rel_increase=0.15):
     """
     Return list of control parameters
@@ -149,6 +153,10 @@ def load_driftbif(n, l, m=2, classification=True, kappa_3=0.3, seed=False):
     """
 
     # todo: add ratio of classes
+
+    if m > 2:
+        logging.warning("You set the dimension parameter for the dissipative soliton to m={}, however it is only"
+                        "properly defined for m=1 or m=2.".format(m))
 
     id = np.repeat(range(n), l * m)
     dimensions = list(np.repeat(range(m), l)) * n

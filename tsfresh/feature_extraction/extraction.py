@@ -7,7 +7,13 @@ This module contains the main function to interact with tsfresh: extract feature
 
 from __future__ import absolute_import, division
 
+import logging
 import warnings
+from functools import partial
+from multiprocessing import Pool
+
+import numpy as np
+import pandas as pd
 from builtins import str
 from multiprocessing import Pool
 from functools import partial
@@ -17,16 +23,23 @@ import pandas as pd
 import numpy as np
 
 from tqdm import tqdm
-
-from tsfresh.utilities import dataframe_functions, helper_functions, profiling
-from tsfresh.feature_extraction.settings import FeatureExtractionSettings
+from tsfresh.feature_extraction.settings import ComprehensiveFCParameters, get_aggregate_functions, get_apply_functions
+from tsfresh import defaults
+from tsfresh.utilities import dataframe_functions, profiling
 
 _logger = logging.getLogger(__name__)
 
 
-def extract_features(timeseries_container, feature_extraction_settings=None,
+def extract_features(timeseries_container, default_fc_parameters=None,
+                     kind_to_fc_parameters=None,
                      column_id=None, column_sort=None, column_kind=None, column_value=None,
-                     parallelization=None):
+                     parallelization=None, chunksize=defaults.CHUNKSIZE,
+                     n_processes=defaults.N_PROCESSES, show_warnings=defaults.SHOW_WARNINGS,
+                     disable_progressbar=defaults.DISABLE_PROGRESSBAR,
+                     impute_function=defaults.IMPUTE_FUNCTION,
+                     profile=defaults.PROFILING,
+                     profiling_filename=defaults.PROFILING_FILENAME,
+                     profiling_sorting=defaults.PROFILING_SORTING):
     """
     Extract features from
 
@@ -39,7 +52,7 @@ def extract_features(timeseries_container, feature_extraction_settings=None,
     In both cases a :class:`pandas.DataFrame` with the calculated features will be returned.
 
     For a list of all the calculated time series features, please see the
-    :class:`~tsfresh.feature_extraction.settings.FeatureExtractionSettings` class,
+    :class:`~tsfresh.feature_extraction.settings.ComprehensiveFCParameters` class,
     which is used to control which features with which parameters are calculated.
 
     For a detailed explanation of the different parameters and data formats please see :ref:`data-formats-label`.
@@ -52,15 +65,19 @@ def extract_features(timeseries_container, feature_extraction_settings=None,
     >>> df, _ = load_robot_execution_failures()
     >>> X = extract_features(df, column_id='id', column_sort='time')
 
-    which would give the same results as described above. In this case, the column_kind is not allowed.
-    Except that, the same rules for leaving out the columns apply as above.
-
     :param timeseries_container: The pandas.DataFrame with the time series to compute the features for, or a
             dictionary of pandas.DataFrames.
     :type timeseries_container: pandas.DataFrame or dict
 
-    :param feature_extraction_settings: settings object that controls which features are calculated
-    :type feature_extraction_settings: tsfresh.feature_extraction.settings.FeatureExtractionSettings
+    :param default_fc_parameters: mapping from feature calculator names to parameters. Only those names
+           which are keys in this dict will be calculated. See the class:`ComprehensiveFCParameters` for
+           more information.
+    :type default_fc_parameters: dict
+
+    :param kind_to_fc_parameters: mapping from kind names to objects of the same type as the ones for
+            default_fc_parameters. If you put a kind as a key here, the fc_parameters
+            object (which is the value), will be used instead of the default_fc_parameters.
+    :type kind_to_fc_parameters: dict
 
     :param column_id: The name of the id column to group by.
     :type column_id: str
@@ -78,7 +95,34 @@ def extract_features(timeseries_container, feature_extraction_settings=None,
                             :func:`~tsfresh.feature_extraction.extraction._extract_features_parallel_per_sample`,
                             :func:`~tsfresh.feature_extraction.extraction._extract_features_parallel_per_kind` and
                             :ref:`parallelization-label` for details.
+                            Choosing None makes the algorithm look for the best parallelization technique by applying
+                            some general assumptions.
     :type parallelization: str
+
+    :param chunksize: The size of one chunk for the parallelisation
+    :type chunksize: None or int
+
+    :param n_processes: The number of processes to use for parallelisation.
+    :type n_processes: int
+
+    :param: show_warnings: Show warnings during the feature extraction (needed for debugging of calculators).
+    :type show_warnings: bool
+
+    :param disable_progressbar: Do not show a progressbar while doing the calculation.
+    :type disable_progressbar: bool
+
+    :param impute_function: None, if no imputing should happen or the function to call for imputing.
+    :type impute_function: None or function
+
+    :param profile: Turn on profiling during feature extraction
+    :type profile: bool
+
+    :param profiling_sorting: How to sort the profiling results (see the documentation of the profiling package for
+           more information)
+    :type profiling_sorting: basestring
+
+    :param profiling_filename: Where to save the profiling results.
+    :type profiling_filename: basestring
 
     :return: The (maybe imputed) DataFrame containing extracted features.
     :rtype: pandas.DataFrame
@@ -96,44 +140,55 @@ def extract_features(timeseries_container, feature_extraction_settings=None,
                                                                        column_value=column_value)
 
     # Use the standard setting if the user did not supply ones himself.
-    if feature_extraction_settings is None:
-        feature_extraction_settings = FeatureExtractionSettings()
-        for key in kind_to_df_map:
-            feature_extraction_settings.set_default_parameters(key)
+    if default_fc_parameters is None:
+        default_fc_parameters = ComprehensiveFCParameters()
 
     # Choose the parallelization according to a rule-of-thumb
     if parallelization is None:
-        parallelization = 'per_sample' if (feature_extraction_settings.n_processes / 2) > len(kind_to_df_map) \
-            else 'per_kind'
+        parallelization = 'per_sample' if n_processes / 2 > len(kind_to_df_map) else 'per_kind'
 
     _logger.info('Parallelizing feature calculation {}'.format(parallelization))
 
     # If requested, do profiling (advanced feature)
-    if feature_extraction_settings.PROFILING:
+    if profile:
         profiler = profiling.start_profiling()
 
     # Calculate the result
     if parallelization == 'per_kind':
-        result = _extract_features_per_kind(kind_to_df_map, feature_extraction_settings,
-                                            column_id, column_value)
+        calculation_function = _extract_features_parallel_per_kind
     elif parallelization == 'per_sample':
-        result = _extract_features_parallel_per_sample(kind_to_df_map, feature_extraction_settings,
-                                                       column_id, column_value)
-    elif parallelization == 'no_parallelization':
-        result = _extract_features_per_kind(kind_to_df_map, feature_extraction_settings,
-                                            column_id, column_value, serial=True)
+        calculation_function = _extract_features_parallel_per_sample
     else:
         raise ValueError("Argument parallelization must be one of: 'per_kind', 'per_sample'")
 
+    result = calculation_function(kind_to_df_map,
+                                  default_fc_parameters=default_fc_parameters,
+                                  kind_to_fc_parameters=kind_to_fc_parameters,
+                                  column_id=column_id,
+                                  column_value=column_value,
+                                  chunksize=chunksize,
+                                  n_processes=n_processes,
+                                  show_warnings=show_warnings,
+                                  disable_progressbar=disable_progressbar,
+                                  impute_function=impute_function
+                                  )
+
     # Turn off profiling if it was turned on
-    if feature_extraction_settings.PROFILING:
-        profiling.end_profiling(profiler, filename=feature_extraction_settings.PROFILING_FILENAME,
-                                sorting=feature_extraction_settings.PROFILING_SORTING)
+    if profile:
+        profiling.end_profiling(profiler, filename=profiling_filename,
+                                sorting=profiling_sorting)
 
     return result
 
 
-def _extract_features_per_kind(kind_to_df_map, settings, column_id, column_value, serial=False):
+def _extract_features_parallel_per_kind(kind_to_df_map,
+                                        column_id, column_value,
+                                        default_fc_parameters,
+                                        kind_to_fc_parameters=None,
+                                        chunksize=defaults.CHUNKSIZE,
+                                        n_processes=defaults.N_PROCESSES, show_warnings=defaults.SHOW_WARNINGS,
+                                        disable_progressbar=defaults.DISABLE_PROGRESSBAR,
+                                        impute_function=defaults.IMPUTE_FUNCTION):
     """
     Parallelize the feature extraction per kind.
 
@@ -142,14 +197,34 @@ def _extract_features_per_kind(kind_to_df_map, settings, column_id, column_value
 
     :param column_id: The name of the id column to group by.
     :type column_id: str
+
     :param column_value: The name for the column keeping the value itself.
     :type column_value: str
 
-    :param settings: settings object that controls which features are calculated
-    :type settings: tsfresh.feature_extraction.settings.FeatureExtractionSettings
+    :param default_fc_parameters: mapping from feature calculator names to parameters. Only those names
+           which are keys in this dict will be calculated. See the class:`ComprehensiveFCParameters` for
+           more information.
+    :type default_fc_parameters: dict
 
-    :param serial: Do not parallelize the extraction. This can be handy if (1) you want to debug something
-       (2) you want to profile something or (3) your environment does not support multiprocessing
+    :param kind_to_fc_parameters: mapping from kind names to objects of the same type as the ones for
+            default_fc_parameters. If you put a kind as a key here, the fc_parameters
+            object (which is the value), will be used instead of the default_fc_parameters.
+    :type kind_to_fc_parameters: dict
+
+    :param chunksize: The size of one chunk for the parallelisation
+    :type chunksize: None or int
+
+    :param n_processes: The number of processes to use for parallelisation.
+    :type n_processes: int
+
+    :param: show_warnings: Show warnings during the feature extraction (needed for debugging of calculators).
+    :type show_warnings: bool
+
+    :param disable_progressbar: Do not show a progressbar while doing the calculation.
+    :type disable_progressbar: bool
+
+    :param impute_function: None, if no imputing should happen or the function to call for imputing.
+    :type impute_function: None or function
 
     :return: The (maybe imputed) DataFrame containing extracted features.
     :rtype: pandas.DataFrame
@@ -157,36 +232,39 @@ def _extract_features_per_kind(kind_to_df_map, settings, column_id, column_value
     partial_extract_features_for_one_time_series = partial(_extract_features_for_one_time_series,
                                                            column_id=column_id,
                                                            column_value=column_value,
-                                                           settings=settings)
-    pool = Pool(settings.n_processes)
+                                                           default_fc_parameters=default_fc_parameters,
+                                                           kind_to_fc_parameters=kind_to_fc_parameters,
+                                                           show_warnings=show_warnings)
+    pool = Pool(n_processes)
 
-    chunksize = helper_functions.calculate_best_chunksize(kind_to_df_map, settings)
+    if not chunksize:
+        chunksize = _calculate_best_chunksize(kind_to_df_map, n_processes)
 
     total_number_of_expected_results = len(kind_to_df_map)
-
-    if serial:
-        map_function = map
-    else:
-        map_function = partial(pool.imap_unordered, chunksize=chunksize)
-
-    extracted_features = tqdm(map_function(partial_extract_features_for_one_time_series, kind_to_df_map.items()),
-                              total=total_number_of_expected_results,
-                              desc="Feature Extraction", disable=settings.disable_progressbar)
-
+    extracted_features = tqdm(pool.imap_unordered(partial_extract_features_for_one_time_series, kind_to_df_map.items(),
+                                                  chunksize=chunksize), total=total_number_of_expected_results,
+                              desc="Feature Extraction", disable=disable_progressbar)
     pool.close()
 
     # Concatenate all partial results
     result = pd.concat(extracted_features, axis=1, join='outer').astype(np.float64)
 
     # Impute the result if requested
-    if settings.IMPUTE is not None:
-        settings.IMPUTE(result)
+    if impute_function is not None:
+        impute_function(result)
 
     pool.join()
     return result
 
 
-def _extract_features_parallel_per_sample(kind_to_df_map, settings, column_id, column_value):
+def _extract_features_parallel_per_sample(kind_to_df_map,
+                                          column_id, column_value,
+                                          default_fc_parameters,
+                                          kind_to_fc_parameters=None,
+                                          chunksize=defaults.CHUNKSIZE,
+                                          n_processes=defaults.N_PROCESSES, show_warnings=defaults.SHOW_WARNINGS,
+                                          disable_progressbar=defaults.DISABLE_PROGRESSBAR,
+                                          impute_function=defaults.IMPUTE_FUNCTION):
     """
     Parallelize the feature extraction per kind and per sample.
 
@@ -199,11 +277,34 @@ def _extract_features_parallel_per_sample(kind_to_df_map, settings, column_id, c
 
     :param column_id: The name of the id column to group by.
     :type column_id: str
+
     :param column_value: The name for the column keeping the value itself.
     :type column_value: str
 
-    :param settings: settings object that controls which features are calculated
-    :type settings: tsfresh.feature_extraction.settings.FeatureExtractionSettings
+    :param default_fc_parameters: mapping from feature calculator names to parameters. Only those names
+           which are keys in this dict will be calculated. See the class:`ComprehensiveFCParameters` for
+           more information.
+    :type default_fc_parameters: dict
+
+    :param kind_to_fc_parameters: mapping from kind names to objects of the same type as the ones for
+            default_fc_parameters. If you put a kind as a key here, the fc_parameters
+            object (which is the value), will be used instead of the default_fc_parameters.
+    :type kind_to_fc_parameters: dict
+
+    :param chunksize: The size of one chunk for the parallelisation
+    :type chunksize: None or int
+
+    :param n_processes: The number of processes to use for parallelisation.
+    :type n_processes: int
+
+    :param: show_warnings: Show warnings during the feature extraction (needed for debugging of calculators).
+    :type show_warnings: bool
+
+    :param disable_progressbar: Do not show a progressbar while doing the calculation.
+    :type disable_progressbar: bool
+
+    :param impute_function: None, if no imputing should happen or the function to call for imputing.
+    :type impute_function: None or function
 
     :return: The (maybe imputed) DataFrame containing extracted features.
     :rtype: pandas.DataFrame
@@ -211,8 +312,10 @@ def _extract_features_parallel_per_sample(kind_to_df_map, settings, column_id, c
     partial_extract_features_for_one_time_series = partial(_extract_features_for_one_time_series,
                                                            column_id=column_id,
                                                            column_value=column_value,
-                                                           settings=settings)
-    pool = Pool(settings.n_processes)
+                                                           default_fc_parameters=default_fc_parameters,
+                                                           kind_to_fc_parameters=kind_to_fc_parameters,
+                                                           show_warnings=show_warnings)
+    pool = Pool(n_processes)
     total_number_of_expected_results = 0
 
     # Submit map jobs per kind per sample
@@ -223,7 +326,8 @@ def _extract_features_parallel_per_sample(kind_to_df_map, settings, column_id, c
 
         total_number_of_expected_results += len(df_grouped_by_id)
 
-        chunksize = helper_functions.calculate_best_chunksize(df_grouped_by_id, settings)
+        if not chunksize:
+            chunksize = _calculate_best_chunksize(df_grouped_by_id, n_processes)
 
         results_fifo.put(
             pool.imap_unordered(
@@ -239,9 +343,10 @@ def _extract_features_parallel_per_sample(kind_to_df_map, settings, column_id, c
     dfs_per_kind = []
 
     # Do this all with a progress bar
-    with tqdm(total=total_number_of_expected_results, desc="Feature Extraction", disable=settings.disable_progressbar) as progress_bar:
+    with tqdm(total=total_number_of_expected_results, desc="Feature Extraction",
+              disable=disable_progressbar) as progress_bar:
         # We need some sort of measure, when a new result is there. So we wrap the
-        # map_results into another iterable which updates the progress bar each time
+        # map_results into another iterable which updates the progress bar each time,
         # a new result is there
         def iterable_with_tqdm_update(queue, progress_bar):
             for element in queue:
@@ -253,17 +358,38 @@ def _extract_features_parallel_per_sample(kind_to_df_map, settings, column_id, c
             map_result = results_fifo.get()
             dfs_kind = iterable_with_tqdm_update(map_result, progress_bar)
             df_tmp = pd.concat(dfs_kind, axis=0).astype(np.float64)
-            result = pd.concat([result, df_tmp], axis=1).astype(np.float64)
 
-    # Impute the result if requested
-    if settings.IMPUTE is not None:
-        settings.IMPUTE(result)
+            # Impute the result if requested
+            if impute_function is not None:
+                impute_function(df_tmp)
+
+            result = pd.concat([result, df_tmp], axis=1).astype(np.float64)
 
     pool.join()
     return result
 
 
-def _extract_features_for_one_time_series(prefix_and_dataframe, column_id, column_value, settings):
+def _calculate_best_chunksize(iterable_list, n_processes):
+    """
+    Helper function to calculate the best chunksize for a given number of elements to calculate.
+
+    The formula is more or less an empirical result.
+    :param iterable_list: A list which defines how many calculations there need to be.
+    :param n_processes: The number of processes that will be used in the calculation.
+    :return: The chunksize which should be used.
+
+    TODO: Investigate which is the best chunk size for different settings.
+    """
+    chunksize, extra = divmod(len(iterable_list), n_processes * 5)
+    if extra:
+        chunksize += 1
+    return chunksize
+
+
+def _extract_features_for_one_time_series(prefix_and_dataframe, column_id, column_value,
+                                          default_fc_parameters,
+                                          kind_to_fc_parameters=None,
+                                          show_warnings=defaults.SHOW_WARNINGS):
     """
     Extract time series features for a given data frame based on the passed settings.
 
@@ -306,7 +432,7 @@ def _extract_features_for_one_time_series(prefix_and_dataframe, column_id, colum
         +-------+------------------+------------------+-----+------------------+
 
     where N is the number of features that were calculated. Which features are calculated is controlled by the
-    passed settings instance (see :class:`~tsfresh.feature_extraction.settings.FeatureExtractionSettings` for a list of
+    passed settings instance (see :class:`~tsfresh.feature_extraction.settings.ComprehensiveFCParameters` for a list of
     all possible features to calculate).
 
     The parameter `dataframe` is not allowed to have any NaN value in it. It is possible to have different numbers
@@ -317,29 +443,52 @@ def _extract_features_for_one_time_series(prefix_and_dataframe, column_id, colum
         dataframe with at least the columns column_id and column_value to extract the time
         series features for.
     :type prefix_and_dataframe: (str, DataFrame)
+
     :param column_id: The name of the column with the ids.
+    :type column_id: str
+
     :param column_value: The name of the column with the values.
-    :param settings: The settings to control, which features will be extracted.
+    :type column_value: str
+
+    :param default_fc_parameters: mapping from feature calculator names to parameters. Only those names
+           which are keys in this dict will be calculated. See the class:`ComprehensiveFCParameters` for
+           more information.
+    :type default_fc_parameters: dict
+
+    :param kind_to_fc_parameters: mapping from kind names to objects of the same type as the ones for
+            default_fc_parameters. If you put a kind as a key here, the fc_parameters
+            object (which is the value), will be used instead of the default_fc_parameters.
+    :type kind_to_fc_parameters: dict
+
+    :param show_warnings: Show warnings during the feature extraction (needed for debugging of calculators).
+    :type show_warnings: bool
+
     :return: A dataframe with the extracted features as the columns (prefixed with column_prefix) and as many
         rows as their are unique values in the id column.
     """
+    if kind_to_fc_parameters is None:
+        kind_to_fc_parameters = {}
+
     column_prefix, dataframe = prefix_and_dataframe
     column_prefix = str(column_prefix)
 
     # Ensure features are calculated on float64
     dataframe[column_value] = dataframe[column_value].astype(np.float64)
 
+    # If there are no special settings for this column_prefix, use the default ones.
+    if column_prefix in kind_to_fc_parameters:
+        fc_parameters = kind_to_fc_parameters[column_prefix]
+    else:
+        fc_parameters = default_fc_parameters
+
     with warnings.catch_warnings():
-        if not settings.show_warnings:
+        if not show_warnings:
             warnings.simplefilter("ignore")
         else:
             warnings.simplefilter("default")
 
-        if settings.set_default and column_prefix not in settings.kind_to_calculation_settings_mapping:
-            settings.set_default_parameters(column_prefix)
-
         # Calculate the aggregation functions
-        column_name_to_aggregate_function = settings.get_aggregate_functions(column_prefix)
+        column_name_to_aggregate_function = get_aggregate_functions(fc_parameters, column_prefix)
 
         if column_name_to_aggregate_function:
             extracted_features = dataframe.groupby(column_id)[column_value].aggregate(column_name_to_aggregate_function)
@@ -347,7 +496,7 @@ def _extract_features_for_one_time_series(prefix_and_dataframe, column_id, colum
             extracted_features = pd.DataFrame(index=dataframe[column_id].unique())
 
         # Calculate the apply functions
-        apply_functions = settings.get_apply_functions(column_prefix)
+        apply_functions = get_apply_functions(fc_parameters, column_prefix)
 
         if apply_functions:
             list_of_extracted_feature_dataframes = [extracted_features]

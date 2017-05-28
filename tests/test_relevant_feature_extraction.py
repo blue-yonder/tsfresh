@@ -5,7 +5,7 @@
 from __future__ import absolute_import, division
 from tests.fixtures import DataTestCase
 from tsfresh import extract_features, select_features, extract_relevant_features
-from tsfresh.feature_extraction.settings import FeatureExtractionSettings
+from tsfresh.feature_extraction.settings import ComprehensiveFCParameters
 from tsfresh.utilities.dataframe_functions import impute
 from unittest import TestCase
 import numpy as np
@@ -29,10 +29,9 @@ class RelevantFeatureExtractionDataTestCase(DataTestCase):
         relevant_features = extract_relevant_features(df, y, column_id='id', column_value='val', column_kind='kind',
                                                       column_sort='sort')
 
-        extraction_settings = FeatureExtractionSettings()
-        extraction_settings.IMPUTE = impute
-        extracted_features = extract_features(df, feature_extraction_settings=extraction_settings, column_id='id',
-                                              column_value='val', column_kind='kind', column_sort='sort')
+        extracted_features = extract_features(df, column_id='id',
+                                              column_value='val', column_kind='kind', column_sort='sort',
+                                              impute_function=impute)
         selected_features = select_features(extracted_features, y)
 
         self.assertEqual(
@@ -68,7 +67,7 @@ class RelevantFeatureExtractionTestCase(TestCase):
         self.y = y
 
     def test_extracted_features_contain_X_features(self):
-        X = extract_relevant_features(self.df, self.y, self.X, column_id='id', feature_extraction_settings=None)
+        X = extract_relevant_features(self.df, self.y, self.X, column_id='id')
         self.assertIn("f1", X.columns)
         self.assertIn("f2", X.columns)
         pdt.assert_series_equal(self.X["f1"], X["f1"])
