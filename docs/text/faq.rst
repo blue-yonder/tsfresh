@@ -23,11 +23,18 @@ FAQ
     3. **How can I use tsfresh with windows?**
 
        We recommend to use `Anaconda <https://www.continuum.io/downloads#windows>`_. After installing, open the
-       Anaconda Prompt, create an environment and set up tsfresh:
-       ::
+       Anaconda Prompt, create an environment and set up tsfresh
+       (Please be aware that we're using multiprocessing, which can be `problematic <http://stackoverflow.com/questions/18204782/runtimeerror-on-windows-trying-python-multiprocessing>`_.):
+
+       .. code:: Bash
+
            conda create -n ENV_NAME python=VERSION
            conda install -n ENV_NAME pip requests numpy pandas scipy statsmodels patsy scikit-learn future six tqdm
            activate ENV_NAME
            pip install tsfresh
 
-       Please be aware that we're using multiprocessing, which can be `problematic <http://stackoverflow.com/questions/18204782/runtimeerror-on-windows-trying-python-multiprocessing>`_.
+
+    4. **Does tsfresh support different sampling rates in the time series?**
+
+        Yes! The feature calculators in tsfresh do not care about the sampling frequency.
+        You will have to use the second input format, the stacked DataFramed (see :ref:`data-formats-label`)
