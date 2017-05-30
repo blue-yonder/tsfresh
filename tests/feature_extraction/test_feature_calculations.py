@@ -592,3 +592,35 @@ class FeatureCalculationTestCase(TestCase):
         v = ds.simulate(1000000, v0=np.zeros(1))
         v0 = max_langevin_fixed_point(v[:, 0], **default_params)
         self.assertTrue(v0 < 0.001)
+
+    def test_linear_trend(self):
+        # check linear up trend
+        x = range(10)
+        param = [{"attr": "pvalue"}, {"attr": "rvalue"}, {"attr": "intercept"}, {"attr": "slope"}, {"attr": "stderr"}]
+        c = "TEST"
+        res = linear_trend(x, c, param)
+
+        expected_index = ["TEST__linear_trend__attr_\"pvalue\"", "TEST__linear_trend__attr_\"intercept\"",
+                          "TEST__linear_trend__attr_\"rvalue\"", "TEST__linear_trend__attr_\"slope\"",
+                          "TEST__linear_trend__attr_\"stderr\""]
+
+        self.assertEqual(len(res), 5)
+        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertAlmostEquals(res["TEST__linear_trend__attr_\"pvalue\""], 0)
+        self.assertAlmostEquals(res["TEST__linear_trend__attr_\"stderr\""], 0)
+        self.assertAlmostEquals(res["TEST__linear_trend__attr_\"intercept\""], 0)
+        self.assertAlmostEquals(res["TEST__linear_trend__attr_\"slope\""], 1.0)
+
+        # check p value for random trend
+        np.random.seed(42)
+        x = np.random.uniform(size=100)
+        param = [{"attr": "rvalue"}]
+        res = linear_trend(x, c, param)
+        self.assertLess(abs(res["TEST__linear_trend__attr_\"rvalue\""]), 0.1)
+
+        # check slope and intercept decreasing trend with intercept
+        x = [42 - 2 * x for x in range(10)]
+        param = [{"attr": "intercept"}, {"attr": "slope"}]
+        res = linear_trend(x, c, param)
+        self.assertAlmostEquals(res["TEST__linear_trend__attr_\"intercept\""], 42)
+        self.assertAlmostEquals(res["TEST__linear_trend__attr_\"slope\""], -2)
