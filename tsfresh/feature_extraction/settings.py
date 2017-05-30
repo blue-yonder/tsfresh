@@ -258,6 +258,8 @@ class ComprehensiveFCParameters(dict):
             "approximate_entropy": [{"m": 2, "r": r} for r in [.1, .3, .5, .7, .9]],
             "friedrich_coefficients": (lambda m: [{"coeff": coeff, "m": m, "r": 30} for coeff in range(m + 1)])(3),
             "max_langevin_fixed_point": [{"m": 3, "r": 30}],
+            "linear_trend": [{"attr": "pvalue"}, {"attr": "rvalue"}, {"attr": "intercept"},
+                             {"attr": "slope"}, {"attr": "stderr"}],
         })
 
         super(ComprehensiveFCParameters, self).__init__(name_to_param)
