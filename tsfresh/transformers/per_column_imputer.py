@@ -76,7 +76,8 @@ class PerColumnImputer(BaseEstimator, TransformerMixin):
 
             :return: imputed DataFrame
             :rtype: pandas.DataFrame
-            :raise RuntimeError: if the dictionaries are not filled and thus the .fit function has not been called.
+            :raise RuntimeError: if the replacement dictionaries are still of None type.
+             This can happen if the transformer was not fitted.
             """
 
             if not isinstance(X, pd.DataFrame):
