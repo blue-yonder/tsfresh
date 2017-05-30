@@ -5,8 +5,10 @@
 from builtins import range
 from unittest import TestCase
 import pandas as pd
+import pandas.util.testing as pdt
 
 import numpy as np
+import numpy.testing as npt
 
 from tsfresh.transformers.per_column_imputer import PerColumnImputer
 
@@ -45,7 +47,7 @@ class PerColumnImputerTestCase(TestCase):
         X["PINF"] = np.PINF * np.ones(100)
         X["NINF"] = np.NINF * np.ones(100)
 
-        X_numpy = X.as_matrix()
+        X_numpy = X.values
 
         imputer.fit(X)
         selected_X = imputer.transform(X)
@@ -55,42 +57,28 @@ class PerColumnImputerTestCase(TestCase):
         imputer.fit(X_numpy)
         selected_X_numpy = imputer.transform(X_numpy)
 
-        self.assertTrue((selected_X_numpy == selected_X.values).all().all())
+        npt.assert_array_equal(selected_X.values, selected_X_numpy.values)
 
         self.assertTrue(selected_X_numpy.shape, (1, 100))
 
     def test_standard_replacement_behavior(self):
         imputer = PerColumnImputer()
 
-        X = pd.DataFrame(index=list(range(10)))
-        X["a"] = np.ones(10)
-        X["a"][3] = 100
-        X["a"][4] = -100
-        true_X = X
-        true_X["a"][0] = -100
-        true_X["a"][1] = 100
-
-        X["a"][0] = np.NINF
-        X["a"][1] = np.PINF
-        X["a"][2] = np.nan
+        data = [np.NINF, np.PINF, np.nan, 100.0, -100.0, 1.0, 1.0]
+        truth = [-100.0, 100.0, 1.0, 100.0, -100.0, 1.0, 1.0]
+        X = pd.DataFrame({"a": data})
+        true_X = pd.DataFrame({"a": truth})
 
         imputer.fit(X)
         selected_X = imputer.transform(X)
 
-        self.assertTrue((selected_X.values == true_X.values).all().all())
+        pdt.assert_frame_equal(selected_X, true_X)
 
     def test_only_NINF_repl_given(self):
-        X = pd.DataFrame(index=list(range(10)))
-        X["a"] = np.ones(10)
-        X["a"][3] = 100
-        X["a"][4] = -100
-        true_X = X
-        true_X["a"][0] = -100
-        true_X["a"][1] = 100
-
-        X["a"][0] = np.NINF
-        X["a"][1] = np.PINF
-        X["a"][2] = np.nan
+        data = [np.NINF, np.PINF, np.nan, 100.0, -100.0, 1.0, 1.0]
+        truth = [-100.0, 100.0, 1.0, 100.0, -100.0, 1.0, 1.0]
+        X = pd.DataFrame({"a": data})
+        true_X = pd.DataFrame({"a": truth})
 
         col_to_min = {"a": -100}
         imputer = PerColumnImputer(col_to_NINF_repl=col_to_min)
@@ -98,20 +86,13 @@ class PerColumnImputerTestCase(TestCase):
         imputer.fit(X)
         selected_X = imputer.transform(X)
 
-        self.assertTrue((selected_X.values == true_X.values).all().all())
+        pdt.assert_frame_equal(selected_X, true_X)
 
     def test_only_PINF_repl_given(self):
-        X = pd.DataFrame(index=list(range(10)))
-        X["a"] = np.ones(10)
-        X["a"][3] = 100
-        X["a"][4] = -100
-        true_X = X
-        true_X["a"][0] = -100
-        true_X["a"][1] = 100
-
-        X["a"][0] = np.NINF
-        X["a"][1] = np.PINF
-        X["a"][2] = np.nan
+        data = [np.NINF, np.PINF, np.nan, 100.0, -100.0, 1.0, 1.0]
+        truth = [-100.0, 100.0, 1.0, 100.0, -100.0, 1.0, 1.0]
+        X = pd.DataFrame({"a": data})
+        true_X = pd.DataFrame({"a": truth})
 
         col_to_max = {"a": 100}
         imputer = PerColumnImputer(col_to_PINF_repl=col_to_max)
@@ -119,20 +100,13 @@ class PerColumnImputerTestCase(TestCase):
         imputer.fit(X)
         selected_X = imputer.transform(X)
 
-        self.assertTrue((selected_X.values == true_X.values).all().all())
+        pdt.assert_frame_equal(selected_X, true_X)
 
     def test_only_NAN_repl_given(self):
-        X = pd.DataFrame(index=list(range(10)))
-        X["a"] = np.ones(10)
-        X["a"][3] = 100
-        X["a"][4] = -100
-        true_X = X
-        true_X["a"][0] = -100
-        true_X["a"][1] = 100
-
-        X["a"][0] = np.NINF
-        X["a"][1] = np.PINF
-        X["a"][2] = np.nan
+        data = [np.NINF, np.PINF, np.nan, 100.0, -100.0, 1.0, 1.0]
+        truth = [-100.0, 100.0, 1.0, 100.0, -100.0, 1.0, 1.0]
+        X = pd.DataFrame({"a": data})
+        true_X = pd.DataFrame({"a": truth})
 
         col_to_median = {"a": 1}
         imputer = PerColumnImputer(col_to_NAN_repl=col_to_median)
@@ -140,4 +114,4 @@ class PerColumnImputerTestCase(TestCase):
         imputer.fit(X)
         selected_X = imputer.transform(X)
 
-        self.assertTrue((selected_X.values == true_X.values).all().all())
+        pdt.assert_frame_equal(selected_X, true_X)
