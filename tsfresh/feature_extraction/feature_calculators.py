@@ -863,7 +863,7 @@ def linear_trend(x, c, param):
     linReg = linregress(range(len(x)), x)
 
     return pd.Series(data=[getattr(linReg, config["attr"]) for config in param],
-                     index=["{}__linear_trend__attr_".format(c, config["attr"]) for config in param])
+                     index=["{}__linear_trend__attr_\"{}\"".format(c, config["attr"]) for config in param])
 
 
 @set_property("fctype", "apply")
