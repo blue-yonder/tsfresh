@@ -40,7 +40,7 @@ import logging
 _logger = logging.getLogger(__name__)
 
 
-def target_binary_feature_binary_test(x, y, settings=None):
+def target_binary_feature_binary_test(x, y):
     """
     Calculate the feature significance of a binary feature to a binary target as a p-value.
     Use the two-sided univariate fisher test from :func:`~scipy.stats.fisher_exact` for this.
@@ -50,9 +50,6 @@ def target_binary_feature_binary_test(x, y, settings=None):
 
     :param y: the binary target vector
     :type y: pandas.Series
-
-    :param settings: The settings object to control how the significance is calculated (currently unused).
-    :type settings: FeatureSignificanceTestsSettings or None
 
     :return: the p-value of the feature significance test. Lower p-values indicate a higher feature significance
     :rtype: float
@@ -84,7 +81,7 @@ def target_binary_feature_binary_test(x, y, settings=None):
     return p_value
 
 
-def target_binary_feature_real_test(x, y, settings):
+def target_binary_feature_real_test(x, y, test):
     """
     Calculate the feature significance of a real-valued feature to a binary target as a p-value.
     Use either the `Mann-Whitney U` or `Kolmogorov Smirnov` from  :func:`~scipy.stats.mannwhitneyu` or
@@ -96,8 +93,9 @@ def target_binary_feature_real_test(x, y, settings):
     :param y: the binary target vector
     :type y: pandas.Series
 
-    :param settings: The settings object to control how the significance is calculated.
-    :type settings: FeatureSignificanceTestsSettings
+    :param test: The significance test to be used. Either ``'mann'`` for the Mann-Whitney-U test
+                 or ``'smir'`` for the Kolmogorov-Smirnov test
+    :type test: str
 
     :return: the p-value of the feature significance test. Lower p-values indicate a higher feature significance
     :rtype: float
@@ -116,12 +114,12 @@ def target_binary_feature_real_test(x, y, settings):
     x_y1 = x[y == y1]
     x_y0 = x[y == y0]
 
-    if settings.test_for_binary_target_real_feature == 'mann':
+    if test == 'mann':
         # Perform Mann-Whitney-U test
         U, p_mannwhitu = stats.mannwhitneyu(x_y1, x_y0, use_continuity=True)
         p_mannwhitu *= 2  # To get two-sided P value (refer to scipy manual).
         return p_mannwhitu
-    elif settings.test_for_binary_target_real_feature == 'smir':
+    elif test == 'smir':
         # Perform Kolmogorov-Smirnov test
         KS, p_ks = stats.ks_2samp(x_y1, x_y0)
         return p_ks
@@ -130,7 +128,7 @@ def target_binary_feature_real_test(x, y, settings):
                          "Valid entries are 'mann' and 'smir'.")
 
 
-def target_real_feature_binary_test(x, y, settings=None):
+def target_real_feature_binary_test(x, y):
     """
     Calculate the feature significance of a binary feature to a real-valued target as a p-value.
     Use the `Kolmogorov-Smirnov` test from from :func:`~scipy.stats.ks_2samp` for this.
@@ -140,9 +138,6 @@ def target_real_feature_binary_test(x, y, settings=None):
 
     :param y: the real-valued target vector
     :type y: pandas.Series
-
-    :param settings: The settings object to control how the significance is calculated (currently unused).
-    :type settings: FeatureSignificanceTestsSettings or None
 
     :return: the p-value of the feature significance test. Lower p-values indicate a higher feature significance.
     :rtype: float
@@ -167,7 +162,7 @@ def target_real_feature_binary_test(x, y, settings=None):
     return p_value
 
 
-def target_real_feature_real_test(x, y, settings=None):
+def target_real_feature_real_test(x, y):
     """
     Calculate the feature significance of a real-valued feature to a real-valued target as a p-value.
     Use `Kendall's tau` from :func:`~scipy.stats.kendalltau` for this.
@@ -177,9 +172,6 @@ def target_real_feature_real_test(x, y, settings=None):
 
     :param y: the real-valued target vector
     :type y: pandas.Series
-
-    :param settings: The settings object to control how the significance is calculated (currently unused).
-    :type settings: FeatureSignificanceTestsSettings or None
 
     :return: the p-value of the feature significance test. Lower p-values indicate a higher feature significance.
     :rtype: float

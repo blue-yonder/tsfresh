@@ -16,32 +16,34 @@ from functools import partial
 
 from builtins import zip
 from builtins import range
-from tqdm import tqdm
 import os
 import numpy as np
 import pandas as pd
 import logging
 from multiprocessing import Pool
-from tsfresh.utilities import helper_functions
 from tsfresh.feature_selection.significance_tests import target_binary_feature_real_test, \
     target_real_feature_binary_test, target_real_feature_real_test, target_binary_feature_binary_test
-
-from tsfresh.feature_selection.settings import FeatureSignificanceTestsSettings
+from tsfresh import defaults
 
 
 _logger = logging.getLogger(__name__)
 
 
-def check_fs_sig_bh(X, y, settings=None):
+def check_fs_sig_bh(X, y,
+                    n_processes=defaults.N_PROCESSES,
+                    chunksize=defaults.CHUNKSIZE,
+                    fdr_level=defaults.FDR_LEVEL,
+                    hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
+                    test_for_binary_target_real_feature=defaults.TEST_FOR_BINARY_TARGET_REAL_FEATURE):
     """
     The wrapper function that calls the significance test functions in this package.
-    In total, for each feature from the input pandas.DataFrame a univariate feature significance test is conducted.
+    In total, for each feature from the input pandas.DataFrame an univariate feature significance test is conducted.
     Those tests generate p values that are then evaluated by the Benjamini Hochberg procedure to decide which features
     to keep and which to delete.
 
     We are testing
     
-        :math:`H_0` = the Feature is not relevant and cannot be added
+        :math:`H_0` = the Feature is not relevant and can not be added
 
     against
 
@@ -77,8 +79,23 @@ def check_fs_sig_bh(X, y, settings=None):
     :param y: The target vector
     :type y: pandas.Series
 
-    :param settings: The feature selection settings to use to perform the tests.
-    :type settings: FeatureSignificanceTestsSettings
+    :param test_for_binary_target_real_feature: Which test to be used for binary target, real feature
+    :type test_for_binary_target_real_feature: str
+
+    :param fdr_level: The FDR level that should be respected, this is the theoretical expected percentage of irrelevant
+                      features among all created features.
+    :type fdr_level: float
+
+    :param hypotheses_independent: Can the significance of the features be assumed to be independent?
+                                   Normally, this should be set to False as the features are never
+                                   independent (e.g. mean and median)
+    :type hypotheses_independent: bool
+
+    :param n_processes: Number of processes to use during the p-value calculation
+    :type n_processes: int
+
+    :param chunksize: Size of the chunks submitted to the worker processes
+    :type chunksize: int
 
     :return: A pandas.DataFrame with each column of the input DataFrame X as index with information on the significance
             of this particular feature. The DataFrame has the columns
@@ -89,9 +106,6 @@ def check_fs_sig_bh(X, y, settings=None):
     :rtype: pandas.DataFrame
 
     """
-    if settings is None:
-        settings = FeatureSignificanceTestsSettings()
-
     target_is_binary = len(set(y)) == 2
 
     # todo: solve the multiclassification case. for a multi classification the algorithm considers the target to be
@@ -114,17 +128,14 @@ def check_fs_sig_bh(X, y, settings=None):
     df_features["p_value"] = np.nan
 
     # Calculate the feature significance in parallel
-    pool = Pool(settings.n_processes)
+    pool = Pool(n_processes)
 
-    # Helper function which wraps the _calculate_p_value with many arguments already set
-    f = partial(_calculate_p_value, y=y, settings=settings, target_is_binary=target_is_binary)
-
-    chunksize = helper_functions.calculate_best_chunksize(df_features, settings)
-    total_number_of_features = len(df_features)
-    results = tqdm(pool.imap_unordered(f, [X[feature] for feature in df_features['Feature']], chunksize=chunksize),
-                   total=total_number_of_features, desc="Feature Selection")
-
-    p_values_of_features = pd.DataFrame(list(results))
+    # Helper function which wrapps the _calculate_p_value with many arguments already set
+    f = partial(_calculate_p_value, y=y,
+                target_is_binary=target_is_binary,
+                test_for_binary_target_real_feature=test_for_binary_target_real_feature)
+    results = pool.map(f, [X[feature] for feature in df_features['Feature']], chunksize=chunksize)
+    p_values_of_features = pd.DataFrame(results)
     df_features.update(p_values_of_features)
 
     pool.close()
@@ -132,28 +143,29 @@ def check_fs_sig_bh(X, y, settings=None):
 
     # Perform the real feature rejection
     if "const" in set(df_features.type):
-        df_features_bh = benjamini_hochberg_test(df_features.loc[~(df_features.type == "const")], settings)
+        df_features_bh = benjamini_hochberg_test(df_features.loc[~(df_features.type == "const")],
+                                                 hypotheses_independent, fdr_level)
         df_features = pd.concat([df_features_bh, df_features.loc[df_features.type == "const"]])
     else:
-        df_features = benjamini_hochberg_test(df_features, settings)
+        df_features = benjamini_hochberg_test(df_features, hypotheses_independent, fdr_level)
         
     # It is very important that we have a boolean "rejected" column, so we do a cast here to be sure
     df_features["rejected"] = df_features["rejected"].astype("bool")
 
-    if settings.write_selection_report:
+    if defaults.WRITE_SELECTION_REPORT:
         # Write results of BH - Test to file
-        if not os.path.exists(settings.result_dir):
-            os.mkdir(settings.result_dir)
+        if not os.path.exists(defaults.RESULT_DIR):
+            os.mkdir(defaults.RESULT_DIR)
 
-        with open(os.path.join(settings.result_dir, "fs_bh_results.txt"), 'w') as file_out:
+        with open(os.path.join(defaults.RESULT_DIR, "fs_bh_results.txt"), 'w') as file_out:
             file_out.write(("Performed BH Test to control the false discovery rate(FDR); \n"
                             "FDR-Level={0};Hypothesis independent={1}\n"
-                            ).format(settings.fdr_level, settings.hypotheses_independent))
+                            ).format(fdr_level, hypotheses_independent))
             df_features.to_csv(index=False, path_or_buf=file_out, sep=';', float_format='%.4f')
     return df_features
 
 
-def _calculate_p_value(feature_column, y, settings, target_is_binary):
+def _calculate_p_value(feature_column, y, target_is_binary, test_for_binary_target_real_feature):
     """
     Internal helper function to calculate the p-value of a given feature using one of the dedicated
     functions target_*_feature_*_test.
@@ -164,11 +176,13 @@ def _calculate_p_value(feature_column, y, settings, target_is_binary):
     :param y: the binary target vector
     :type y: pandas.Series
 
-    :param settings: The settings object to control how the significance is calculated.
-    :type settings: FeatureSignificanceTestsSettings
-
     :param target_is_binary: Whether the target is binary or not
     :type target_is_binary: bool
+
+    :param test_for_binary_target_real_feature: The significance test to be used for binary target and real valued
+                                                features. Either ``'mann'`` for the Mann-Whitney-U test or ``'smir'``
+                                                for the Kolmogorov-Smirnov test.
+    :type test_for_binary_target_real_feature: str
 
     :return: the p-value of the feature significance test and the type of the tested feature as a Series.
              Lower p-values indicate a higher feature significance.
@@ -184,23 +198,23 @@ def _calculate_p_value(feature_column, y, settings, target_is_binary):
             # Decide if the current feature is binary or not
             if len(set(feature_column.values)) == 2:
                 type = "binary"
-                p_value = target_binary_feature_binary_test(feature_column, y, settings)
+                p_value = target_binary_feature_binary_test(feature_column, y)
             else:
                 type = "real"
-                p_value = target_binary_feature_real_test(feature_column, y, settings)
+                p_value = target_binary_feature_real_test(feature_column, y, test_for_binary_target_real_feature)
         else:
             # Decide if the current feature is binary or not
             if len(set(feature_column.values)) == 2:
                 type = "binary"
-                p_value = target_real_feature_binary_test(feature_column, y, settings)
+                p_value = target_real_feature_binary_test(feature_column, y)
             else:
                 type = "real"
-                p_value = target_real_feature_real_test(feature_column, y, settings)
+                p_value = target_real_feature_real_test(feature_column, y)
 
         return pd.Series({"p_value": p_value, "type": type}, name=feature_column.name)
 
 
-def benjamini_hochberg_test(df_pvalues, settings):
+def benjamini_hochberg_test(df_pvalues, hypotheses_independent, fdr_level):
     """
     This is an implementation of the benjamini hochberg procedure that calculates which of the hypotheses belonging
     to the different p-Values from df_p to reject. While doing so, this test controls the false discovery rate,
@@ -223,9 +237,14 @@ def benjamini_hochberg_test(df_pvalues, settings):
                        "p_values".
     :type df_pvalues: pandas.DataFrame
 
-    :param settings: The settings object to use for controlling the false discovery rate (FDR_level) and
-           whether to treat the hypothesis as independent or not (hypotheses_independent).
-    :type settings: FeatureSignificanceTestsSettings
+    :param hypotheses_independent: Can the significance of the features be assumed to be independent?
+                                   Normally, this should be set to False as the features are never
+                                   independent (e.g. mean and median)
+    :type hypotheses_independent: bool
+
+    :param fdr_level: The FDR level that should be respected, this is the theoretical expected percentage of irrelevant
+                      features among all created features.
+    :type fdr_level: float
 
     :return: The same DataFrame as the input, but with an added boolean column "rejected".
     :rtype: pandas.DataFrame
@@ -237,7 +256,7 @@ def benjamini_hochberg_test(df_pvalues, settings):
     K = list(range(1, m + 1))
 
     # Calculate the weight vector C
-    if settings.hypotheses_independent:
+    if hypotheses_independent:
         # c(k) = 1
         C = [1] * m
     else:
@@ -245,7 +264,7 @@ def benjamini_hochberg_test(df_pvalues, settings):
         C = [sum([1.0 / i for i in range(1, k + 1)]) for k in K]
 
     # Calculate the vector T to compare to the p_value
-    T = [settings.fdr_level * k / m * 1.0 / c for k, c in zip(K, C)]
+    T = [fdr_level * k / m * 1.0 / c for k, c in zip(K, C)]
 
     # Get the last rejected p_value
     try:

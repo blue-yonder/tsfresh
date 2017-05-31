@@ -4,6 +4,15 @@ Changelog
 
 tsfresh uses `Semantic Versioning <http://semver.org/>`_
 
+Version 0.8.0
+=============
+- Breaking API changes:
+    - removing of feature extraction settings object, replaced by keyword arguments and a plain dictionary (fc_parameters)
+    - removing of feature selection settings object, replaced by keyword arguments
+- added notebook with examples of new API
+- added chapter in docs about the new API
+- adjusted old notebooks and documentation to new API
+
 Version 0.7.1
 =============
 

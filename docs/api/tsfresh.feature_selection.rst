@@ -22,14 +22,6 @@ selection
     :undoc-members:
     :show-inheritance:
 
-settings
---------
-
-.. automodule:: tsfresh.feature_selection.settings
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 significance_tests
 ------------------
 
