@@ -3,6 +3,7 @@
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.exceptions import NotFittedError
 from tsfresh.utilities.dataframe_functions import get_range_values_per_column, impute_dataframe_range
 import pandas as pd
 
@@ -23,7 +24,7 @@ class PerColumnImputer(BaseEstimator, TransformerMixin):
         Secondly, the ``.transform`` function is called which replaces the occurances of ``NaNs`` and ``infs`` using
         the column-wise computed min, max and median values.
         """
-        def __init__(self, col_to_NINF_repl=None, col_to_PINF_repl=None, col_to_NAN_repl=None):
+        def __init__(self, col_to_NINF_repl_preset=None, col_to_PINF_repl_preset=None, col_to_NAN_repl_preset=None):
             """
             Create a new PerColumnImputer instance, optionally with dictionaries containing replacements for
             ``NaNs`` and ``infs``.
@@ -35,9 +36,12 @@ class PerColumnImputer(BaseEstimator, TransformerMixin):
             :param col_to_NAN_repl: Dictionary mapping column names to ``NaN`` replacement values
             :type col_to_NAN_repl: dict
             """
-            self.col_to_NINF_repl = col_to_NINF_repl
-            self.col_to_PINF_repl = col_to_PINF_repl
-            self.col_to_NAN_repl = col_to_NAN_repl
+            self._col_to_NINF_repl = None
+            self._col_to_PINF_repl = None
+            self._col_to_NAN_repl = None
+            self.col_to_NINF_repl_preset = col_to_NINF_repl_preset
+            self.col_to_PINF_repl_preset = col_to_PINF_repl_preset
+            self.col_to_NAN_repl_preset = col_to_NAN_repl_preset
 
         def fit(self, X, y=None):
             """
@@ -53,16 +57,30 @@ class PerColumnImputer(BaseEstimator, TransformerMixin):
             :rtype: Imputer
             """
             if not isinstance(X, pd.DataFrame):
-                X = pd.DataFrame(X.copy())
+                X = pd.DataFrame(X)
 
-            if self.col_to_NINF_repl is None or self.col_to_PINF_repl is None or self.col_to_NAN_repl is None:
-                col_to_max, col_to_min, col_to_median = get_range_values_per_column(X)
-                if self.col_to_NINF_repl is None:
-                    self.col_to_NINF_repl = col_to_min
-                if self.col_to_PINF_repl is None:
-                    self.col_to_PINF_repl = col_to_max
-                if self.col_to_NAN_repl is None:
-                    self.col_to_NAN_repl = col_to_median
+            col_to_max, col_to_min, col_to_median = get_range_values_per_column(X)
+
+            if self.col_to_NINF_repl_preset is not None:
+                if not set(X.columns) >= set(self.col_to_NINF_repl_preset.keys()):
+                    raise ValueError("Preset dictionary 'col_to_NINF_repl_preset' contain more keys "
+                                     "than the column names in X")
+                col_to_min.update(self.col_to_NINF_repl_preset)
+            self._col_to_NINF_repl = col_to_min
+
+            if self.col_to_PINF_repl_preset is not None:
+                if not set(X.columns) >= set(self.col_to_PINF_repl_preset.keys()):
+                    raise ValueError("Preset dictionary 'col_to_PINF_repl_preset' contain more keys "
+                                     "than the column names in X")
+                col_to_max.update(self.col_to_PINF_repl_preset)
+            self._col_to_PINF_repl = col_to_max
+
+            if self.col_to_NAN_repl_preset is not None:
+                if not set(X.columns) >= set(self.col_to_NAN_repl_preset.keys()):
+                    raise ValueError("Preset dictionary 'col_to_NAN_repl_preset' contain more keys "
+                                     "than the column names in X")
+                col_to_median.update(self.col_to_NAN_repl_preset)
+            self._col_to_NAN_repl = col_to_median
 
             return self
 
@@ -81,11 +99,11 @@ class PerColumnImputer(BaseEstimator, TransformerMixin):
             """
 
             if not isinstance(X, pd.DataFrame):
-                X = pd.DataFrame(X.copy())
+                X = pd.DataFrame(X)
 
-            if self.col_to_NINF_repl is None or self.col_to_PINF_repl is None or self.col_to_NAN_repl is None:
-                raise RuntimeError("PerColumnImputer is not fitted")
+            if self._col_to_NINF_repl is None or self._col_to_PINF_repl is None or self._col_to_NAN_repl is None:
+                raise NotFittedError("PerColumnImputer is not fitted")
 
-            X = impute_dataframe_range(X, self.col_to_PINF_repl, self.col_to_NINF_repl, self.col_to_NAN_repl)
+            X = impute_dataframe_range(X, self._col_to_PINF_repl, self._col_to_NINF_repl, self._col_to_NAN_repl)
 
             return X
