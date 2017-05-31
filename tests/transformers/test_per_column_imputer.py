@@ -128,7 +128,7 @@ class PerColumnImputerTestCase(TestCase):
 
         self.assertRaises(ValueError, imputer.transform, X)
 
-    def test_preset_has_higher_priority(self):
+    def test_preset_has_higher_priority_than_fit(self):
         data = [np.NINF, np.PINF, np.nan, 100.0, -100.0, 1.0, 1.0]
         truth = [-100.0, 100.0, 0.0, 100.0, -100.0, 1.0, 1.0]
 
@@ -143,7 +143,7 @@ class PerColumnImputerTestCase(TestCase):
 
         pdt.assert_frame_equal(selected_X, true_X)
 
-    def test_parameters_overwritten_for_multiple_fits(self):
+    def test_only_parameters_of_last_fit_count(self):
         data = [np.NINF, np.PINF, np.nan, 100.0, -100.0, 1.0, 1.0]
         data_2 = [np.NINF, np.PINF, np.nan, 10.0, -10.0, 3.0, 3.0]
         truth_a = [-10.0, 10.0, 3.0, 10.0, -10.0, 3.0, 3.0]
