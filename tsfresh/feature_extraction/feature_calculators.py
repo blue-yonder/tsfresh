@@ -24,6 +24,7 @@ from functools import wraps
 
 import pandas as pd
 from scipy.signal import welch, cwt, ricker, find_peaks_cwt
+from scipy.stats import linregress
 from statsmodels.tsa.ar_model import AR
 from statsmodels.tsa.stattools import adfuller
 from functools import reduce
@@ -834,6 +835,35 @@ def number_cwt_peaks(x, n):
     :return type: int
     """
     return len(find_peaks_cwt(vector=x, widths=np.array(list(range(1, n + 1))), wavelet=ricker))
+
+
+@set_property("fctype", "apply")
+@not_apply_to_raw_numbers
+def linear_trend(x, c, param):
+    """
+    Calculate a linear least-squares regression for the values of the time series versus the sequence from 1 to
+    length of the time series.
+    This feature assumes the signal to be uniformly sampled. It will not use the time stamps to fit the model.
+    The parameters control which of the characteristics are returned.
+
+    Possible extracted attributes are "pvalue", "rvalue", "intercept", "slope", "stderr", see the documentation of
+    linregress for more information.
+
+    :param x: the time series to calculate the feature of
+    :type x: pandas.Series
+    :param c: the time series name
+    :type c: str
+    :param param: contains dictionaries {"attr": x} with x an string, the attribute name of the regression model
+    :type param: list
+    :return: the different feature values
+    :return type: pandas.Series
+    """
+    # todo: we could use the index of the DataFrame here
+
+    linReg = linregress(range(len(x)), x)
+
+    return pd.Series(data=[getattr(linReg, config["attr"]) for config in param],
+                     index=["{}__linear_trend__attr_\"{}\"".format(c, config["attr"]) for config in param])
 
 
 @set_property("fctype", "apply")
