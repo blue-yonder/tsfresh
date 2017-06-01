@@ -10,6 +10,7 @@ from unittest import TestCase
 from tsfresh.feature_extraction.feature_calculators import *
 from tsfresh.feature_extraction.feature_calculators import _get_length_sequences_where
 from tsfresh.feature_extraction.feature_calculators import _estimate_friedrich_coefficients
+from tsfresh.feature_extraction.feature_calculators import _aggregate_on_chunks
 from tsfresh.examples.driftbif_simulation import velocity
 import six
 import math
@@ -624,3 +625,27 @@ class FeatureCalculationTestCase(TestCase):
         res = linear_trend(x, c, param)
         self.assertAlmostEquals(res["TEST__linear_trend__attr_\"intercept\""], 42)
         self.assertAlmostEquals(res["TEST__linear_trend__attr_\"slope\""], -2)
+
+    def test__aggregate_on_chunks(self):
+        self.assertListEqual(_aggregate_on_chunks(x=pd.Series([0, 1, 2, 3]), f_agg="max", chunk_len=2), [1, 3])
+        self.assertListEqual(_aggregate_on_chunks(x=pd.Series([1, 1, 3, 3]),  f_agg="max", chunk_len=2), [1, 3])
+
+        self.assertListEqual(_aggregate_on_chunks(x=pd.Series([0, 1, 2, 3]), f_agg="min", chunk_len=2), [0, 2])
+        self.assertListEqual(_aggregate_on_chunks(x=pd.Series([0, 1, 2, 3, 5]), f_agg="min", chunk_len=2), [0, 2, 5])
+
+        self.assertListEqual(_aggregate_on_chunks(x=pd.Series([0, 1, 2, 3]), f_agg="mean", chunk_len=2), [0.5, 2.5])
+        self.assertListEqual(_aggregate_on_chunks(x=pd.Series([0, 1, 0, 4, 5]), f_agg="mean", chunk_len=2), [0.5, 2, 5])
+        self.assertListEqual(_aggregate_on_chunks(x=pd.Series([0, 1, 0, 4, 5]), f_agg="mean", chunk_len=3), [1/3, 4.5])
+
+        self.assertListEqual(_aggregate_on_chunks(x=pd.Series([0, 1, 2, 3, 5, -2]),
+                                                  f_agg="median", chunk_len=2), [0.5, 2.5, 1.5])
+        self.assertListEqual(_aggregate_on_chunks(x=pd.Series([-10, 5, 3, -3, 4, -6]),
+                                                  f_agg="median", chunk_len=3), [3, -3])
+        self.assertListEqual(_aggregate_on_chunks(x=pd.Series([0, 1, 2, np.NaN, 5]),
+                                                  f_agg="median", chunk_len=2), [0.5, 2, 5])
+
+
+    def test_agg_linear_trend(self):
+
+        x = pd.Series(range(10))
+        param = [{"attr": "pvalue"}, {"attr": "rvalue"}, {"attr": "intercept"}, {"attr": "slope"}, {"attr": "stderr"}]
