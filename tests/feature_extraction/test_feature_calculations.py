@@ -17,6 +17,10 @@ import math
 
 
 class FeatureCalculationTestCase(TestCase):
+
+    def assertIsNaN(self, result):
+        self.assertTrue(np.isnan(result), msg="{} is not np.NaN")
+
     def assertEqualOnAllArrayTypes(self, f, input_to_f, result, *args, **kwargs):
         self.assertEqual(f(input_to_f, *args, **kwargs), result,
                          msg="Not equal for lists: %s != %s" % (f(input_to_f, *args, **kwargs), result))
