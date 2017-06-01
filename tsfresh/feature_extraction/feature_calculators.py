@@ -1503,6 +1503,6 @@ def agg_linear_trend(x, c, param):
 
         attr = parameter_combination["attr"]
         res_data.append(getattr(calculated_agg[f_agg][chunk_len], attr))
-        res_index.append("{}__linear_trend__f_agg_\"{}\"__chunk_len_{}__attr_\"{}\"".format(c, f_agg, chunk_len, attr))
+        res_index.append("{}__agg_linear_trend__f_agg_\"{}\"__chunk_len_{}__attr_\"{}\"".format(c, f_agg, chunk_len, attr))
 
     return pd.Series(data=res_data, index=res_index)
