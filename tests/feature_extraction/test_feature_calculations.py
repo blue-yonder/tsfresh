@@ -648,8 +648,61 @@ class FeatureCalculationTestCase(TestCase):
         self.assertListEqual(_aggregate_on_chunks(x=pd.Series([0, 1, 2, np.NaN, 5]),
                                                   f_agg="median", chunk_len=2), [0.5, 2, 5])
 
-
     def test_agg_linear_trend(self):
+        x = pd.Series(range(9))
+        c = "TEST"
+        param = [{"attr": "intercept", "chunk_len": 3, "f_agg": "max"},
+                 {"attr": "slope", "chunk_len": 3, "f_agg": "max"},
+                 {"attr": "intercept", "chunk_len": 3, "f_agg": "min"},
+                 {"attr": "slope", "chunk_len": 3, "f_agg": "min"},
+                 {"attr": "intercept", "chunk_len": 3, "f_agg": "mean"},
+                 {"attr": "slope", "chunk_len": 3, "f_agg": "mean"},
+                 {"attr": "intercept", "chunk_len": 3, "f_agg": "median"},
+                 {"attr": "slope", "chunk_len": 3, "f_agg": "median"}]
+        expected_index = ['TEST__agg_linear_trend__f_agg_"max"__chunk_len_3__attr_"intercept"',
+                          'TEST__agg_linear_trend__f_agg_"max"__chunk_len_3__attr_"slope"',
+                          'TEST__agg_linear_trend__f_agg_"min"__chunk_len_3__attr_"intercept"',
+                          'TEST__agg_linear_trend__f_agg_"min"__chunk_len_3__attr_"slope"',
+                          'TEST__agg_linear_trend__f_agg_"mean"__chunk_len_3__attr_"intercept"',
+                          'TEST__agg_linear_trend__f_agg_"mean"__chunk_len_3__attr_"slope"',
+                          'TEST__agg_linear_trend__f_agg_"median"__chunk_len_3__attr_"intercept"',
+                          'TEST__agg_linear_trend__f_agg_"median"__chunk_len_3__attr_"slope"']
 
-        x = pd.Series(range(10))
-        param = [{"attr": "pvalue"}, {"attr": "rvalue"}, {"attr": "intercept"}, {"attr": "slope"}, {"attr": "stderr"}]
+        res = agg_linear_trend(x=x, c=c, param=param)
+
+        self.assertEqual(len(res), 8)
+        print(res.index)
+        self.maxDiff = 2000
+        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertAlmostEquals(res['TEST__agg_linear_trend__f_agg_"max"__chunk_len_3__attr_"intercept"'], 2)
+        self.assertAlmostEquals(res['TEST__agg_linear_trend__f_agg_"max"__chunk_len_3__attr_"slope"'], 3)
+        self.assertAlmostEquals(res['TEST__agg_linear_trend__f_agg_"min"__chunk_len_3__attr_"intercept"'], 0)
+        self.assertAlmostEquals(res['TEST__agg_linear_trend__f_agg_"min"__chunk_len_3__attr_"slope"'], 3)
+        self.assertAlmostEquals(res['TEST__agg_linear_trend__f_agg_"mean"__chunk_len_3__attr_"intercept"'], 1)
+        self.assertAlmostEquals(res['TEST__agg_linear_trend__f_agg_"mean"__chunk_len_3__attr_"slope"'], 3)
+        self.assertAlmostEquals(res['TEST__agg_linear_trend__f_agg_"median"__chunk_len_3__attr_"intercept"'], 1)
+        self.assertAlmostEquals(res['TEST__agg_linear_trend__f_agg_"median"__chunk_len_3__attr_"slope"'], 3)
+
+        x = pd.Series([np.NaN, np.NaN, np.NaN, -3, -3, -3])
+        res = agg_linear_trend(x=x, c=c, param=param)
+
+        self.assertIsNaN(res['TEST__agg_linear_trend__f_agg_"max"__chunk_len_3__attr_"intercept"'])
+        self.assertIsNaN(res['TEST__agg_linear_trend__f_agg_"max"__chunk_len_3__attr_"slope"'])
+        self.assertIsNaN(res['TEST__agg_linear_trend__f_agg_"min"__chunk_len_3__attr_"intercept"'])
+        self.assertIsNaN(res['TEST__agg_linear_trend__f_agg_"min"__chunk_len_3__attr_"slope"'])
+        self.assertIsNaN(res['TEST__agg_linear_trend__f_agg_"mean"__chunk_len_3__attr_"intercept"'])
+        self.assertIsNaN(res['TEST__agg_linear_trend__f_agg_"mean"__chunk_len_3__attr_"slope"'])
+        self.assertIsNaN(res['TEST__agg_linear_trend__f_agg_"median"__chunk_len_3__attr_"intercept"'])
+        self.assertIsNaN(res['TEST__agg_linear_trend__f_agg_"median"__chunk_len_3__attr_"slope"'])
+
+
+        x = pd.Series([np.NaN, np.NaN, -3, -3, -3, -3])
+        res = agg_linear_trend(x=x, c=c, param=param)
+        self.assertAlmostEquals(res['TEST__agg_linear_trend__f_agg_"max"__chunk_len_3__attr_"intercept"'], -3)
+        self.assertAlmostEquals(res['TEST__agg_linear_trend__f_agg_"max"__chunk_len_3__attr_"slope"'], 0)
+        self.assertAlmostEquals(res['TEST__agg_linear_trend__f_agg_"min"__chunk_len_3__attr_"intercept"'], -3)
+        self.assertAlmostEquals(res['TEST__agg_linear_trend__f_agg_"min"__chunk_len_3__attr_"slope"'], 0)
+        self.assertAlmostEquals(res['TEST__agg_linear_trend__f_agg_"mean"__chunk_len_3__attr_"intercept"'], -3)
+        self.assertAlmostEquals(res['TEST__agg_linear_trend__f_agg_"mean"__chunk_len_3__attr_"slope"'], 0)
+        self.assertAlmostEquals(res['TEST__agg_linear_trend__f_agg_"median"__chunk_len_3__attr_"intercept"'], -3)
+        self.assertAlmostEquals(res['TEST__agg_linear_trend__f_agg_"median"__chunk_len_3__attr_"slope"'], 0)
