@@ -27,8 +27,7 @@ from scipy.signal import welch, cwt, ricker, find_peaks_cwt
 from scipy.stats import linregress
 from statsmodels.tsa.ar_model import AR
 from statsmodels.tsa.stattools import adfuller
-from functools import reduce
-
+from scipy.stats import linregress
 
 # todo: make sure '_' works in parameter names in all cases, add a warning if not
 
@@ -1454,3 +1453,56 @@ def _aggregate_on_chunks(x, f_agg, chunk_len):
     :return type: list
     """
     return [getattr(x[i * chunk_len: (i + 1) * chunk_len], f_agg)() for i in range(np.ceil(len(x) / chunk_len))]
+
+
+@set_property("fctype", "apply")
+@not_apply_to_raw_numbers
+def agg_linear_trend(x, c, param):
+    """
+    Calculates a linear least-squares regression for the values of the time series versus the sequence from 1 to
+    length of the time series on chunks that are transformed by an aggregation function.
+
+    This feature assumes the signal to be uniformly sampled. It will not use the time stamps to fit the model.
+    The parameters control which of the characteristics are returned.
+
+    Possible extracted attributes are "pvalue", "rvalue", "intercept", "slope", "stderr", see the documentation of
+    linregress for more information.
+
+    The chunksize is regulated by "chunk_len"
+
+    Further, the aggregation function is controlled by "f_agg", which can use "max", "min" or , "mean", "median"
+
+    :param x: the time series to calculate the feature of
+    :type x: pandas.Series
+    :param c: the time series name
+    :type c: str
+    :param param: contains dictionaries {"attr": x, "chunk_len": l, "f_agg": f} with x, f an string and l an int
+    :type param: list
+    :return: the different feature values
+    :return type: pandas.Series
+    """
+    # todo: we could use the index of the DataFrame here
+
+    calculated_agg = {}
+    res_data = []
+    res_index = []
+
+    for parameter_combination in param:
+
+        chunk_len = parameter_combination["chunk_len"]
+        f_agg = parameter_combination["f_agg"]
+
+        if f_agg not in calculated_agg:
+            LinReg = linregress(range(len(x) / chunk_len), _aggregate_on_chunks(x, f_agg, chunk_len))
+            calculated_agg[f_agg] = {chunk_len: LinReg}
+
+        elif chunk_len not in calculated_agg[f_agg]:
+
+            LinReg = linregress(range(len(x) / chunk_len), _aggregate_on_chunks(x, f_agg, chunk_len))
+            calculated_agg[f_agg] = {chunk_len: LinReg}
+
+        attr = parameter_combination["attr"]
+        res_data.append(getattr(calculated_agg[f_agg][chunk_len], attr))
+        res_index.append("{}__linear_trend__f_agg_\"{}\"__chunk_len_{}__attr_\"{}\"".format(c, f_agg, chunk_len, attr))
+
+    return pd.Series(data=res_data, index=res_index)
