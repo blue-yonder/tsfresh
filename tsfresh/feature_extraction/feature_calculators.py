@@ -1493,16 +1493,27 @@ def agg_linear_trend(x, c, param):
         f_agg = parameter_combination["f_agg"]
 
         if f_agg not in calculated_agg:
-            LinReg = linregress(range(len(x) / chunk_len), _aggregate_on_chunks(x, f_agg, chunk_len))
-            calculated_agg[f_agg] = {chunk_len: LinReg}
+            if chunk_len >= len(x):
+                calculated_agg[f_agg] = {chunk_len: np.NaN}
+            else:
+                LinReg = linregress(range(len(x) / chunk_len), _aggregate_on_chunks(x, f_agg, chunk_len))
+                calculated_agg[f_agg] = {chunk_len: LinReg}
 
         elif chunk_len not in calculated_agg[f_agg]:
 
-            LinReg = linregress(range(len(x) / chunk_len), _aggregate_on_chunks(x, f_agg, chunk_len))
-            calculated_agg[f_agg] = {chunk_len: LinReg}
+            if chunk_len >= len(x):
+                calculated_agg[f_agg] = {chunk_len: np.NaN}
+            else:
+                LinReg = linregress(range(len(x) / chunk_len), _aggregate_on_chunks(x, f_agg, chunk_len))
+                calculated_agg[f_agg] = {chunk_len: LinReg}
 
         attr = parameter_combination["attr"]
-        res_data.append(getattr(calculated_agg[f_agg][chunk_len], attr))
+
+        if chunk_len >= len(x):
+            res_data.append(np.NaN)
+        else:
+            res_data.append(getattr(calculated_agg[f_agg][chunk_len], attr))
+
         res_index.append("{}__agg_linear_trend__f_agg_\"{}\"__chunk_len_{}__attr_\"{}\"".format(c, f_agg, chunk_len, attr))
 
     return pd.Series(data=res_data, index=res_index)
