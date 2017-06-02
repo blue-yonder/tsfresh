@@ -1459,16 +1459,15 @@ def _aggregate_on_chunks(x, f_agg, chunk_len):
 @not_apply_to_raw_numbers
 def agg_linear_trend(x, c, param):
     """
-    Calculates a linear least-squares regression for the values of the time series versus the sequence from 1 to
-    length of the time series on chunks that are transformed by an aggregation function.
+    Calculates a linear least-squares regression for values of the time series that were aggregated over chunks versus
+    the sequence from 0 up to the number of chunks minus one.
 
     This feature assumes the signal to be uniformly sampled. It will not use the time stamps to fit the model.
-    The parameters control which of the characteristics are returned.
 
-    Possible extracted attributes are "pvalue", "rvalue", "intercept", "slope", "stderr", see the documentation of
-    linregress for more information.
+    The parameters attr sontrols which of the characteristics are returned. Possible extracted attributes are "pvalue",
+    "rvalue", "intercept", "slope", "stderr", see the documentation of linregress for more information.
 
-    The chunksize is regulated by "chunk_len"
+    The chunksize is regulated by "chunk_len". It specifies how many time series values are in each chunk.
 
     Further, the aggregation function is controlled by "f_agg", which can use "max", "min" or , "mean", "median"
 
