@@ -840,8 +840,8 @@ def number_cwt_peaks(x, n):
 @not_apply_to_raw_numbers
 def linear_trend(x, c, param):
     """
-    Calculate a linear least-squares regression for the values of the time series versus the sequence from 1 to
-    length of the time series.
+    Calculate a linear least-squares regression for the values of the time series versus the sequence from 0 to
+    length of the time series minus one.
     This feature assumes the signal to be uniformly sampled. It will not use the time stamps to fit the model.
     The parameters control which of the characteristics are returned.
 
