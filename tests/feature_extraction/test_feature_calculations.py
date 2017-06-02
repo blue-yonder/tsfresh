@@ -649,7 +649,7 @@ class FeatureCalculationTestCase(TestCase):
                                                   f_agg="median", chunk_len=2), [0.5, 2, 5])
 
     def test_agg_linear_trend(self):
-        x = pd.Series(range(9))
+        x = pd.Series(range(9), index=range(9))
         c = "TEST"
         param = [{"attr": "intercept", "chunk_len": 3, "f_agg": "max"},
                  {"attr": "slope", "chunk_len": 3, "f_agg": "max"},
