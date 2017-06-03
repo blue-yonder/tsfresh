@@ -651,7 +651,7 @@ def percentage_of_reoccurring_values_to_all_values(x):
         return np.nan
 
     value_counts = x.value_counts()
-    return 1.0 * value_counts[value_counts > 1].sum() / len(x)
+    return value_counts[value_counts > 1].sum() / len(x)
 
 
 @set_property("fctype", "aggregate")
@@ -708,7 +708,7 @@ def ratio_value_number_to_time_series_length(x):
     if len(x) == 0:
         return np.nan
 
-    return 1.0 * len(set(x))/len(x)
+    return len(set(x))/len(x)
 
 
 @set_property("fctype", "apply")
@@ -1112,7 +1112,7 @@ def binned_entropy(x, max_bins):
     :return type: float
     """
     hist, bin_edges = np.histogram(x, bins=max_bins)
-    probs = hist * 1.0 / len(x)
+    probs = hist / len(x)
     return - np.sum(p * np.math.log(p) for p in probs if p != 0)
 
 # todo - include latex formula
