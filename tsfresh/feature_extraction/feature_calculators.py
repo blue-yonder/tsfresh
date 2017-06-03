@@ -1495,16 +1495,18 @@ def agg_linear_trend(x, c, param):
             if chunk_len >= len(x):
                 calculated_agg[f_agg] = {chunk_len: np.NaN}
             else:
-                LinReg = linregress(range(len(x) / chunk_len), _aggregate_on_chunks(x, f_agg, chunk_len))
-                calculated_agg[f_agg] = {chunk_len: LinReg}
+                lin_reg_result = linregress(range(np.ceil(len(x) / chunk_len)),
+                                            _aggregate_on_chunks(x, f_agg, chunk_len))
+                calculated_agg[f_agg] = {chunk_len: lin_reg_result}
 
         elif chunk_len not in calculated_agg[f_agg]:
 
             if chunk_len >= len(x):
                 calculated_agg[f_agg] = {chunk_len: np.NaN}
             else:
-                LinReg = linregress(range(len(x) / chunk_len), _aggregate_on_chunks(x, f_agg, chunk_len))
-                calculated_agg[f_agg] = {chunk_len: LinReg}
+                lin_reg_result = linregress(range(np.ceil(len(x) / chunk_len)),
+                                            _aggregate_on_chunks(x, f_agg, chunk_len))
+                calculated_agg[f_agg] = {chunk_len: lin_reg_result}
 
         attr = parameter_combination["attr"]
 
