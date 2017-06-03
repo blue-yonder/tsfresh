@@ -260,6 +260,11 @@ class ComprehensiveFCParameters(dict):
             "max_langevin_fixed_point": [{"m": 3, "r": 30}],
             "linear_trend": [{"attr": "pvalue"}, {"attr": "rvalue"}, {"attr": "intercept"},
                              {"attr": "slope"}, {"attr": "stderr"}],
+            "agg_linear_trend": [{"attr": attr, "chunk_len": i, "f_agg": f}
+                                 for attr in ["rvalue", "intercept", "slope", "stderr"]
+                                 for i in [5, 10, 50]
+                                 for f in ["max", "min", "mean", "var"]],
+
         })
 
         super(ComprehensiveFCParameters, self).__init__(name_to_param)

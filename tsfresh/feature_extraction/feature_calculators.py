@@ -27,8 +27,7 @@ from scipy.signal import welch, cwt, ricker, find_peaks_cwt
 from scipy.stats import linregress
 from statsmodels.tsa.ar_model import AR
 from statsmodels.tsa.stattools import adfuller
-from functools import reduce
-
+from scipy.stats import linregress
 
 # todo: make sure '_' works in parameter names in all cases, add a warning if not
 
@@ -841,8 +840,8 @@ def number_cwt_peaks(x, n):
 @not_apply_to_raw_numbers
 def linear_trend(x, c, param):
     """
-    Calculate a linear least-squares regression for the values of the time series versus the sequence from 1 to
-    length of the time series.
+    Calculate a linear least-squares regression for the values of the time series versus the sequence from 0 to
+    length of the time series minus one.
     This feature assumes the signal to be uniformly sampled. It will not use the time stamps to fit the model.
     The parameters control which of the characteristics are returned.
 
@@ -1439,3 +1438,74 @@ def max_langevin_fixed_point(x, r, m):
     return max_fixed_point
 
 
+def _aggregate_on_chunks(x, f_agg, chunk_len):
+    """
+    Takes the time series x and constructs a lower sampled version of it by applying the aggregation function f_agg on
+    consecutive chunks of length chunk_len
+
+    :param x: the time series to calculate the aggregation of
+    :type x: pandas.Series
+    :param f_agg: The name of the aggregation function that should be an attribute of the pandas.Series
+    :type f_agg: str
+    :param chunk_len: The size of the chunks where to aggregate the time series
+    :type chunk_len: int
+    :return: A list of the aggregation function over the chunks
+    :return type: list
+    """
+    return [getattr(x[i * chunk_len: (i + 1) * chunk_len], f_agg)() for i in range(int(np.ceil(len(x) / chunk_len)))]
+
+
+@set_property("fctype", "apply")
+@not_apply_to_raw_numbers
+def agg_linear_trend(x, c, param):
+    """
+    Calculates a linear least-squares regression for values of the time series that were aggregated over chunks versus
+    the sequence from 0 up to the number of chunks minus one.
+
+    This feature assumes the signal to be uniformly sampled. It will not use the time stamps to fit the model.
+
+    The parameters attr controls which of the characteristics are returned. Possible extracted attributes are "pvalue",
+    "rvalue", "intercept", "slope", "stderr", see the documentation of linregress for more information.
+
+    The chunksize is regulated by "chunk_len". It specifies how many time series values are in each chunk.
+
+    Further, the aggregation function is controlled by "f_agg", which can use "max", "min" or , "mean", "median"
+
+    :param x: the time series to calculate the feature of
+    :type x: pandas.Series
+    :param c: the time series name
+    :type c: str
+    :param param: contains dictionaries {"attr": x, "chunk_len": l, "f_agg": f} with x, f an string and l an int
+    :type param: list
+    :return: the different feature values
+    :return type: pandas.Series
+    """
+    # todo: we could use the index of the DataFrame here
+
+    calculated_agg = {}
+    res_data = []
+    res_index = []
+
+    for parameter_combination in param:
+
+        chunk_len = parameter_combination["chunk_len"]
+        f_agg = parameter_combination["f_agg"]
+
+        aggregate_result = _aggregate_on_chunks(x, f_agg, chunk_len)
+        if f_agg not in calculated_agg or chunk_len not in calculated_agg[f_agg]:
+            if chunk_len >= len(x):
+                calculated_agg[f_agg] = {chunk_len: np.NaN}
+            else:
+                lin_reg_result = linregress(range(len(aggregate_result)), aggregate_result)
+                calculated_agg[f_agg] = {chunk_len: lin_reg_result}
+
+        attr = parameter_combination["attr"]
+
+        if chunk_len >= len(x):
+            res_data.append(np.NaN)
+        else:
+            res_data.append(getattr(calculated_agg[f_agg][chunk_len], attr))
+
+        res_index.append("{}__agg_linear_trend__f_agg_\"{}\"__chunk_len_{}__attr_\"{}\"".format(c, f_agg, chunk_len, attr))
+
+    return pd.Series(data=res_data, index=res_index)
