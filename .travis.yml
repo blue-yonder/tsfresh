@@ -1,4 +1,9 @@
 language: python
+cache:
+  directories:
+    - $HOME/.cache/pip
+before_cache:
+  - rm -f $HOME/.cache/pip/log/debug.log
 python:
 - '2.7.11'
 - '3.5.2'
