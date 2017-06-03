@@ -1452,7 +1452,7 @@ def _aggregate_on_chunks(x, f_agg, chunk_len):
     :return: A list of the aggregation function over the chunks
     :return type: list
     """
-    return [getattr(x[i * chunk_len: (i + 1) * chunk_len], f_agg)() for i in range(np.ceil(len(x) / chunk_len))]
+    return [getattr(x[i * chunk_len: (i + 1) * chunk_len], f_agg)() for i in range(int(np.ceil(len(x) / chunk_len)))]
 
 
 @set_property("fctype", "apply")
