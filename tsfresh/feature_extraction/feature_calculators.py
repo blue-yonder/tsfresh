@@ -1464,7 +1464,7 @@ def agg_linear_trend(x, c, param):
 
     This feature assumes the signal to be uniformly sampled. It will not use the time stamps to fit the model.
 
-    The parameters attr sontrols which of the characteristics are returned. Possible extracted attributes are "pvalue",
+    The parameters attr controls which of the characteristics are returned. Possible extracted attributes are "pvalue",
     "rvalue", "intercept", "slope", "stderr", see the documentation of linregress for more information.
 
     The chunksize is regulated by "chunk_len". It specifies how many time series values are in each chunk.
