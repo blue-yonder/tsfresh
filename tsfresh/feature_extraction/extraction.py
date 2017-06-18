@@ -23,7 +23,9 @@ import pandas as pd
 import numpy as np
 
 from tqdm import tqdm
-from tsfresh.feature_extraction.settings import ComprehensiveFCParameters, get_aggregate_functions, get_apply_functions
+
+from tsfresh.feature_extraction import feature_calculators
+from tsfresh.feature_extraction.settings import ComprehensiveFCParameters
 from tsfresh import defaults
 from tsfresh.utilities import dataframe_functions, profiling
 
@@ -132,20 +134,17 @@ def extract_features(timeseries_container, default_fc_parameters=None,
 
     # Always use the standardized way of storing the data.
     # See the function normalize_input_to_internal_representation for more information.
-    kind_to_df_map, column_id, column_value = \
-        dataframe_functions.normalize_input_to_internal_representation(df_or_dict=timeseries_container,
-                                                                       column_id=column_id,
-                                                                       column_sort=column_sort,
-                                                                       column_kind=column_kind,
-                                                                       column_value=column_value)
+    # TODO
+    df_melt = pd.melt(timeseries_container, id_vars=[column_id, column_sort])
 
     # Use the standard setting if the user did not supply ones himself.
     if default_fc_parameters is None:
         default_fc_parameters = ComprehensiveFCParameters()
 
+    # TODO
     # Choose the parallelization according to a rule-of-thumb
-    if parallelization is None:
-        parallelization = 'per_sample' if n_processes / 2 > len(kind_to_df_map) else 'per_kind'
+    #if parallelization is None:
+    #    parallelization = 'per_sample' if n_processes / 2 > len(kind_to_df_map) else 'per_kind'
 
     _logger.info('Parallelizing feature calculation {}'.format(parallelization))
 
@@ -153,27 +152,29 @@ def extract_features(timeseries_container, default_fc_parameters=None,
     if profile:
         profiler = profiling.start_profiling()
 
-    # Calculate the result
-    if parallelization == 'per_kind':
-        calculation_function = _extract_features_per_kind
-    elif parallelization == 'per_sample':
-        calculation_function = _extract_features_parallel_per_sample
-    elif parallelization == 'serial':
-        calculation_function = partial(_extract_features_per_kind, serial=True)
-    else:
-        raise ValueError("Argument parallelization must be one of: 'per_kind', 'per_sample'")
+    with warnings.catch_warnings():
+        if not show_warnings:
+            warnings.simplefilter("ignore")
+        else:
+            warnings.simplefilter("default")
 
-    result = calculation_function(kind_to_df_map,
-                                  default_fc_parameters=default_fc_parameters,
-                                  kind_to_fc_parameters=kind_to_fc_parameters,
-                                  column_id=column_id,
-                                  column_value=column_value,
-                                  chunksize=chunksize,
-                                  n_processes=n_processes,
-                                  show_warnings=show_warnings,
-                                  disable_progressbar=disable_progressbar,
-                                  impute_function=impute_function
-                                  )
+    def function_call():
+        for chunk_id, id_data in df_melt.groupby(column_id):
+            for chunk_kind, kind_data in id_data.groupby("variable"):
+
+                if kind_to_fc_parameters and chunk_kind in kind_to_fc_parameters:
+                    fc_parameters = kind_to_fc_parameters[chunk_kind]
+                else:
+                    fc_parameters = default_fc_parameters
+
+                for name, parameter_list in fc_parameters.items():
+                    data = kind_data["value"].values
+                    results = extract_named_function(function_name=name, parameter_list=parameter_list,
+                                                     data=data)
+                    for key, value in results.items():
+                        yield {"variable": chunk_kind + "__" + str(key), "value": value, "id": chunk_id}
+
+    result = pd.DataFrame(function_call()).pivot("id", "variable", "value")
 
     # Turn off profiling if it was turned on
     if profile:
@@ -181,6 +182,27 @@ def extract_features(timeseries_container, default_fc_parameters=None,
                                 sorting=profiling_sorting)
 
     return result
+
+
+def convert_to_output_format(param):
+    return "_".join(str(key) + "_" + str(value) for key, value in param.items())
+
+
+def extract_named_function(function_name, parameter_list, data):
+    func = getattr(feature_calculators, function_name)
+
+    if func.fctype == "combiner":
+        result = func(data, param=parameter_list)
+    else:
+        if parameter_list:
+            result = ((convert_to_output_format(param), func(data, **param)) for param in parameter_list)
+        else:
+            result = func(data)
+    try:
+        return {func.__name__ + "__" + key: item for key, item in result}
+    except TypeError:
+        return {func.__name__: result}
+
 
 
 def _extract_features_per_kind(kind_to_df_map,
@@ -508,17 +530,17 @@ def _extract_features_for_one_time_series(prefix_and_dataframe, column_id, colum
             extracted_features = pd.DataFrame(index=dataframe[column_id].unique())
 
         # Calculate the apply functions
-        apply_functions = get_apply_functions(fc_parameters, column_prefix)
-
-        if apply_functions:
-            list_of_extracted_feature_dataframes = [extracted_features]
-            for apply_function, kwargs in apply_functions:
-                current_result = dataframe.groupby(column_id)[column_value].apply(apply_function, **kwargs).unstack()
-                if len(current_result) > 0:
-                    list_of_extracted_feature_dataframes.append(current_result)
-
-            if len(list_of_extracted_feature_dataframes) > 0:
-                extracted_features = pd.concat(list_of_extracted_feature_dataframes, axis=1,
-                                               join_axes=[extracted_features.index])
+        #apply_functions = get_apply_functions(fc_parameters, column_prefix)
+#
+        #if apply_functions:
+        #    list_of_extracted_feature_dataframes = [extracted_features]
+        #    for apply_function, kwargs in apply_functions:
+        #        current_result = dataframe.groupby(column_id)[column_value].apply(apply_function, **kwargs)
+        #        if len(current_result) > 0:
+        #            list_of_extracted_feature_dataframes.append(current_result)
+#
+        #    if len(list_of_extracted_feature_dataframes) > 0:
+        #        extracted_features = pd.concat(list_of_extracted_feature_dataframes, axis=1,
+        #                                       join_axes=[extracted_features.index])
 
         return extracted_features
