@@ -337,7 +337,7 @@ class FeatureCalculationTestCase(TestCase):
         param = [{"q": 0.5}]
         expected_index = ["q_0.5"]
         res = index_mass_quantile(x, param)
-        self.assertIsInstance(res, list)
+        
         res = pd.Series(dict(res))
         six.assertCountEqual(self, list(res.index), expected_index)
         self.assertAlmostEqual(res["q_0.5"], 0.5, places=1)
@@ -347,7 +347,7 @@ class FeatureCalculationTestCase(TestCase):
         param = [{"q": 0.5}]
         expected_index = ["q_0.5"]
         res = index_mass_quantile(x[x > 0], param)
-        self.assertIsInstance(res, list)
+        
         res = pd.Series(dict(res))
         six.assertCountEqual(self, list(res.index), expected_index)
         self.assertAlmostEqual(res["q_0.5"], 0.5, places=1)
@@ -356,7 +356,7 @@ class FeatureCalculationTestCase(TestCase):
         param = [{"q": 0.5}, {"q": 0.99}]
         expected_index = ["q_0.5", "q_0.99"]
         res = index_mass_quantile(x, param)
-        self.assertIsInstance(res, list)
+        
         res = pd.Series(dict(res))
         six.assertCountEqual(self, list(res.index), expected_index)
         self.assertAlmostEqual(res["q_0.5"], 1, places=1)
@@ -367,7 +367,7 @@ class FeatureCalculationTestCase(TestCase):
         expected_index = ["q_0.3", "q_0.6",
                           "q_0.9"]
         res = index_mass_quantile(x, param)
-        self.assertIsInstance(res, list)
+        
         res = pd.Series(dict(res))
 
         six.assertCountEqual(self, list(res.index), expected_index)
@@ -379,7 +379,7 @@ class FeatureCalculationTestCase(TestCase):
         param = [{"q": 0.5}]
         expected_index = ["q_0.5"]
         res = index_mass_quantile(x, param)
-        self.assertIsInstance(res, list)
+        
         res = pd.Series(dict(res))
         six.assertCountEqual(self, list(res.index), expected_index)
         self.assertTrue(np.isnan(res["q_0.5"]))
@@ -388,7 +388,7 @@ class FeatureCalculationTestCase(TestCase):
         param = [{"q": 0.5}]
         expected_index = ["q_0.5"]
         res = index_mass_quantile(x, param)
-        self.assertIsInstance(res, list)
+        
         res = pd.Series(dict(res))
         six.assertCountEqual(self, list(res.index), expected_index)
         self.assertTrue(np.isnan(res["q_0.5"]))
@@ -414,7 +414,7 @@ class FeatureCalculationTestCase(TestCase):
 
         res = cwt_coefficients(x, param)
 
-        self.assertIsInstance(res, list)
+        
         res = pd.Series(dict(res))
 
         # todo: add unit test for the values
@@ -434,7 +434,7 @@ class FeatureCalculationTestCase(TestCase):
         res = ar_coefficient(x, param)
         expected_index = ["k_1__coeff_0", "k_1__coeff_1"]
 
-        self.assertIsInstance(res, list)
+        
         res = pd.Series(dict(res))
         six.assertCountEqual(self, list(res.index), expected_index)
         self.assertAlmostEqual(res["k_1__coeff_0"], 1, places=2)
@@ -454,7 +454,7 @@ class FeatureCalculationTestCase(TestCase):
                           "k_2__coeff_0", "k_2__coeff_1",
                           "k_2__coeff_2", "k_2__coeff_3"]
 
-        self.assertIsInstance(res, list)
+        
         res = pd.Series(dict(res))
 
         self.assertIsInstance(res, pd.Series)
@@ -574,7 +574,7 @@ class FeatureCalculationTestCase(TestCase):
         x = np.zeros(1000)
 
         res = friedrich_coefficients(x, param)
-        self.assertIsInstance(res, list)
+        
         res = pd.Series(dict(res))
 
         expected_index = ["m_2__r_30__coeff_0",
@@ -609,7 +609,7 @@ class FeatureCalculationTestCase(TestCase):
         param = [{"attr": "pvalue"}, {"attr": "rvalue"}, {"attr": "intercept"}, {"attr": "slope"}, {"attr": "stderr"}]
         res = linear_trend(x, param)
 
-        self.assertIsInstance(res, list)
+        
         res = pd.Series(dict(res))
 
         expected_index = ["attr_\"pvalue\"", "attr_\"intercept\"",
@@ -629,7 +629,7 @@ class FeatureCalculationTestCase(TestCase):
         param = [{"attr": "rvalue"}]
         res = linear_trend(x, param)
 
-        self.assertIsInstance(res, list)
+        
         res = pd.Series(dict(res))
 
         self.assertLess(abs(res["attr_\"rvalue\""]), 0.1)
@@ -639,7 +639,7 @@ class FeatureCalculationTestCase(TestCase):
         param = [{"attr": "intercept"}, {"attr": "slope"}]
         res = linear_trend(x, param)
 
-        self.assertIsInstance(res, list)
+        
         res = pd.Series(dict(res))
 
         self.assertAlmostEquals(res["attr_\"intercept\""], 42)
@@ -700,7 +700,7 @@ class FeatureCalculationTestCase(TestCase):
         x = pd.Series([np.NaN, np.NaN, np.NaN, -3, -3, -3])
         res = agg_linear_trend(x=x, param=param)
 
-        self.assertIsInstance(res, list)
+        
         res = pd.Series(dict(res))
 
         self.assertIsNaN(res['f_agg_"max"__chunk_len_3__attr_"intercept"'])
@@ -715,7 +715,7 @@ class FeatureCalculationTestCase(TestCase):
         x = pd.Series([np.NaN, np.NaN, -3, -3, -3, -3])
         res = agg_linear_trend(x=x, param=param)
 
-        self.assertIsInstance(res, list)
+        
         res = pd.Series(dict(res))
 
         self.assertAlmostEquals(res['f_agg_"max"__chunk_len_3__attr_"intercept"'], -3)
