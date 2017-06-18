@@ -135,14 +135,16 @@ def extract_features(timeseries_container, default_fc_parameters=None,
 
     # Always use the standardized way of storing the data.
     # See the function normalize_input_to_internal_representation for more information.
-    if not column_id:
+    if column_id is None:
         raise AttributeError
 
-    if column_sort:
+    assert isinstance(timeseries_container, pd.DataFrame)
+
+    if column_sort is not None:
         timeseries_container = timeseries_container.sort_values(column_sort).drop(column_sort, axis=1)
 
     if column_value is None:
-        if column_kind:
+        if column_kind is not None:
             raise AttributeError
         column_value = "_values"
 

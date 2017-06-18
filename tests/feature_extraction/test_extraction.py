@@ -3,13 +3,16 @@
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
 from __future__ import absolute_import, division
+
+import os
+
 import numpy as np
 import pandas as pd
-from tests.fixtures import DataTestCase
-from tsfresh.feature_extraction.extraction import extract_features, _extract_features_for_one_time_series
-from tsfresh.feature_extraction.settings import ComprehensiveFCParameters
 import six
-import os
+
+from tests.fixtures import DataTestCase
+from tsfresh.feature_extraction.extraction import extract_features
+from tsfresh.feature_extraction.settings import ComprehensiveFCParameters
 
 
 class ExtractionTestCase(DataTestCase):
@@ -77,9 +80,9 @@ class ExtractionTestCase(DataTestCase):
         df = self.create_test_data_sample()
         settings = ComprehensiveFCParameters()
 
-        extracted_features = _extract_features_for_one_time_series(["b", df.loc[df.kind == "b", ["val", "id"]]],
-                                                                   default_fc_parameters=settings,
-                                                                   column_value="val", column_id="id")
+        extracted_features = extract_features(df, default_fc_parameters=settings,
+                                              column_value="val", column_id="id", column_kind="kind",
+                                              column_sort="sort")
 
         self.assertIsInstance(extracted_features, pd.DataFrame)
         self.assertTrue(np.all(extracted_features.b__sum_values == np.array([757, 695])))
@@ -89,9 +92,9 @@ class ExtractionTestCase(DataTestCase):
         self.assertTrue(np.all(extracted_features.b__median == np.array([39.5, 28.0])))
 
         df_sts = self.create_one_valued_time_series()
-        extracted_features_sts = _extract_features_for_one_time_series(["a", df_sts[["val", "id"]]],
-                                                                       default_fc_parameters=settings,
-                                                                       column_value="val", column_id="id")
+        extracted_features_sts = extract_features(df_sts, default_fc_parameters=settings,
+                                                  column_value="val", column_id="id", column_kind="kind",
+                                                  column_sort="sort")
 
         self.assertIsInstance(extracted_features_sts, pd.DataFrame)
         self.assertTrue(np.all(extracted_features_sts.a__maximum == np.array([1.0, 6.0])))
@@ -182,10 +185,8 @@ class ExtractionTestCase(DataTestCase):
         six.assertCountEqual(self, features_per_sample.columns, features_serial.columns)
 
         for col in features_per_sample.columns:
-            self.assertIsNone(np.testing.assert_array_almost_equal(features_per_sample[col],
-                                                                   features_per_kind[col]))
-            self.assertIsNone(np.testing.assert_array_almost_equal(features_per_sample[col],
-                                                                   features_serial[col]))
+            np.testing.assert_array_almost_equal(features_per_sample[col], features_per_kind[col])
+            np.testing.assert_array_almost_equal(features_per_sample[col], features_serial[col])
 
 
 class ParallelExtractionTestCase(DataTestCase):
