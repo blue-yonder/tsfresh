@@ -24,7 +24,6 @@ from functools import wraps
 
 import pandas as pd
 from scipy.signal import welch, cwt, ricker, find_peaks_cwt
-from scipy.stats import linregress
 from statsmodels.tsa.ar_model import AR
 from statsmodels.tsa.stattools import adfuller
 from scipy.stats import linregress
@@ -90,7 +89,7 @@ def set_property(key, value):
     return decorate_func
 
 
-@set_property("fctype", "aggregate")
+@set_property("fctype", "simple")
 @not_apply_to_raw_numbers
 def variance_larger_than_standard_deviation(x):
     """
@@ -105,7 +104,7 @@ def variance_larger_than_standard_deviation(x):
     return np.var(x) > np.std(x)
 
 
-@set_property("fctype", "aggregate_with_parameters")
+@set_property("fctype", "simple")
 @not_apply_to_raw_numbers
 def large_standard_deviation(x, r):
     """
@@ -130,9 +129,9 @@ def large_standard_deviation(x, r):
     return np.std(x) > (r * (max(x) - min(x)))
 
 
-@set_property("fctype", "apply")
+@set_property("fctype", "combiner")
 @not_apply_to_raw_numbers
-def symmetry_looking(x, c, param):
+def symmetry_looking(x, param):
     """
     Boolean variable denoting if the distribution of x *looks symmetric*. This is the case if
 
@@ -150,10 +149,11 @@ def symmetry_looking(x, c, param):
     x = np.asarray(x)
     mean_median_difference = abs(np.mean(x) - np.median(x))
     max_min_difference = max(x) - min(x)
-    return pd.Series({"{}__symmetry_looking__r_{}".format(c, r["r"]):
-                          mean_median_difference < (r["r"] * max_min_difference) for r in param})
+    return [("r_{}".format(r["r"]), mean_median_difference < (r["r"] * max_min_difference))
+            for r in param]
 
-@set_property("fctype", "aggregate")
+
+@set_property("fctype", "simple")
 @not_apply_to_raw_numbers
 def has_duplicate_max(x):
     """
@@ -167,7 +167,7 @@ def has_duplicate_max(x):
     return sum(np.asarray(x) == max(x)) >= 2
 
 
-@set_property("fctype", "aggregate")
+@set_property("fctype", "simple")
 @not_apply_to_raw_numbers
 def has_duplicate_min(x):
     """
@@ -181,7 +181,7 @@ def has_duplicate_min(x):
     return sum(np.asarray(x) == min(x)) >= 2
 
 
-@set_property("fctype", "aggregate")
+@set_property("fctype", "simple")
 @not_apply_to_raw_numbers
 def has_duplicate(x):
     """
@@ -195,8 +195,9 @@ def has_duplicate(x):
     return len(x) != len(set(x))
 
 
-@set_property("fctype", "aggregate")
+@set_property("fctype", "simple")
 @set_property("minimal", True)
+@not_apply_to_raw_numbers
 def sum_values(x):
     """
     Calculates the sum over the time series values
@@ -209,7 +210,7 @@ def sum_values(x):
     return np.sum(x)
 
 
-@set_property("fctype", "aggregate_with_parameters")
+@set_property("fctype", "simple")
 @not_apply_to_raw_numbers
 def large_number_of_peaks(x, n):
     """
@@ -225,7 +226,7 @@ def large_number_of_peaks(x, n):
     return number_peaks(x, n=n) > 5
 
 
-@set_property("fctype", "aggregate")
+@set_property("fctype", "simple")
 @not_apply_to_raw_numbers
 def mean_autocorrelation(x):
     """
@@ -255,7 +256,7 @@ def mean_autocorrelation(x):
         return np.nanmean(r / var)
 
 
-@set_property("fctype", "aggregate")
+@set_property("fctype", "simple")
 @not_apply_to_raw_numbers
 def augmented_dickey_fuller(x):
     """
@@ -278,7 +279,7 @@ def augmented_dickey_fuller(x):
         return np.NaN
 
 
-@set_property("fctype", "aggregate")
+@set_property("fctype", "simple")
 @not_apply_to_raw_numbers
 def abs_energy(x):
     """
@@ -297,7 +298,7 @@ def abs_energy(x):
     return sum(x * x)
 
 
-@set_property("fctype", "aggregate")
+@set_property("fctype", "simple")
 @not_apply_to_raw_numbers
 def mean_abs_change(x):
     """
@@ -316,7 +317,7 @@ def mean_abs_change(x):
     return np.mean(abs(np.diff(x)))
 
 
-@set_property("fctype", "aggregate")
+@set_property("fctype", "simple")
 @not_apply_to_raw_numbers
 def mean_change(x):
     """
@@ -334,7 +335,7 @@ def mean_change(x):
     return np.mean(np.diff(x))
 
 
-@set_property("fctype", "aggregate")
+@set_property("fctype", "simple")
 @not_apply_to_raw_numbers
 def mean_second_derivate_central(x):
     """
@@ -354,8 +355,9 @@ def mean_second_derivate_central(x):
     return np.mean(diff[1:-1])
 
 
-@set_property("fctype", "aggregate")
+@set_property("fctype", "simple")
 @set_property("minimal", True)
+@not_apply_to_raw_numbers
 def median(x):
     """
     Returns the median of x
@@ -368,8 +370,9 @@ def median(x):
     return np.median(x)
 
 
-@set_property("fctype", "aggregate")
+@set_property("fctype", "simple")
 @set_property("minimal", True)
+@not_apply_to_raw_numbers
 def mean(x):
     """
     Returns the mean of x
@@ -382,7 +385,7 @@ def mean(x):
     return np.mean(x)
 
 
-@set_property("fctype", "aggregate")
+@set_property("fctype", "simple")
 @set_property("minimal", True)
 @not_apply_to_raw_numbers
 def length(x):
@@ -397,7 +400,7 @@ def length(x):
     return len(x)
 
 
-@set_property("fctype", "aggregate")
+@set_property("fctype", "simple")
 @set_property("minimal", True)
 @not_apply_to_raw_numbers
 def standard_deviation(x):
@@ -412,7 +415,7 @@ def standard_deviation(x):
     return np.std(x)
 
 
-@set_property("fctype", "aggregate")
+@set_property("fctype", "simple")
 @set_property("minimal", True)
 @not_apply_to_raw_numbers
 def variance(x):
@@ -427,7 +430,7 @@ def variance(x):
     return np.var(x)
 
 
-@set_property("fctype", "aggregate")
+@set_property("fctype", "simple")
 @not_apply_to_raw_numbers
 def skewness(x):
     """
@@ -443,7 +446,7 @@ def skewness(x):
     return pd.Series.skew(x)
 
 
-@set_property("fctype", "aggregate")
+@set_property("fctype", "simple")
 @not_apply_to_raw_numbers
 def kurtosis(x):
     """
@@ -459,7 +462,7 @@ def kurtosis(x):
     return pd.Series.kurtosis(x)
 
 
-@set_property("fctype", "aggregate")
+@set_property("fctype", "simple")
 @not_apply_to_raw_numbers
 def absolute_sum_of_changes(x):
     """
@@ -477,7 +480,7 @@ def absolute_sum_of_changes(x):
     return np.sum(abs(np.diff(x)))
 
 
-@set_property("fctype", "aggregate")
+@set_property("fctype", "simple")
 @not_apply_to_raw_numbers
 def longest_strike_below_mean(x):
     """
@@ -492,7 +495,7 @@ def longest_strike_below_mean(x):
     return max(_get_length_sequences_where(x <= np.mean(x))) if len(x) > 0 else 0
 
 
-@set_property("fctype", "aggregate")
+@set_property("fctype", "simple")
 @not_apply_to_raw_numbers
 def longest_strike_above_mean(x):
     """
@@ -507,7 +510,7 @@ def longest_strike_above_mean(x):
     return max(_get_length_sequences_where(x >= np.mean(x))) if len(x) > 0 else 0
 
 
-@set_property("fctype", "aggregate")
+@set_property("fctype", "simple")
 @not_apply_to_raw_numbers
 def count_above_mean(x):
     """
@@ -524,7 +527,7 @@ def count_above_mean(x):
     return np.where(x > m)[0].shape[0]
 
 
-@set_property("fctype", "aggregate")
+@set_property("fctype", "simple")
 @not_apply_to_raw_numbers
 def count_below_mean(x):
     """
@@ -541,7 +544,7 @@ def count_below_mean(x):
     return np.where(x < m)[0].shape[0]
 
 
-@set_property("fctype", "aggregate")
+@set_property("fctype", "simple")
 @not_apply_to_raw_numbers
 def last_location_of_maximum(x):
     """
@@ -557,7 +560,7 @@ def last_location_of_maximum(x):
     return 1.0 - np.argmax(x[::-1]) / len(x) if len(x) > 0 else np.NaN
 
 
-@set_property("fctype", "aggregate")
+@set_property("fctype", "simple")
 @not_apply_to_raw_numbers
 def first_location_of_maximum(x):
     """
@@ -573,7 +576,7 @@ def first_location_of_maximum(x):
     return np.argmax(x) / len(x) if len(x) > 0 else np.NaN
 
 
-@set_property("fctype", "aggregate")
+@set_property("fctype", "simple")
 @not_apply_to_raw_numbers
 def last_location_of_minimum(x):
     """
@@ -589,7 +592,7 @@ def last_location_of_minimum(x):
     return 1.0 - np.argmin(x[::-1]) / len(x) if len(x) > 0 else np.NaN
 
 
-@set_property("fctype", "aggregate")
+@set_property("fctype", "simple")
 @not_apply_to_raw_numbers
 def first_location_of_minimum(x):
     """
@@ -605,7 +608,7 @@ def first_location_of_minimum(x):
     return np.argmin(x) / len(x) if len(x) > 0 else np.NaN
 
 
-@set_property("fctype", "aggregate")
+@set_property("fctype", "simple")
 @not_apply_to_raw_numbers
 def percentage_of_reoccurring_datapoints_to_all_datapoints(x):
     """
@@ -627,7 +630,7 @@ def percentage_of_reoccurring_datapoints_to_all_datapoints(x):
     return np.sum(counts > 1) / float(counts.shape[0])
 
 
-@set_property("fctype", "aggregate")
+@set_property("fctype", "simple")
 @not_apply_to_raw_numbers
 def percentage_of_reoccurring_values_to_all_values(x):
     """
@@ -653,7 +656,7 @@ def percentage_of_reoccurring_values_to_all_values(x):
     return value_counts[value_counts > 1].sum() / len(x)
 
 
-@set_property("fctype", "aggregate")
+@set_property("fctype", "simple")
 @not_apply_to_raw_numbers
 def sum_of_reoccurring_values(x):
     """
@@ -671,7 +674,7 @@ def sum_of_reoccurring_values(x):
     return np.sum(counts * unique)
 
 
-@set_property("fctype", "aggregate")
+@set_property("fctype", "simple")
 @not_apply_to_raw_numbers
 def sum_of_reoccurring_data_points(x):
     """
@@ -688,7 +691,7 @@ def sum_of_reoccurring_data_points(x):
     return np.sum(counts * unique)
 
 
-@set_property("fctype", "aggregate")
+@set_property("fctype", "simple")
 @not_apply_to_raw_numbers
 def ratio_value_number_to_time_series_length(x):
     """
@@ -710,17 +713,15 @@ def ratio_value_number_to_time_series_length(x):
     return len(set(x))/len(x)
 
 
-@set_property("fctype", "apply")
+@set_property("fctype", "combiner")
 @not_apply_to_raw_numbers
-def fft_coefficient(x, c, param):
+def fft_coefficient(x, param):
     """
     Calculates the fourier coefficients of the one-dimensional discrete Fourier Transform for real input by fast
     fourier transformation algorithm
 
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
-    :param c: the time series name
-    :type c: str
     :param param: contains dictionaries {"coeff": x} with x int and x >= 0
     :type param: list
     :return: the different feature values
@@ -737,10 +738,11 @@ def fft_coefficient(x, c, param):
 
     res = [fft[q] if q < len(fft) else 0 for q in coefficients]
     res = [r.real if isinstance(r, complex) else r for r in res]
-    return pd.Series(res, index=["{}__fft_coefficient__coeff_{}".format(c, q) for q in coefficients])
+    index = ["coeff_{}".format(q) for q in coefficients]
+    return zip(index, res)
 
 
-@set_property("fctype", "aggregate_with_parameters")
+@set_property("fctype", "simple")
 @not_apply_to_raw_numbers
 def number_peaks(x, n):
     """
@@ -782,17 +784,15 @@ def number_peaks(x, n):
     return sum(res)
 
 
-@set_property("fctype", "apply")
+@set_property("fctype", "combiner")
 @not_apply_to_raw_numbers
-def index_mass_quantile(x, c, param):
+def index_mass_quantile(x, param):
     """
     Those apply features calculate the relative index i where q% of the mass of the time series x lie left of i.
     For example for q = 50% this feature calculator will return the mass center of the time series
 
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
-    :param c: the time series name
-    :type c: str
     :param param: contains dictionaries {"q": x} with x float
     :type param: list
     :return: the different feature values
@@ -803,22 +803,17 @@ def index_mass_quantile(x, c, param):
     abs_x = np.abs(x)
     s = sum(abs_x)
 
-    res = {}
-
     if s == 0:
         # all values in x are zero or it has length 0
-        for config in param:
-            res["{}__index_mass_quantile__q_{}".format(c, config["q"])] = np.NaN
+        return [("q_{}".format(config["q"]), np.NaN) for config in param]
     else:
         # at least one value is not zero
         mass_centralized = np.cumsum(abs_x) / s
-        for config in param:
-            res["{}__index_mass_quantile__q_{}".format(c, config["q"])] = \
-                (np.argmax(mass_centralized >= config["q"])+1)/len(x)
-    return pd.Series(res)
+        return [("q_{}".format(config["q"]),
+                (np.argmax(mass_centralized >= config["q"])+1)/len(x)) for config in param]
 
 
-@set_property("fctype", "aggregate_with_parameters")
+@set_property("fctype", "simple")
 @not_apply_to_raw_numbers
 def number_cwt_peaks(x, n):
     """
@@ -836,9 +831,9 @@ def number_cwt_peaks(x, n):
     return len(find_peaks_cwt(vector=x, widths=np.array(list(range(1, n + 1))), wavelet=ricker))
 
 
-@set_property("fctype", "apply")
+@set_property("fctype", "combiner")
 @not_apply_to_raw_numbers
-def linear_trend(x, c, param):
+def linear_trend(x, param):
     """
     Calculate a linear least-squares regression for the values of the time series versus the sequence from 0 to
     length of the time series minus one.
@@ -850,8 +845,6 @@ def linear_trend(x, c, param):
 
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
-    :param c: the time series name
-    :type c: str
     :param param: contains dictionaries {"attr": x} with x an string, the attribute name of the regression model
     :type param: list
     :return: the different feature values
@@ -861,13 +854,13 @@ def linear_trend(x, c, param):
 
     linReg = linregress(range(len(x)), x)
 
-    return pd.Series(data=[getattr(linReg, config["attr"]) for config in param],
-                     index=["{}__linear_trend__attr_\"{}\"".format(c, config["attr"]) for config in param])
+    return [("attr_\"{}\"".format(config["attr"]), getattr(linReg, config["attr"]))
+            for config in param]
 
 
-@set_property("fctype", "apply")
+@set_property("fctype", "combiner")
 @not_apply_to_raw_numbers
-def cwt_coefficients(x, c, param):
+def cwt_coefficients(x, param):
     """
     Calculates a Continuous wavelet transform for the Ricker wavelet, also known as the "Mexican hat wavelet" which is
     defined by
@@ -883,8 +876,6 @@ def cwt_coefficients(x, c, param):
 
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
-    :param c: the time series name
-    :type c: str
     :param param: contains dictionaries {"widths":x, "coeff": y, "w": z} with x array of int and y,z int
     :type param: list
     :return: the different feature values
@@ -905,7 +896,7 @@ def cwt_coefficients(x, c, param):
 
         calculated_cwt_for_widths = calculated_cwt[widths]
 
-        indices += ["{}__cwt_coefficients__widths_{}__coeff_{}__w_{}".format(c, widths, coeff, w)]
+        indices += ["widths_{}__coeff_{}__w_{}".format(widths, coeff, w)]
 
         i = widths.index(w)
         if calculated_cwt_for_widths.shape[1] <= coeff:
@@ -913,12 +904,12 @@ def cwt_coefficients(x, c, param):
         else:
             res += [calculated_cwt_for_widths[i, coeff]]
 
-    return pd.Series(res, index=indices)
+    return zip(indices, res)
 
 
-@set_property("fctype", "apply")
+@set_property("fctype", "combiner")
 @not_apply_to_raw_numbers
-def spkt_welch_density(x, c, param):
+def spkt_welch_density(x, param):
     """
     This feature calculator estimates the cross power spectral density of the time series x at different frequencies.
     To do so, the time series is first shifted from the time domain to the frequency domain.
@@ -927,8 +918,6 @@ def spkt_welch_density(x, c, param):
 
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
-    :param c: the time series name
-    :type c: str
     :param param: contains dictionaries {"coeff": x} with x int
     :type param: list
     :return: the different feature values
@@ -937,6 +926,7 @@ def spkt_welch_density(x, c, param):
 
     freq, pxx = welch(x)
     coeff = [config["coeff"] for config in param]
+    indices = ["coeff_{}".format(i) for i in coeff]
 
     if len(pxx) <= max(coeff):  # There are fewer data points in the time series than requested coefficients
 
@@ -946,15 +936,14 @@ def spkt_welch_density(x, c, param):
                                        if coefficient not in reduced_coeff]
 
         # Fill up the rest of the requested coefficients with np.NaNs
-        return pd.Series(list(pxx[reduced_coeff]) + [np.NaN] * len(not_calculated_coefficients),
-                         index=["{}__spkt_welch_density__coeff_{}".format(c, i) for i in coeff])
+        return zip(indices, list(pxx[reduced_coeff]) + [np.NaN] * len(not_calculated_coefficients))
     else:
-        return pd.Series(pxx[coeff], index=["{}__spkt_welch_density__coeff_{}".format(c, i) for i in coeff])
+        return zip(indices, pxx[coeff])
 
 
-@set_property("fctype", "apply")
+@set_property("fctype", "combiner")
 @not_apply_to_raw_numbers
-def ar_coefficient(x, c, param):
+def ar_coefficient(x, param):
     """
     This feature calculator fits the unconditional maximum likelihood
     of an autoregressive AR(k) process.
@@ -969,8 +958,6 @@ def ar_coefficient(x, c, param):
 
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
-    :param c: the time series name
-    :type c: str
     :param param: contains dictionaries {"coeff": x, "k": y} with x,y int
     :type param: list
     :return x: the different feature values
@@ -987,7 +974,7 @@ def ar_coefficient(x, c, param):
         k = parameter_combination["k"]
         p = parameter_combination["coeff"]
 
-        column_name = "{}__ar_coefficient__k_{}__coeff_{}".format(c, k, p)
+        column_name = "k_{}__coeff_{}".format(k, p)
 
         if k not in calculated_ar_params:
             try:
@@ -1005,10 +992,10 @@ def ar_coefficient(x, c, param):
         else:
             res[column_name] = np.NaN
 
-    return pd.Series(res)
+    return [(key, value) for key, value in res.items()]
 
 
-@set_property("fctype", "aggregate_with_parameters")
+@set_property("fctype", "simple")
 @not_apply_to_raw_numbers
 def mean_abs_change_quantiles(x, ql, qh):
     """
@@ -1046,7 +1033,7 @@ def mean_abs_change_quantiles(x, ql, qh):
         return np.mean(div[ind_inside_corridor])
 
 
-@set_property("fctype", "aggregate_with_parameters")
+@set_property("fctype", "simple")
 @not_apply_to_raw_numbers
 def time_reversal_asymmetry_statistic(x, lag):
     """
@@ -1090,7 +1077,7 @@ def time_reversal_asymmetry_statistic(x, lag):
         return np.mean((np.roll(x, 2 * -lag) * np.roll(x, 2 * -lag) * x - np.roll(x, -lag) * x * x)[0:(n - 2 * lag)])
 
 
-@set_property("fctype", "aggregate_with_parameters")
+@set_property("fctype", "simple")
 @not_apply_to_raw_numbers
 def binned_entropy(x, max_bins):
     """
@@ -1117,7 +1104,8 @@ def binned_entropy(x, max_bins):
 # todo - include latex formula
 # todo - check if vectorizable
 @set_property("high_comp_cost", True)
-@set_property("fctype", "aggregate")
+@set_property("fctype", "simple")
+@not_apply_to_raw_numbers
 def sample_entropy(x):
     """
     Calculate and return sample entropy of x.
@@ -1171,8 +1159,7 @@ def sample_entropy(x):
     return se[0]
     
 
-
-@set_property("fctype", "aggregate_with_parameters")
+@set_property("fctype", "simple")
 @not_apply_to_raw_numbers
 def autocorrelation(x, lag):
     """
@@ -1189,7 +1176,7 @@ def autocorrelation(x, lag):
     return pd.Series.autocorr(x, lag)
 
 
-@set_property("fctype", "aggregate_with_parameters")
+@set_property("fctype", "simple")
 @not_apply_to_raw_numbers
 def quantile(x, q):
     """
@@ -1206,8 +1193,9 @@ def quantile(x, q):
     return pd.Series.quantile(x, q)
 
 
-@set_property("fctype", "aggregate")
+@set_property("fctype", "simple")
 @set_property("minimal", True)
+@not_apply_to_raw_numbers
 def maximum(x):
     """
     Calculates the highest value of the time series x.
@@ -1220,8 +1208,9 @@ def maximum(x):
     return max(x)
 
 
-@set_property("fctype", "aggregate")
+@set_property("fctype", "simple")
 @set_property("minimal", True)
+@not_apply_to_raw_numbers
 def minimum(x):
     """
     Calculates the lowest value of the time series x.
@@ -1234,7 +1223,8 @@ def minimum(x):
     return min(x)
 
 
-@set_property("fctype", "aggregate_with_parameters")
+@set_property("fctype", "simple")
+@not_apply_to_raw_numbers
 def value_count(x, value):
     """
     Count occurrences of `value` in time series x.
@@ -1246,14 +1236,14 @@ def value_count(x, value):
     :return: the count
     :rtype: int
     """
-
     if np.isnan(value):
-        return x.isnull().sum()
+        return np.isnan(x).sum()
     else:
-        return x[x == value].count()
+        return x[x == value].shape[0]
 
 
-@set_property("fctype", "aggregate_with_parameters")
+@set_property("fctype", "simple")
+@not_apply_to_raw_numbers
 def range_count(x, min, max):
     """
     Count observed values within the interval [min, max).
@@ -1267,12 +1257,12 @@ def range_count(x, min, max):
     :return: the count of values within the range
     :rtype: int
     """
+    return np.sum((x >= min) & (x < max))
 
-    return x[(x >= min) & (x < max)].count()
 
-
-@set_property("fctype", "aggregate_with_parameters")
+@set_property("fctype", "simple")
 @set_property("high_comp_cost", True)
+@not_apply_to_raw_numbers
 def approximate_entropy(x, m, r):
     """
     Implements a vectorized Approximate entropy algorithm.
@@ -1316,6 +1306,7 @@ def approximate_entropy(x, m, r):
         return np.sum(np.log(C)) / (N - m + 1.0)
 
     return np.abs(_phi(m) - _phi(m + 1))
+
 
 def _estimate_friedrich_coefficients(x, m, r):
     """
@@ -1364,8 +1355,10 @@ def _estimate_friedrich_coefficients(x, m, r):
             coeff = [np.NaN] * (m+1)
     return coeff
 
-@set_property("fctype", "apply")
-def friedrich_coefficients(x, c, param):
+
+@set_property("fctype", "combiner")
+@not_apply_to_raw_numbers
+def friedrich_coefficients(x, param):
     """
     Coefficients of polynomial :math:`h(x)`, which has been fitted to 
     the deterministic dynamics of Langevin model 
@@ -1398,11 +1391,13 @@ def friedrich_coefficients(x, c, param):
     r = param[0]['r']
 
     coeff = _estimate_friedrich_coefficients(x, m, r)
+    indices = ["m_{}__r_{}__coeff_{}".format(m, r, q) for q in range(m, -1, -1)]
 
-    name = lambda q: "{}__friedrich_coefficients__m_{}__r_{}__coeff_{}".format(c,m,r,q)
-    return pd.Series(coeff, index=[name(q) for q in range(m,-1,-1)])
+    return zip(indices, coeff)
 
-@set_property("fctype", "aggregate_with_parameters")
+
+@set_property("fctype", "simple")
+@not_apply_to_raw_numbers
 def max_langevin_fixed_point(x, r, m):
     """
     Largest fixed point of dynamics  :math:argmax_x {h(x)=0}` estimated from polynomial :math:`h(x)`, 
@@ -1455,9 +1450,9 @@ def _aggregate_on_chunks(x, f_agg, chunk_len):
     return [getattr(x[i * chunk_len: (i + 1) * chunk_len], f_agg)() for i in range(int(np.ceil(len(x) / chunk_len)))]
 
 
-@set_property("fctype", "apply")
+@set_property("fctype", "combiner")
 @not_apply_to_raw_numbers
-def agg_linear_trend(x, c, param):
+def agg_linear_trend(x, param):
     """
     Calculates a linear least-squares regression for values of the time series that were aggregated over chunks versus
     the sequence from 0 up to the number of chunks minus one.
@@ -1473,8 +1468,6 @@ def agg_linear_trend(x, c, param):
 
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
-    :param c: the time series name
-    :type c: str
     :param param: contains dictionaries {"attr": x, "chunk_len": l, "f_agg": f} with x, f an string and l an int
     :type param: list
     :return: the different feature values
@@ -1506,6 +1499,6 @@ def agg_linear_trend(x, c, param):
         else:
             res_data.append(getattr(calculated_agg[f_agg][chunk_len], attr))
 
-        res_index.append("{}__agg_linear_trend__f_agg_\"{}\"__chunk_len_{}__attr_\"{}\"".format(c, f_agg, chunk_len, attr))
+        res_index.append("f_agg_\"{}\"__chunk_len_{}__attr_\"{}\"".format(f_agg, chunk_len, attr))
 
-    return pd.Series(data=res_data, index=res_index)
+    return zip(res_index, res_data)
