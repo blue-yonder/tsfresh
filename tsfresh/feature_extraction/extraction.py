@@ -12,6 +12,7 @@ import warnings
 from functools import partial
 from multiprocessing import Pool
 
+import itertools
 import numpy as np
 import pandas as pd
 from builtins import str
@@ -135,16 +136,11 @@ def extract_features(timeseries_container, default_fc_parameters=None,
     # Always use the standardized way of storing the data.
     # See the function normalize_input_to_internal_representation for more information.
     # TODO
-    df_melt = pd.melt(timeseries_container, id_vars=[column_id, column_sort])
+    df_melt = pd.melt(timeseries_container.sort_values(column_sort).drop(column_sort, axis=1), id_vars=[column_id])
 
     # Use the standard setting if the user did not supply ones himself.
     if default_fc_parameters is None:
         default_fc_parameters = ComprehensiveFCParameters()
-
-    # TODO
-    # Choose the parallelization according to a rule-of-thumb
-    #if parallelization is None:
-    #    parallelization = 'per_sample' if n_processes / 2 > len(kind_to_df_map) else 'per_kind'
 
     _logger.info('Parallelizing feature calculation {}'.format(parallelization))
 
@@ -158,23 +154,11 @@ def extract_features(timeseries_container, default_fc_parameters=None,
         else:
             warnings.simplefilter("default")
 
-    def function_call():
-        for chunk_id, id_data in df_melt.groupby(column_id):
-            for chunk_kind, kind_data in id_data.groupby("variable"):
+    result = _do_extraction(df_melt, column_id, default_fc_parameters, kind_to_fc_parameters)
 
-                if kind_to_fc_parameters and chunk_kind in kind_to_fc_parameters:
-                    fc_parameters = kind_to_fc_parameters[chunk_kind]
-                else:
-                    fc_parameters = default_fc_parameters
-
-                for name, parameter_list in fc_parameters.items():
-                    data = kind_data["value"].values
-                    results = extract_named_function(function_name=name, parameter_list=parameter_list,
-                                                     data=data)
-                    for key, value in results.items():
-                        yield {"variable": chunk_kind + "__" + str(key), "value": value, "id": chunk_id}
-
-    result = pd.DataFrame(function_call()).pivot("id", "variable", "value")
+    # Impute the result if requested
+    if impute_function is not None:
+        impute_function(result)
 
     # Turn off profiling if it was turned on
     if profile:
@@ -184,25 +168,54 @@ def extract_features(timeseries_container, default_fc_parameters=None,
     return result
 
 
-def convert_to_output_format(param):
+def _do_extraction(df_melt, column_id, default_fc_parameters, kind_to_fc_parameters):
+    data_in_chunks = [x + (y,) for x, y in df_melt.groupby([column_id, "variable"]).value]
+
+    extraction_function = partial(_extract_named_function,
+                                  default_fc_parameters=default_fc_parameters,
+                                  kind_to_fc_parameters=kind_to_fc_parameters)
+
+    # Map over all those chunks and extract the features on them
+    result = map(extraction_function, data_in_chunks)
+
+    # Flatten out the lists
+    result = itertools.chain.from_iterable(result)
+
+    # Return a dataframe in the typical form (id as index and feature names as columns)
+    result = pd.DataFrame(list(result)).pivot("id", "variable", "value")
+
+    return result
+
+
+def _convert_to_output_format(param):
     return "_".join(str(key) + "_" + str(value) for key, value in param.items())
 
 
-def extract_named_function(function_name, parameter_list, data):
-    func = getattr(feature_calculators, function_name)
+def _extract_named_function(chunk, default_fc_parameters, kind_to_fc_parameters):
+    chunk_id, chunk_kind, data = chunk
+    data = data.values
 
-    if func.fctype == "combiner":
-        result = func(data, param=parameter_list)
+    if kind_to_fc_parameters and chunk_kind in kind_to_fc_parameters:
+        fc_parameters = kind_to_fc_parameters[chunk_kind]
     else:
-        if parameter_list:
-            result = ((convert_to_output_format(param), func(data, **param)) for param in parameter_list)
-        else:
-            result = func(data)
-    try:
-        return {func.__name__ + "__" + key: item for key, item in result}
-    except TypeError:
-        return {func.__name__: result}
+        fc_parameters = default_fc_parameters
 
+    def _f():
+        for function_name, parameter_list in fc_parameters.items():
+            func = getattr(feature_calculators, function_name)
+
+            if func.fctype == "combiner":
+                result = func(data, param=parameter_list)
+            else:
+                if parameter_list:
+                    result = ((_convert_to_output_format(param), func(data, **param)) for param in parameter_list)
+                else:
+                    result = [("", func(data))]
+
+            for key, item in result:
+                yield {"variable": chunk_kind + "__" + func.__name__ + "__" + str(key), "value": item, "id": chunk_id}
+
+    return list(_f())
 
 
 def _extract_features_per_kind(kind_to_df_map,
@@ -418,129 +431,3 @@ def _calculate_best_chunksize(iterable_list, n_processes):
     if extra:
         chunksize += 1
     return chunksize
-
-
-def _extract_features_for_one_time_series(prefix_and_dataframe, column_id, column_value,
-                                          default_fc_parameters,
-                                          kind_to_fc_parameters=None,
-                                          show_warnings=defaults.SHOW_WARNINGS):
-    """
-    Extract time series features for a given data frame based on the passed settings.
-
-    This is an internal function, please use the extract_features function.
-
-    The `dataframe` is expected to have at least two columns: column_id and column_value. The data is grouped together
-    by their column_id value and the time series features are calculated independently for each of the groups.
-    As a result, the function returns a :class:`pandas.DataFrame` with the ids as an index and as many columns as there
-    were features calculated.
-
-    To distinguish the features from others, all the calculated columns are given the prefix passed in by column_prefix.
-
-    For example, if you pass in a `dataframe` of shape
-
-        +====+=======+=====+
-        | id | value | ... |
-        +====+=======+=====+
-        | A  | 1     | ... |
-        +----+-------+-----+
-        | A  | 2     | ... |
-        +----+-------+-----+
-        | A  | 3     | ... |
-        +----+-------+-----+
-        | B  | 1     | ... |
-        +----+-------+-----+
-        | B  | 2     | ... |
-        +----+-------+-----+
-        | B  | 3     | ... |
-        +----+-------+-----+
-
-    with `column_id="id"`, `column_value="value"` and `column_prefix="prefix"` the resulting :class:`pandas.DataFrame`
-    will have shape
-
-        +=======+==================+==================+=====+==================+
-        | Index | prefix_feature_1 | prefix_feature_2 | ... | prefix_feature_N |
-        +=======+==================+==================+=====+==================+
-        | A     | ...              | ...              | ... | ...              |
-        +-------+------------------+------------------+-----+------------------+
-        | B     | ...              | ...              | ... | ...              |
-        +-------+------------------+------------------+-----+------------------+
-
-    where N is the number of features that were calculated. Which features are calculated is controlled by the
-    passed settings instance (see :class:`~tsfresh.feature_extraction.settings.ComprehensiveFCParameters` for a list of
-    all possible features to calculate).
-
-    The parameter `dataframe` is not allowed to have any NaN value in it. It is possible to have different numbers
-    of values for different ids.
-
-    :param prefix_and_dataframe: Tuple of column_prefix and dataframe
-        column_prefix is the string that each extracted feature will be prefixed with (for better separation)
-        dataframe with at least the columns column_id and column_value to extract the time
-        series features for.
-    :type prefix_and_dataframe: (str, DataFrame)
-
-    :param column_id: The name of the column with the ids.
-    :type column_id: str
-
-    :param column_value: The name of the column with the values.
-    :type column_value: str
-
-    :param default_fc_parameters: mapping from feature calculator names to parameters. Only those names
-           which are keys in this dict will be calculated. See the class:`ComprehensiveFCParameters` for
-           more information.
-    :type default_fc_parameters: dict
-
-    :param kind_to_fc_parameters: mapping from kind names to objects of the same type as the ones for
-            default_fc_parameters. If you put a kind as a key here, the fc_parameters
-            object (which is the value), will be used instead of the default_fc_parameters.
-    :type kind_to_fc_parameters: dict
-
-    :param show_warnings: Show warnings during the feature extraction (needed for debugging of calculators).
-    :type show_warnings: bool
-
-    :return: A dataframe with the extracted features as the columns (prefixed with column_prefix) and as many
-        rows as their are unique values in the id column.
-    """
-    if kind_to_fc_parameters is None:
-        kind_to_fc_parameters = {}
-
-    column_prefix, dataframe = prefix_and_dataframe
-    column_prefix = str(column_prefix)
-
-    # Ensure features are calculated on float64
-    dataframe[column_value] = dataframe[column_value].astype(np.float64)
-
-    # If there are no special settings for this column_prefix, use the default ones.
-    if column_prefix in kind_to_fc_parameters:
-        fc_parameters = kind_to_fc_parameters[column_prefix]
-    else:
-        fc_parameters = default_fc_parameters
-
-    with warnings.catch_warnings():
-        if not show_warnings:
-            warnings.simplefilter("ignore")
-        else:
-            warnings.simplefilter("default")
-
-        # Calculate the aggregation functions
-        column_name_to_aggregate_function = get_aggregate_functions(fc_parameters, column_prefix)
-
-        if column_name_to_aggregate_function:
-            extracted_features = dataframe.groupby(column_id)[column_value].aggregate(column_name_to_aggregate_function)
-        else:
-            extracted_features = pd.DataFrame(index=dataframe[column_id].unique())
-
-        # Calculate the apply functions
-        #apply_functions = get_apply_functions(fc_parameters, column_prefix)
-#
-        #if apply_functions:
-        #    list_of_extracted_feature_dataframes = [extracted_features]
-        #    for apply_function, kwargs in apply_functions:
-        #        current_result = dataframe.groupby(column_id)[column_value].apply(apply_function, **kwargs)
-        #        if len(current_result) > 0:
-        #            list_of_extracted_feature_dataframes.append(current_result)
-#
-        #    if len(list_of_extracted_feature_dataframes) > 0:
-        #        extracted_features = pd.concat(list_of_extracted_feature_dataframes, axis=1,
-        #                                       join_axes=[extracted_features.index])
-
-        return extracted_features
