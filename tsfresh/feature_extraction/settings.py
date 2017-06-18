@@ -60,29 +60,14 @@ def from_columns(columns):
         if not hasattr(feature_calculators, feature_name):
             raise ValueError("Unknown feature name {}".format(feature_name))
 
-        func = getattr(feature_calculators, feature_name)
-
-        if func.fctype == "aggregate":
-
+        config = _get_config_from_string(parts)
+        if config:
+            if feature_name in kind_to_fc_parameters[kind]:
+                kind_to_fc_parameters[kind][feature_name].append(config)
+            else:
+                kind_to_fc_parameters[kind][feature_name] = [config]
+        else:
             kind_to_fc_parameters[kind][feature_name] = None
-
-        elif func.fctype == "aggregate_with_parameters":
-
-            config = _get_config_from_string(parts)
-
-            if feature_name in kind_to_fc_parameters[kind]:
-                kind_to_fc_parameters[kind][feature_name].append(config)
-            else:
-                kind_to_fc_parameters[kind][feature_name] = [config]
-
-        elif func.fctype == "apply":
-
-            config = _get_config_from_string(parts)
-
-            if feature_name in kind_to_fc_parameters[kind]:
-                kind_to_fc_parameters[kind][feature_name].append(config)
-            else:
-                kind_to_fc_parameters[kind][feature_name] = [config]
 
     return kind_to_fc_parameters
 
@@ -101,6 +86,9 @@ def _get_config_from_string(parts):
     :rtype: dict
     """
     relevant_parts = parts[2:]
+    if not relevant_parts:
+        return
+
     config_kwargs = [s.rsplit("_", 1)[0] for s in relevant_parts]
     config_values = [s.rsplit("_", 1)[1] for s in relevant_parts]
 
