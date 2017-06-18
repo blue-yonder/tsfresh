@@ -129,7 +129,7 @@ def extract_features(timeseries_container, default_fc_parameters=None,
     """
     import logging
     logging.basicConfig()
-    
+
     # Always use the standardized way of storing the data.
     # See the function normalize_input_to_internal_representation for more information.
     kind_to_df_map, column_id, column_value = \
@@ -155,9 +155,11 @@ def extract_features(timeseries_container, default_fc_parameters=None,
 
     # Calculate the result
     if parallelization == 'per_kind':
-        calculation_function = _extract_features_parallel_per_kind
+        calculation_function = _extract_features_per_kind
     elif parallelization == 'per_sample':
         calculation_function = _extract_features_parallel_per_sample
+    elif parallelization == 'serial':
+        calculation_function = partial(_extract_features_per_kind, serial=True)
     else:
         raise ValueError("Argument parallelization must be one of: 'per_kind', 'per_sample'")
 
@@ -181,14 +183,15 @@ def extract_features(timeseries_container, default_fc_parameters=None,
     return result
 
 
-def _extract_features_parallel_per_kind(kind_to_df_map,
-                                        column_id, column_value,
-                                        default_fc_parameters,
-                                        kind_to_fc_parameters=None,
-                                        chunksize=defaults.CHUNKSIZE,
-                                        n_processes=defaults.N_PROCESSES, show_warnings=defaults.SHOW_WARNINGS,
-                                        disable_progressbar=defaults.DISABLE_PROGRESSBAR,
-                                        impute_function=defaults.IMPUTE_FUNCTION):
+def _extract_features_per_kind(kind_to_df_map,
+                               column_id, column_value,
+                               default_fc_parameters,
+                               kind_to_fc_parameters=None,
+                               chunksize=defaults.CHUNKSIZE,
+                               n_processes=defaults.N_PROCESSES, show_warnings=defaults.SHOW_WARNINGS,
+                               disable_progressbar=defaults.DISABLE_PROGRESSBAR,
+                               impute_function=defaults.IMPUTE_FUNCTION,
+                               serial=False):
     """
     Parallelize the feature extraction per kind.
 
@@ -226,6 +229,9 @@ def _extract_features_parallel_per_kind(kind_to_df_map,
     :param impute_function: None, if no imputing should happen or the function to call for imputing.
     :type impute_function: None or function
 
+    :param serial: Run in serial instead of in parallel mode for performance testing
+    :type serial: bool
+
     :return: The (maybe imputed) DataFrame containing extracted features.
     :rtype: pandas.DataFrame
     """
@@ -241,8 +247,14 @@ def _extract_features_parallel_per_kind(kind_to_df_map,
         chunksize = _calculate_best_chunksize(kind_to_df_map, n_processes)
 
     total_number_of_expected_results = len(kind_to_df_map)
-    extracted_features = tqdm(pool.imap_unordered(partial_extract_features_for_one_time_series, kind_to_df_map.items(),
-                                                  chunksize=chunksize), total=total_number_of_expected_results,
+
+    if serial:
+        map_function = map
+    else:
+        map_function = partial(pool.imap_unordered, chunksize=chunksize)
+
+    extracted_features = tqdm(map_function(partial_extract_features_for_one_time_series, kind_to_df_map.items()),
+                              total=total_number_of_expected_results,
                               desc="Feature Extraction", disable=disable_progressbar)
     pool.close()
 
