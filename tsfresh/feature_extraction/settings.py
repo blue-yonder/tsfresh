@@ -8,14 +8,14 @@ For the naming of the features, see :ref:`feature-naming-label`.
 
 from __future__ import absolute_import, division
 
-import ast
+from inspect import getargspec
 
 import numpy as np
 from builtins import range
-from builtins import zip
-from inspect import getargspec
 from past.builtins import basestring
+
 from tsfresh.feature_extraction import feature_calculators
+from tsfresh.utilities.string_manipulation import get_config_from_string
 
 
 def from_columns(columns):
@@ -60,7 +60,7 @@ def from_columns(columns):
         if not hasattr(feature_calculators, feature_name):
             raise ValueError("Unknown feature name {}".format(feature_name))
 
-        config = _get_config_from_string(parts)
+        config = get_config_from_string(parts)
         if config:
             if feature_name in kind_to_fc_parameters[kind]:
                 kind_to_fc_parameters[kind][feature_name].append(config)
@@ -70,43 +70,6 @@ def from_columns(columns):
             kind_to_fc_parameters[kind][feature_name] = None
 
     return kind_to_fc_parameters
-
-
-def _get_config_from_string(parts):
-    """
-    Helper function to extract the configuration of a certain function from the column name.
-    The column name parts (split by "__") should be passed to this function. It will skip the
-    kind name and the function name and only use the parameter parts. These parts will be split up on "_"
-    into the parameter name and the parameter value. This value is transformed into a python object
-    (for example is "(1, 2, 3)" transformed into a tuple consisting of the ints 1, 2 and 3).
-
-    Returns None of no parameters are in the column name.
-
-    :param parts: The column name split up on "__"
-    :type parts: list
-    :return: a dictionary with all parameters, which are encoded in the column name.
-    :rtype: dict
-    """
-    relevant_parts = parts[2:]
-    if not relevant_parts:
-        return
-
-    config_kwargs = [s.rsplit("_", 1)[0] for s in relevant_parts]
-    config_values = [s.rsplit("_", 1)[1] for s in relevant_parts]
-
-    dict_if_configs = {}
-
-    for key, value in zip(config_kwargs, config_values):
-        if value.lower() == "nan":
-            dict_if_configs[key] = np.NaN
-        elif value.lower() == "-inf":
-            dict_if_configs[key] = np.NINF
-        elif value.lower() == "inf":
-            dict_if_configs[key] = np.PINF
-        else:
-            dict_if_configs[key] = ast.literal_eval(value)
-
-    return dict_if_configs
 
 
 # todo: this classes' docstrings are not completely up-to-date
