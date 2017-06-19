@@ -227,7 +227,7 @@ def _do_extraction(df_melt, column_id, column_value, column_kind,
 
 
 def _convert_to_output_format(param):
-    return "__".join(str(key) + "_" + str(value) for key, value in param.items())
+    return "__".join(str(key) + "_" + str(param[key]) for key in sorted(param))
 
 
 def _extract_named_function(chunk, default_fc_parameters, kind_to_fc_parameters):
