@@ -7,27 +7,19 @@ This module contains the main function to interact with tsfresh: extract feature
 
 from __future__ import absolute_import, division
 
+import itertools
 import logging
 import warnings
 from functools import partial
 from multiprocessing import Pool
 
-import itertools
 import numpy as np
 import pandas as pd
-from builtins import str
-from multiprocessing import Pool
-from functools import partial
-from six.moves.queue import Queue
-import logging
-import pandas as pd
-import numpy as np
-
 from tqdm import tqdm
 
+from tsfresh import defaults
 from tsfresh.feature_extraction import feature_calculators
 from tsfresh.feature_extraction.settings import ComprehensiveFCParameters
-from tsfresh import defaults
 from tsfresh.utilities import dataframe_functions, profiling
 from tsfresh.utilities.string_manipulation import convert_to_output_format
 
