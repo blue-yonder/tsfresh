@@ -282,12 +282,12 @@ def normalize_input_to_internal_representation(timeseries_container, column_id, 
     if column_sort is not None:
         if timeseries_container[column_sort].isnull().any():
             raise ValueError("You have NaN values in your sort column.")
-        timeseries_container.sort_values(column_sort, inplace=True)
-        timeseries_container.drop(column_sort, axis=1, inplace=True)
+        timeseries_container = timeseries_container.sort_values(column_sort).drop(column_sort, axis=1)
 
     # Check that either kind and value is None or both not None.
     if column_kind is None and column_value is not None:
         column_kind = "_variables"
+        timeseries_container = timeseries_container.copy()
         timeseries_container[column_kind] = "feature"
     if (column_kind is None and column_value is not None) or (column_kind is not None and column_value is None):
         raise ValueError("Either pass both the kind and the value column or none.")
