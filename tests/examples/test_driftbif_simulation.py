@@ -73,7 +73,7 @@ class SampleTauTestCase(unittest.TestCase):
         sample = np.array(tau)
         before = np.sum(sample <= 1/0.3)
         beyond = np.sum(sample > 1/0.3)
-        self.assertTrue(abs(0.4 - float(before)/(before+beyond))<0.001)
+        self.assertTrue(abs(0.4 - float(before)/(before+beyond))<0.002)
         
 class LoadDriftBifTestCase(unittest.TestCase):
     def test_classification_labels(self):
