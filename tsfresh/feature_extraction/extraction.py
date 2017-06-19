@@ -227,6 +227,20 @@ def _do_extraction(df_melt, column_id, column_value, column_kind,
 
 
 def _convert_to_output_format(param):
+    """
+    Helper function to convert parameters to a valid string, that can be used in a column name.
+    Does the opposite which is used in the from_columns function.
+
+    The parameters are sorted by their name and written out in the form
+
+       <param name>_<param value>__<param name>_<param value>__ ...
+
+    :param param: The dictionary of parameters to write out
+    :type param: dict
+
+    :return: The string of parsed parameters
+    :rtype: str
+    """
     return "__".join(str(key) + "_" + str(param[key]) for key in sorted(param))
 
 
