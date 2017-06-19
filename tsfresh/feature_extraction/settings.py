@@ -80,6 +80,8 @@ def _get_config_from_string(parts):
     into the parameter name and the parameter value. This value is transformed into a python object
     (for example is "(1, 2, 3)" transformed into a tuple consisting of the ints 1, 2 and 3).
 
+    Returns None of no parameters are in the column name.
+
     :param parts: The column name split up on "__"
     :type parts: list
     :return: a dictionary with all parameters, which are encoded in the column name.
