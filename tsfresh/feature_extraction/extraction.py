@@ -36,7 +36,7 @@ _logger = logging.getLogger(__name__)
 def extract_features(timeseries_container, default_fc_parameters=None,
                      kind_to_fc_parameters=None,
                      column_id=None, column_sort=None, column_kind=None, column_value=None,
-                     parallelization=True, chunksize=defaults.CHUNKSIZE,
+                     parallelization=defaults.PARALLELISATION, chunksize=defaults.CHUNKSIZE,
                      n_processes=defaults.N_PROCESSES, show_warnings=defaults.SHOW_WARNINGS,
                      disable_progressbar=defaults.DISABLE_PROGRESSBAR,
                      impute_function=defaults.IMPUTE_FUNCTION,
