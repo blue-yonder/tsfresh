@@ -87,13 +87,8 @@ def extract_features(timeseries_container, default_fc_parameters=None,
     :param column_value: The name for the column keeping the value itself.
     :type column_value: str
 
-    :param parallelization: Either ``'per_sample'`` or ``'per_kind'``   , see
-                            :func:`~tsfresh.feature_extraction.extraction._extract_features_parallel_per_sample`,
-                            :func:`~tsfresh.feature_extraction.extraction._extract_features_parallel_per_kind` and
-                            :ref:`parallelization-label` for details.
-                            Choosing None makes the algorithm look for the best parallelization technique by applying
-                            some general assumptions.
-    :type parallelization: str
+    :param parallelization: Flag to turn on/off parallelisation.
+    :type parallelization: bool
 
     :param chunksize: The size of one chunk for the parallelisation
     :type chunksize: None or int
@@ -148,7 +143,7 @@ def extract_features(timeseries_container, default_fc_parameters=None,
         else:
             warnings.simplefilter("default")
 
-    result = _do_extraction(df_melt=df_melt,
+    result = _do_extraction(df=df_melt,
                             column_id=column_id, column_value=column_value, column_kind=column_kind,
                             n_processes=n_processes, chunksize=chunksize,
                             parallelization=parallelization,
@@ -169,10 +164,57 @@ def extract_features(timeseries_container, default_fc_parameters=None,
     return result
 
 
-def _do_extraction(df_melt, column_id, column_value, column_kind,
+def _do_extraction(df, column_id, column_value, column_kind,
                    default_fc_parameters, kind_to_fc_parameters,
                    n_processes, chunksize, parallelization, disable_progressbar):
-    data_in_chunks = [x + (y,) for x, y in df_melt.groupby([column_id, column_kind])[column_value]]
+    """
+    Wrapper around the _do_extraction_on_chunk, which calls it on all chunks in the data frame.
+    A chunk is a subset of the data, with a given kind and id - so a single time series.
+
+    The data is separated out into those single time series and the _do_extraction_on_chunk is
+    called on each of them. The results are then combined into a single pandas DataFrame.
+
+    The call is either happening in parallel or not and is showing a progress bar or not depending
+    on the given flags.
+
+    :param df: The dataframe in the normalized format which is used for extraction.
+    :type df: pd.DataFrame
+
+    :param default_fc_parameters: mapping from feature calculator names to parameters. Only those names
+           which are keys in this dict will be calculated. See the class:`ComprehensiveFCParameters` for
+           more information.
+    :type default_fc_parameters: dict
+
+    :param kind_to_fc_parameters: mapping from kind names to objects of the same type as the ones for
+            default_fc_parameters. If you put a kind as a key here, the fc_parameters
+            object (which is the value), will be used instead of the default_fc_parameters.
+    :type kind_to_fc_parameters: dict
+
+    :param column_id: The name of the id column to group by.
+    :type column_id: str
+
+    :param column_kind: The name of the column keeping record on the kind of the value.
+    :type column_kind: str
+
+    :param column_value: The name for the column keeping the value itself.
+    :type column_value: str
+
+    :param parallelization: Flag to turn on/off parallelisation.
+    :type parallelization: bool
+
+    :param chunksize: The size of one chunk for the parallelisation
+    :type chunksize: None or int
+
+    :param n_processes: The number of processes to use for parallelisation.
+    :type n_processes: int
+
+    :param disable_progressbar: Do not show a progressbar while doing the calculation.
+    :type disable_progressbar: bool
+
+    :return: the extracted features
+    :rtype: pd.DataFrame
+    """
+    data_in_chunks = [x + (y,) for x, y in df.groupby([column_id, column_kind])[column_value]]
 
     if not chunksize:
         chunksize = _calculate_best_chunksize(data_in_chunks, n_processes)
@@ -185,7 +227,7 @@ def _do_extraction(df_melt, column_id, column_value, column_kind,
         pool = Pool(n_processes)
         map_function = partial(pool.imap_unordered, chunksize=chunksize)
 
-    extraction_function = partial(_extract_named_function,
+    extraction_function = partial(_do_extraction_on_chunk,
                                   default_fc_parameters=default_fc_parameters,
                                   kind_to_fc_parameters=kind_to_fc_parameters)
 
@@ -206,7 +248,27 @@ def _do_extraction(df_melt, column_id, column_value, column_kind,
     return result
 
 
-def _extract_named_function(chunk, default_fc_parameters, kind_to_fc_parameters):
+def _do_extraction_on_chunk(chunk, default_fc_parameters, kind_to_fc_parameters):
+    """
+    Main function of this module: use the feature calculators defined in the
+    default_fc_parameters or kind_to_fc_parameters parameters and extract all
+    features on the chunk.
+
+    The chunk consists of the chunk id, the chunk kind and the data (as a Series),
+    which is then converted to a numpy array - so a single time series.
+
+    Returned is a list of the extracted features. Each one is a dictionary consisting of
+    { "variable": the feature name in the format <kind>__<feature>__<parameters>,
+      "value": the number value of the feature,
+      "id": the id of the chunk }
+
+    The <parameters> are in the form described in :mod:`~tsfresh.utilities.string_manipulation`.
+
+    :param chunk: A tuple of chunk_id, chunk_kind, data
+    :param default_fc_parameters: A dictionary of feature calculators.
+    :param kind_to_fc_parameters: A dictionary of fc_parameters for special kinds or None.
+    :return: A list of calculated features.
+    """
     chunk_id, chunk_kind, data = chunk
     data = data.values
 
