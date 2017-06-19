@@ -263,6 +263,8 @@ def normalize_input_to_internal_representation(timeseries_container, column_id, 
 
         column_kind = "_variables"
 
+        timeseries_container = {key: df.copy() for key, df in timeseries_container.items()}
+
         for kind, df in timeseries_container.items():
             df[column_kind] = kind
 
@@ -289,8 +291,8 @@ def normalize_input_to_internal_representation(timeseries_container, column_id, 
         column_kind = "_variables"
         timeseries_container = timeseries_container.copy()
         timeseries_container[column_kind] = "feature"
-    if (column_kind is None and column_value is not None) or (column_kind is not None and column_value is None):
-        raise ValueError("Either pass both the kind and the value column or none.")
+    if column_kind is not None and column_value is None:
+        raise ValueError("If passing the kind, you also have to pass the value.")
 
     if column_kind is None and column_value is None:
         column_kind = "_variables"

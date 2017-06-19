@@ -23,20 +23,6 @@ class NormalizeTestCase(TestCase):
         self.assertRaises(ValueError, dataframe_functions.normalize_input_to_internal_representation, test_dict,
                           "id", None, None, "something other")
 
-        # Nothing should have changed compared to the input data
-        result_df, column_id, column_kind, column_value = \
-            dataframe_functions.normalize_input_to_internal_representation(test_dict, "id", None, None, "value")
-        self.assertEqual(column_value, "value")
-        self.assertEqual(column_id, "id")
-        six.assertCountEqual(self, list(test_dict.keys()), list(result_df.keys()))
-        self.assertEqual(result_df[result_df[column_kind] == "a"].iloc[0].to_dict(), {"value": 1, "id": "id_1"})
-
-        # The algo should choose the correct value column
-        result_df, column_id, column_kind, column_value = \
-            dataframe_functions.normalize_input_to_internal_representation(test_dict, "id", None, None, None)
-        self.assertEqual(column_value, "value")
-        self.assertEqual(column_id, "id")
-
     def test_with_dictionaries_two_rows(self):
         test_df = pd.DataFrame([{"value": 2, "sort": 2, "id": "id_1"},
                                 {"value": 1, "sort": 1, "id": "id_1"}])
@@ -53,14 +39,8 @@ class NormalizeTestCase(TestCase):
         self.assertEqual(column_id, "id")
 
         # Assert sorted and without sort column
-        self.assertEqual(result_df[result_df[column_kind] == "a"].iloc[0].to_dict(), {"value": 1, "id": "id_1"})
-        self.assertEqual(result_df[result_df[column_kind] == "a"].iloc[1].to_dict(), {"value": 2, "id": "id_1"})
-
-        # Assert the algo has found the correct column
-        result_df, column_id, column_kind, column_value = \
-            dataframe_functions.normalize_input_to_internal_representation(test_dict, "id", "sort", None, None)
-        self.assertEqual(column_value, "value")
-        self.assertEqual(column_id, "id")
+        self.assertEqual(result_df[result_df[column_kind] == "a"].iloc[0].to_dict(), {"_variables": "a", "value": 1, "id": "id_1"})
+        self.assertEqual(result_df[result_df[column_kind] == "a"].iloc[1].to_dict(), {"_variables": "a", "value": 2, "id": "id_1"})
 
     def test_with_dictionaries_two_rows_sorted(self):
         test_df = pd.DataFrame([{"value": 2, "id": "id_1"},
@@ -73,13 +53,7 @@ class NormalizeTestCase(TestCase):
         self.assertEqual(column_value, "value")
         self.assertEqual(column_id, "id")
 
-        self.assertEqual(result_df[result_df[column_kind] == "a"].iloc[0].to_dict(), {"value": 2, "id": "id_1"})
-
-        # The algo should have found the correct value column
-        result_df, column_id, column_kind, column_value = \
-            dataframe_functions.normalize_input_to_internal_representation(test_dict, "id", None, None, None)
-        self.assertEqual(column_value, "value")
-        self.assertEqual(column_id, "id")
+        self.assertEqual(result_df[result_df[column_kind] == "a"].iloc[0].to_dict(), {"_variables": "a", "value": 2, "id": "id_1"})
 
     def test_with_df(self):
         # give everyting
@@ -103,10 +77,10 @@ class NormalizeTestCase(TestCase):
         self.assertEqual(column_id, "id")
         self.assertEqual(column_value, "value")
         self.assertEqual(column_kind, "_variables")
-        self.assertIn("value", result_df)
-        six.assertCountEqual(self, list(result_df[result_df[column_kind] == "value"].columns), ["id", "value"])
-        self.assertEqual(list(result_df[result_df[column_kind] == "value"]["value"]), [3])
-        self.assertEqual(list(result_df[result_df[column_kind] == "value"]["id"]), [0])
+        self.assertIn("feature", set(result_df[column_kind]))
+        six.assertCountEqual(self, list(result_df.columns), ["id", "value", "_variables"])
+        self.assertEqual(list(result_df[result_df[column_kind] == "feature"]["value"]), [3])
+        self.assertEqual(list(result_df[result_df[column_kind] == "feature"]["id"]), [0])
 
         # Let the function find the values
         test_df = pd.DataFrame([{"id": 0, "a": 3, "b": 5, "sort": 1}])
@@ -114,14 +88,14 @@ class NormalizeTestCase(TestCase):
             dataframe_functions.normalize_input_to_internal_representation(test_df, "id", "sort", None, None)
 
         self.assertEqual(column_id, "id")
-        self.assertEqual(column_value, "_value")
-        self.assertIn("a", result_df)
-        self.assertIn("b", result_df)
-        six.assertCountEqual(self, list(result_df[result_df[column_kind] == "a"].columns), ["_value", "id"])
-        self.assertEqual(list(result_df[result_df[column_kind] == "a"]["_value"]), [3])
+        self.assertEqual(column_value, "_values")
+        self.assertEqual(column_kind, "_variables")
+        self.assertIn("a", set(result_df[column_kind]))
+        self.assertIn("b", set(result_df[column_kind]))
+        six.assertCountEqual(self, list(result_df.columns), ["_values", "_variables", "id"])
+        self.assertEqual(list(result_df[result_df[column_kind] == "a"]["_values"]), [3])
         self.assertEqual(list(result_df[result_df[column_kind] == "a"]["id"]), [0])
-        six.assertCountEqual(self, list(result_df[result_df[column_kind] == "b"].columns), ["_value", "id"])
-        self.assertEqual(list(result_df[result_df[column_kind] == "b"]["_value"]), [5])
+        self.assertEqual(list(result_df[result_df[column_kind] == "b"]["_values"]), [5])
         self.assertEqual(list(result_df[result_df[column_kind] == "b"]["id"]), [0])
 
     def test_with_wrong_input(self):
