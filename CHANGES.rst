@@ -4,6 +4,18 @@ Changelog
 
 tsfresh uses `Semantic Versioning <http://semver.org/>`_
 
+Version 0.8.1
+=============
+- new features:
+    - linear trend
+    - agg trend
+- new sklearn compatible transformers
+    - PerColumnImputer
+- fixed bugs
+    - make mannwhitneyu method compatible with scipy > v0.18.0
+- added caching to travis
+- internally, added serial calculation of features
+
 Version 0.8.0
 =============
 - Breaking API changes:
