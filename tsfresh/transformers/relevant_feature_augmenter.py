@@ -129,13 +129,8 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
         :param column_value: The column with the values. See :mod:`~tsfresh.feature_extraction.extraction`.
         :type column_value: basestring
 
-        :param parallelization: Either ``'per_sample'`` or ``'per_kind'``   , see
-                            :func:`~tsfresh.feature_extraction.extraction._extract_features_parallel_per_sample`,
-                            :func:`~tsfresh.feature_extraction.extraction._extract_features_parallel_per_kind` and
-                            :ref:`parallelization-label` for details.
-                            Choosing None makes the algorithm look for the best parallelization technique by applying
-                            some general remarks.
-        :type parallelization: str
+        :param parallelization: Flag to turn on/off parallelisation.
+        :type parallelization: bool
 
         :param chunksize: The size of one chunk for the parallelisation
         :type chunksize: None or int

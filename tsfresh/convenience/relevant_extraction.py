@@ -75,13 +75,8 @@ def extract_relevant_features(timeseries_container, y, X=None,
     :param column_value: The name for the column keeping the value itself.
     :type column_value: str
 
-    :param parallelization: Either ``'per_sample'`` or ``'per_kind'``   , see
-                            :func:`~tsfresh.feature_extraction.extraction._extract_features_parallel_per_sample`,
-                            :func:`~tsfresh.feature_extraction.extraction._extract_features_parallel_per_kind` and
-                            :ref:`parallelization-label` for details.
-                            Choosing None makes the algorithm look for the best parallelization technique by applying
-                            some general remarks.
-    :type parallelization: str
+    :param parallelization: Flag to turn on/off parallelisation.
+    :type parallelization: bool
 
     :param chunksize: The size of one chunk for the parallelisation
     :type chunksize: None or int
