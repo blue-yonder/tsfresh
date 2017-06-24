@@ -143,12 +143,12 @@ def extract_features(timeseries_container, default_fc_parameters=None,
         else:
             warnings.simplefilter("default")
 
-    result = _do_extraction(df=df_melt,
-                            column_id=column_id, column_value=column_value, column_kind=column_kind,
-                            n_processes=n_processes, chunksize=chunksize,
-                            parallelization=parallelization,
-                            disable_progressbar=disable_progressbar,
-                            default_fc_parameters=default_fc_parameters, kind_to_fc_parameters=kind_to_fc_parameters)
+        result = _do_extraction(df=df_melt,
+                                column_id=column_id, column_value=column_value, column_kind=column_kind,
+                                n_processes=n_processes, chunksize=chunksize,
+                                parallelization=parallelization,
+                                disable_progressbar=disable_progressbar,
+                                default_fc_parameters=default_fc_parameters, kind_to_fc_parameters=kind_to_fc_parameters)
 
     result.index = result.index.astype(df_melt[column_id].dtype)
 
