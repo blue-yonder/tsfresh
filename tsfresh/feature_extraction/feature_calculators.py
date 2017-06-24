@@ -19,8 +19,6 @@ from builtins import range
 import itertools
 import numpy as np
 from numpy.linalg import LinAlgError
-import numbers
-from functools import wraps
 
 import pandas as pd
 from scipy.signal import welch, cwt, ricker, find_peaks_cwt
@@ -29,6 +27,7 @@ from statsmodels.tsa.stattools import adfuller
 from scipy.stats import linregress
 
 # todo: make sure '_' works in parameter names in all cases, add a warning if not
+
 
 def _get_length_sequences_where(x):
     """
@@ -57,6 +56,67 @@ def _get_length_sequences_where(x):
     else:
         res = [len(list(group)) for value, group in itertools.groupby(x) if value == 1]
         return res if len(res) > 0 else [0]
+
+
+def _estimate_friedrich_coefficients(x, m, r):
+    """
+    Coefficients of polynomial :math:`h(x)`, which has been fitted to
+    the deterministic dynamics of Langevin model
+    .. math::
+        \dot{x}(t) = h(x(t)) + \mathcal{N}(0,R)
+
+    As described by
+
+        Friedrich et al. (2000): Physics Letters A 271, p. 217-222
+        *Extracting model equations from experimental data*
+
+    For short time-series this method is highly dependent on the parameters.
+
+    :param x: the time series to calculate the feature of
+    :type x: pandas.Series
+    :param m: order of polynom to fit for estimating fixed points of dynamics
+    :type m: int
+    :param r: number of quantils to use for averaging
+    :type r: float
+
+    :return: coefficients of polynomial of deterministic dynamics
+    :return type: ndarray
+    """
+    df = pd.DataFrame({'signal': x[:-1], 'delta': np.diff(x)})
+    try:
+        df['quantiles'] = pd.qcut(df.signal, r)
+    except ValueError:
+        return [np.NaN] * (m + 1)
+
+    quantiles = df.groupby('quantiles')
+
+    result = pd.DataFrame({'x_mean': quantiles.signal.mean(),
+                           'y_mean': quantiles.delta.mean()
+                           })
+
+    result.dropna(inplace=True)
+
+    try:
+        return np.polyfit(result.x_mean, result.y_mean, deg=m)
+    except (np.linalg.LinAlgError, ValueError):
+        return [np.NaN] * (m + 1)
+
+
+def _aggregate_on_chunks(x, f_agg, chunk_len):
+    """
+    Takes the time series x and constructs a lower sampled version of it by applying the aggregation function f_agg on
+    consecutive chunks of length chunk_len
+
+    :param x: the time series to calculate the aggregation of
+    :type x: pandas.Series
+    :param f_agg: The name of the aggregation function that should be an attribute of the pandas.Series
+    :type f_agg: str
+    :param chunk_len: The size of the chunks where to aggregate the time series
+    :type chunk_len: int
+    :return: A list of the aggregation function over the chunks
+    :return type: list
+    """
+    return [getattr(x[i * chunk_len: (i + 1) * chunk_len], f_agg)() for i in range(int(np.ceil(len(x) / chunk_len)))]
 
 
 def set_property(key, value):
@@ -1236,54 +1296,6 @@ def approximate_entropy(x, m, r):
     return np.abs(_phi(m) - _phi(m + 1))
 
 
-def _estimate_friedrich_coefficients(x, m, r):
-    """
-    Coefficients of polynomial :math:`h(x)`, which has been fitted to 
-    the deterministic dynamics of Langevin model 
-    .. math::
-        \dot{x}(t) = h(x(t)) + \mathcal{N}(0,R)
-
-    As described by
-
-        Friedrich et al. (2000): Physics Letters A 271, p. 217-222
-        *Extracting model equations from experimental data*
-
-    For short time-series this method is highly dependent on the parameters.
-
-    :param x: the time series to calculate the feature of
-    :type x: pandas.Series
-    :param m: order of polynom to fit for estimating fixed points of dynamics
-    :type m: int
-    :param r: number of quantils to use for averaging
-    :type r: float
-
-    :return: coefficients of polynomial of deterministic dynamics
-    :return type: ndarray
-    """
-    df = pd.DataFrame({'signal': x[:-1], 'delta': np.diff(x)})
-    try:
-        df['quantiles'] = pd.qcut(df.signal, r)
-        binned = True
-    except ValueError:
-        binned = False
-        coeff = [np.NaN] * (m+1)
-
-    if binned:
-        quantiles = df.groupby('quantiles')
-        
-        result = pd.DataFrame({'x_mean': quantiles.signal.mean(),
-                               'y_mean': quantiles.delta.mean()
-        })
-
-        result.dropna(inplace=True)
-
-        try:
-            coeff = np.polyfit(result.x_mean, result.y_mean, deg=m)
-        except (np.linalg.LinAlgError, ValueError):
-            coeff = [np.NaN] * (m+1)
-    return coeff
-
-
 @set_property("fctype", "combiner")
 def friedrich_coefficients(x, param):
     """
@@ -1357,23 +1369,6 @@ def max_langevin_fixed_point(x, r, m):
         return np.nan
     
     return max_fixed_point
-
-
-def _aggregate_on_chunks(x, f_agg, chunk_len):
-    """
-    Takes the time series x and constructs a lower sampled version of it by applying the aggregation function f_agg on
-    consecutive chunks of length chunk_len
-
-    :param x: the time series to calculate the aggregation of
-    :type x: pandas.Series
-    :param f_agg: The name of the aggregation function that should be an attribute of the pandas.Series
-    :type f_agg: str
-    :param chunk_len: The size of the chunks where to aggregate the time series
-    :type chunk_len: int
-    :return: A list of the aggregation function over the chunks
-    :return type: list
-    """
-    return [getattr(x[i * chunk_len: (i + 1) * chunk_len], f_agg)() for i in range(int(np.ceil(len(x) / chunk_len)))]
 
 
 @set_property("fctype", "combiner")
