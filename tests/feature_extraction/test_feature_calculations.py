@@ -71,15 +71,6 @@ class FeatureCalculationTestCase(TestCase):
                          msg="Not equal for pandas.Series: %s != %s" % (
                              f(pd.Series(input_to_f), *args, **kwargs), result))
 
-    def test_catch_Numbers(self):
-        def f(x, y):
-            return [x, y]
-
-        fdeco = not_apply_to_raw_numbers(f)
-        self.assertEqual(fdeco(3, 5), 0)
-        self.assertEqual(fdeco([], 5), [[], 5])
-        self.assertEqual(fdeco(np.NaN, 10), 0)
-
     def test___get_length_sequences_where(self):
         self.assertEqualOnAllArrayTypes(_get_length_sequences_where, [0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1],
                                         [1, 3, 1, 2])

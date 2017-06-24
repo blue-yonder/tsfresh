@@ -59,24 +59,6 @@ def _get_length_sequences_where(x):
         return res if len(res) > 0 else [0]
 
 
-def not_apply_to_raw_numbers(func):
-    """
-    This decorator makes sure that the function func is only called on objects that are not numbers.Number
-
-    :param func: the method that should only be executed on objects which are not a numbers.Number
-    :return: the decorated version of func which returns 0 if the first argument x is a numbers.Number. For every
-                other x the output of func is returned
-    """
-
-    @wraps(func)
-    def func_on_nonNumberObject(x, *arg, **args):
-        if isinstance(x, numbers.Number):
-            return 0
-        else:
-            return func(x, *arg, **args)
-    return func_on_nonNumberObject
-
-
 def set_property(key, value):
     """
     This method returns a decorator that sets the property key of the function to value
@@ -90,7 +72,6 @@ def set_property(key, value):
 
 
 @set_property("fctype", "simple")
-@not_apply_to_raw_numbers
 def variance_larger_than_standard_deviation(x):
     """
     Boolean variable denoting if the variance of x is greater than its standard deviation. Is equal to variance of x
@@ -105,7 +86,6 @@ def variance_larger_than_standard_deviation(x):
 
 
 @set_property("fctype", "simple")
-@not_apply_to_raw_numbers
 def large_standard_deviation(x, r):
     """
     Boolean variable denoting if the standard dev of x is higher
@@ -130,7 +110,6 @@ def large_standard_deviation(x, r):
 
 
 @set_property("fctype", "combiner")
-@not_apply_to_raw_numbers
 def symmetry_looking(x, param):
     """
     Boolean variable denoting if the distribution of x *looks symmetric*. This is the case if
@@ -154,7 +133,6 @@ def symmetry_looking(x, param):
 
 
 @set_property("fctype", "simple")
-@not_apply_to_raw_numbers
 def has_duplicate_max(x):
     """
     Checks if the maximum value of x is observed more than once
@@ -168,7 +146,6 @@ def has_duplicate_max(x):
 
 
 @set_property("fctype", "simple")
-@not_apply_to_raw_numbers
 def has_duplicate_min(x):
     """
     Checks if the minimal value of x is observed more than once
@@ -182,7 +159,6 @@ def has_duplicate_min(x):
 
 
 @set_property("fctype", "simple")
-@not_apply_to_raw_numbers
 def has_duplicate(x):
     """
     Checks if any value in x occurs more than once
@@ -197,7 +173,6 @@ def has_duplicate(x):
 
 @set_property("fctype", "simple")
 @set_property("minimal", True)
-@not_apply_to_raw_numbers
 def sum_values(x):
     """
     Calculates the sum over the time series values
@@ -211,7 +186,6 @@ def sum_values(x):
 
 
 @set_property("fctype", "simple")
-@not_apply_to_raw_numbers
 def large_number_of_peaks(x, n):
     """
     Checks if the number of peaks is higher than n.
@@ -227,7 +201,6 @@ def large_number_of_peaks(x, n):
 
 
 @set_property("fctype", "simple")
-@not_apply_to_raw_numbers
 def mean_autocorrelation(x):
     """
     Calculates the average autocorrelation (Compare to http://en.wikipedia.org/wiki/Autocorrelation#Estimation),
@@ -257,7 +230,6 @@ def mean_autocorrelation(x):
 
 
 @set_property("fctype", "simple")
-@not_apply_to_raw_numbers
 def augmented_dickey_fuller(x):
     """
     The Augmented Dickey-Fuller test is a hypothesis test which checks whether a unit root is present in a time
@@ -280,7 +252,6 @@ def augmented_dickey_fuller(x):
 
 
 @set_property("fctype", "simple")
-@not_apply_to_raw_numbers
 def abs_energy(x):
     """
     Returns the absolute energy of the time series which is the sum over the squared values
@@ -299,7 +270,6 @@ def abs_energy(x):
 
 
 @set_property("fctype", "simple")
-@not_apply_to_raw_numbers
 def mean_abs_change(x):
     """
     Returns the mean over the absolute differences between subsequent time series values which is
@@ -318,7 +288,6 @@ def mean_abs_change(x):
 
 
 @set_property("fctype", "simple")
-@not_apply_to_raw_numbers
 def mean_change(x):
     """
     Returns the mean over the absolute differences between subsequent time series values which is
@@ -336,7 +305,6 @@ def mean_change(x):
 
 
 @set_property("fctype", "simple")
-@not_apply_to_raw_numbers
 def mean_second_derivate_central(x):
     """
     Returns the mean value of a central approximation of the second derivative
@@ -357,7 +325,6 @@ def mean_second_derivate_central(x):
 
 @set_property("fctype", "simple")
 @set_property("minimal", True)
-@not_apply_to_raw_numbers
 def median(x):
     """
     Returns the median of x
@@ -372,7 +339,6 @@ def median(x):
 
 @set_property("fctype", "simple")
 @set_property("minimal", True)
-@not_apply_to_raw_numbers
 def mean(x):
     """
     Returns the mean of x
@@ -387,7 +353,6 @@ def mean(x):
 
 @set_property("fctype", "simple")
 @set_property("minimal", True)
-@not_apply_to_raw_numbers
 def length(x):
     """
     Returns the length of x
@@ -402,7 +367,6 @@ def length(x):
 
 @set_property("fctype", "simple")
 @set_property("minimal", True)
-@not_apply_to_raw_numbers
 def standard_deviation(x):
     """
     Returns the standard deviation of x
@@ -417,7 +381,6 @@ def standard_deviation(x):
 
 @set_property("fctype", "simple")
 @set_property("minimal", True)
-@not_apply_to_raw_numbers
 def variance(x):
     """
     Returns the variance of x
@@ -431,7 +394,6 @@ def variance(x):
 
 
 @set_property("fctype", "simple")
-@not_apply_to_raw_numbers
 def skewness(x):
     """
     Returns the sample skewness of x (calculated with the adjusted Fisher-Pearson standardized
@@ -447,7 +409,6 @@ def skewness(x):
 
 
 @set_property("fctype", "simple")
-@not_apply_to_raw_numbers
 def kurtosis(x):
     """
     Returns the kurtosis of x (calculated with the adjusted Fisher-Pearson standardized
@@ -463,7 +424,6 @@ def kurtosis(x):
 
 
 @set_property("fctype", "simple")
-@not_apply_to_raw_numbers
 def absolute_sum_of_changes(x):
     """
     Returns the sum over the absolute value of consecutive changes in the series x
@@ -481,7 +441,6 @@ def absolute_sum_of_changes(x):
 
 
 @set_property("fctype", "simple")
-@not_apply_to_raw_numbers
 def longest_strike_below_mean(x):
     """
     Returns the length of the longest consecutive subsequence in x that is smaller than the mean of x
@@ -496,7 +455,6 @@ def longest_strike_below_mean(x):
 
 
 @set_property("fctype", "simple")
-@not_apply_to_raw_numbers
 def longest_strike_above_mean(x):
     """
     Returns the length of the longest consecutive subsequence in x that is bigger than the mean of x
@@ -511,7 +469,6 @@ def longest_strike_above_mean(x):
 
 
 @set_property("fctype", "simple")
-@not_apply_to_raw_numbers
 def count_above_mean(x):
     """
     Returns the number of values in x that are higher than the mean of x
@@ -528,7 +485,6 @@ def count_above_mean(x):
 
 
 @set_property("fctype", "simple")
-@not_apply_to_raw_numbers
 def count_below_mean(x):
     """
     Returns the number of values in x that are lower than the mean of x
@@ -545,7 +501,6 @@ def count_below_mean(x):
 
 
 @set_property("fctype", "simple")
-@not_apply_to_raw_numbers
 def last_location_of_maximum(x):
     """
     Returns the relative last location of the maximum value of x.
@@ -561,7 +516,6 @@ def last_location_of_maximum(x):
 
 
 @set_property("fctype", "simple")
-@not_apply_to_raw_numbers
 def first_location_of_maximum(x):
     """
     Returns the first location of the maximum value of x.
@@ -577,7 +531,6 @@ def first_location_of_maximum(x):
 
 
 @set_property("fctype", "simple")
-@not_apply_to_raw_numbers
 def last_location_of_minimum(x):
     """
     Returns the last location of the minimal value of x.
@@ -593,7 +546,6 @@ def last_location_of_minimum(x):
 
 
 @set_property("fctype", "simple")
-@not_apply_to_raw_numbers
 def first_location_of_minimum(x):
     """
     Returns the first location of the minimal value of x.
@@ -609,7 +561,6 @@ def first_location_of_minimum(x):
 
 
 @set_property("fctype", "simple")
-@not_apply_to_raw_numbers
 def percentage_of_reoccurring_datapoints_to_all_datapoints(x):
     """
     Returns the percentage of unique values, that are present in the time series
@@ -631,7 +582,6 @@ def percentage_of_reoccurring_datapoints_to_all_datapoints(x):
 
 
 @set_property("fctype", "simple")
-@not_apply_to_raw_numbers
 def percentage_of_reoccurring_values_to_all_values(x):
     """
     Returns the ratio of unique values, that are present in the time series
@@ -657,7 +607,6 @@ def percentage_of_reoccurring_values_to_all_values(x):
 
 
 @set_property("fctype", "simple")
-@not_apply_to_raw_numbers
 def sum_of_reoccurring_values(x):
     """
     Returns the sum of all values, that are present in the time series
@@ -675,7 +624,6 @@ def sum_of_reoccurring_values(x):
 
 
 @set_property("fctype", "simple")
-@not_apply_to_raw_numbers
 def sum_of_reoccurring_data_points(x):
     """
     Returns the sum of all data points, that are present in the time series
@@ -692,7 +640,6 @@ def sum_of_reoccurring_data_points(x):
 
 
 @set_property("fctype", "simple")
-@not_apply_to_raw_numbers
 def ratio_value_number_to_time_series_length(x):
     """
     Returns a factor which is 1 if all values in the time series occur only once,
@@ -714,7 +661,6 @@ def ratio_value_number_to_time_series_length(x):
 
 
 @set_property("fctype", "combiner")
-@not_apply_to_raw_numbers
 def fft_coefficient(x, param):
     """
     Calculates the fourier coefficients of the one-dimensional discrete Fourier Transform for real input by fast
@@ -743,7 +689,6 @@ def fft_coefficient(x, param):
 
 
 @set_property("fctype", "simple")
-@not_apply_to_raw_numbers
 def number_peaks(x, n):
     """
     Calculates the number of peaks of at least support n in the time series x. A peak of support n is defined as a
@@ -785,7 +730,6 @@ def number_peaks(x, n):
 
 
 @set_property("fctype", "combiner")
-@not_apply_to_raw_numbers
 def index_mass_quantile(x, param):
     """
     Those apply features calculate the relative index i where q% of the mass of the time series x lie left of i.
@@ -814,7 +758,6 @@ def index_mass_quantile(x, param):
 
 
 @set_property("fctype", "simple")
-@not_apply_to_raw_numbers
 def number_cwt_peaks(x, n):
     """
     This feature calculator searches for different peaks in x. To do so, x is smoothed by a ricker wavelet and for
@@ -832,7 +775,6 @@ def number_cwt_peaks(x, n):
 
 
 @set_property("fctype", "combiner")
-@not_apply_to_raw_numbers
 def linear_trend(x, param):
     """
     Calculate a linear least-squares regression for the values of the time series versus the sequence from 0 to
@@ -859,7 +801,6 @@ def linear_trend(x, param):
 
 
 @set_property("fctype", "combiner")
-@not_apply_to_raw_numbers
 def cwt_coefficients(x, param):
     """
     Calculates a Continuous wavelet transform for the Ricker wavelet, also known as the "Mexican hat wavelet" which is
@@ -908,7 +849,6 @@ def cwt_coefficients(x, param):
 
 
 @set_property("fctype", "combiner")
-@not_apply_to_raw_numbers
 def spkt_welch_density(x, param):
     """
     This feature calculator estimates the cross power spectral density of the time series x at different frequencies.
@@ -942,7 +882,6 @@ def spkt_welch_density(x, param):
 
 
 @set_property("fctype", "combiner")
-@not_apply_to_raw_numbers
 def ar_coefficient(x, param):
     """
     This feature calculator fits the unconditional maximum likelihood
@@ -996,7 +935,6 @@ def ar_coefficient(x, param):
 
 
 @set_property("fctype", "simple")
-@not_apply_to_raw_numbers
 def mean_abs_change_quantiles(x, ql, qh):
     """
     First fixes a corridor given by the quantiles ql and qh of the distribution of x. Then calculates the average
@@ -1034,7 +972,6 @@ def mean_abs_change_quantiles(x, ql, qh):
 
 
 @set_property("fctype", "simple")
-@not_apply_to_raw_numbers
 def time_reversal_asymmetry_statistic(x, lag):
     """
     This function calculates the value of
@@ -1078,7 +1015,6 @@ def time_reversal_asymmetry_statistic(x, lag):
 
 
 @set_property("fctype", "simple")
-@not_apply_to_raw_numbers
 def binned_entropy(x, max_bins):
     """
     First bins the values of x into max_bins equidistant bins.
@@ -1105,7 +1041,6 @@ def binned_entropy(x, max_bins):
 # todo - check if vectorizable
 @set_property("high_comp_cost", True)
 @set_property("fctype", "simple")
-@not_apply_to_raw_numbers
 def sample_entropy(x):
     """
     Calculate and return sample entropy of x.
@@ -1160,7 +1095,6 @@ def sample_entropy(x):
     
 
 @set_property("fctype", "simple")
-@not_apply_to_raw_numbers
 def autocorrelation(x, lag):
     """
     Calculates the lag autocorrelation of a lag value of lag.
@@ -1177,7 +1111,6 @@ def autocorrelation(x, lag):
 
 
 @set_property("fctype", "simple")
-@not_apply_to_raw_numbers
 def quantile(x, q):
     """
     Calculates the q quantile of x. This is the value of x greater than q% of the ordered values from x.
@@ -1195,7 +1128,6 @@ def quantile(x, q):
 
 @set_property("fctype", "simple")
 @set_property("minimal", True)
-@not_apply_to_raw_numbers
 def maximum(x):
     """
     Calculates the highest value of the time series x.
@@ -1210,7 +1142,6 @@ def maximum(x):
 
 @set_property("fctype", "simple")
 @set_property("minimal", True)
-@not_apply_to_raw_numbers
 def minimum(x):
     """
     Calculates the lowest value of the time series x.
@@ -1224,7 +1155,6 @@ def minimum(x):
 
 
 @set_property("fctype", "simple")
-@not_apply_to_raw_numbers
 def value_count(x, value):
     """
     Count occurrences of `value` in time series x.
@@ -1243,7 +1173,6 @@ def value_count(x, value):
 
 
 @set_property("fctype", "simple")
-@not_apply_to_raw_numbers
 def range_count(x, min, max):
     """
     Count observed values within the interval [min, max).
@@ -1262,7 +1191,6 @@ def range_count(x, min, max):
 
 @set_property("fctype", "simple")
 @set_property("high_comp_cost", True)
-@not_apply_to_raw_numbers
 def approximate_entropy(x, m, r):
     """
     Implements a vectorized Approximate entropy algorithm.
@@ -1357,7 +1285,6 @@ def _estimate_friedrich_coefficients(x, m, r):
 
 
 @set_property("fctype", "combiner")
-@not_apply_to_raw_numbers
 def friedrich_coefficients(x, param):
     """
     Coefficients of polynomial :math:`h(x)`, which has been fitted to 
@@ -1397,7 +1324,6 @@ def friedrich_coefficients(x, param):
 
 
 @set_property("fctype", "simple")
-@not_apply_to_raw_numbers
 def max_langevin_fixed_point(x, r, m):
     """
     Largest fixed point of dynamics  :math:argmax_x {h(x)=0}` estimated from polynomial :math:`h(x)`, 
@@ -1451,7 +1377,6 @@ def _aggregate_on_chunks(x, f_agg, chunk_len):
 
 
 @set_property("fctype", "combiner")
-@not_apply_to_raw_numbers
 def agg_linear_trend(x, param):
     """
     Calculates a linear least-squares regression for values of the time series that were aggregated over chunks versus
