@@ -3,15 +3,15 @@
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 """
 This module contains the feature calculators that take time series as input and calculate the values of the feature.
-There are three types of features:
+There are two types of features:
 
-1. aggregate features without parameter
-2. aggregate features with parameter
-3. apply features with parameters
+1. feature calculators which calculate a single number (simple)
+2. feature calculators which calculate a bunch of features for a list of parameters at once,
+   to use e.g. cached results (combiner). They return a list of (key, value) pairs for each input parameter.
 
-While type 1 and 2 are designed to be used with pandas aggregate, they will only return one singular feature.
-To not unnecessarily redo auxiliary calculations, in type 3 a group of features is calculated at the same time. They
-can be used with pandas apply.
+They are specified using the "fctype" parameter of each feature calculator, which is added using the
+set_property function. Only functions in this python module, which have a parameter called  "fctype" are
+seen by tsfresh as a feature calculator. Others will not be calculated.
 """
 
 from __future__ import absolute_import, division
