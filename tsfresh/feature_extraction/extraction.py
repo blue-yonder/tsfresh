@@ -29,8 +29,8 @@ _logger = logging.getLogger(__name__)
 def extract_features(timeseries_container, default_fc_parameters=None,
                      kind_to_fc_parameters=None,
                      column_id=None, column_sort=None, column_kind=None, column_value=None,
-                     parallelization=defaults.PARALLELISATION, chunksize=defaults.CHUNKSIZE,
-                     n_processes=defaults.N_PROCESSES, show_warnings=defaults.SHOW_WARNINGS,
+                     chunksize=defaults.CHUNKSIZE,
+                     n_jobs=defaults.N_PROCESSES, show_warnings=defaults.SHOW_WARNINGS,
                      disable_progressbar=defaults.DISABLE_PROGRESSBAR,
                      impute_function=defaults.IMPUTE_FUNCTION,
                      profile=defaults.PROFILING,
@@ -87,14 +87,11 @@ def extract_features(timeseries_container, default_fc_parameters=None,
     :param column_value: The name for the column keeping the value itself.
     :type column_value: str
 
-    :param parallelization: Flag to turn on/off parallelisation.
-    :type parallelization: bool
+    :param n_jobs: The number of processes to use for parallelization. If zero, no parallelization is used.
+    :type n_jobs: int
 
     :param chunksize: The size of one chunk for the parallelisation
     :type chunksize: None or int
-
-    :param n_processes: The number of processes to use for parallelisation.
-    :type n_processes: int
 
     :param: show_warnings: Show warnings during the feature extraction (needed for debugging of calculators).
     :type show_warnings: bool
@@ -145,8 +142,7 @@ def extract_features(timeseries_container, default_fc_parameters=None,
 
         result = _do_extraction(df=df_melt,
                                 column_id=column_id, column_value=column_value, column_kind=column_kind,
-                                n_processes=n_processes, chunksize=chunksize,
-                                parallelization=parallelization,
+                                n_jobs=n_jobs, chunksize=chunksize,
                                 disable_progressbar=disable_progressbar,
                                 default_fc_parameters=default_fc_parameters, kind_to_fc_parameters=kind_to_fc_parameters)
 
@@ -166,7 +162,7 @@ def extract_features(timeseries_container, default_fc_parameters=None,
 
 def _do_extraction(df, column_id, column_value, column_kind,
                    default_fc_parameters, kind_to_fc_parameters,
-                   n_processes, chunksize, parallelization, disable_progressbar):
+                   n_jobs, chunksize, disable_progressbar):
     """
     Wrapper around the _do_extraction_on_chunk, which calls it on all chunks in the data frame.
     A chunk is a subset of the data, with a given kind and id - so a single time series.
@@ -199,14 +195,11 @@ def _do_extraction(df, column_id, column_value, column_kind,
     :param column_value: The name for the column keeping the value itself.
     :type column_value: str
 
-    :param parallelization: Flag to turn on/off parallelisation.
-    :type parallelization: bool
-
-    :param chunksize: The size of one chunk for the parallelisation
+    :param chunksize: The size of one chunk for the parallelization
     :type chunksize: None or int
 
-    :param n_processes: The number of processes to use for parallelisation.
-    :type n_processes: int
+    :param n_jobs: The number of processes to use for parallelization. If zero, no parallelization is used.
+    :type n_jobs: int
 
     :param disable_progressbar: Do not show a progressbar while doing the calculation.
     :type disable_progressbar: bool
@@ -217,14 +210,14 @@ def _do_extraction(df, column_id, column_value, column_kind,
     data_in_chunks = [x + (y,) for x, y in df.groupby([column_id, column_kind])[column_value]]
 
     if not chunksize:
-        chunksize = _calculate_best_chunksize(data_in_chunks, n_processes)
+        chunksize = _calculate_best_chunksize(data_in_chunks, n_jobs)
 
     total_number_of_expected_results = len(data_in_chunks)
 
-    if not parallelization:
+    if n_jobs == 0:
         map_function = map
     else:
-        pool = Pool(n_processes)
+        pool = Pool(n_jobs)
         map_function = partial(pool.imap_unordered, chunksize=chunksize)
 
     extraction_function = partial(_do_extraction_on_chunk,
@@ -264,16 +257,16 @@ def _do_extraction_on_chunk(chunk, default_fc_parameters, kind_to_fc_parameters)
 
     The <parameters> are in the form described in :mod:`~tsfresh.utilities.string_manipulation`.
 
-    :param chunk: A tuple of chunk_id, chunk_kind, data
+    :param chunk: A tuple of sample_id, kind, data
     :param default_fc_parameters: A dictionary of feature calculators.
     :param kind_to_fc_parameters: A dictionary of fc_parameters for special kinds or None.
     :return: A list of calculated features.
     """
-    chunk_id, chunk_kind, data = chunk
+    sample_id, kind, data = chunk
     data = data.values
 
-    if kind_to_fc_parameters and chunk_kind in kind_to_fc_parameters:
-        fc_parameters = kind_to_fc_parameters[chunk_kind]
+    if kind_to_fc_parameters and kind in kind_to_fc_parameters:
+        fc_parameters = kind_to_fc_parameters[kind]
     else:
         fc_parameters = default_fc_parameters
 
@@ -290,10 +283,10 @@ def _do_extraction_on_chunk(chunk, default_fc_parameters, kind_to_fc_parameters)
                     result = [("", func(data))]
 
             for key, item in result:
-                feature_name = str(chunk_kind) + "__" + func.__name__
+                feature_name = str(kind) + "__" + func.__name__
                 if key:
                     feature_name += "__" + str(key)
-                yield {"variable": feature_name, "value": item, "id": chunk_id}
+                yield {"variable": feature_name, "value": item, "id": sample_id}
 
     return list(_f())
 
