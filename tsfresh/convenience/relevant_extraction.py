@@ -14,7 +14,6 @@ def extract_relevant_features(timeseries_container, y, X=None,
                               default_fc_parameters=None,
                               kind_to_fc_parameters=None,
                               column_id=None, column_sort=None, column_kind=None, column_value=None,
-                              parallelization=defaults.PARALLELISATION,
                               show_warnings=defaults.SHOW_WARNINGS,
                               disable_progressbar=defaults.DISABLE_PROGRESSBAR,
                               profile=defaults.PROFILING,
@@ -26,7 +25,7 @@ def extract_relevant_features(timeseries_container, y, X=None,
                               test_for_real_target_real_feature=defaults.TEST_FOR_REAL_TARGET_REAL_FEATURE,
                               fdr_level=defaults.FDR_LEVEL,
                               hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
-                              n_processes=defaults.N_PROCESSES,
+                              n_jobs=defaults.N_PROCESSES,
                               chunksize=defaults.CHUNKSIZE):
     """
     High level convenience function to extract time series features from `timeseries_container`. Then return feature
@@ -75,14 +74,11 @@ def extract_relevant_features(timeseries_container, y, X=None,
     :param column_value: The name for the column keeping the value itself.
     :type column_value: str
 
-    :param parallelization: Flag to turn on/off parallelisation.
-    :type parallelization: bool
-
     :param chunksize: The size of one chunk for the parallelisation
     :type chunksize: None or int
 
-    :param n_processes: The number of processes to use for parallelisation.
-    :type n_processes: int
+    :param n_jobs: The number of processes to use for parallelization. If zero, no parallelization is used.
+    :type n_jobs: int
 
     :param: show_warnings: Show warnings during the feature extraction (needed for debugging of calculators).
     :type show_warnings: bool
@@ -121,13 +117,6 @@ def extract_relevant_features(timeseries_container, y, X=None,
                                    independent (e.g. mean and median)
     :type hypotheses_independent: bool
 
-    :param write_selection_report: Whether to store the selection report after the Benjamini Hochberg procedure has
-                                   finished.
-    :type write_selection_report: bool
-
-    :param result_dir: Where to store the selection report
-    :type result_dir: str
-
     :return: Feature matrix X, possibly extended with relevant time series features.
     """
     if X is not None:
@@ -136,12 +125,12 @@ def extract_relevant_features(timeseries_container, y, X=None,
     X_ext = extract_features(timeseries_container,
                              default_fc_parameters=default_fc_parameters,
                              kind_to_fc_parameters=kind_to_fc_parameters,
-                             parallelization=parallelization,
                              show_warnings=show_warnings,
                              disable_progressbar=disable_progressbar,
                              profile=profile,
                              profiling_filename=profiling_filename,
                              profiling_sorting=profiling_sorting,
+                             n_jobs=n_jobs,
                              column_id=column_id, column_sort=column_sort,
                              column_kind=column_kind, column_value=column_value,
                              impute_function=impute)
@@ -152,7 +141,7 @@ def extract_relevant_features(timeseries_container, y, X=None,
                             test_for_real_target_binary_feature=test_for_real_target_binary_feature,
                             test_for_real_target_real_feature=test_for_real_target_real_feature,
                             fdr_level=fdr_level, hypotheses_independent=hypotheses_independent,
-                            n_processes=n_processes,
+                            n_jobs=n_jobs,
                             chunksize=chunksize)
 
     if X is None:

@@ -22,7 +22,7 @@ class RobotExecutionFailuresTestCase(TestCase):
         six.assertCountEqual(self, ['id', 'time', 'a', 'b', 'c', 'd', 'e', 'f'], list(self.X.columns))
 
     def test_extraction_runs_through(self):
-        df = extract_features(self.X[self.X.id < 3], column_id="id", column_sort="time", parallelization=False)
+        df = extract_features(self.X[self.X.id < 3], column_id="id", column_sort="time")
 
         six.assertCountEqual(self, df.index.values, [1, 2])
         self.assertGreater(len(df), 0)

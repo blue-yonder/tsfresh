@@ -209,15 +209,16 @@ def _do_extraction(df, column_id, column_value, column_kind,
     """
     data_in_chunks = [x + (y,) for x, y in df.groupby([column_id, column_kind])[column_value]]
 
-    if not chunksize:
-        chunksize = _calculate_best_chunksize(data_in_chunks, n_jobs)
-
     total_number_of_expected_results = len(data_in_chunks)
 
     if n_jobs == 0:
         map_function = map
     else:
         pool = Pool(n_jobs)
+
+        if not chunksize:
+            chunksize = _calculate_best_chunksize(data_in_chunks, n_jobs)
+
         map_function = partial(pool.imap_unordered, chunksize=chunksize)
 
     extraction_function = partial(_do_extraction_on_chunk,
@@ -291,18 +292,18 @@ def _do_extraction_on_chunk(chunk, default_fc_parameters, kind_to_fc_parameters)
     return list(_f())
 
 
-def _calculate_best_chunksize(iterable_list, n_processes):
+def _calculate_best_chunksize(iterable_list, n_jobs):
     """
     Helper function to calculate the best chunksize for a given number of elements to calculate.
 
     The formula is more or less an empirical result.
     :param iterable_list: A list which defines how many calculations there need to be.
-    :param n_processes: The number of processes that will be used in the calculation.
+    :param n_jobs: The number of processes that will be used in the calculation.
     :return: The chunksize which should be used.
 
     TODO: Investigate which is the best chunk size for different settings.
     """
-    chunksize, extra = divmod(len(iterable_list), n_processes * 5)
+    chunksize, extra = divmod(len(iterable_list), n_jobs * 5)
     if extra:
         chunksize += 1
     return chunksize

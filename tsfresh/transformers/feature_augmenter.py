@@ -58,8 +58,8 @@ class FeatureAugmenter(BaseEstimator, TransformerMixin):
     def __init__(self, default_fc_parameters=None,
                  kind_to_fc_parameters=None, column_id=None, column_sort=None,
                  column_kind=None, column_value=None, timeseries_container=None,
-                 parallelization=None, chunksize=tsfresh.defaults.CHUNKSIZE,
-                 n_processes=tsfresh.defaults.N_PROCESSES, show_warnings=tsfresh.defaults.SHOW_WARNINGS,
+                 chunksize=tsfresh.defaults.CHUNKSIZE,
+                 n_jobs=tsfresh.defaults.N_PROCESSES, show_warnings=tsfresh.defaults.SHOW_WARNINGS,
                  disable_progressbar=tsfresh.defaults.DISABLE_PROGRESSBAR,
                  impute_function=tsfresh.defaults.IMPUTE_FUNCTION,
                  profile=tsfresh.defaults.PROFILING,
@@ -81,14 +81,11 @@ class FeatureAugmenter(BaseEstimator, TransformerMixin):
         :param column_value: The column with the values. See :mod:`~tsfresh.feature_extraction.extraction`.
         :type column_value: basestring
 
-        :param parallelization: Flag to turn on/off parallelisation.
-        :type parallelization: bool
+        :param n_jobs: The number of processes to use for parallelization. If zero, no parallelization is used.
+        :type n_jobs: int
 
         :param chunksize: The size of one chunk for the parallelisation
         :type chunksize: None or int
-
-        :param n_processes: The number of processes to use for parallelisation.
-        :type n_processes: int
 
         :param: show_warnings: Show warnings during the feature extraction (needed for debugging of calculators).
         :type show_warnings: bool
@@ -117,9 +114,8 @@ class FeatureAugmenter(BaseEstimator, TransformerMixin):
         self.column_kind = column_kind
         self.column_value = column_value
 
-        self.parallelization = parallelization
+        self.n_jobs = n_jobs
         self.chunksize = chunksize
-        self.n_processes = n_processes
         self.show_warnings = show_warnings
         self.disable_progressbar = disable_progressbar
         self.impute_function = impute_function
@@ -186,8 +182,8 @@ class FeatureAugmenter(BaseEstimator, TransformerMixin):
                                               kind_to_fc_parameters=self.kind_to_fc_parameters,
                                               column_id=self.column_id, column_sort=self.column_sort,
                                               column_kind=self.column_kind, column_value=self.column_value,
-                                              parallelization=self.parallelization, chunksize=self.chunksize,
-                                              n_processes=self.n_processes, show_warnings=self.show_warnings,
+                                              chunksize=self.chunksize,
+                                              n_jobs=self.n_jobs, show_warnings=self.show_warnings,
                                               disable_progressbar=self.disable_progressbar,
                                               impute_function=self.impute_function,
                                               profile=self.profile,

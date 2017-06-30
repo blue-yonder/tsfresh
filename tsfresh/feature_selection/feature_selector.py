@@ -30,7 +30,7 @@ _logger = logging.getLogger(__name__)
 
 
 def check_fs_sig_bh(X, y,
-                    n_processes=defaults.N_PROCESSES,
+                    n_jobs=defaults.N_PROCESSES,
                     chunksize=defaults.CHUNKSIZE,
                     fdr_level=defaults.FDR_LEVEL,
                     hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
@@ -91,8 +91,8 @@ def check_fs_sig_bh(X, y,
                                    independent (e.g. mean and median)
     :type hypotheses_independent: bool
 
-    :param n_processes: Number of processes to use during the p-value calculation
-    :type n_processes: int
+    :param n_jobs: Number of processes to use during the p-value calculation
+    :type n_jobs: int
 
     :param chunksize: Size of the chunks submitted to the worker processes
     :type chunksize: int
@@ -128,7 +128,7 @@ def check_fs_sig_bh(X, y,
     df_features["p_value"] = np.nan
 
     # Calculate the feature significance in parallel
-    pool = Pool(n_processes)
+    pool = Pool(n_jobs)
 
     # Helper function which wrapps the _calculate_p_value with many arguments already set
     f = partial(_calculate_p_value, y=y,

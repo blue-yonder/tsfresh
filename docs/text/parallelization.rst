@@ -16,7 +16,7 @@ Parallelization of Feature Selection
 
 We use a :class:`multiprocessing.Pool` to parallelize the calculation of the p-values for each feature. On
 instantiation we set the Pool's number of worker processes to
-`n_processes`. This field defaults to
+`n_jobs`. This field defaults to
 the number of processors on the current system. We recommend setting it to the maximum number of available (and
 otherwise idle) processors.
 
@@ -28,9 +28,8 @@ Parallelization of Feature Extraction
 -------------------------------------
 
 For the feature extraction tsfresh exposes the parameters
-`n_processes` and
-`chunksize`. Both behave analogue to the parameters
+`n_jobs` and `chunksize`. Both behave analogue to the parameters
 for the feature selection.
 
 To do performance studies and profiling, it sometimes quite useful to turn off parallelization at all. This can be
-handled by the boolean parameter `parallelization`.
+setting the parameter `n_jobs` to 0.
