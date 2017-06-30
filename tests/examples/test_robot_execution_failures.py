@@ -21,7 +21,8 @@ class RobotExecutionFailuresTestCase(TestCase):
         self.assertIsInstance(self.y, Series)
         six.assertCountEqual(self, ['id', 'time', 'a', 'b', 'c', 'd', 'e', 'f'], list(self.X.columns))
 
-if __name__ == '__main__':
-    timeseries, y = load_robot_execution_failures()
-    extracted_features = extract_features(timeseries[timeseries.id < 20], column_id="id", column_sort="time",
-                                          parallelization="no_parallelization")
+    def test_extraction_runs_through(self):
+        df = extract_features(self.X[self.X.id < 3], column_id="id", column_sort="time")
+
+        six.assertCountEqual(self, df.index.values, [1, 2])
+        self.assertGreater(len(df), 0)
