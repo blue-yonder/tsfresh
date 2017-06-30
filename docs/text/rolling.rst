@@ -183,7 +183,9 @@ that are supported by tsfresh.
 
 Parameters and Implementation Notes
 ------
-The above example was used for demonstrating how the rolling of time series works.
+The above example demonstrates the overall rolling mechanism, which creates new time series.
+Now we discuss the naming convention for such new time series:
+
 For identifying every subsequence, tsfresh introduces a qualifier ("shift") that shows how far the time series was shifted.
 Practically, the shift-qualifier indicates how long the sub-time series is.
 The above example with rolling set to 1 yields the following sub-time series:
