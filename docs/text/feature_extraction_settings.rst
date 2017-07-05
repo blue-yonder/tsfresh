@@ -123,7 +123,7 @@ Let's illustrate that with an example:
     X_tsfresh_filtered = some_feature_selection(X_tsfresh, y, ....)
 
     # we can easily construct the corresponding settings object
-    kind_to_fc_parameters = tsfresh.settings.from_columns(X_tsfresh_filtered)
+    kind_to_fc_parameters = tsfresh.feature_extraction.settings.from_columns(X_tsfresh_filtered)
 
 this will construct you the `kind_to_fc_parameters` dictionary that corresponds to the features and parameters (!) from
 the tsfresh features that were filtered by the `some_feature_selection` feature selection algorithm.
