@@ -21,10 +21,8 @@ the last 10 steps.
 A rolling mechanism creates such time series for every time step by creating sub time series of the sensor data of the
 last 10 time steps.
 
-<!---
-The above scenario cannot be solved by tsfresh, can it?
-How do you create a rolling time series that always contains the current value and the last 10 steps?
--->
+The scenario described above cannot be easily computed by tsfresh in the current version.
+However, it is planned to be included in one of the upcoming releases (> v0.8.1).
 
 Another example can be found in streaming data, e.g. in Industry 4.0 applications.
 Here you typically get one new data row at a time and use this to for example predict machine failures. To train your model,
