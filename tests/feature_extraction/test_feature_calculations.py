@@ -143,7 +143,7 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqualOnAllArrayTypes(mean_autocorrelation, x, 0)
 
         x = [1, 2, -3]
-        expected_res = 1 / np.var(x) * (1 * 2 + 2 * (-3) - 3 / 2) / 2
+        expected_res = 1 / np.var(x) * (((1 * 2 + 2 * (-3)) / 2 + (1 * -3)) / 2)
         self.assertAlmostEqualOnAllArrayTypes(mean_autocorrelation, x, expected_res)
 
     def test_augmented_dickey_fuller(self):

@@ -24,6 +24,7 @@ import pandas as pd
 from scipy.signal import welch, cwt, ricker, find_peaks_cwt
 from statsmodels.tsa.ar_model import AR
 from statsmodels.tsa.stattools import adfuller
+from statsmodels.tsa.stattools import acf
 from scipy.stats import linregress
 
 # todo: make sure '_' works in parameter names in all cases, add a warning if not
@@ -268,7 +269,7 @@ def mean_autocorrelation(x):
 
     .. math::
 
-        \\frac{1}{n} \\sum_{l=1,\ldots, n} \\frac{1}{(n-l)\sigma^{2}} \\sum_{t=1}^{n-l}(X_{t}-\\mu )(X_{t+l}-\\mu)
+        \\frac{1}{n-1} \\sum_{l=1,\ldots, n} \\frac{1}{(n-l)\sigma^{2}} \\sum_{t=1}^{n-l}(X_{t}-\\mu )(X_{t+l}-\\mu)
 
     where :math:`n` is the length of the time series :math:`X_i`, :math:`\sigma^2` its variance and :math:`\mu` its
     mean.
@@ -284,9 +285,7 @@ def mean_autocorrelation(x):
     if abs(var) < 10**-10 or n == 1:
         return 0
     else:
-        r = np.correlate(x - np.mean(x), x - np.mean(x), mode='full')
-        r = r[0: (n - 1)] / np.arange(n - 1, 0, -1)
-        return np.nanmean(r / var)
+        return np.nanmean(acf(x, unbiased=True, fft=True)[1:])
 
 
 @set_property("fctype", "simple")
