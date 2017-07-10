@@ -1067,7 +1067,7 @@ def time_reversal_asymmetry_statistic(x, lag):
     n = len(x)
     x = np.asarray(x)
     if 2 * lag >= n:
-        0
+        return 0
     else:
         return np.mean((np.roll(x, 2 * -lag) * np.roll(x, 2 * -lag) * np.roll(x, -lag) -
                         np.roll(x, -lag) * x * x)[0:(n - 2 * lag)])
