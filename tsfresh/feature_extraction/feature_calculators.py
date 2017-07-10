@@ -1075,6 +1075,48 @@ def time_reversal_asymmetry_statistic(x, lag):
 
 
 @set_property("fctype", "simple")
+def c3(x, lag):
+    """
+    This function calculates the value of
+
+    .. math::
+
+        \\frac{1}{n-2lag} \sum_{i=0}^{n-2lag} x_{i + 2 \cdot lag}^2 \cdot x_{i + lag} \cdot x_{i}
+
+    which is
+
+    .. math::
+
+        \\mathbb{E}[L^2(X)^2 \cdot L(X) \cdot X]
+
+    where :math:`\\mathbb{E}` is the mean and :math:`L` is the lag operator. It was proposed in [1] as a measure of
+    non linearity in the time series.
+
+    References
+    ----------
+
+    .. [1] Schreiber, T. and Schmitz, A. (1997).
+       Discrimination power of measures for nonlinearity in a time series
+       PHYSICAL REVIEW E, VOLUME 55, NUMBER 5
+
+    :param x: the time series to calculate the feature of
+    :type x: pandas.Series
+    :param lag: the lag that should be used in the calculation of the feature
+    :type lag: int
+    :return: the value of this feature
+    :return type: float
+    """
+    n = len(x)
+    x = np.asarray(x)
+    if 2 * lag > n:
+        return 0
+    elif 2 * lag == n:
+        return x[n-1] * x[n//2] * x[0]
+    else:
+        return np.mean((np.roll(x, 2 * -lag) * np.roll(x, -lag) * x)[0:(n - 2 * lag)])
+
+
+@set_property("fctype", "simple")
 def binned_entropy(x, max_bins):
     """
     First bins the values of x into max_bins equidistant bins.
