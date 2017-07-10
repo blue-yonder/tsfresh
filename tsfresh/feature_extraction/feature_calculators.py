@@ -1108,10 +1108,8 @@ def c3(x, lag):
     """
     n = len(x)
     x = np.asarray(x)
-    if 2 * lag > n:
+    if 2 * lag >= n:
         return 0
-    elif 2 * lag == n:
-        return x[n-1] * x[n//2] * x[0]
     else:
         return np.mean((np.roll(x, 2 * -lag) * np.roll(x, -lag) * x)[0:(n - 2 * lag)])
 

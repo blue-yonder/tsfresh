@@ -469,6 +469,19 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqualOnAllArrayTypes(time_reversal_asymmetry_statistic, x, 14, 2)
         self.assertAlmostEqualOnAllArrayTypes(time_reversal_asymmetry_statistic, x, 0, 3)
 
+    def test_c3(self):
+        x = [1] * 10
+        self.assertAlmostEqualOnAllArrayTypes(c3, x, 1, 0)
+        self.assertAlmostEqualOnAllArrayTypes(c3, x, 1, 1)
+        self.assertAlmostEqualOnAllArrayTypes(c3, x, 1, 2)
+        self.assertAlmostEqualOnAllArrayTypes(c3, x, 1, 3)
+
+        x = [1, 2, -3, 4]
+        # 1/2 *(1*2*(-3)+2*(-3)*4) = 1/2 *(-6-24) = -30/2
+        self.assertAlmostEqualOnAllArrayTypes(c3, x, -15, 1)
+        self.assertAlmostEqualOnAllArrayTypes(c3, x, 0, 2)
+        self.assertAlmostEqualOnAllArrayTypes(c3, x, 0, 3)
+
     def test_binned_entropy(self):
         self.assertAlmostEqualOnAllArrayTypes(binned_entropy, [10] * 100, 0, 10)
         self.assertAlmostEqualOnAllArrayTypes(binned_entropy, [10] * 10 + [1], - (10 / 11 * np.math.log(10 / 11) +
