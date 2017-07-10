@@ -164,8 +164,14 @@ class FeatureCalculationTestCase(TestCase):
         self.assertGreater(res["attr_pvalue"], 0.10)
         self.assertEqual(res["attr_usedlag"], 0)
 
-        # H0 should be rejected
-        x = range(100)
+        # H0 should be rejected for AR(1) model with x_{t} = 1/2 x_{t-1} + e_{t}
+        np.random.seed(seed=42)
+        e = np.random.normal(0.1, 0.1, size=100)
+        m = 50
+        x = [0] * m
+        x[0] = 100
+        for i in range(1, m):
+            x[i] = x[i-1] * 0.5 + e[i]
         param = [{"attr": "teststat"}, {"attr": "pvalue"}, {"attr": "usedlag"}]
         expected_index = ['attr_teststat', 'attr_pvalue', 'attr_usedlag']
 
@@ -173,7 +179,7 @@ class FeatureCalculationTestCase(TestCase):
         res = pd.Series(dict(res))
         six.assertCountEqual(self, list(res.index), expected_index)
         self.assertLessEqual(res["attr_pvalue"], 0.05)
-        self.assertEqual(res["attr_usedlag"], 1)
+        self.assertEqual(res["attr_usedlag"], 0)
 
 
     def test_abs_energy(self):
