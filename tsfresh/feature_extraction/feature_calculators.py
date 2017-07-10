@@ -289,8 +289,8 @@ def mean_autocorrelation(x):
         return np.nanmean(r / var)
 
 
-@set_property("fctype", "simple")
-def augmented_dickey_fuller(x):
+@set_property("fctype", "combiner")
+def augmented_dickey_fuller(x, param):
     """
     The Augmented Dickey-Fuller test is a hypothesis test which checks whether a unit root is present in a time
     series sample. This feature calculator returns the value of the respective test statistic.
@@ -302,13 +302,17 @@ def augmented_dickey_fuller(x):
     :return: the value of this feature
     :return type: float
     """
-
+    res = None
     try:
-        return adfuller(x)[0]
+        res = adfuller(x)
     except LinAlgError:
-        return np.NaN
+        res = np.NaN, np.NaN
     except ValueError:  # occurs if sample size is too small
-        return np.NaN
+        res = np.NaN, np.NaN
+
+    return [("attr_{}".format(config["attr"]),
+             res[0] if config["attr"] == "teststat" else res[1] if config["attr"] == "pvalue" else np.NaN)
+            for config in param]
 
 
 @set_property("fctype", "simple")

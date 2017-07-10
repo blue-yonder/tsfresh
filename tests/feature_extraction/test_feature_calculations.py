@@ -147,8 +147,32 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqualOnAllArrayTypes(mean_autocorrelation, x, expected_res)
 
     def test_augmented_dickey_fuller(self):
-        pass
-        # todo: add unit test
+        # todo: add unit test for the values of the test statistic
+
+        # the adf hypothesis test checks for unit roots,
+        # so H_0 = {random drift} vs H_1 = {AR(1) model}
+
+        # H0 is true
+        np.random.seed(seed=42)
+        x = np.random.normal(size=10)
+        param = [{"attr": "teststat"}, {"attr": "pvalue"}]
+        expected_index = ['attr_teststat', 'attr_pvalue']
+
+        res = augmented_dickey_fuller(x=x, param=param)
+        res = pd.Series(dict(res))
+        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertGreater(res["attr_pvalue"], 0.10)
+
+        # H0 should be rejected
+        x = range(100)
+        param = [{"attr": "teststat"}, {"attr": "pvalue"}]
+        expected_index = ['attr_teststat', 'attr_pvalue']
+
+        res = augmented_dickey_fuller(x=x, param=param)
+        res = pd.Series(dict(res))
+        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertLessEqual(res["attr_pvalue"], 0.05)
+
 
     def test_abs_energy(self):
         self.assertEqualOnAllArrayTypes(abs_energy, [1, 1, 1], 3)
@@ -600,7 +624,7 @@ class FeatureCalculationTestCase(TestCase):
         param = [{"attr": "pvalue"}, {"attr": "rvalue"}, {"attr": "intercept"}, {"attr": "slope"}, {"attr": "stderr"}]
         res = linear_trend(x, param)
 
-        
+
         res = pd.Series(dict(res))
 
         expected_index = ["attr_\"pvalue\"", "attr_\"intercept\"",

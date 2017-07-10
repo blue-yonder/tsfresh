@@ -129,6 +129,7 @@ class ComprehensiveFCParameters(dict):
                                  for attr in ["rvalue", "intercept", "slope", "stderr"]
                                  for i in [5, 10, 50]
                                  for f in ["max", "min", "mean", "var"]],
+            "augmented_dickey_fuller": [{"attr": "teststat"}, {"attr": "pvalue"}],
 
         })
 
