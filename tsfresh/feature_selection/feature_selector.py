@@ -108,9 +108,6 @@ def check_fs_sig_bh(X, y,
     """
     target_is_binary = len(set(y)) == 2
 
-    # todo: solve the multiclassification case. for a multi classification the algorithm considers the target to be
-    # regression. Instead one could perform a binary one versus all classification.
-
     # Only allow entries for which the target is known!
     y = y.astype(np.float)
     X = X.copy().loc[~(y == np.NaN), :]

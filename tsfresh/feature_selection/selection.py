@@ -20,7 +20,8 @@ def select_features(X, y, test_for_binary_target_binary_feature=defaults.TEST_FO
                     test_for_real_target_binary_feature=defaults.TEST_FOR_REAL_TARGET_BINARY_FEATURE,
                     test_for_real_target_real_feature=defaults.TEST_FOR_REAL_TARGET_REAL_FEATURE,
                     fdr_level=defaults.FDR_LEVEL, hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
-                    n_jobs=defaults.N_PROCESSES, chunksize=defaults.CHUNKSIZE):
+                    n_jobs=defaults.N_PROCESSES, chunksize=defaults.CHUNKSIZE,
+                    multiclass=False):
     """
     Check the significance of all features (columns) of feature matrix X and return a possibly reduced feature matrix
     only containing relevant features.
@@ -104,6 +105,9 @@ def select_features(X, y, test_for_binary_target_binary_feature=defaults.TEST_FO
     :param chunksize: Size of the chunks submitted to the worker processes
     :type chunksize: int
 
+    :param multiclass: Select features for multiple classes with a one-vs-rest strategy
+    :type multiclass: bool
+
     :return: The same DataFrame as X, but possibly with reduced number of columns ( = features).
     :rtype: pandas.DataFrame
 
@@ -124,7 +128,20 @@ def select_features(X, y, test_for_binary_target_binary_feature=defaults.TEST_FO
 
         y = pd.Series(y, index=X.index)
 
-    df_bh = check_fs_sig_bh(X, y, n_jobs, chunksize, fdr_level, hypotheses_independent,
-                            test_for_binary_target_real_feature)
+    if multiclass is True:
+        unique_labels = y.unique()
+        if len(unique_labels) < 3:
+            raise RuntimeError("Cannot perform multiclass selection on binary target")
 
-    return X.loc[:, df_bh[df_bh.rejected].Feature]
+        relevant_features = set()
+        for label in unique_labels:
+            y_label = (y == label)
+            df_bh = check_fs_sig_bh(X, y_label, n_jobs, chunksize, fdr_level, hypotheses_independent,
+                                    test_for_binary_target_real_feature)
+            relevant_features = relevant_features.union(set(df_bh[df_bh.rejected].Feature))
+    else:
+        df_bh = check_fs_sig_bh(X, y, n_jobs, chunksize, fdr_level, hypotheses_independent,
+                                test_for_binary_target_real_feature)
+        relevant_features = df_bh[df_bh.rejected].Feature
+
+    return X.loc[:, relevant_features]
