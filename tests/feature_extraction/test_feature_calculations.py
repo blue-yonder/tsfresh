@@ -465,8 +465,7 @@ class FeatureCalculationTestCase(TestCase):
         x = [1, 2, - 3, 4]
         # 1/2 * ( (4^2 * -3 + 3 * 2^2) + (3^2*2)-(2*1^1)) = 1/2 * (-48+12+18-2) = 20/2
         self.assertAlmostEqualOnAllArrayTypes(time_reversal_asymmetry_statistic, x, -10, 1)
-        # 4^2 * -3 - (-3) * 1^2 = -48 +3
-        self.assertAlmostEqualOnAllArrayTypes(time_reversal_asymmetry_statistic, x, -45, 2)
+        self.assertAlmostEqualOnAllArrayTypes(time_reversal_asymmetry_statistic, x, 0, 2)
         self.assertAlmostEqualOnAllArrayTypes(time_reversal_asymmetry_statistic, x, 0, 3)
 
     def test_binned_entropy(self):
