@@ -285,7 +285,7 @@ def mean_autocorrelation(x):
     if abs(var) < 10**-10 or n == 1:
         return 0
     else:
-        return np.nanmean(acf(x, unbiased=True, fft=True)[1:])
+        return np.nanmean(acf(x, unbiased=True, fft=n > 1250)[1:])
 
 
 @set_property("fctype", "simple")
