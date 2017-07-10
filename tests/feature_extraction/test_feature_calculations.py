@@ -154,24 +154,26 @@ class FeatureCalculationTestCase(TestCase):
 
         # H0 is true
         np.random.seed(seed=42)
-        x = np.random.normal(size=10)
-        param = [{"attr": "teststat"}, {"attr": "pvalue"}]
-        expected_index = ['attr_teststat', 'attr_pvalue']
+        x = np.cumsum(np.random.uniform(size=100))
+        param = [{"attr": "teststat"}, {"attr": "pvalue"}, {"attr": "usedlag"}]
+        expected_index = ['attr_teststat', 'attr_pvalue', 'attr_usedlag']
 
         res = augmented_dickey_fuller(x=x, param=param)
         res = pd.Series(dict(res))
         six.assertCountEqual(self, list(res.index), expected_index)
         self.assertGreater(res["attr_pvalue"], 0.10)
+        self.assertEqual(res["attr_usedlag"], 0)
 
         # H0 should be rejected
         x = range(100)
-        param = [{"attr": "teststat"}, {"attr": "pvalue"}]
-        expected_index = ['attr_teststat', 'attr_pvalue']
+        param = [{"attr": "teststat"}, {"attr": "pvalue"}, {"attr": "usedlag"}]
+        expected_index = ['attr_teststat', 'attr_pvalue', 'attr_usedlag']
 
         res = augmented_dickey_fuller(x=x, param=param)
         res = pd.Series(dict(res))
         six.assertCountEqual(self, list(res.index), expected_index)
         self.assertLessEqual(res["attr_pvalue"], 0.05)
+        self.assertEqual(res["attr_usedlag"], 1)
 
 
     def test_abs_energy(self):

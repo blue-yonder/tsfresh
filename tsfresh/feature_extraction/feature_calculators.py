@@ -297,8 +297,8 @@ def augmented_dickey_fuller(x, param):
 
     See the statsmodels implementation for references and more details.
 
-    :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :param param: contains dictionaries {"attr": x} with x str, either "teststat", "pvalue" or "usedlag"
+    :type param: list
     :return: the value of this feature
     :return type: float
     """
@@ -306,12 +306,14 @@ def augmented_dickey_fuller(x, param):
     try:
         res = adfuller(x)
     except LinAlgError:
-        res = np.NaN, np.NaN
+        res = np.NaN, np.NaN, np.NaN
     except ValueError:  # occurs if sample size is too small
-        res = np.NaN, np.NaN
+        res = np.NaN, np.NaN, np.NaN
 
     return [("attr_{}".format(config["attr"]),
-             res[0] if config["attr"] == "teststat" else res[1] if config["attr"] == "pvalue" else np.NaN)
+                  res[0] if config["attr"] == "teststat"
+             else res[1] if config["attr"] == "pvalue"
+             else res[2] if config["attr"] == "usedlag" else np.NaN)
             for config in param]
 
 
