@@ -319,10 +319,20 @@ class FeatureCalculationTestCase(TestCase):
                           'coeff_0__attr_"imag"', 'coeff_1__attr_"imag"', 'coeff_2__attr_"imag"']
 
         res = pd.Series(dict(fft_coefficient(x, param)))
-        print(res)
         six.assertCountEqual(self, list(res.index), expected_index)
-        self.assertAlmostEqual(res['coeff_0__attr_"imag"'], 0, places=1)
-        self.assertAlmostEqual(res['coeff_0__attr_"real"'], sum(x), places=1)
+        self.assertAlmostEqual(res['coeff_0__attr_"imag"'], 0, places=6)
+        self.assertAlmostEqual(res['coeff_0__attr_"real"'], sum(x), places=6)
+
+        x = [0, 1, 0, 0]
+        res = pd.Series(dict(fft_coefficient(x, param)))
+        # see documentation of fft in numpy
+        # should return array([1. + 0.j, 0. - 1.j, -1. + 0.j])
+        self.assertAlmostEqual(res['coeff_0__attr_"imag"'], 0, places=6)
+        self.assertAlmostEqual(res['coeff_0__attr_"real"'], 1, places=6)
+        self.assertAlmostEqual(res['coeff_1__attr_"imag"'], -1, places=6)
+        self.assertAlmostEqual(res['coeff_1__attr_"real"'], 0, places=6)
+        self.assertAlmostEqual(res['coeff_2__attr_"imag"'], 0, places=6)
+        self.assertAlmostEqual(res['coeff_2__attr_"real"'], -1, places=6)
 
     def test_number_peaks(self):
         x = np.array([0, 1, 2, 1, 0, 1, 2, 3, 4, 5, 4, 3, 2, 1])
