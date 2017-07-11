@@ -743,7 +743,7 @@ def fft_coefficient(x, param):
     fft = np.fft.rfft(x)
 
     res = [getattr(fft[config["coeff"]], config["attr"]) for config in param]
-    index = ["coeff_{}__attr_{}".format(config["coeff"], config["attr"]) for config in param]
+    index = ['coeff_{}__attr_"{}"'.format(config["coeff"], config["attr"]) for config in param]
     return zip(index, res)
 
 
