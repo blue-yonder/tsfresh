@@ -738,7 +738,7 @@ def fft_coefficient(x, param):
     """
 
     assert min([config["coeff"] for config in param]) >= 0, "Coefficients must be positive or zero."
-    assert set([config["attr"] for config in param]) == set("imag", "real"), 'Attribute must be "real" or "imag"'
+    assert set([config["attr"] for config in param]) == set(["imag", "real"]), 'Attribute must be "real" or "imag"'
 
     fft = np.fft.rfft(x)
 
