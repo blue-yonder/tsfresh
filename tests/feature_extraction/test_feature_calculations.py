@@ -389,8 +389,14 @@ class FeatureCalculationTestCase(TestCase):
         self.assertEqualOnAllArrayTypes(number_cwt_peaks, x, 2, 2)
 
     def test_spkt_welch_density(self):
-        pass
-        # todo: add unit test
+
+        # todo: improve tests
+        x = range(10)
+        param = [{"coeff": 1}, {"coeff": 10}]
+        expected_index = ["coeff_1", "coeff_10"]
+        res = pd.Series(dict(spkt_welch_density(x, param)))
+        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertIsNaN(res["coeff_10"])
 
     def test_cwt_coefficients(self):
         x = [0.1, 0.2, 0.3]
