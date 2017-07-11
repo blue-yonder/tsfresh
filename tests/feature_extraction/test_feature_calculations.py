@@ -310,8 +310,19 @@ class FeatureCalculationTestCase(TestCase):
         self.assertIsNanOnAllArrayTypes(ratio_value_number_to_time_series_length, [])
 
     def test_fft_coefficient(self):
-        pass
         # todo: add unit test
+
+        x = range(10)
+        param = [{"coeff": 0, "attr": "real"}, {"coeff": 1, "attr": "real"}, {"coeff": 2, "attr": "real"},
+                 {"coeff": 0, "attr": "imag"}, {"coeff": 1, "attr": "imag"}, {"coeff": 2, "attr": "imag"}]
+        expected_index = ['coeff_0__attr_"real"', 'coeff_1__attr_"real"', 'coeff_2__attr_"real"',
+                          'coeff_0__attr_"imag"', 'coeff_1__attr_"imag"', 'coeff_2__attr_"imag"']
+
+        res = pd.Series(dict(fft_coefficient(x, param)))
+        print(res)
+        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertAlmostEqual(res['coeff_0__attr_"imag"'], 0, places=1)
+        self.assertAlmostEqual(res['coeff_0__attr_"real"'], sum(x), places=1)
 
     def test_number_peaks(self):
         x = np.array([0, 1, 2, 1, 0, 1, 2, 3, 4, 5, 4, 3, 2, 1])
