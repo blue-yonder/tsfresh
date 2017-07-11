@@ -737,17 +737,13 @@ def fft_coefficient(x, param):
     :return type: pandas.Series
     """
 
-    coefficients = set([config["coeff"] for config in param])
-    for coeff in coefficients:
-        if coeff < 0:
-            raise ValueError("Coefficients must be positive or zero.")
+    assert min([config["coeff"] for config in param]) >= 0, "Coefficients must be positive or zero."
+    assert set([config["attr"] for config in param]) == set("imag", "real"), 'Attribute must be "real" or "imag"'
 
-    maximum_coefficient = max(max(coefficients), 1)
-    fft = np.fft.rfft(x, min(len(x), 2 * maximum_coefficient))
+    fft = np.fft.rfft(x)
 
-    res = [fft[q] if q < len(fft) else 0 for q in coefficients]
-    res = [r.real if isinstance(r, complex) else r for r in res]
-    index = ["coeff_{}".format(q) for q in coefficients]
+    res = [getattr(fft[config["coeff"]], config["attr"]) for config in param]
+    index = ["coeff_{}__attr_{}".format(config["coeff"], config["attr"]) for config in param]
     return zip(index, res)
 
 
