@@ -334,6 +334,15 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqual(res['coeff_2__attr_"imag"'], 0, places=6)
         self.assertAlmostEqual(res['coeff_2__attr_"real"'], -1, places=6)
 
+        # test what happens if coeff is biger than time series lenght
+        x = range(5)
+        param = [{"coeff": 10, "attr": "real"}]
+        expected_index = ['coeff_10__attr_"real"']
+
+        res = pd.Series(dict(fft_coefficient(x, param)))
+        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertIsNaN(res['coeff_10__attr_"real"'])
+
     def test_number_peaks(self):
         x = np.array([0, 1, 2, 1, 0, 1, 2, 3, 4, 5, 4, 3, 2, 1])
         self.assertEqualOnAllArrayTypes(number_peaks, x, 2, 1)
