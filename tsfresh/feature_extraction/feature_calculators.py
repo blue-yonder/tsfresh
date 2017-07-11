@@ -726,9 +726,12 @@ def fft_coefficient(x, param):
     Calculates the fourier coefficients of the one-dimensional discrete Fourier Transform for real input by fast
     fourier transformation algorithm
 
+    .. math::
+        A_k =  \\sum_{m=0}^{n-1} a_m \\exp \\left \\{ -2 \\pi i \\frac{m k}{n} \\right \\}, \\qquad k = 0, \\ldots , n-1.
+
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
-    :param param: contains dictionaries {"coeff": x} with x int and x >= 0
+    :param param: contains dictionaries {"coeff": x, "attr": s} with x int and x >= 0, s str and in ["real", "imag"]
     :type param: list
     :return: the different feature values
     :return type: pandas.Series
