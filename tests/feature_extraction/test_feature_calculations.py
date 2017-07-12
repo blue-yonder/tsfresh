@@ -315,8 +315,38 @@ class FeatureCalculationTestCase(TestCase):
         self.assertIsNanOnAllArrayTypes(ratio_value_number_to_time_series_length, [])
 
     def test_fft_coefficient(self):
-        pass
         # todo: add unit test
+
+        x = range(10)
+        param = [{"coeff": 0, "attr": "real"}, {"coeff": 1, "attr": "real"}, {"coeff": 2, "attr": "real"},
+                 {"coeff": 0, "attr": "imag"}, {"coeff": 1, "attr": "imag"}, {"coeff": 2, "attr": "imag"}]
+        expected_index = ['coeff_0__attr_"real"', 'coeff_1__attr_"real"', 'coeff_2__attr_"real"',
+                          'coeff_0__attr_"imag"', 'coeff_1__attr_"imag"', 'coeff_2__attr_"imag"']
+
+        res = pd.Series(dict(fft_coefficient(x, param)))
+        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertAlmostEqual(res['coeff_0__attr_"imag"'], 0, places=6)
+        self.assertAlmostEqual(res['coeff_0__attr_"real"'], sum(x), places=6)
+
+        x = [0, 1, 0, 0]
+        res = pd.Series(dict(fft_coefficient(x, param)))
+        # see documentation of fft in numpy
+        # should return array([1. + 0.j, 0. - 1.j, -1. + 0.j])
+        self.assertAlmostEqual(res['coeff_0__attr_"imag"'], 0, places=6)
+        self.assertAlmostEqual(res['coeff_0__attr_"real"'], 1, places=6)
+        self.assertAlmostEqual(res['coeff_1__attr_"imag"'], -1, places=6)
+        self.assertAlmostEqual(res['coeff_1__attr_"real"'], 0, places=6)
+        self.assertAlmostEqual(res['coeff_2__attr_"imag"'], 0, places=6)
+        self.assertAlmostEqual(res['coeff_2__attr_"real"'], -1, places=6)
+
+        # test what happens if coeff is biger than time series lenght
+        x = range(5)
+        param = [{"coeff": 10, "attr": "real"}]
+        expected_index = ['coeff_10__attr_"real"']
+
+        res = pd.Series(dict(fft_coefficient(x, param)))
+        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertIsNaN(res['coeff_10__attr_"real"'])
 
     def test_number_peaks(self):
         x = np.array([0, 1, 2, 1, 0, 1, 2, 3, 4, 5, 4, 3, 2, 1])

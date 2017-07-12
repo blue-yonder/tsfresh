@@ -725,25 +725,24 @@ def fft_coefficient(x, param):
     Calculates the fourier coefficients of the one-dimensional discrete Fourier Transform for real input by fast
     fourier transformation algorithm
 
+    .. math::
+        A_k =  \\sum_{m=0}^{n-1} a_m \\exp \\left \\{ -2 \\pi i \\frac{m k}{n} \\right \\}, \\qquad k = 0, \\ldots , n-1.
+
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
-    :param param: contains dictionaries {"coeff": x} with x int and x >= 0
+    :param param: contains dictionaries {"coeff": x, "attr": s} with x int and x >= 0, s str and in ["real", "imag"]
     :type param: list
     :return: the different feature values
     :return type: pandas.Series
     """
 
-    coefficients = set([config["coeff"] for config in param])
-    for coeff in coefficients:
-        if coeff < 0:
-            raise ValueError("Coefficients must be positive or zero.")
+    assert min([config["coeff"] for config in param]) >= 0, "Coefficients must be positive or zero."
+    assert set([config["attr"] for config in param]) <= set(["imag", "real"]), 'Attribute must be "real" or "imag"'
 
-    maximum_coefficient = max(max(coefficients), 1)
-    fft = np.fft.rfft(x, min(len(x), 2 * maximum_coefficient))
+    fft = np.fft.rfft(x)
 
-    res = [fft[q] if q < len(fft) else 0 for q in coefficients]
-    res = [r.real if isinstance(r, complex) else r for r in res]
-    index = ["coeff_{}".format(q) for q in coefficients]
+    res = [getattr(fft[config["coeff"]], config["attr"]) if config["coeff"] < len(fft) else np.NaN for config in param]
+    index = ['coeff_{}__attr_"{}"'.format(config["coeff"], config["attr"]) for config in param]
     return zip(index, res)
 
 
