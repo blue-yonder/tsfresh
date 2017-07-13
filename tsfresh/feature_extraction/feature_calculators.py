@@ -296,7 +296,9 @@ def augmented_dickey_fuller(x, param):
     series sample. This feature calculator returns the value of the respective test statistic.
 
     See the statsmodels implementation for references and more details.
-
+    
+    :param x: the time series to calculate the feature of
+    :type x: pandas.Series
     :param param: contains dictionaries {"attr": x} with x str, either "teststat", "pvalue" or "usedlag"
     :type param: list
     :return: the value of this feature
