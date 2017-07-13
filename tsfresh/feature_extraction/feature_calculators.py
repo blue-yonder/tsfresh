@@ -1298,7 +1298,8 @@ def approximate_entropy(x, m, r):
 def friedrich_coefficients(x, param):
     """
     Coefficients of polynomial :math:`h(x)`, which has been fitted to 
-    the deterministic dynamics of Langevin model 
+    the deterministic dynamics of Langevin model
+
     .. math::
         \dot{x}(t) = h(x(t)) + \mathcal{N}(0,R)
 
@@ -1338,6 +1339,7 @@ def max_langevin_fixed_point(x, r, m):
     """
     Largest fixed point of dynamics  :math:argmax_x {h(x)=0}` estimated from polynomial :math:`h(x)`, 
     which has been fitted to the deterministic dynamics of Langevin model
+    
     .. math::
         \dot(x)(t) = h(x(t)) + R \mathcal(N)(0,1)
 
