@@ -180,7 +180,8 @@ We only gave an example for the flat DataFrame format, but rolling actually work
 that are supported by tsfresh.
 
 Parameters and Implementation Notes
-------
+-----------------------------------
+
 The above example demonstrates the overall rolling mechanism, which creates new time series.
 Now we discuss the naming convention for such new time series:
 
@@ -188,76 +189,81 @@ For identifying every subsequence, tsfresh introduces a qualifier ("shift") that
 Practically, the shift-qualifier indicates how long the sub-time series is.
 The above example with rolling set to 1 yields the following sub-time series:
 
-+----+------+----+----+
-| id | time | x  | y  |
-+====+======+====+====+
-| 1,shift=3  | t1   | 1  | 5  |
-+----+------+----+----+
++-----------+------+----+----+
+| id        | time | x  | y  |
++===========+======+====+====+
+| 1,shift=3 | t1   | 1  | 5  |
++-----------+------+----+----+
 
-+----+------+----+----+
-| id | time | x  | y  |
-+====+======+====+====+
-| 1,shift=2  | t1   | 1  | 5  |
-+----+------+----+----+
-| 1,shift=2  | t2   | 2  | 6  |
-+----+------+----+----+
 
-+----+------+----+----+
-| id | time | x  | y  |
-+====+======+====+====+
-| 1,shift=1  | t1   | 1  | 5  |
-+----+------+----+----+
-| 1,shift=1  | t2   | 2  | 6  |
-+----+------+----+----+
-| 1,shift=1  | t3   | 3  | 7  |
-+----+------+----+----+
-| 2,shift=1  | t8   | 10 | 12 |
-+----+------+----+----+
++-----------+------+----+----+
+| id        | time | x  | y  |
++===========+======+====+====+
+| 1,shift=2 | t1   | 1  | 5  |
++-----------+------+----+----+
+| 1,shift=2 | t2   | 2  | 6  |
++-----------+------+----+----+
 
-+----+------+----+----+
-| id | time | x  | y  |
-+====+======+====+====+
-| 1,shift=0  | t1   | 1  | 5  |
-+----+------+----+----+
-| 1,shift=0  | t2   | 2  | 6  |
-+----+------+----+----+
-| 1,shift=0  | t3   | 3  | 7  |
-+----+------+----+----+
-| 1,shift=0  | t4   | 4  | 8  |
-+----+------+----+----+
-| 2,shift=0  | t8   | 10 | 12 |
-+----+------+----+----+
-| 2,shift=0  | t9   | 11 | 13 |
-+----+------+----+----+
++-----------+------+----+----+
+| id        | time | x  | y  |
++===========+======+====+====+
+| 1,shift=1 | t1   | 1  | 5  |
++-----------+------+----+----+
+| 1,shift=1 | t2   | 2  | 6  |
++-----------+------+----+----+
+| 1,shift=1 | t3   | 3  | 7  |
++-----------+------+----+----+
+| 2,shift=1 | t8   | 10 | 12 |
++-----------+------+----+----+
 
-The id is now replaced by the old id and the shift value. Hence, every table represents a sub-time series. The higher the shift value, the more steps the time series was moved into the specified direction (into the past in this example).
++-----------+------+----+----+
+| id        | time | x  | y  |
++===========+======+====+====+
+| 1,shift=0 | t1   | 1  | 5  |
++-----------+------+----+----+
+| 1,shift=0 | t2   | 2  | 6  |
++-----------+------+----+----+
+| 1,shift=0 | t3   | 3  | 7  |
++-----------+------+----+----+
+| 1,shift=0 | t4   | 4  | 8  |
++-----------+------+----+----+
+| 2,shift=0 | t8   | 10 | 12 |
++-----------+------+----+----+
+| 2,shift=0 | t9   | 11 | 13 |
++-----------+------+----+----+
 
-If you want to limit how far the time series shall be shifted into the specified direction, you can set the *maximum_number_of_timeshifts* parameter to the maximum time steps to be shifted. In the above example, setting *maximum_number_of_timeshifts* to 1 yields the following result (setting it to 0 will create all possible shifts):
+The id is now replaced by the old id and the shift value. Hence, every table represents a sub-time series.
+The higher the shift value, the more steps the time series was moved into the specified direction (into the past in
+this example).
 
-+----+------+----+----+
-| id | time | x  | y  |
-+====+======+====+====+
-| 1,shift=1  | t1   | 1  | 5  |
-+----+------+----+----+
-| 1,shift=1  | t2   | 2  | 6  |
-+----+------+----+----+
-| 1,shift=1  | t3   | 3  | 7  |
-+----+------+----+----+
-| 2,shift=1  | t8   | 10 | 12 |
-+----+------+----+----+
+If you want to limit how far the time series shall be shifted into the specified direction, you can set the
+*maximum_number_of_timeshifts* parameter to the maximum time steps to be shifted. In the above example, setting
+*maximum_number_of_timeshifts* to 1 yields the following result (setting it to 0 will create all possible shifts):
 
-+----+------+----+----+
-| id | time | x  | y  |
-+====+======+====+====+
-| 1,shift=0  | t1   | 1  | 5  |
-+----+------+----+----+
-| 1,shift=0  | t2   | 2  | 6  |
-+----+------+----+----+
-| 1,shift=0  | t3   | 3  | 7  |
-+----+------+----+----+
-| 1,shift=0  | t4   | 4  | 8  |
-+----+------+----+----+
-| 2,shift=0  | t8   | 10 | 12 |
-+----+------+----+----+
-| 2,shift=0  | t9   | 11 | 13 |
-+----+------+----+----+
++-----------+------+----+----+
+| id        | time | x  | y  |
++===========+======+====+====+
+| 1,shift=1 | t1   | 1  | 5  |
++-----------+------+----+----+
+| 1,shift=1 | t2   | 2  | 6  |
++-----------+------+----+----+
+| 1,shift=1 | t3   | 3  | 7  |
++-----------+------+----+----+
+| 2,shift=1 | t8   | 10 | 12 |
++-----------+------+----+----+
+
++-----------+------+----+----+
+| id        | time | x  | y  |
++===========+======+====+====+
+| 1,shift=0 | t1   | 1  | 5  |
++-----------+------+----+----+
+| 1,shift=0 | t2   | 2  | 6  |
++-----------+------+----+----+
+| 1,shift=0 | t3   | 3  | 7  |
++-----------+------+----+----+
+| 1,shift=0 | t4   | 4  | 8  |
++-----------+------+----+----+
+| 2,shift=0 | t8   | 10 | 12 |
++-----------+------+----+----+
+| 2,shift=0 | t9   | 11 | 13 |
++-----------+------+----+----+
