@@ -504,10 +504,9 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqualOnAllArrayTypes(time_reversal_asymmetry_statistic, x, 0, 3)
 
         x = [1, 2, -3, 4]
-        # 1/2 * ( (4^2 * 2 + 3 * 2^2) + (3^2*1)-(2*1^1)) = 1/2 * (32+12+9-2) = 51/2
-        self.assertAlmostEqualOnAllArrayTypes(time_reversal_asymmetry_statistic, x, 25.5, 1)
-        # 4^2 * 1 - 2 * 1^2 = 16 -2
-        self.assertAlmostEqualOnAllArrayTypes(time_reversal_asymmetry_statistic, x, 14, 2)
+        # 1/2 * ( (4^2 * -3 + 3 * 2^2) + (3^2*2)-(2*1^1)) = 1/2 * (-48+12+18-2) = 20/2
+        self.assertAlmostEqualOnAllArrayTypes(time_reversal_asymmetry_statistic, x, -10, 1)
+        self.assertAlmostEqualOnAllArrayTypes(time_reversal_asymmetry_statistic, x, 0, 2)
         self.assertAlmostEqualOnAllArrayTypes(time_reversal_asymmetry_statistic, x, 0, 3)
 
     def test_c3(self):
