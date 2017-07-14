@@ -421,10 +421,15 @@ def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_di
     else:
         range_of_shifts = range(-maximum_number_of_timeshifts, 1)
 
+    # Todo: not default for columns_sort to be None
+    if column_sort is None:
+        column_sort = "sort"
+        df[column_sort] = range(df.shape[0])
+
     def roll_out_time_series(time_shift):
         # Shift out only the first "time_shift" rows
         df_temp = grouped_data.shift(time_shift)
-        df_temp[column_id] = "id=" + df[column_id].map(str) + ", shift={}".format(time_shift)
+        df_temp[column_id] = df[column_sort].map(str)
         if column_kind:
             df_temp[column_kind] = df[column_kind]
         return df_temp.dropna()
