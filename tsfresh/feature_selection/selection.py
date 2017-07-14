@@ -136,10 +136,10 @@ def select_features(X, y, test_for_binary_target_binary_feature=defaults.TEST_FO
 
     if ml_task not in ['auto', 'classification', 'regression']:
         raise ValueError('ml_task must be one of: \'auto\', \'classification\', \'regression\'')
-    elif ml_task is 'auto':
-        ml_task = infer_ml_task
+    elif ml_task == 'auto':
+        ml_task = infer_ml_task(y)
 
-    if ml_task is 'classification':
+    if ml_task == 'classification':
         relevant_features = set()
         for label in y.unique():
             y_label = (y == label)
@@ -149,7 +149,7 @@ def select_features(X, y, test_for_binary_target_binary_feature=defaults.TEST_FO
                 fdr_level=fdr_level, hypotheses_independent=hypotheses_independent,
             )
             relevant_features = relevant_features.union(set(df_bh[df_bh.rejected].Feature))
-    elif ml_task is 'regression':
+    elif ml_task == 'regression':
         df_bh = check_fs_sig_bh(
             X, y, target_is_binary=False, n_jobs=n_jobs, chunksize=chunksize,
             test_for_binary_target_real_feature=test_for_binary_target_real_feature,
