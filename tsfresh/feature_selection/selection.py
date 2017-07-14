@@ -161,6 +161,16 @@ def select_features(X, y, test_for_binary_target_binary_feature=defaults.TEST_FO
 
 
 def infer_ml_task(y):
+    """
+    Infer the machine learning task to select for.
+    The result will be either `'regression'` or `'classification'`.
+    If the target vector only consists of integer typed values, we assume the task is `'classification'`.
+    Else `'regression'`.
+
+    :param y: The target vector y.
+    :type y: pandas.Series
+    :return:
+    """
     if y.dtype.kind in np.typecodes['AllInteger']:
         ml_task = 'classification'
     else:
