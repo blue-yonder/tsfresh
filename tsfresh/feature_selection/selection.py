@@ -134,28 +134,13 @@ def select_features(X, y, test_for_binary_target_binary_feature=defaults.TEST_FO
 
         y = pd.Series(y, index=X.index)
 
-    if ml_task not in ['auto', 'classification', 'regression']:
-        raise ValueError('ml_task must be one of: \'auto\', \'classification\', \'regression\'')
-    elif ml_task == 'auto':
-        ml_task = infer_ml_task(y)
+    df_bh = get_feature_relevances(
+        X, y, ml_task=ml_task, n_jobs=n_jobs, chunksize=chunksize,
+        test_for_binary_target_real_feature=test_for_binary_target_real_feature,
+        fdr_level=fdr_level, hypotheses_independent=hypotheses_independent,
+    )
 
-    if ml_task == 'classification':
-        relevant_features = set()
-        for label in y.unique():
-            y_label = (y == label)
-            df_bh = check_fs_sig_bh(
-                X, y_label, target_is_binary=True, n_jobs=n_jobs, chunksize=chunksize,
-                test_for_binary_target_real_feature=test_for_binary_target_real_feature,
-                fdr_level=fdr_level, hypotheses_independent=hypotheses_independent,
-            )
-            relevant_features = relevant_features.union(set(df_bh[df_bh.rejected].Feature))
-    elif ml_task == 'regression':
-        df_bh = check_fs_sig_bh(
-            X, y, target_is_binary=False, n_jobs=n_jobs, chunksize=chunksize,
-            test_for_binary_target_real_feature=test_for_binary_target_real_feature,
-            fdr_level=fdr_level, hypotheses_independent=hypotheses_independent,
-        )
-        relevant_features = df_bh[df_bh.rejected].Feature
+    relevant_features = df_bh[df_bh.rejected].Feature
 
     return X.loc[:, relevant_features]
 
@@ -178,3 +163,36 @@ def infer_ml_task(y):
 
     _logger.warn('Infered {} as machine learning task'.format(ml_task))
     return ml_task
+
+
+def get_feature_relevances(X, y, test_for_binary_target_binary_feature=defaults.TEST_FOR_BINARY_TARGET_BINARY_FEATURE,
+                           test_for_binary_target_real_feature=defaults.TEST_FOR_BINARY_TARGET_REAL_FEATURE,
+                           test_for_real_target_binary_feature=defaults.TEST_FOR_REAL_TARGET_BINARY_FEATURE,
+                           test_for_real_target_real_feature=defaults.TEST_FOR_REAL_TARGET_REAL_FEATURE,
+                           fdr_level=defaults.FDR_LEVEL, hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
+                           n_jobs=defaults.N_PROCESSES, chunksize=defaults.CHUNKSIZE,
+                           ml_task='auto'):
+    if ml_task not in ['auto', 'classification', 'regression']:
+        raise ValueError('ml_task must be one of: \'auto\', \'classification\', \'regression\'')
+    elif ml_task == 'auto':
+        ml_task = infer_ml_task(y)
+
+    if ml_task == 'classification':
+        df_bh_list = []
+        for label in y.unique():
+            y_label = (y == label)
+            df_bh = check_fs_sig_bh(
+                X, y_label, target_is_binary=True, n_jobs=n_jobs, chunksize=chunksize,
+                test_for_binary_target_real_feature=test_for_binary_target_real_feature,
+                fdr_level=fdr_level, hypotheses_independent=hypotheses_independent,
+            )
+            df_bh_list.append(df_bh)
+        df_bh = df_bh_list[0]
+    elif ml_task == 'regression':
+        df_bh = check_fs_sig_bh(
+            X, y, target_is_binary=False, n_jobs=n_jobs, chunksize=chunksize,
+            test_for_binary_target_real_feature=test_for_binary_target_real_feature,
+            fdr_level=fdr_level, hypotheses_independent=hypotheses_independent,
+        )
+
+    return df_bh
