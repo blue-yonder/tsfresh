@@ -29,7 +29,7 @@ from tsfresh import defaults
 _logger = logging.getLogger(__name__)
 
 
-def check_fs_sig_bh(X, y,
+def check_fs_sig_bh(X, y, target_is_binary,
                     n_jobs=defaults.N_PROCESSES,
                     chunksize=defaults.CHUNKSIZE,
                     fdr_level=defaults.FDR_LEVEL,
@@ -106,8 +106,6 @@ def check_fs_sig_bh(X, y,
     :rtype: pandas.DataFrame
 
     """
-    target_is_binary = len(set(y)) == 2
-
     # Only allow entries for which the target is known!
     y = y.astype(np.float)
     X = X.copy().loc[~(y == np.NaN), :]
