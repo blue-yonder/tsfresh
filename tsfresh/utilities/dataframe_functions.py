@@ -386,7 +386,8 @@ def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_di
     else:
         grouper = (column_id,)
 
-    if column_sort is not None:
+    if column_sort is not None and df[column_sort].dtype != np.object:
+
         # Require no Nans in column
         if df[column_sort].isnull().any():
             raise ValueError("You have NaN values in your sort column.")
