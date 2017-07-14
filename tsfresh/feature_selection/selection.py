@@ -9,6 +9,7 @@ other features that are not based on time series.
 from __future__ import absolute_import
 
 import logging
+from functools import reduce
 import pandas as pd
 import numpy as np
 from tsfresh import defaults
@@ -187,7 +188,7 @@ def get_feature_relevances(X, y, test_for_binary_target_binary_feature=defaults.
                 fdr_level=fdr_level, hypotheses_independent=hypotheses_independent,
             )
             df_bh_list.append(df_bh)
-        df_bh = df_bh_list[0]
+        df_bh = combine_feature_relevances(df_bh_list)
     elif ml_task == 'regression':
         df_bh = check_fs_sig_bh(
             X, y, target_is_binary=False, n_jobs=n_jobs, chunksize=chunksize,
@@ -196,3 +197,14 @@ def get_feature_relevances(X, y, test_for_binary_target_binary_feature=defaults.
         )
 
     return df_bh
+
+
+def combine_feature_relevances(feature_relevances):
+    def combine_df_bhs(a, b):
+        res = pd.DataFrame(a.Feature, index=a.index)
+        res['type'] = a.type
+        res['rejected'] = a.rejected | b.rejected
+        res['p_value'] = a.p_value.combine(b.p_value, min, 1)
+        return res
+
+    return reduce(combine_df_bhs, feature_relevances)
