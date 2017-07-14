@@ -434,8 +434,17 @@ def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_di
             df_temp[column_kind] = df[column_kind]
         return df_temp.dropna()
 
-    return pd.concat([roll_out_time_series(time_shift) for time_shift in range_of_shifts],
-                     ignore_index=True)
+    df_shift = pd.concat([roll_out_time_series(time_shift) for time_shift in range_of_shifts], ignore_index=True)
+
+    def mask_first(x):
+        result = np.ones_like(x)
+        result[-1] = 0
+        return result
+
+    mask = df_shift.groupby(['id'])['id'].transform(mask_first).astype(bool)
+    df_shift = df_shift[mask]
+
+    return df_shift.sort_values(by=[column_id, column_sort])
 
 
 
