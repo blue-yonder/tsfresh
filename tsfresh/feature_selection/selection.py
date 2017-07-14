@@ -8,11 +8,15 @@ other features that are not based on time series.
 
 from __future__ import absolute_import
 
+import logging
 import pandas as pd
 import numpy as np
 from tsfresh import defaults
 from tsfresh.utilities.dataframe_functions import check_for_nans_in_columns
 from tsfresh.feature_selection.feature_selector import check_fs_sig_bh
+
+
+_logger = logging.getLogger(__name__)
 
 
 def select_features(X, y, test_for_binary_target_binary_feature=defaults.TEST_FOR_BINARY_TARGET_BINARY_FEATURE,
@@ -21,7 +25,7 @@ def select_features(X, y, test_for_binary_target_binary_feature=defaults.TEST_FO
                     test_for_real_target_real_feature=defaults.TEST_FOR_REAL_TARGET_REAL_FEATURE,
                     fdr_level=defaults.FDR_LEVEL, hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
                     n_jobs=defaults.N_PROCESSES, chunksize=defaults.CHUNKSIZE,
-                    multiclass=False):
+                    ml_task='auto'):
     """
     Check the significance of all features (columns) of feature matrix X and return a possibly reduced feature matrix
     only containing relevant features.
@@ -105,8 +109,10 @@ def select_features(X, y, test_for_binary_target_binary_feature=defaults.TEST_FO
     :param chunksize: Size of the chunks submitted to the worker processes
     :type chunksize: int
 
-    :param multiclass: Select features for multiple classes with a one-vs-rest strategy
-    :type multiclass: bool
+    :param ml_task: The intended machine learning task. Either `'classification'`, `'regression'` or `'auto'`.
+                    Defaults to `'auto'`, meaning the intended task is inferred from `y`.
+                    If `y` has a boolean or integer dtype, the task is assumend to be classification, else regression.
+    :type ml_task: str
 
     :return: The same DataFrame as X, but possibly with reduced number of columns ( = features).
     :rtype: pandas.DataFrame
@@ -128,20 +134,37 @@ def select_features(X, y, test_for_binary_target_binary_feature=defaults.TEST_FO
 
         y = pd.Series(y, index=X.index)
 
-    if multiclass is True:
-        unique_labels = y.unique()
-        if len(unique_labels) < 3:
-            raise RuntimeError("Cannot perform multiclass selection on binary target")
+    if ml_task not in ['auto', 'classification', 'regression']:
+        raise ValueError('ml_task must be one of: \'auto\', \'classification\', \'regression\'')
+    elif ml_task is 'auto':
+        ml_task = infer_ml_task
 
+    if ml_task is 'classification':
         relevant_features = set()
-        for label in unique_labels:
+        for label in y.unique():
             y_label = (y == label)
-            df_bh = check_fs_sig_bh(X, y_label, n_jobs, chunksize, fdr_level, hypotheses_independent,
-                                    test_for_binary_target_real_feature)
+            df_bh = check_fs_sig_bh(
+                X, y_label, target_is_binary=True, n_jobs=n_jobs, chunksize=chunksize,
+                test_for_binary_target_real_feature=test_for_binary_target_real_feature,
+                fdr_level=fdr_level, hypotheses_independent=hypotheses_independent,
+            )
             relevant_features = relevant_features.union(set(df_bh[df_bh.rejected].Feature))
-    else:
-        df_bh = check_fs_sig_bh(X, y, n_jobs, chunksize, fdr_level, hypotheses_independent,
-                                test_for_binary_target_real_feature)
+    elif ml_task is 'regression':
+        df_bh = check_fs_sig_bh(
+            X, y, target_is_binary=False, n_jobs=n_jobs, chunksize=chunksize,
+            test_for_binary_target_real_feature=test_for_binary_target_real_feature,
+            fdr_level=fdr_level, hypotheses_independent=hypotheses_independent,
+        )
         relevant_features = df_bh[df_bh.rejected].Feature
 
     return X.loc[:, relevant_features]
+
+
+def infer_ml_task(y):
+    if y.dtype.kind in np.typecodes['AllInteger']:
+        ml_task = 'classification'
+    else:
+        ml_task = 'regression'
+
+    _logger.warn('Infered {} as machine learning task'.format(ml_task))
+    return ml_task

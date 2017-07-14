@@ -7,7 +7,7 @@ import pandas as pd
 from pytest import raises
 from future.utils import lrange
 
-from tsfresh.feature_selection.selection import select_features
+from tsfresh.feature_selection.selection import select_features, infer_ml_task
 
 
 def test_assert_list():
@@ -36,13 +36,6 @@ def test_assert_shorter_y():
         select_features(X, y)
 
 
-def test_expects_more_than_two_columns_for_multiclass():
-    X = pd.DataFrame([1, 2], index=[1, 2])
-    y = np.array([1, 2])
-    with raises(RuntimeError):
-        select_features(X, y, multiclass=True)
-
-
 def test_selects_for_each_class():
     df = pd.DataFrame()
     df['f1'] = [10] * 10 + lrange(10) + lrange(10)
@@ -52,5 +45,27 @@ def test_selects_for_each_class():
 
     y = df.y
     X = df.drop(['y'], axis=1)
-    X_relevant = select_features(X, y, multiclass=True)
+    X_relevant = select_features(X, y, ml_task='classification')
     assert {'f1', 'f2', 'f3'} == set(X_relevant.columns)
+
+
+def test_infers_classification_for_integer_target():
+    y = pd.Series([1, 2, 3])
+    assert 'classification' == infer_ml_task(y)
+
+
+def test_infers_classification_for_boolean_target():
+    y = pd.Series([True, False, False])
+    assert 'classification' == infer_ml_task(y)
+
+
+def test_infers_regression_for_float_target():
+    y = pd.Series([1.0, 1.5, 1.7])
+    assert 'regression' == infer_ml_task(y)
+
+
+def test_restrict_ml_task_options():
+    X = pd.DataFrame(list(range(3)))
+    y = pd.Series(range(3))
+    with raises(ValueError):
+        select_features(X, y, ml_task='some_other_task')

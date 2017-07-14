@@ -27,7 +27,7 @@ def extract_relevant_features(timeseries_container, y, X=None,
                               hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
                               n_jobs=defaults.N_PROCESSES,
                               chunksize=defaults.CHUNKSIZE,
-                              multiclass=False):
+                              ml_task='auto'):
     """
     High level convenience function to extract time series features from `timeseries_container`. Then return feature
     matrix `X` possibly augmented with relevent features with respect to target vector `y`.
@@ -118,8 +118,10 @@ def extract_relevant_features(timeseries_container, y, X=None,
                                    independent (e.g. mean and median)
     :type hypotheses_independent: bool
 
-    :param multiclass: Select features for multiple classes with a one-vs-rest strategy
-    :type multiclass: bool
+    :param ml_task: The intended machine learning task. Either `'classification'`, `'regression'` or `'auto'`.
+                    Defaults to `'auto'`, meaning the intended task is inferred from `y`.
+                    If `y` has a boolean or integer dtype, the task is assumend to be classification, else regression.
+    :type ml_task: str
 
     :return: Feature matrix X, possibly extended with relevant time series features.
     """
@@ -147,7 +149,7 @@ def extract_relevant_features(timeseries_container, y, X=None,
                             fdr_level=fdr_level, hypotheses_independent=hypotheses_independent,
                             n_jobs=n_jobs,
                             chunksize=chunksize,
-                            multiclass=multiclass)
+                            ml_task=ml_task)
 
     if X is None:
         X = X_sel
