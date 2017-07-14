@@ -42,7 +42,7 @@ class TestSelectFeatures:
         df['f1'] = [10] * 10 + lrange(10) + lrange(10)
         df['f2'] = lrange(10) + [10] * 10 + lrange(10)
         df['f3'] = lrange(10) + lrange(10) + [1] * 10
-        df['y'] = [0] * 10 + [10] * 10 + [2] * 10
+        df['y'] = [0] * 10 + [1] * 10 + [2] * 10
 
         y = df.y
         X = df.drop(['y'], axis=1)
