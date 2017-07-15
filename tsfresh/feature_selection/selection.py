@@ -118,7 +118,8 @@ def select_features(X, y, test_for_binary_target_binary_feature=defaults.TEST_FO
     :return: The same DataFrame as X, but possibly with reduced number of columns ( = features).
     :rtype: pandas.DataFrame
 
-    :raises: ``ValueError`` when the target vector does not fit to the feature matrix.
+    :raises: ``ValueError`` when the target vector does not fit to the feature matrix
+             or `ml_task` is not one of `'auto'`, `'classification'` or `'regression'`.
     """
     check_for_nans_in_columns(X)
 
@@ -160,7 +161,8 @@ def infer_ml_task(y):
 
     :param y: The target vector y.
     :type y: pandas.Series
-    :return:
+    :return: 'classification' or 'regression'
+    :rtype: str
     """
     if y.dtype.kind in np.typecodes['AllInteger']:
         ml_task = 'classification'
@@ -255,7 +257,8 @@ def combine_relevance_tables(relevance_tables_with_label):
 
     :param relevance_tables_with_label: A list of tuples: label, relevance table
     :type relevance_tables_with_label: List[Tuple[Any, pd.DataFrame]]
-    :return:
+    :return: The combined relevance table
+    :rtype: pandas.DataFrame
     """
     def _append_label_to_p_value_column(a):
         label, df = a
