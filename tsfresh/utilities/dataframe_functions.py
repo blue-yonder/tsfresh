@@ -436,15 +436,44 @@ def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_di
 
     df_shift = pd.concat([roll_out_time_series(time_shift) for time_shift in range_of_shifts], ignore_index=True)
 
+    return df_shift.sort_values(by=[column_id, column_sort])
+
+
+def make_forecasting_frame(x, kind, t_forecasting, maximum_number_of_timeshifts, rolling_direction):
+    """
+    Takes a singular time series and constructs the respective dataframe and target vector for the forecasting
+
+    :param x:
+    :param name:
+    :return:
+    """
+    n = len(x)
+    df = pd.DataFrame({"id": ["A"] * n,
+                       "time": range(n),
+                       "val": x,
+                       "kind": kind})
+
+    df_shift = roll_time_series(df,
+                                column_id="id",
+                                column_sort="time",
+                                column_kind="kind",
+                                rolling_direction=rolling_direction,
+                                maximum_number_of_timeshifts=maximum_number_of_timeshifts)
+
+    # drop the rows which should actually be predicted
     def mask_first(x):
+        """
+        this mask returns an array of 1s where the last entry is a 0
+        """
         result = np.ones_like(x)
         result[-1] = 0
         return result
 
     mask = df_shift.groupby(['id'])['id'].transform(mask_first).astype(bool)
     df_shift = df_shift[mask]
+    y = df.shift[~mask]["val"]
 
-    return df_shift.sort_values(by=[column_id, column_sort])
+    return df_shift, y
 
 
 
