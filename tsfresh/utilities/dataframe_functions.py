@@ -439,13 +439,26 @@ def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_di
     return df_shift.sort_values(by=[column_id, column_sort])
 
 
-def make_forecasting_frame(x, kind, t_forecasting, maximum_number_of_timeshifts, rolling_direction):
+def make_forecasting_frame(x, kind, maximum_number_of_timeshifts, rolling_direction):
     """
-    Takes a singular time series and constructs the respective dataframe and target vector for the forecasting
+    Takes a singular time series x and constructs a DataFrame df and target vector y that can be used for the
+    time series forecasting.
 
-    :param x:
-    :param name:
-    :return:
+    df will contain for every time stamp in x, the last maximum_number_of_timeshifts data points as a new time series,
+    such can be used to fit a normal regressor for the forecasting task.
+
+    :param x: the singular time series
+    :type x: np.array
+    :param kind: the kind of the time series
+    :type kind: str
+    :param rolling_direction: The sign decides, if to roll backwards (if sign is positive) or forwards in "time"
+    :type rolling_direction: int
+    :param maximum_number_of_timeshifts: If not None, shift only up to maximum_number_of_timeshifts.
+    If None, shift as often as possible.
+    :type maximum_number_of_timeshifts: int
+
+    :return: time series container df, target vector y
+    :rtype: (pd.DataFrame, pd.Series)
     """
     n = len(x)
     df = pd.DataFrame({"id": ["A"] * n,
@@ -471,9 +484,9 @@ def make_forecasting_frame(x, kind, t_forecasting, maximum_number_of_timeshifts,
 
     mask = df_shift.groupby(['id'])['id'].transform(mask_first).astype(bool)
     df_shift = df_shift[mask]
-    y = df.shift[~mask]["val"]
+    y = df["val"]
 
-    return df_shift, y
+    return df_shift, y[1:]
 
 
 
