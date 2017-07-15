@@ -135,6 +135,11 @@ def select_features(X, y, test_for_binary_target_binary_feature=defaults.TEST_FO
 
         y = pd.Series(y, index=X.index)
 
+    if ml_task not in ['auto', 'classification', 'regression']:
+        raise ValueError('ml_task must be one of: \'auto\', \'classification\', \'regression\'')
+    elif ml_task == 'auto':
+        ml_task = infer_ml_task(y)
+
     relevance_table = get_relevance_table(
         X, y, ml_task=ml_task, n_jobs=n_jobs, chunksize=chunksize,
         test_for_binary_target_real_feature=test_for_binary_target_real_feature,
@@ -173,11 +178,6 @@ def get_relevance_table(X, y, test_for_binary_target_binary_feature=defaults.TES
                         fdr_level=defaults.FDR_LEVEL, hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
                         n_jobs=defaults.N_PROCESSES, chunksize=defaults.CHUNKSIZE,
                         ml_task='auto'):
-    if ml_task not in ['auto', 'classification', 'regression']:
-        raise ValueError('ml_task must be one of: \'auto\', \'classification\', \'regression\'')
-    elif ml_task == 'auto':
-        ml_task = infer_ml_task(y)
-
     if ml_task == 'classification':
         relevance_tables = []
         for label in y.unique():
