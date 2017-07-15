@@ -9,7 +9,7 @@ import tsfresh.defaults
 import tsfresh.feature_selection.significance_tests
 import tsfresh.feature_selection.feature_selector
 
-# the unit tests in this module make sure if obvious irrelevant features are rejected by the feature
+# the unit tests in this module make sure that obvious irrelevant features are considered irrelevant by the feature
 # selection algorithms
 
 # noinspection PyUnresolvedReferences
@@ -189,7 +189,7 @@ class FeatureSelection(TestCase):
                                                                                       tsfresh.defaults.TEST_FOR_BINARY_TARGET_REAL_FEATURE)
         self.assertEqual(result_series.name, "TEST")
         self.assertEqual(result_series.type, "const")
-        self.assertEqual(result_series.rejected, False)
+        self.assertEqual(result_series.relevant, False)
 
 
 # noinspection PyUnresolvedReferences

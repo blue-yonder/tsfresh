@@ -78,7 +78,7 @@ class TestCombineRelevanceTables:
     def relevance_table(self):
         relevance_table = pd.DataFrame()
         relevance_table['Feature'] = ['f1', 'f2', 'f3', 'f4']
-        relevance_table['rejected'] = [True, False, True, False]
+        relevance_table['relevant'] = [True, False, True, False]
         relevance_table['type'] = ['real'] * 4
         relevance_table['p_value'] = np.arange(0.1, 0.4, 0.1)
         return relevance_table
@@ -88,12 +88,12 @@ class TestCombineRelevanceTables:
         assert 'p_value_0' in result.columns
         assert 'p_value' not in result.columns
 
-    def test_disjuncts_rejection(self, relevance_table):
+    def test_disjuncts_relevance(self, relevance_table):
         relevance_table_2 = relevance_table.copy()
-        relevance_table_2.rejected = [False, True, True, False]
+        relevance_table_2.relevant = [False, True, True, False]
         result = combine_relevance_tables([(0, relevance_table), (1, relevance_table_2)])
 
-        assert ([True, True, True, False] == result.rejected).all()
+        assert ([True, True, True, False] == result.relevant).all()
 
     def test_respects_index(self, relevance_table):
         relevance_table_2 = relevance_table.copy()
@@ -101,7 +101,7 @@ class TestCombineRelevanceTables:
 
         result = combine_relevance_tables([(0, relevance_table), (1, relevance_table_2)])
 
-        assert ([True, False, True, False] == result.rejected).all()
+        assert ([True, False, True, False] == result.relevant).all()
 
     def test_preserves_p_values(self, relevance_table):
         relevance_table_2 = relevance_table.copy()

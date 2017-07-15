@@ -147,7 +147,7 @@ def select_features(X, y, test_for_binary_target_binary_feature=defaults.TEST_FO
         fdr_level=fdr_level, hypotheses_independent=hypotheses_independent,
     )
 
-    relevant_features = relevance_table[relevance_table.rejected].Feature
+    relevant_features = relevance_table[relevance_table.relevant].Feature
 
     return X.loc[:, relevant_features]
 
@@ -225,7 +225,7 @@ def get_relevance_table(X, y, ml_task, test_for_binary_target_binary_feature=def
              "Feature",
              "type" (binary, real or const),
              "p_value" (the significance of this feature as a p-value, lower means more significant)
-             "rejected" (if the Benjamini Hochberg procedure rejected this feature)
+             "relevant" (True if the Benjamini Hochberg procedure rejected the null hypothesis for this feature)
     :rtype: pandas.DataFrame
     """
     if ml_task == 'classification':
@@ -265,7 +265,7 @@ def combine_relevance_tables(relevance_tables_with_label):
         return df.rename(columns={'p_value': 'p_value_{}'.format(label)})
 
     def _combine(a, b):
-        a.rejected |= b.rejected
+        a.relevant |= b.relevant
         return a.join(b.iloc[:,3])
 
     relevance_tables = map(_append_label_to_p_value_column, relevance_tables_with_label)

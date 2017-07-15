@@ -44,7 +44,7 @@ class FeatureSignificanceTestCase(TestCase):
         X["irr9"] = np.random.binomial(1, 0.3, 1000)
 
         df_bh = tsfresh.feature_selection.feature_selector.check_fs_sig_bh(X, y, target_is_binary=True)
-        feat_rej = df_bh.loc[df_bh.rejected].Feature
+        feat_rej = df_bh.loc[df_bh.relevant].Feature
 
         # Make sure all selected variables are relevant
         for kept_feature in feat_rej:
@@ -69,7 +69,7 @@ class FeatureSignificanceTestCase(TestCase):
             else:
                 self.assertEqual(row.type, "binary")
 
-            self.assertEqual(row.rejected, False)
+            self.assertEqual(row.relevant, False)
 
             # Assert that all of the relevant features are kept.
             # THIS FAILS!
@@ -112,7 +112,7 @@ class FeatureSignificanceTestCase(TestCase):
         X["rel5"] = z
 
         df_bh = tsfresh.feature_selection.feature_selector.check_fs_sig_bh(X, y, target_is_binary=True)
-        feat_rej = df_bh.loc[df_bh.rejected].Feature
+        feat_rej = df_bh.loc[df_bh.relevant].Feature
 
         # Make sure all selected variables are relevant
         for kept_feature in feat_rej:
@@ -131,7 +131,7 @@ class FeatureSignificanceTestCase(TestCase):
             self.assertEqual(row.Feature, "irr{}".format(i))
             self.assertEqual(row.type, "binary")
 
-            self.assertEqual(row.rejected, False)
+            self.assertEqual(row.relevant, False)
 
     def test_binomial_target_realvalued_features(self):
         # Real valued random variables and binomial target
@@ -153,7 +153,7 @@ class FeatureSignificanceTestCase(TestCase):
         X["rel4"] = np.sqrt(y) + np.random.binomial(2, 0.1, 5000)
 
         df_bh = tsfresh.feature_selection.feature_selector.check_fs_sig_bh(X, y, target_is_binary=False)
-        feat_rej = df_bh.loc[df_bh.rejected].Feature
+        feat_rej = df_bh.loc[df_bh.relevant].Feature
 
         # Make sure all selected variables are relevant
         for kept_feature in feat_rej:
@@ -172,7 +172,7 @@ class FeatureSignificanceTestCase(TestCase):
             self.assertEqual(row.Feature, "irr{}".format(i))
             self.assertEqual(row.type, "real")
 
-            self.assertEqual(row.rejected, False)
+            self.assertEqual(row.relevant, False)
 
     def test_real_target_mixed_case(self):
         # Mixed case with real target
@@ -199,7 +199,7 @@ class FeatureSignificanceTestCase(TestCase):
         X["irr9"] = np.random.binomial(1, 0.2, 5000)
 
         df_bh = tsfresh.feature_selection.feature_selector.check_fs_sig_bh(X, y, target_is_binary=False)
-        feat_rej = df_bh.loc[df_bh.rejected].Feature
+        feat_rej = df_bh.loc[df_bh.relevant].Feature
 
         # Make sure all selected variables are relevant
         for kept_feature in feat_rej:
@@ -224,7 +224,7 @@ class FeatureSignificanceTestCase(TestCase):
             else:
                 self.assertEqual(row.type, "real")
 
-            self.assertEqual(row.rejected, False)
+            self.assertEqual(row.relevant, False)
 
     def test_real_target_binary_features(self):
         # Mixed case with real target
@@ -249,7 +249,7 @@ class FeatureSignificanceTestCase(TestCase):
         X["irr6"] = np.random.binomial(0, 0.01, 1000)
 
         df_bh = tsfresh.feature_selection.feature_selector.check_fs_sig_bh(X, y, target_is_binary=False)
-        feat_rej = df_bh.loc[df_bh.rejected].Feature
+        feat_rej = df_bh.loc[df_bh.relevant].Feature
 
         # Make sure all selected variables are relevant
         for kept_feature in feat_rej:
@@ -273,7 +273,7 @@ class FeatureSignificanceTestCase(TestCase):
         X["rel2"] = z
 
         df_bh = tsfresh.feature_selection.feature_selector.check_fs_sig_bh(X, y, target_is_binary=False)
-        feat_rej = df_bh.loc[df_bh.rejected].Feature
+        feat_rej = df_bh.loc[df_bh.relevant].Feature
 
         # Make sure all selected variables are relevant
         for kept_feature in feat_rej:
@@ -294,6 +294,6 @@ class FeatureSignificanceTestCase(TestCase):
         X["irr6"] = np.random.binomial(0, 0.01, 1000)
 
         df_bh = tsfresh.feature_selection.feature_selector.check_fs_sig_bh(X, y, target_is_binary=False)
-        feat_rej = df_bh.loc[df_bh.rejected].Feature
+        feat_rej = df_bh.loc[df_bh.relevant].Feature
 
         self.assertEqual(len(feat_rej), 0)

@@ -102,7 +102,7 @@ def check_fs_sig_bh(X, y, target_is_binary,
             "Feature",
             "type" (binary, real or const),
             "p_value" (the significance of this feature as a p-value, lower means more significant)
-            "rejected" (if the Benjamini Hochberg procedure rejected this feature)
+            "relevant" (True if the Benjamini Hochberg procedure rejected the null hypothesis for this feature)
     :rtype: pandas.DataFrame
 
     """
@@ -118,7 +118,7 @@ def check_fs_sig_bh(X, y, target_is_binary,
     df_features = df_features.set_index('Feature', drop=False)
 
     # Add relevant columns to df_features
-    df_features["rejected"] = np.nan
+    df_features["relevant"] = np.nan
     df_features["type"] = np.nan
     df_features["p_value"] = np.nan
 
@@ -144,8 +144,8 @@ def check_fs_sig_bh(X, y, target_is_binary,
     else:
         df_features = benjamini_hochberg_test(df_features, hypotheses_independent, fdr_level)
         
-    # It is very important that we have a boolean "rejected" column, so we do a cast here to be sure
-    df_features["rejected"] = df_features["rejected"].astype("bool")
+    # It is very important that we have a boolean "relevant" column, so we do a cast here to be sure
+    df_features["relevant"] = df_features["relevant"].astype("bool")
 
     if defaults.WRITE_SELECTION_REPORT:
         # Write results of BH - Test to file
@@ -186,7 +186,7 @@ def _calculate_p_value(feature_column, y, target_is_binary, test_for_binary_targ
     # Do not process constant features
     if len(pd.unique(feature_column.values)) == 1:
         _logger.warning("[test_feature_significance] Feature {} is constant".format(feature_column.name))
-        return pd.Series({"type": "const", "rejected": False}, name=feature_column.name)
+        return pd.Series({"type": "const", "relevant": False}, name=feature_column.name)
 
     else:
         if target_is_binary:
@@ -211,9 +211,9 @@ def _calculate_p_value(feature_column, y, target_is_binary, test_for_binary_targ
 
 def benjamini_hochberg_test(df_pvalues, hypotheses_independent, fdr_level):
     """
-    This is an implementation of the benjamini hochberg procedure that calculates which of the hypotheses belonging
-    to the different p-Values from df_p to reject. While doing so, this test controls the false discovery rate,
-    which is the ratio of false rejections by all rejections:
+    This is an implementation of the benjamini hochberg procedure that determines if the null hypothesis
+    for a given feature can be rejected. For this the test regards the features' p-values
+    and controls the global false discovery rate, which is the ratio of false rejections by all rejections:
 
     .. math::
 
@@ -241,7 +241,8 @@ def benjamini_hochberg_test(df_pvalues, hypotheses_independent, fdr_level):
                       features among all created features.
     :type fdr_level: float
 
-    :return: The same DataFrame as the input, but with an added boolean column "rejected".
+    :return: The same DataFrame as the input, but with an added boolean column "relevant"
+             denoting if the null hypotheses has been rejected for a given feature.
     :rtype: pandas.DataFrame
     """
 
@@ -261,13 +262,13 @@ def benjamini_hochberg_test(df_pvalues, hypotheses_independent, fdr_level):
     # Calculate the vector T to compare to the p_value
     T = [fdr_level * k / m * 1.0 / c for k, c in zip(K, C)]
 
-    # Get the last rejected p_value
+    # Get the last p_value for which H0 has been rejected
     try:
         k_max = list(df_pvalues.p_value <= T).index(False)
     except ValueError:
         k_max = m
 
-    # Add the column denoting if hypothesis was rejected
-    df_pvalues["rejected"] = [True] * k_max + [False] * (m - k_max)
+    # Add the column denoting if null hypothesis has been rejected
+    df_pvalues["relevant"] = [True] * k_max + [False] * (m - k_max)
 
     return df_pvalues

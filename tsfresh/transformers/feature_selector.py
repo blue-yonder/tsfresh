@@ -135,7 +135,7 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
                                 chunksize=self.chunksize, fdr_level=self.fdr_level,
                                 hypotheses_independent=self.hypotheses_independent,
                                 test_for_binary_target_real_feature=self.test_for_binary_target_real_feature)
-        self.relevant_features = df_bh.loc[df_bh.rejected].Feature.tolist()
+        self.relevant_features = df_bh.loc[df_bh.relevant].Feature.tolist()
         self.feature_importances_ = 1.0 - df_bh.p_value.values
         self.p_values = df_bh.p_value.values
         self.features = df_bh.Feature.tolist()
