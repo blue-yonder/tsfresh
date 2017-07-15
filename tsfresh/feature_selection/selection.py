@@ -187,8 +187,7 @@ def get_relevance_table(X, y, test_for_binary_target_binary_feature=defaults.TES
                 test_for_binary_target_real_feature=test_for_binary_target_real_feature,
                 fdr_level=fdr_level, hypotheses_independent=hypotheses_independent,
             )
-            relevance_table.rename(columns={'p_value': 'p_value_{}'.format(label)}, inplace=True)
-            relevance_tables.append(relevance_table)
+            relevance_tables.append((label, relevance_table))
         relevance_table = combine_relevance_tables(relevance_tables)
     elif ml_task == 'regression':
         relevance_table = check_fs_sig_bh(
@@ -200,10 +199,14 @@ def get_relevance_table(X, y, test_for_binary_target_binary_feature=defaults.TES
     return relevance_table
 
 
-def combine_relevance_tables(feature_relevances):
+def combine_relevance_tables(relevance_tables_with_label):
+    def _append_label_to_p_value_column(a):
+        label, df = a
+        return df.rename(columns={'p_value': 'p_value_{}'.format(label)})
+
     def _combine(a, b):
         a.rejected |= b.rejected
-        a.join(b.iloc[:,3])
-        return a
+        return a.join(b.iloc[:,3])
 
-    return reduce(_combine, feature_relevances)
+    relevance_tables = map(_append_label_to_p_value_column, relevance_tables_with_label)
+    return reduce(_combine, relevance_tables)

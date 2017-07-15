@@ -4,36 +4,36 @@
 
 import numpy as np
 import pandas as pd
-from pytest import raises
+import pytest
 from future.utils import lrange
 
-from tsfresh.feature_selection.selection import select_features, infer_ml_task
+from tsfresh.feature_selection.selection import select_features, infer_ml_task, combine_relevance_tables
 
 
 class TestSelectFeatures:
     def test_assert_list(self):
-        with raises(TypeError):
+        with pytest.raises(TypeError):
             select_features(pd.DataFrame(index=range(2)),[1,2,3])
 
 
     def test_assert_one_row_X(self):
         X = pd.DataFrame([1], index=[1])
         y = pd.Series([1], index=[1])
-        with raises(ValueError):
+        with pytest.raises(ValueError):
             select_features(X, y)
 
 
     def test_assert_different_index(self):
         X = pd.DataFrame(list(range(3)), index=[1, 2, 3])
         y = pd.Series(range(3), index=[1, 3, 4])
-        with raises(ValueError):
+        with pytest.raises(ValueError):
             select_features(X, y)
 
 
     def test_assert_shorter_y(self):
         X = pd.DataFrame([1, 2], index=[1, 2])
         y = np.array([1])
-        with raises(ValueError):
+        with pytest.raises(ValueError):
             select_features(X, y)
 
 
@@ -69,5 +69,44 @@ class TestInferMLTask:
     def test_restrict_ml_task_options(self):
         X = pd.DataFrame(list(range(3)))
         y = pd.Series(range(3))
-        with raises(ValueError):
+        with pytest.raises(ValueError):
             select_features(X, y, ml_task='some_other_task')
+
+
+class TestCombineRelevanceTables:
+    @pytest.fixture()
+    def relevance_table(self):
+        relevance_table = pd.DataFrame()
+        relevance_table['Feature'] = ['f1', 'f2', 'f3', 'f4']
+        relevance_table['rejected'] = [True, False, True, False]
+        relevance_table['type'] = ['real'] * 4
+        relevance_table['p_value'] = np.arange(0.1, 0.4, 0.1)
+        return relevance_table
+
+    def test_appends_label_to_p_value_column(self, relevance_table):
+        result = combine_relevance_tables([(0, relevance_table)])
+        assert 'p_value_0' in result.columns
+        assert 'p_value' not in result.columns
+
+    def test_disjuncts_rejection(self, relevance_table):
+        relevance_table_2 = relevance_table.copy()
+        relevance_table_2.rejected = [False, True, True, False]
+        result = combine_relevance_tables([(0, relevance_table), (1, relevance_table_2)])
+
+        assert ([True, True, True, False] == result.rejected).all()
+
+    def test_respects_index(self, relevance_table):
+        relevance_table_2 = relevance_table.copy()
+        relevance_table_2.reindex(reversed(relevance_table.index))
+
+        result = combine_relevance_tables([(0, relevance_table), (1, relevance_table_2)])
+
+        assert ([True, False, True, False] == result.rejected).all()
+
+    def test_preserves_p_values(self, relevance_table):
+        relevance_table_2 = relevance_table.copy()
+        relevance_table_2.p_value = 1.0 - relevance_table_2.p_value
+        result = combine_relevance_tables([(0, relevance_table), (1, relevance_table_2)])
+
+        assert (relevance_table.p_value == result.p_value_0).all()
+        assert (relevance_table_2.p_value == result.p_value_1).all()
