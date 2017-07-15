@@ -119,7 +119,7 @@ class ComprehensiveFCParameters(dict):
             "spkt_welch_density": [{"coeff": coeff} for coeff in [2, 5, 8]],
             "ar_coefficient": [{"coeff": coeff, "k": k} for coeff in range(5) for k in [10]],
             "mean_change_quantiles": [{"ql": ql, "qh": qh, "isbool": b, "f": f}
-                                          for ql in [0., .2, .4, .6, .8] for qh in [.2, .4, .6, .8, 1.],
+                                          for ql in [0., .2, .4, .6, .8] for qh in [.2, .4, .6, .8, 1.]
                                           for b in [False, True] for f in ["mean", "var"]],
             "fft_coefficient": [{"coeff": k, "attr": a} for a, k in product(["real", "imag"], range(100))],
             "value_count": [{"value": value} for value in [0, 1, np.NaN, np.PINF, np.NINF]],
