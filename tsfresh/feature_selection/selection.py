@@ -135,13 +135,13 @@ def select_features(X, y, test_for_binary_target_binary_feature=defaults.TEST_FO
 
         y = pd.Series(y, index=X.index)
 
-    df_bh = get_feature_relevances(
+    relevance_table = get_relevance_table(
         X, y, ml_task=ml_task, n_jobs=n_jobs, chunksize=chunksize,
         test_for_binary_target_real_feature=test_for_binary_target_real_feature,
         fdr_level=fdr_level, hypotheses_independent=hypotheses_independent,
     )
 
-    relevant_features = df_bh[df_bh.rejected].Feature
+    relevant_features = relevance_table[relevance_table.rejected].Feature
 
     return X.loc[:, relevant_features]
 
@@ -166,45 +166,44 @@ def infer_ml_task(y):
     return ml_task
 
 
-def get_feature_relevances(X, y, test_for_binary_target_binary_feature=defaults.TEST_FOR_BINARY_TARGET_BINARY_FEATURE,
-                           test_for_binary_target_real_feature=defaults.TEST_FOR_BINARY_TARGET_REAL_FEATURE,
-                           test_for_real_target_binary_feature=defaults.TEST_FOR_REAL_TARGET_BINARY_FEATURE,
-                           test_for_real_target_real_feature=defaults.TEST_FOR_REAL_TARGET_REAL_FEATURE,
-                           fdr_level=defaults.FDR_LEVEL, hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
-                           n_jobs=defaults.N_PROCESSES, chunksize=defaults.CHUNKSIZE,
-                           ml_task='auto'):
+def get_relevance_table(X, y, test_for_binary_target_binary_feature=defaults.TEST_FOR_BINARY_TARGET_BINARY_FEATURE,
+                        test_for_binary_target_real_feature=defaults.TEST_FOR_BINARY_TARGET_REAL_FEATURE,
+                        test_for_real_target_binary_feature=defaults.TEST_FOR_REAL_TARGET_BINARY_FEATURE,
+                        test_for_real_target_real_feature=defaults.TEST_FOR_REAL_TARGET_REAL_FEATURE,
+                        fdr_level=defaults.FDR_LEVEL, hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
+                        n_jobs=defaults.N_PROCESSES, chunksize=defaults.CHUNKSIZE,
+                        ml_task='auto'):
     if ml_task not in ['auto', 'classification', 'regression']:
         raise ValueError('ml_task must be one of: \'auto\', \'classification\', \'regression\'')
     elif ml_task == 'auto':
         ml_task = infer_ml_task(y)
 
     if ml_task == 'classification':
-        df_bh_list = []
+        relevance_tables = []
         for label in y.unique():
             y_label = (y == label)
-            df_bh = check_fs_sig_bh(
+            relevance_table = check_fs_sig_bh(
                 X, y_label, target_is_binary=True, n_jobs=n_jobs, chunksize=chunksize,
                 test_for_binary_target_real_feature=test_for_binary_target_real_feature,
                 fdr_level=fdr_level, hypotheses_independent=hypotheses_independent,
             )
-            df_bh_list.append(df_bh)
-        df_bh = combine_feature_relevances(df_bh_list)
+            relevance_table.rename(columns={'p_value': 'p_value_{}'.format(label)}, inplace=True)
+            relevance_tables.append(relevance_table)
+        relevance_table = combine_relevance_tables(relevance_tables)
     elif ml_task == 'regression':
-        df_bh = check_fs_sig_bh(
+        relevance_table = check_fs_sig_bh(
             X, y, target_is_binary=False, n_jobs=n_jobs, chunksize=chunksize,
             test_for_binary_target_real_feature=test_for_binary_target_real_feature,
             fdr_level=fdr_level, hypotheses_independent=hypotheses_independent,
         )
 
-    return df_bh
+    return relevance_table
 
 
-def combine_feature_relevances(feature_relevances):
-    def combine_df_bhs(a, b):
-        res = pd.DataFrame(a.Feature, index=a.index)
-        res['type'] = a.type
-        res['rejected'] = a.rejected | b.rejected
-        res['p_value'] = a.p_value.combine(b.p_value, min, 1)
-        return res
+def combine_relevance_tables(feature_relevances):
+    def _combine(a, b):
+        a.rejected |= b.rejected
+        a.join(b.iloc[:,3])
+        return a
 
-    return reduce(combine_df_bhs, feature_relevances)
+    return reduce(_combine, feature_relevances)
