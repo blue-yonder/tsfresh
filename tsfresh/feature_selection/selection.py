@@ -271,4 +271,6 @@ def combine_relevance_tables(relevance_tables_with_label):
         return a.join(b.iloc[:,3])
 
     relevance_tables = map(_append_label_to_p_value_column, relevance_tables_with_label)
-    return reduce(_combine, relevance_tables)
+    relevance_table = reduce(_combine, relevance_tables)
+    relevance_table['p_value'] = relevance_table.iloc[:, 3:].values.min(axis=1)
+    return relevance_table
