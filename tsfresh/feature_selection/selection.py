@@ -169,7 +169,7 @@ def infer_ml_task(y):
     else:
         ml_task = 'regression'
 
-    _logger.warn('Infered {} as machine learning task'.format(ml_task))
+    _logger.warning('Infered {} as machine learning task'.format(ml_task))
     return ml_task
 
 
