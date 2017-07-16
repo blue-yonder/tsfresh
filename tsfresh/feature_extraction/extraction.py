@@ -146,11 +146,11 @@ def extract_features(timeseries_container, default_fc_parameters=None,
                                 disable_progressbar=disable_progressbar,
                                 default_fc_parameters=default_fc_parameters, kind_to_fc_parameters=kind_to_fc_parameters)
 
-    result.index = result.index.astype(df_melt[column_id].dtype)
+        result.index = result.index.astype(df_melt[column_id].dtype)
 
-    # Impute the result if requested
-    if impute_function is not None:
-        impute_function(result)
+        # Impute the result if requested
+        if impute_function is not None:
+            impute_function(result)
 
     # Turn off profiling if it was turned on
     if profile:
