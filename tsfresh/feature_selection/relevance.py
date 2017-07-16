@@ -337,3 +337,22 @@ def combine_relevance_tables(relevance_tables_with_label):
     relevance_table = reduce(_combine, relevance_tables)
     relevance_table['p_value'] = relevance_table.iloc[:, 3:].values.min(axis=1)
     return relevance_table
+
+
+def get_feature_type(feature_column):
+    """
+    For a given feature, determine if it is real, binary or constant.
+    Here binary means that only two unique values occur in the feature.
+
+    :param feature_column: The feature column
+    :type feature_column: pandas.Series
+    :return: 'constant', 'binary' or 'real'
+    """
+    n_unique_values = len(feature_column.unique())
+    if n_unique_values == 1:
+        _logger.warning("[test_feature_significance] Feature {} is constant".format(feature_column.name))
+        return 'constant'
+    elif n_unique_values == 2:
+        return 'binary'
+    else:
+        return 'real'

@@ -6,7 +6,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from tsfresh.feature_selection.relevance import infer_ml_task, calculate_relevance_table, combine_relevance_tables
+from tsfresh.feature_selection.relevance import infer_ml_task, calculate_relevance_table, combine_relevance_tables, \
+    get_feature_type
 
 
 class TestInferMLTask:
@@ -79,3 +80,17 @@ class TestCombineRelevanceTables:
         result = combine_relevance_tables([(0, relevance_table), (1, relevance_table_2)])
 
         assert (np.array([0.1, 0.1, 0.3, 0.3]) == result.p_value).all()
+
+
+class TestGetFeatureType:
+    def test_binary(self):
+        feature = pd.Series([0.0, 1.0, 1.0])
+        assert 'binary' == get_feature_type(feature)
+
+    def test_constant(self):
+        feature = pd.Series([0.0, 0.0, 0.0])
+        assert 'constant' == get_feature_type(feature)
+
+    def test_real(self):
+        feature = pd.Series([0.0, 1.0, 2.0])
+        assert 'real' == get_feature_type(feature)
