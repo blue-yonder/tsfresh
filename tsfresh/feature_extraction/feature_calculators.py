@@ -1001,7 +1001,7 @@ def ar_coefficient(x, param):
 
 
 @set_property("fctype", "simple")
-def mean_change_quantiles(x, ql, qh, isabs, f):
+def change_quantiles(x, ql, qh, isabs, f_agg):
     """
     First fixes a corridor given by the quantiles ql and qh of the distribution of x.
     Then calculates the average, absolute value of consecutive changes of the series x inside this corridor.
@@ -1017,8 +1017,8 @@ def mean_change_quantiles(x, ql, qh, isabs, f):
     :type qh: float
     :param isabs: should the absolute differences be taken?
     :type isabs: bool
-    :param f: the aggregator function that is applied to the differences in the bin
-    :type f: str, name of a numpy function (e.g. mean, var, std, median)
+    :param f_agg: the aggregator function that is applied to the differences in the bin
+    :type f_agg: str, name of a numpy function (e.g. mean, var, std, median)
 
     :return: the value of this feature
     :return type: float
@@ -1044,7 +1044,7 @@ def mean_change_quantiles(x, ql, qh, isabs, f):
         return 0
     else:
         ind_inside_corridor = np.where(ind == 1)
-        aggregator = getattr(np, f)
+        aggregator = getattr(np, f_agg)
         return aggregator(div[ind_inside_corridor])
 
 
