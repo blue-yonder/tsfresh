@@ -102,10 +102,7 @@ def load_robot_execution_failures():
             if line[0] not in ['\t', '\n']:
                 cur_id += 1
                 time = 0
-                if line.strip() == 'normal':
-                    id_to_target[cur_id] = 0
-                else:
-                    id_to_target[cur_id] = 1
+                id_to_target[cur_id] = line.strip()
             # Data row --> split and convert values, create complete df row
             elif line[0] == '\t':
                 values = list(map(int, line.split('\t')[1:]))
