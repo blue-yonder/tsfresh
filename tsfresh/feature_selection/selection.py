@@ -14,7 +14,7 @@ import pandas as pd
 import numpy as np
 from tsfresh import defaults
 from tsfresh.utilities.dataframe_functions import check_for_nans_in_columns
-from tsfresh.feature_selection.feature_selector import check_fs_sig_bh
+from tsfresh.feature_selection.relevance import check_fs_sig_bh
 
 
 _logger = logging.getLogger(__name__)

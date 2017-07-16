@@ -5,7 +5,7 @@
 import numpy as np
 import pandas as pd
 from unittest import TestCase
-import tsfresh.feature_selection.feature_selector
+import tsfresh.feature_selection.relevance
 
 
 class FeatureSignificanceTestCase(TestCase):
@@ -43,7 +43,7 @@ class FeatureSignificanceTestCase(TestCase):
         X["irr8"] = np.random.poisson(1, 1000)
         X["irr9"] = np.random.binomial(1, 0.3, 1000)
 
-        df_bh = tsfresh.feature_selection.feature_selector.check_fs_sig_bh(X, y, target_is_binary=True)
+        df_bh = tsfresh.feature_selection.relevance.check_fs_sig_bh(X, y, target_is_binary=True)
         feat_rej = df_bh.loc[df_bh.relevant].Feature
 
         # Make sure all selected variables are relevant
@@ -111,7 +111,7 @@ class FeatureSignificanceTestCase(TestCase):
         z[z == 2] = 1
         X["rel5"] = z
 
-        df_bh = tsfresh.feature_selection.feature_selector.check_fs_sig_bh(X, y, target_is_binary=True)
+        df_bh = tsfresh.feature_selection.relevance.check_fs_sig_bh(X, y, target_is_binary=True)
         feat_rej = df_bh.loc[df_bh.relevant].Feature
 
         # Make sure all selected variables are relevant
@@ -152,7 +152,7 @@ class FeatureSignificanceTestCase(TestCase):
         X["rel3"] = y ** 2 + np.random.normal(0, 1, 5000)
         X["rel4"] = np.sqrt(y) + np.random.binomial(2, 0.1, 5000)
 
-        df_bh = tsfresh.feature_selection.feature_selector.check_fs_sig_bh(X, y, target_is_binary=False)
+        df_bh = tsfresh.feature_selection.relevance.check_fs_sig_bh(X, y, target_is_binary=False)
         feat_rej = df_bh.loc[df_bh.relevant].Feature
 
         # Make sure all selected variables are relevant
@@ -198,7 +198,7 @@ class FeatureSignificanceTestCase(TestCase):
         X["irr8"] = np.random.poisson(1, 5000)
         X["irr9"] = np.random.binomial(1, 0.2, 5000)
 
-        df_bh = tsfresh.feature_selection.feature_selector.check_fs_sig_bh(X, y, target_is_binary=False)
+        df_bh = tsfresh.feature_selection.relevance.check_fs_sig_bh(X, y, target_is_binary=False)
         feat_rej = df_bh.loc[df_bh.relevant].Feature
 
         # Make sure all selected variables are relevant
@@ -248,7 +248,7 @@ class FeatureSignificanceTestCase(TestCase):
         X["irr5"] = np.random.binomial(0, 0.25, 1000)
         X["irr6"] = np.random.binomial(0, 0.01, 1000)
 
-        df_bh = tsfresh.feature_selection.feature_selector.check_fs_sig_bh(X, y, target_is_binary=False)
+        df_bh = tsfresh.feature_selection.relevance.check_fs_sig_bh(X, y, target_is_binary=False)
         feat_rej = df_bh.loc[df_bh.relevant].Feature
 
         # Make sure all selected variables are relevant
@@ -272,7 +272,7 @@ class FeatureSignificanceTestCase(TestCase):
         z[z == 2] = 1
         X["rel2"] = z
 
-        df_bh = tsfresh.feature_selection.feature_selector.check_fs_sig_bh(X, y, target_is_binary=False)
+        df_bh = tsfresh.feature_selection.relevance.check_fs_sig_bh(X, y, target_is_binary=False)
         feat_rej = df_bh.loc[df_bh.relevant].Feature
 
         # Make sure all selected variables are relevant
@@ -293,7 +293,7 @@ class FeatureSignificanceTestCase(TestCase):
         X["irr5"] = np.random.binomial(0, 0.25, 1000)
         X["irr6"] = np.random.binomial(0, 0.01, 1000)
 
-        df_bh = tsfresh.feature_selection.feature_selector.check_fs_sig_bh(X, y, target_is_binary=False)
+        df_bh = tsfresh.feature_selection.relevance.check_fs_sig_bh(X, y, target_is_binary=False)
         feat_rej = df_bh.loc[df_bh.relevant].Feature
 
         self.assertEqual(len(feat_rej), 0)
