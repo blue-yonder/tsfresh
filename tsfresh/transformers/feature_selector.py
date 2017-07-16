@@ -5,7 +5,7 @@
 import pandas as pd
 from tsfresh import defaults
 from sklearn.base import BaseEstimator, TransformerMixin
-from tsfresh.feature_selection.selection import calculate_relevance_table
+from tsfresh.feature_selection.relevance import calculate_relevance_table
 
 
 class FeatureSelector(BaseEstimator, TransformerMixin):

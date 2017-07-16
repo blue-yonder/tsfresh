@@ -7,8 +7,8 @@ import pandas as pd
 import pytest
 from future.utils import lrange
 
-from tsfresh.feature_selection.selection import select_features, infer_ml_task, combine_relevance_tables,\
-    calculate_relevance_table
+from tsfresh.feature_selection.selection import select_features
+from tsfresh.feature_selection.relevance import infer_ml_task, combine_relevance_tables, calculate_relevance_table
 
 
 class TestSelectFeatures:
