@@ -92,7 +92,8 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
 
         :param ml_task: The intended machine learning task. Either `'classification'`, `'regression'` or `'auto'`.
                     Defaults to `'auto'`, meaning the intended task is inferred from `y`.
-                    If `y` has a boolean or integer dtype, the task is assumend to be classification, else regression.
+                    If `y` has a boolean, integer or object dtype, the task is assumend to be classification,
+                    else regression.
         :type ml_task: str
         """
         self.relevant_features = None

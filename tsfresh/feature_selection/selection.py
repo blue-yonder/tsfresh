@@ -112,7 +112,8 @@ def select_features(X, y, test_for_binary_target_binary_feature=defaults.TEST_FO
 
     :param ml_task: The intended machine learning task. Either `'classification'`, `'regression'` or `'auto'`.
                     Defaults to `'auto'`, meaning the intended task is inferred from `y`.
-                    If `y` has a boolean or integer dtype, the task is assumend to be classification, else regression.
+                    If `y` has a boolean, integer or object dtype, the task is assumend to be classification,
+                    else regression.
     :type ml_task: str
 
     :return: The same DataFrame as X, but possibly with reduced number of columns ( = features).
@@ -151,7 +152,7 @@ def infer_ml_task(y):
     """
     Infer the machine learning task to select for.
     The result will be either `'regression'` or `'classification'`.
-    If the target vector only consists of integer typed values, we assume the task is `'classification'`.
+    If the target vector only consists of integer typed values or objects, we assume the task is `'classification'`.
     Else `'regression'`.
 
     :param y: The target vector y.
@@ -159,7 +160,7 @@ def infer_ml_task(y):
     :return: 'classification' or 'regression'
     :rtype: str
     """
-    if y.dtype.kind in np.typecodes['AllInteger']:
+    if y.dtype.kind in np.typecodes['AllInteger'] or y.dtype == np.object:
         ml_task = 'classification'
     else:
         ml_task = 'regression'
@@ -187,7 +188,8 @@ def get_relevance_table(X, y, ml_task='auto', test_for_binary_target_binary_feat
 
     :param ml_task: The intended machine learning task. Either `'classification'`, `'regression'` or `'auto'`.
                     Defaults to `'auto'`, meaning the intended task is inferred from `y`.
-                    If `y` has a boolean or integer dtype, the task is assumend to be classification, else regression.
+                    If `y` has a boolean, integer or object dtype, the task is assumend to be classification,
+                    else regression.
     :type ml_task: str
 
     :param test_for_binary_target_binary_feature: Which test to be used for binary target, binary feature (currently unused)

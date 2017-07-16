@@ -61,6 +61,9 @@ class TestInferMLTask:
         y = pd.Series([True, False, False])
         assert 'classification' == infer_ml_task(y)
 
+    def test_infers_classification_for_object_target(self):
+        y = pd.Series(['high', 'low'])
+        assert 'classification' == infer_ml_task(y)
 
     def test_infers_regression_for_float_target(self):
         y = pd.Series([1.0, 1.5, 1.7])
