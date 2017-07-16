@@ -1,6 +1,6 @@
 import ast
 import numpy as np
-
+import numbers
 
 def get_config_from_string(parts):
     """
@@ -48,10 +48,19 @@ def convert_to_output_format(param):
 
        <param name>_<param value>__<param name>_<param value>__ ...
 
+    If a <param_value> is a string, this method will wrap it with parenthesis ", so "<param_value>"
+
     :param param: The dictionary of parameters to write out
     :type param: dict
 
     :return: The string of parsed parameters
     :rtype: str
     """
-    return "__".join(str(key) + "_" + str(param[key]) for key in sorted(param))
+
+    def add_paranthesis_if_string_value(x):
+        if isinstance(x, numbers.Number):
+            return str(x)
+        else:
+            return '"' + str(x) + '"'
+
+    return "__".join(str(key) + "_" + add_paranthesis_if_string_value(param[key]) for key in sorted(param))
