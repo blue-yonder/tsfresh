@@ -136,13 +136,8 @@ def select_features(X, y, test_for_binary_target_binary_feature=defaults.TEST_FO
 
         y = pd.Series(y, index=X.index)
 
-    if ml_task not in ['auto', 'classification', 'regression']:
-        raise ValueError('ml_task must be one of: \'auto\', \'classification\', \'regression\'')
-    elif ml_task == 'auto':
-        ml_task = infer_ml_task(y)
-
     relevance_table = get_relevance_table(
-        X, y, ml_task, n_jobs=n_jobs, chunksize=chunksize,
+        X, y, ml_task=ml_task, n_jobs=n_jobs, chunksize=chunksize,
         test_for_binary_target_real_feature=test_for_binary_target_real_feature,
         fdr_level=fdr_level, hypotheses_independent=hypotheses_independent,
     )
@@ -173,7 +168,7 @@ def infer_ml_task(y):
     return ml_task
 
 
-def get_relevance_table(X, y, ml_task, test_for_binary_target_binary_feature=defaults.TEST_FOR_BINARY_TARGET_BINARY_FEATURE,
+def get_relevance_table(X, y, ml_task='auto', test_for_binary_target_binary_feature=defaults.TEST_FOR_BINARY_TARGET_BINARY_FEATURE,
                         test_for_binary_target_real_feature=defaults.TEST_FOR_BINARY_TARGET_REAL_FEATURE,
                         test_for_real_target_binary_feature=defaults.TEST_FOR_REAL_TARGET_BINARY_FEATURE,
                         test_for_real_target_real_feature=defaults.TEST_FOR_REAL_TARGET_REAL_FEATURE,
@@ -190,7 +185,9 @@ def get_relevance_table(X, y, ml_task, test_for_binary_target_binary_feature=def
     :param y: Target vector which is needed to test which features are relevant. Can be binary or real-valued.
     :type y: pandas.Series or numpy.ndarray
 
-    :param ml_task: The intended machine learning task. Either `'classification'`, `'regression'`.
+    :param ml_task: The intended machine learning task. Either `'classification'`, `'regression'` or `'auto'`.
+                    Defaults to `'auto'`, meaning the intended task is inferred from `y`.
+                    If `y` has a boolean or integer dtype, the task is assumend to be classification, else regression.
     :type ml_task: str
 
     :param test_for_binary_target_binary_feature: Which test to be used for binary target, binary feature (currently unused)
@@ -228,6 +225,11 @@ def get_relevance_table(X, y, ml_task, test_for_binary_target_binary_feature=def
              "relevant" (True if the Benjamini Hochberg procedure rejected the null hypothesis for this feature)
     :rtype: pandas.DataFrame
     """
+    if ml_task not in ['auto', 'classification', 'regression']:
+        raise ValueError('ml_task must be one of: \'auto\', \'classification\', \'regression\'')
+    elif ml_task == 'auto':
+        ml_task = infer_ml_task(y)
+
     if ml_task == 'classification':
         relevance_tables = []
         for label in y.unique():

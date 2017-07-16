@@ -7,7 +7,8 @@ import pandas as pd
 import pytest
 from future.utils import lrange
 
-from tsfresh.feature_selection.selection import select_features, infer_ml_task, combine_relevance_tables
+from tsfresh.feature_selection.selection import select_features, infer_ml_task, combine_relevance_tables,\
+    get_relevance_table
 
 
 class TestSelectFeatures:
@@ -66,11 +67,12 @@ class TestInferMLTask:
         assert 'regression' == infer_ml_task(y)
 
 
+class TestGetRelevanceTable:
     def test_restrict_ml_task_options(self):
         X = pd.DataFrame(list(range(3)))
         y = pd.Series(range(3))
         with pytest.raises(ValueError):
-            select_features(X, y, ml_task='some_other_task')
+            get_relevance_table(X, y, ml_task='some_other_task')
 
 
 class TestCombineRelevanceTables:
