@@ -137,7 +137,7 @@ def select_features(X, y, test_for_binary_target_binary_feature=defaults.TEST_FO
 
         y = pd.Series(y, index=X.index)
 
-    relevance_table = get_relevance_table(
+    relevance_table = calculate_relevance_table(
         X, y, ml_task=ml_task, n_jobs=n_jobs, chunksize=chunksize,
         test_for_binary_target_real_feature=test_for_binary_target_real_feature,
         fdr_level=fdr_level, hypotheses_independent=hypotheses_independent,
@@ -169,12 +169,12 @@ def infer_ml_task(y):
     return ml_task
 
 
-def get_relevance_table(X, y, ml_task='auto', test_for_binary_target_binary_feature=defaults.TEST_FOR_BINARY_TARGET_BINARY_FEATURE,
-                        test_for_binary_target_real_feature=defaults.TEST_FOR_BINARY_TARGET_REAL_FEATURE,
-                        test_for_real_target_binary_feature=defaults.TEST_FOR_REAL_TARGET_BINARY_FEATURE,
-                        test_for_real_target_real_feature=defaults.TEST_FOR_REAL_TARGET_REAL_FEATURE,
-                        fdr_level=defaults.FDR_LEVEL, hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
-                        n_jobs=defaults.N_PROCESSES, chunksize=defaults.CHUNKSIZE):
+def calculate_relevance_table(X, y, ml_task='auto', test_for_binary_target_binary_feature=defaults.TEST_FOR_BINARY_TARGET_BINARY_FEATURE,
+                              test_for_binary_target_real_feature=defaults.TEST_FOR_BINARY_TARGET_REAL_FEATURE,
+                              test_for_real_target_binary_feature=defaults.TEST_FOR_REAL_TARGET_BINARY_FEATURE,
+                              test_for_real_target_real_feature=defaults.TEST_FOR_REAL_TARGET_REAL_FEATURE,
+                              fdr_level=defaults.FDR_LEVEL, hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
+                              n_jobs=defaults.N_PROCESSES, chunksize=defaults.CHUNKSIZE):
     """
     Get the relevance table for the features contained in feature matrix `X` with respect to target vector `y`.
     The relevance table is calculated for the intended machine learning task `ml_task`.

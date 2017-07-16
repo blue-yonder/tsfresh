@@ -8,7 +8,7 @@ import pytest
 from future.utils import lrange
 
 from tsfresh.feature_selection.selection import select_features, infer_ml_task, combine_relevance_tables,\
-    get_relevance_table
+    calculate_relevance_table
 
 
 class TestSelectFeatures:
@@ -75,7 +75,7 @@ class TestGetRelevanceTable:
         X = pd.DataFrame(list(range(3)))
         y = pd.Series(range(3))
         with pytest.raises(ValueError):
-            get_relevance_table(X, y, ml_task='some_other_task')
+            calculate_relevance_table(X, y, ml_task='some_other_task')
 
 
 class TestCombineRelevanceTables:

@@ -5,7 +5,7 @@
 import pandas as pd
 from tsfresh import defaults
 from sklearn.base import BaseEstimator, TransformerMixin
-from tsfresh.feature_selection.selection import get_relevance_table
+from tsfresh.feature_selection.selection import calculate_relevance_table
 
 
 class FeatureSelector(BaseEstimator, TransformerMixin):
@@ -136,7 +136,7 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
         if not isinstance(y, pd.Series):
             y = pd.Series(y.copy())
 
-        relevance_table = get_relevance_table(
+        relevance_table = calculate_relevance_table(
                                 X, y, ml_task=self.ml_task, n_jobs=self.n_jobs,
                                 chunksize=self.chunksize, fdr_level=self.fdr_level,
                                 hypotheses_independent=self.hypotheses_independent,
