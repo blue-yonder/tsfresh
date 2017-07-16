@@ -57,10 +57,10 @@ def convert_to_output_format(param):
     :rtype: str
     """
 
-    def add_paranthesis_if_string_value(x):
-        if isinstance(x, numbers.Number):
-            return str(x)
-        else:
+    def add_parenthesis_if_string_value(x):
+        if isinstance(x, basestring):
             return '"' + str(x) + '"'
+        else:
+            return str(x)
 
-    return "__".join(str(key) + "_" + add_paranthesis_if_string_value(param[key]) for key in sorted(param))
+    return "__".join(str(key) + "_" + add_parenthesis_if_string_value(param[key]) for key in sorted(param))
