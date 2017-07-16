@@ -198,7 +198,7 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
             test_for_real_target_binary_feature=test_for_real_target_binary_feature,
             test_for_real_target_real_feature=test_for_real_target_real_feature,
             fdr_level=fdr_level, hypotheses_independent=hypotheses_independent,
-            n_jobs=n_jobs, chunksize=chunksize, ml_task=self.ml_task
+            n_jobs=n_jobs, chunksize=chunksize, ml_task=ml_task
         )
 
         self.filter_only_tsfresh_features = filter_only_tsfresh_features
