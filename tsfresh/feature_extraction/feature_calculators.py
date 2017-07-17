@@ -1001,10 +1001,12 @@ def ar_coefficient(x, param):
 
 
 @set_property("fctype", "simple")
-def mean_abs_change_quantiles(x, ql, qh):
+def change_quantiles(x, ql, qh, isabs, f_agg):
     """
-    First fixes a corridor given by the quantiles ql and qh of the distribution of x. Then calculates the average
-    absolute value of consecutive changes of the series x inside this corridor. Think about selecting a corridor on the
+    First fixes a corridor given by the quantiles ql and qh of the distribution of x.
+    Then calculates the average, absolute value of consecutive changes of the series x inside this corridor.
+
+    Think about selecting a corridor on the
     y-Axis and only calculating the mean of the absolute change of the time series inside this corridor.
 
     :param x: the time series to calculate the feature of
@@ -1013,6 +1015,11 @@ def mean_abs_change_quantiles(x, ql, qh):
     :type ql: float
     :param qh: the higher quantile of the corridor
     :type qh: float
+    :param isabs: should the absolute differences be taken?
+    :type isabs: bool
+    :param f_agg: the aggregator function that is applied to the differences in the bin
+    :type f_agg: str, name of a numpy function (e.g. mean, var, std, median)
+
     :return: the value of this feature
     :return type: float
     """
@@ -1020,7 +1027,10 @@ def mean_abs_change_quantiles(x, ql, qh):
 
     if ql >= qh:
         ValueError("ql={} should be lower than qh={}".format(ql, qh))
-    div = np.abs(np.diff(x))
+
+    div = np.diff(x)
+    if isabs:
+        div = np.abs(div)
     # All values that originate from the corridor between the quantiles ql and qh will have the category 0,
     # other will be np.NaN
     try:
@@ -1034,7 +1044,9 @@ def mean_abs_change_quantiles(x, ql, qh):
         return 0
     else:
         ind_inside_corridor = np.where(ind == 1)
-        return np.mean(div[ind_inside_corridor])
+        aggregator = getattr(np, f_agg)
+        return aggregator(div[ind_inside_corridor])
+
 
 
 @set_property("fctype", "simple")
