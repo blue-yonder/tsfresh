@@ -20,7 +20,7 @@ def select_features(X, y, test_for_binary_target_binary_feature=defaults.TEST_FO
                     test_for_real_target_binary_feature=defaults.TEST_FOR_REAL_TARGET_BINARY_FEATURE,
                     test_for_real_target_real_feature=defaults.TEST_FOR_REAL_TARGET_REAL_FEATURE,
                     fdr_level=defaults.FDR_LEVEL, hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
-                    n_processes=defaults.N_PROCESSES, chunksize=defaults.CHUNKSIZE):
+                    n_jobs=defaults.N_PROCESSES, chunksize=defaults.CHUNKSIZE):
     """
     Check the significance of all features (columns) of feature matrix X and return a possibly reduced feature matrix
     only containing relevant features.
@@ -98,8 +98,8 @@ def select_features(X, y, test_for_binary_target_binary_feature=defaults.TEST_FO
                                    independent (e.g. mean and median)
     :type hypotheses_independent: bool
 
-    :param n_processes: Number of processes to use during the p-value calculation
-    :type n_processes: int
+    :param n_jobs: Number of processes to use during the p-value calculation
+    :type n_jobs: int
 
     :param chunksize: Size of the chunks submitted to the worker processes
     :type chunksize: int
@@ -124,7 +124,7 @@ def select_features(X, y, test_for_binary_target_binary_feature=defaults.TEST_FO
 
         y = pd.Series(y, index=X.index)
 
-    df_bh = check_fs_sig_bh(X, y, n_processes, chunksize, fdr_level, hypotheses_independent,
+    df_bh = check_fs_sig_bh(X, y, n_jobs, chunksize, fdr_level, hypotheses_independent,
                             test_for_binary_target_real_feature)
 
     return X.loc[:, df_bh[df_bh.rejected].Feature]

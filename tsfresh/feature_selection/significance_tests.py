@@ -116,8 +116,7 @@ def target_binary_feature_real_test(x, y, test):
 
     if test == 'mann':
         # Perform Mann-Whitney-U test
-        U, p_mannwhitu = stats.mannwhitneyu(x_y1, x_y0, use_continuity=True)
-        p_mannwhitu *= 2  # To get two-sided P value (refer to scipy manual).
+        U, p_mannwhitu = stats.mannwhitneyu(x_y1, x_y0, use_continuity=True, alternative='two-sided')
         return p_mannwhitu
     elif test == 'smir':
         # Perform Kolmogorov-Smirnov test

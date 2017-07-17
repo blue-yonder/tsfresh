@@ -221,7 +221,7 @@ def restrict_input_to_index(df_or_dict, column_id, index):
 
 # todo: add more testcases
 # todo: rewrite in a more straightforward way
-def normalize_input_to_internal_representation(df_or_dict, column_id, column_sort, column_kind, column_value):
+def normalize_input_to_internal_representation(timeseries_container, column_id, column_sort, column_kind, column_value):
     """
     Try to transform any given input to the internal representation of time series, which is a mapping from string
     (the kind) to a pandas DataFrame with exactly two columns (the value and the id).
@@ -229,12 +229,12 @@ def normalize_input_to_internal_representation(df_or_dict, column_id, column_sor
     This function can transform pandas DataFrames in different formats or dictionaries to pandas DataFrames in different
     formats. It is used internally in the extract_features function and should not be called by the user.
 
-    :param df_or_dict: a pandas DataFrame or a dictionary. The required shape/form of the object depends on the rest of
-        the passed arguments.
-    :type df_or_dict: pandas.DataFrame or dict
+    :param timeseries_container: a pandas DataFrame or a dictionary. The required shape/form of the object depends on
+        the rest of the passed arguments.
+    :type timeseries_container: pandas.DataFrame or dict
     :param column_id: it must be present in the pandas DataFrame or in all DataFrames in the dictionary.
         It is not allowed to have NaN values in this column.
-    :type column_id: basestring or None
+    :type column_id: basestring
     :param column_sort: if not None, sort the rows by this column. It is not allowed to
         have NaN values in this column.
     :type column_sort: basestring or None
@@ -244,11 +244,10 @@ def normalize_input_to_internal_representation(df_or_dict, column_id, column_sor
         mapping.
         If the kind column is not passed, it is assumed that each column in the pandas DataFrame (except the id or
         sort column) is a possible kind and the DataFrame is split up into as many DataFrames as there are columns.
-        Except when a value column is given: then it is assumed that there is only one column.
+        It is not allowed to have a value column then.
     :type column_kind: basestring or None
     :param column_value: If it is given, it must be present and not-NaN on the pandas DataFrames (or all pandas
-        DataFrames in the dictionaries). If it is None, it is assumed that there is only a single remaining column
-        in the DataFrame(s) (otherwise an exception is raised).
+        DataFrames in the dictionaries). If it is None, the kind column must also be none.
     :type column_value: basestring or None
 
     :return: A tuple of 3 elements: the normalized DataFrame as a dictionary mapping from the kind (as a string) to the
@@ -257,75 +256,65 @@ def normalize_input_to_internal_representation(df_or_dict, column_id, column_sor
     :raise: ``ValueError`` when the passed combination of parameters is wrong or does not fit to the input DataFrame
             or dict.
     """
-    if isinstance(df_or_dict, dict):
+    # Also make it possible to have a dict as an input
+    if isinstance(timeseries_container, dict):
         if column_kind is not None:
             raise ValueError("You passed in a dictionary and gave a column name for the kind. Both are not possible.")
-        kind_to_df_map = {key: df.copy() for key, df in df_or_dict.items()}
-    else:
-        if column_kind is not None:
-            kind_to_df_map = {key: group.copy().drop(column_kind, axis=1) for key, group in
-                              df_or_dict.groupby(column_kind)}
-        else:
-            if column_value is not None:
-                kind_to_df_map = {column_value: df_or_dict.copy()}
-            else:
-                id_and_sort_column = [_f for _f in [column_id, column_sort] if _f is not None]
-                kind_to_df_map = {key: df_or_dict[[key] + id_and_sort_column].copy().rename(columns={key: "_value"})
-                                  for key in df_or_dict.columns if key not in id_and_sort_column}
 
-                # TODO: is this the right check?
-                if len(kind_to_df_map) < 1:
-                    raise ValueError("You passed in a dataframe without a value column.")
-                column_value = "_value"
+        column_kind = "_variables"
 
-    if column_id is not None:
-        for kind in kind_to_df_map:
-            if column_id not in kind_to_df_map[kind].columns:
-                raise AttributeError("The given column for the id is not present in the data.")
-            elif kind_to_df_map[kind][column_id].isnull().any():
-                raise ValueError("You have NaN values in your id column.")
-    else:
+        timeseries_container = {key: df.copy() for key, df in timeseries_container.items()}
+
+        for kind, df in timeseries_container.items():
+            df[column_kind] = kind
+
+        timeseries_container = pd.concat(timeseries_container.values())
+
+    # Check ID column
+    if column_id is None:
         raise ValueError("You have to set the column_id which contains the ids of the different time series")
 
-    for kind in kind_to_df_map:
-        kind_to_df_map[kind].index.name = None
+    if column_id not in timeseries_container.columns:
+        raise AttributeError("The given column for the id is not present in the data.")
 
+    if timeseries_container[column_id].isnull().any():
+        raise ValueError("You have NaN values in your id column.")
+
+    # Check sort column
     if column_sort is not None:
-        for kind in kind_to_df_map:
-            # Require no Nans in column
-            if kind_to_df_map[kind][column_sort].isnull().any():
-                raise ValueError("You have NaN values in your sort column.")
+        if timeseries_container[column_sort].isnull().any():
+            raise ValueError("You have NaN values in your sort column.")
+        timeseries_container = timeseries_container.sort_values(column_sort).drop(column_sort, axis=1)
 
-            kind_to_df_map[kind] = kind_to_df_map[kind].sort_values(column_sort).drop(column_sort, axis=1)
+    # Check that either kind and value is None or both not None.
+    if column_kind is None and column_value is not None:
+        column_kind = "_variables"
+        timeseries_container = timeseries_container.copy()
+        timeseries_container[column_kind] = "feature"
+    if column_kind is not None and column_value is None:
+        raise ValueError("If passing the kind, you also have to pass the value.")
 
-    # Either the column for the value must be given...
-    if column_value is not None:
-        for kind in kind_to_df_map:
-            if column_value not in kind_to_df_map[kind].columns:
-                raise ValueError("The given column for the value is not present in the data.")
-    # or it is not allowed to have more than one column left (except id and sort)
-    else:
-        # But this column has to be the same always:
-        remaining_columns = set(col for kind in kind_to_df_map for col in kind_to_df_map[kind].columns) - {column_id}
+    if column_kind is None and column_value is None:
+        column_kind = "_variables"
+        column_value = "_values"
+        timeseries_container = pd.melt(timeseries_container, id_vars=[column_id],
+                                       value_name=column_value, var_name=column_kind)
 
-        if len(remaining_columns) > 1:
-            raise ValueError("You did not give a column for values and we would have to choose between more than one.")
-        elif len(remaining_columns) < 1:
-            raise ValueError("You passed in a dataframe without a value column.")
-        else:
-            column_value = list(set(remaining_columns))[0]
+    # Check kind column
+    if column_kind not in timeseries_container.columns:
+        raise AttributeError("The given column for the kind is not present in the data.")
 
-        for kind in kind_to_df_map:
-            if not column_value in kind_to_df_map[kind].columns:
-                raise ValueError(
-                    "You did not pass a column_value and there is not a single candidate in all data frames.")
+    if timeseries_container[column_kind].isnull().any():
+        raise ValueError("You have NaN values in your kind column.")
 
-    # Require no NaNs in value columns
-    for kind in kind_to_df_map:
-        if kind_to_df_map[kind][column_value].isnull().any():
-            raise ValueError("You have NaN values in your value column.")
+    # Check value column
+    if column_value not in timeseries_container.columns:
+        raise ValueError("The given column for the value is not present in the data.")
 
-    return kind_to_df_map, column_id, column_value
+    if timeseries_container[column_value].isnull().any():
+        raise ValueError("You have NaN values in your value column.")
+
+    return timeseries_container, column_id, column_kind, column_value
 
 
 def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_direction,

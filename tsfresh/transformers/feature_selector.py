@@ -59,7 +59,7 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
                  test_for_real_target_binary_feature=defaults.TEST_FOR_REAL_TARGET_BINARY_FEATURE,
                  test_for_real_target_real_feature=defaults.TEST_FOR_REAL_TARGET_REAL_FEATURE,
                  fdr_level=defaults.FDR_LEVEL, hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
-                 n_processes=defaults.N_PROCESSES, chunksize=defaults.CHUNKSIZE):
+                 n_jobs=defaults.N_PROCESSES, chunksize=defaults.CHUNKSIZE):
         """
         Create a new FeatureSelector instance.
 
@@ -84,8 +84,8 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
                                        independent (e.g. mean and median)
         :type hypotheses_independent: bool
 
-        :param n_processes: Number of processes to use during the p-value calculation
-        :type n_processes: int
+        :param n_jobs: Number of processes to use during the p-value calculation
+        :type n_jobs: int
 
         :param chunksize: Size of the chunks submitted to the worker processes
         :type chunksize: int
@@ -103,7 +103,7 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
         self.fdr_level = fdr_level
         self.hypotheses_independent = hypotheses_independent
 
-        self.n_processes = n_processes
+        self.n_jobs = n_jobs
         self.chunksize = chunksize
 
     def fit(self, X, y):
@@ -129,7 +129,7 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
         if not isinstance(y, pd.Series):
             y = pd.Series(y.copy())
 
-        df_bh = check_fs_sig_bh(X, y, self.n_processes, self.chunksize,
+        df_bh = check_fs_sig_bh(X, y, self.n_jobs, self.chunksize,
                                 self.fdr_level, self.hypotheses_independent,
                                 self.test_for_binary_target_real_feature)
         self.relevant_features = df_bh.loc[df_bh.rejected].Feature.tolist()

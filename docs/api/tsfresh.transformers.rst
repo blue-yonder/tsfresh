@@ -29,3 +29,12 @@ relevant_feature_augmenter
     :members:
     :undoc-members:
     :show-inheritance:
+
+per_column_imputer
+--------------------------
+
+.. automodule:: tsfresh.transformers.per_column_imputer
+    :members:
+    :undoc-members:
+    :show-inheritance:
+

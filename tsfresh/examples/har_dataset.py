@@ -43,7 +43,7 @@ def download_har_dataset():
     ========
 
     >>> from tsfresh.examples import har_dataset
-    >>> download_har_dataset()
+    >>> har_dataset.download_har_dataset()
     """
 
     zipurl = 'https://github.com/MaxBenChrist/human-activity-dataset/blob/master/UCI%20HAR%20Dataset.zip?raw=true'
