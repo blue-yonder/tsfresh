@@ -28,16 +28,51 @@ from tsfresh.feature_selection.significance_tests import target_binary_feature_r
 _logger = logging.getLogger(__name__)
 
 
-def calculate_relevance_table(X, y, ml_task='auto',
-                              test_for_binary_target_binary_feature=defaults.TEST_FOR_BINARY_TARGET_BINARY_FEATURE,
-                              test_for_binary_target_real_feature=defaults.TEST_FOR_BINARY_TARGET_REAL_FEATURE,
-                              test_for_real_target_binary_feature=defaults.TEST_FOR_REAL_TARGET_BINARY_FEATURE,
-                              test_for_real_target_real_feature=defaults.TEST_FOR_REAL_TARGET_REAL_FEATURE,
-                              fdr_level=defaults.FDR_LEVEL, hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
-                              n_jobs=defaults.N_PROCESSES, chunksize=defaults.CHUNKSIZE):
+def calculate_relevance_table(X, y, ml_task='auto', n_jobs=defaults.N_PROCESSES, chunksize=defaults.CHUNKSIZE,
+                   test_for_binary_target_binary_feature=defaults.TEST_FOR_BINARY_TARGET_BINARY_FEATURE,
+                   test_for_binary_target_real_feature=defaults.TEST_FOR_BINARY_TARGET_REAL_FEATURE,
+                   test_for_real_target_binary_feature=defaults.TEST_FOR_REAL_TARGET_BINARY_FEATURE,
+                   test_for_real_target_real_feature=defaults.TEST_FOR_REAL_TARGET_REAL_FEATURE,
+                   fdr_level=defaults.FDR_LEVEL, hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT):
     """
-    Get the relevance table for the features contained in feature matrix `X` with respect to target vector `y`.
+    Calculate the relevance table for the features contained in feature matrix `X` with respect to target vector `y`.
     The relevance table is calculated for the intended machine learning task `ml_task`.
+
+    To accomplish this for each feature from the input pandas.DataFrame an univariate feature significance test
+    is conducted. Those tests generate p values that are then evaluated by the Benjamini Hochberg procedure to
+    decide which features to keep and which to delete.
+
+    We are testing
+
+        :math:`H_0` = the Feature is not relevant and should not be added
+
+    against
+
+        :math:`H_1` = the Feature is relevant and should be kept
+
+    or in other words
+
+        :math:`H_0` = Target and Feature are independent / the Feature has no influence on the target
+
+        :math:`H_1` = Target and Feature are associated / dependent
+
+    When the target is binary this becomes
+
+        :math:`H_0 = \\left( F_{\\text{target}=1} = F_{\\text{target}=0} \\right)`
+
+        :math:`H_1 = \\left( F_{\\text{target}=1} \\neq F_{\\text{target}=0} \\right)`
+
+    Where :math:`F` is the distribution of the target.
+
+    In the same way we can state the hypothesis when the feature is binary
+
+        :math:`H_0 =  \\left( T_{\\text{feature}=1} = T_{\\text{feature}=0} \\right)`
+
+        :math:`H_1 = \\left( T_{\\text{feature}=1} \\neq T_{\\text{feature}=0} \\right)`
+
+    Here :math:`T` is the distribution of the target.
+
+    TODO: And for real valued?
 
     :param X: Feature matrix in the format mentioned before which will be reduced to only the relevant features.
               It can contain both binary or real-valued features at the same time.
@@ -84,7 +119,8 @@ def calculate_relevance_table(X, y, ml_task='auto',
              "Feature",
              "type" (binary, real or const),
              "p_value" (the significance of this feature as a p-value, lower means more significant)
-             "relevant" (True if the Benjamini Hochberg procedure rejected the null hypothesis for this feature)
+             "relevant" (True if the Benjamini Hochberg procedure rejected the null hypothesis [the feature is
+             not relevant] for this feature)
     :rtype: pandas.DataFrame
     """
     if ml_task not in ['auto', 'classification', 'regression']:
@@ -92,25 +128,37 @@ def calculate_relevance_table(X, y, ml_task='auto',
     elif ml_task == 'auto':
         ml_task = infer_ml_task(y)
 
-    if ml_task == 'classification':
-        relevance_tables = []
-        for label in y.unique():
-            y_label = (y == label)
-            relevance_table = check_fs_sig_bh(
-                X, y_label, target_is_binary=True, n_jobs=n_jobs, chunksize=chunksize,
-                test_for_binary_target_real_feature=test_for_binary_target_real_feature,
-                fdr_level=fdr_level, hypotheses_independent=hypotheses_independent,
-            )
-            relevance_tables.append((label, relevance_table))
-        relevance_table = combine_relevance_tables(relevance_tables)
-    elif ml_task == 'regression':
-        relevance_table = check_fs_sig_bh(
-            X, y, target_is_binary=False, n_jobs=n_jobs, chunksize=chunksize,
-            test_for_binary_target_real_feature=test_for_binary_target_real_feature,
-            fdr_level=fdr_level, hypotheses_independent=hypotheses_independent,
-        )
+    relevance_table = pd.DataFrame(index=pd.Series(X.columns, name='feature'))
+    relevance_table['type'] = [get_feature_type(X[feature]) for feature in relevance_table.index]
+    table_real = relevance_table[relevance_table.type == 'real'].copy()
+    table_binary = relevance_table[relevance_table.type == 'binary'].copy()
 
+    table_const = relevance_table[relevance_table.type == 'constant'].copy()
+    table_const['p_value'] = np.NaN
+    table_const['relevant'] = False
+
+    if ml_task == 'classification':
+        relevance_tables_with_label = [(label, _calculate_relevance_table_for_binary_target(
+                table_real, table_binary, X, (y == label), test_for_binary_target_real_feature,
+                hypotheses_independent, fdr_level)) for label in y.unique()]
+        relevance_table = combine_relevance_tables(relevance_tables_with_label)
+    elif ml_task == 'regression':
+        table_real['p_value'] = [target_real_feature_real_test(X[feature], y) for feature in table_real.index]
+        table_binary['p_value'] = [target_real_feature_binary_test(X[feature], y) for feature in table_binary.index]
+        relevance_table = pd.concat([table_real, table_binary])
+        relevance_table = benjamini_hochberg_test(relevance_table, hypotheses_independent, fdr_level)
+
+    relevance_table = pd.concat([relevance_table, table_const], axis=0)
     return relevance_table
+
+
+def _calculate_relevance_table_for_binary_target(table_real, table_binary, X, y, test_for_binary_target_real_feature,
+                                                 hypotheses_independent, fdr_level):
+    table_real['p_value'] = [target_binary_feature_real_test(X[feature], y, test_for_binary_target_real_feature)
+                             for feature in table_real.index]
+    table_binary['p_value'] = [target_binary_feature_binary_test(X[feature], y) for feature in table_binary.index]
+    relevance_table = pd.concat([table_real, table_binary])
+    return benjamini_hochberg_test(relevance_table, hypotheses_independent, fdr_level)
 
 
 def check_fs_sig_bh(X, y, target_is_binary,
@@ -331,11 +379,12 @@ def combine_relevance_tables(relevance_tables_with_label):
 
     def _combine(a, b):
         a.relevant |= b.relevant
-        return a.join(b.iloc[:,3])
+        p_val_column = [col for col in b.columns if col.startswith('p_value_')][0]
+        return a.join(b[p_val_column])
 
     relevance_tables = map(_append_label_to_p_value_column, relevance_tables_with_label)
     relevance_table = reduce(_combine, relevance_tables)
-    relevance_table['p_value'] = relevance_table.iloc[:, 3:].values.min(axis=1)
+    relevance_table['p_value'] = relevance_table.iloc[:, 2:].values.min(axis=1)
     return relevance_table
 
 

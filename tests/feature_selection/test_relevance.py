@@ -40,8 +40,7 @@ class TestCalculateRelevanceTable:
 class TestCombineRelevanceTables:
     @pytest.fixture()
     def relevance_table(self):
-        relevance_table = pd.DataFrame()
-        relevance_table['Feature'] = ['f1', 'f2', 'f3', 'f4']
+        relevance_table = pd.DataFrame(index=pd.Series(['f1', 'f2', 'f3', 'f4'], name='feature'))
         relevance_table['relevant'] = [True, False, True, False]
         relevance_table['type'] = ['real'] * 4
         relevance_table['p_value'] = [0.1, 0.2, 0.3, 0.4]
