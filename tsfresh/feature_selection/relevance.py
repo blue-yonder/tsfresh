@@ -379,12 +379,13 @@ def combine_relevance_tables(relevance_tables_with_label):
 
     def _combine(a, b):
         a.relevant |= b.relevant
-        p_val_column = [col for col in b.columns if col.startswith('p_value_')][0]
-        return a.join(b[p_val_column])
+        p_value_column = [col for col in b.columns if col.startswith('p_value_')][0]
+        return a.join(b[p_value_column])
 
     relevance_tables = map(_append_label_to_p_value_column, relevance_tables_with_label)
     relevance_table = reduce(_combine, relevance_tables)
-    relevance_table['p_value'] = relevance_table.iloc[:, 2:].values.min(axis=1)
+    p_value_columns = [col for col in relevance_table.columns if col.startswith('p_value_')]
+    relevance_table['p_value'] = relevance_table[p_value_columns].values.min(axis=1)
     return relevance_table
 
 
