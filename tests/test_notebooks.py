@@ -24,7 +24,10 @@ def _notebook_run(path):
                 "--to", "notebook", "--execute",
                 "--ExecutePreprocessor.timeout=600",
                 "--output", fout.name, path]
-        print(" ".join(args))
+        if six.py2:
+            args + ["--ExecutePreprocessor.kernel_name=python2"]
+        elif six.py3:
+            args + ["--ExecutePreprocessor.kernel_name=python3"]
         subprocess.check_call(args)
 
         fout.seek(0)
@@ -39,36 +42,29 @@ def _notebook_run(path):
 class NotebooksTestCase(TestCase):
 
     def test_basic_pipeline_example(self):
-        if six.PY2:
-            nb, errors = _notebook_run('notebooks/basic_pipeline_example.ipynb')
-            self.assertEqual(errors, [])
+        nb, errors = _notebook_run('notebooks/basic_pipeline_example.ipynb')
+        self.assertEqual(errors, [])
 
     def test_human_activity_recognition_multi_class_example(self):
-        if six.PY2:
-            nb, errors = _notebook_run('notebooks/human_activity_recognition_multi_class_example.ipynb')
-            self.assertEqual(errors, [])
+        nb, errors = _notebook_run('notebooks/human_activity_recognition_multi_class_example.ipynb')
+        self.assertEqual(errors, [])
 
     def test_robot_failure_example(self):
-        if six.PY2:
-            nb, errors = _notebook_run('notebooks/robot_failure_example.ipynb')
-            self.assertEqual(errors, [])
+        nb, errors = _notebook_run('notebooks/robot_failure_example.ipynb')
+        self.assertEqual(errors, [])
 
     def test_inspect_dft_features(self):
-        if six.PY2:
-            nb, errors = _notebook_run('notebooks/inspect_dft_features.ipynb')
-            self.assertEqual(errors, [])
+        nb, errors = _notebook_run('notebooks/inspect_dft_features.ipynb')
+        self.assertEqual(errors, [])
 
     def test_fc_parameters_extraction_dictionary(self):
-        if six.PY2:
-            nb, errors = _notebook_run('notebooks/the-fc_parameters-extraction-dictionary.ipynb')
-            self.assertEqual(errors, [])
+        nb, errors = _notebook_run('notebooks/the-fc_parameters-extraction-dictionary.ipynb')
+        self.assertEqual(errors, [])
 
     def test_pipeline_with_two_datasets(self):
-        if six.PY2:
-            nb, errors = _notebook_run('notebooks/pipeline_with_two_datasets.ipynb')
-            self.assertEqual(errors, [])
+        nb, errors = _notebook_run('notebooks/pipeline_with_two_datasets.ipynb')
+        self.assertEqual(errors, [])
 
     def test_friedrich_coefficients(self):
-        if six.PY2:
-            nb, errors = _notebook_run('notebooks/friedrich_coefficients.ipynb')
-            self.assertEqual(errors, [])
+        nb, errors = _notebook_run('notebooks/friedrich_coefficients.ipynb')
+        self.assertEqual(errors, [])
