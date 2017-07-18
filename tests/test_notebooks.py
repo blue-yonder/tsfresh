@@ -24,9 +24,9 @@ def _notebook_run(path):
                 "--to", "notebook", "--execute",
                 "--ExecutePreprocessor.timeout=600",
                 "--output", fout.name, path]
-        if six.py2:
+        if six.PY2:
             args + ["--ExecutePreprocessor.kernel_name=python2"]
-        elif six.py3:
+        elif six.PY3:
             args + ["--ExecutePreprocessor.kernel_name=python3"]
         subprocess.check_call(args)
 
