@@ -10,9 +10,9 @@ This module implements functions to download the Robot Execution Failures LP1 Da
 
 References
 ----------
-.. [1] http://mlr.cs.umass.edu/ml/datasets/Robot+Execution+Failures
+.. [1] https://archive.ics.uci.edu/ml/datasets/Robot+Execution+Failures
 .. [2] Lichman, M. (2013).
-    UCI Machine Learning Repository [http://mlr.cs.umass.edu/ml].
+    UCI Machine Learning Repository [https://archive.ics.uci.edu/ml].
     Irvine, CA: University of California, School of Information and Computer Science.
 .. [3] Camarinha-Matos, L.M., L. Seabra Lopes, and J. Barata (1996).
     Integration and Learning in Supervision of Flexible Assembly Systems.
