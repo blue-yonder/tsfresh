@@ -16,7 +16,7 @@ class FullPipelineTestCase_robot_failures(TestCase):
         self.df = pd.DataFrame(index=self.timeseries.id.unique())
 
         # shrink the time series for this test
-        self.timeseries = self.timeseries[["id", "time", "a"]]
+        self.timeseries = self.timeseries[["id", "time", "F_x"]]
 
     def test_relevant_extraction(self):
         self.assertGreater(len(self.y), 0)
@@ -31,24 +31,24 @@ class FullPipelineTestCase_robot_failures(TestCase):
         pipe.fit(self.df, self.y)
         extracted_features = pipe.transform(self.df)
 
-        some_expected_features = {'a__abs_energy',
-                                  'a__absolute_sum_of_changes',
-                                  'a__ar_coefficient__k_10__coeff_0',
-                                  'a__autocorrelation__lag_1',
-                                  'a__binned_entropy__max_bins_10',
-                                  'a__count_above_mean',
-                                  'a__longest_strike_above_mean',
-                                  'a__maximum',
-                                  'a__mean_abs_change',
-                                  'a__mean_autocorrelation',
-                                  'a__minimum',
-                                  'a__quantile__q_0.1',
-                                  'a__range_count__max_1__min_-1',
-                                  'a__spkt_welch_density__coeff_2',
-                                  'a__standard_deviation',
-                                  'a__value_count__value_0',
-                                  'a__variance',
-                                  'a__variance_larger_than_standard_deviation'}
+        some_expected_features = {'F_x__abs_energy',
+                                  'F_x__absolute_sum_of_changes',
+                                  'F_x__ar_coefficient__k_10__coeff_0',
+                                  'F_x__autocorrelation__lag_1',
+                                  'F_x__binned_entropy__max_bins_10',
+                                  'F_x__count_above_mean',
+                                  'F_x__longest_strike_above_mean',
+                                  'F_x__maximum',
+                                  'F_x__mean_abs_change',
+                                  'F_x__mean_autocorrelation',
+                                  'F_x__minimum',
+                                  'F_x__quantile__q_0.1',
+                                  'F_x__range_count__max_1__min_-1',
+                                  'F_x__spkt_welch_density__coeff_2',
+                                  'F_x__standard_deviation',
+                                  'F_x__value_count__value_0',
+                                  'F_x__variance',
+                                  'F_x__variance_larger_than_standard_deviation'}
 
         self.assertGreaterEqual(set(extracted_features.columns), some_expected_features)
         self.assertGreater(len(extracted_features), 0)
