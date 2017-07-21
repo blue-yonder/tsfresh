@@ -1,7 +1,7 @@
-.. _rolling-label:
+.. _forecasting-label:
 
-How to handle rolling time series
-=================================
+Time series forecasting
+=======================
 
 Lets assume that we have a DataFrame of one of the tsfresh :ref:`data-formats-label`.
 The "sort" column of such a container gives a sequential state to the individual measurements.
@@ -21,8 +21,11 @@ the last 10 steps.
 A rolling mechanism creates such time series for every time step by creating sub time series of the sensor data of the
 last 10 time steps.
 
-The scenario described above cannot be easily computed by tsfresh in the current version.
-However, it is planned to be included in one of the upcoming releases (> v0.8.1).
+.. image:: ../images/rolling_mechanism_1.png
+   :scale: 100 %
+   :alt: The rolling mechanism
+   :align: center
+
 
 Another example can be found in streaming data, e.g. in Industry 4.0 applications.
 Here you typically get one new data row at a time and use this to for example predict machine failures. To train your model,
@@ -178,6 +181,12 @@ If you set rolling to -1, you end up with features for the time series, rolled i
 
 We only gave an example for the flat DataFrame format, but rolling actually works on all 3 :ref:`data-formats-label`
 that are supported by tsfresh.
+
+
+.. image:: ../images/rolling_mechanism_2.png
+   :scale: 100 %
+   :alt: The rolling mechanism
+   :align: center
 
 Parameters and Implementation Notes
 -----------------------------------
