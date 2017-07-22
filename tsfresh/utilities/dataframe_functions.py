@@ -441,11 +441,11 @@ def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_di
 
 def make_forecasting_frame(x, kind, maximum_number_of_timeshifts, rolling_direction):
     """
-    Takes a singular time series x and constructs a DataFrame df and target vector y that can be used for the
-    time series forecasting.
+    Takes a singular time series x and constructs a DataFrame df and target vector y that can be used for a time series
+    forecasting task.
 
-    df will contain for every time stamp in x, the last maximum_number_of_timeshifts data points as a new time series,
-    such can be used to fit a normal regressor for the forecasting task.
+    The returned df will contain, for every time stamp in x, the last maximum_number_of_timeshifts data points as a new
+    time series, such can be used to fit a time series forecasting model.
 
     :param x: the singular time series
     :type x: np.array
