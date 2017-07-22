@@ -221,13 +221,13 @@ def restrict_input_to_index(df_or_dict, column_id, index):
 
 # todo: add more testcases
 # todo: rewrite in a more straightforward way
-def normalize_input_to_internal_representation(timeseries_container, column_id, column_sort, column_kind, column_value):
+def _normalize_input_to_internal_representation(timeseries_container, column_id, column_sort, column_kind, column_value):
     """
-    Try to transform any given input to the internal representation of time series, which is a mapping from string
-    (the kind) to a pandas DataFrame with exactly two columns (the value and the id).
+    Try to transform any given input to the internal representation of time series, which is a flat DataFrame
+    (the first format from see :ref:`data-formats-label`).
 
-    This function can transform pandas DataFrames in different formats or dictionaries to pandas DataFrames in different
-    formats. It is used internally in the extract_features function and should not be called by the user.
+    This function can transform pandas DataFrames in different formats or dictionaries into the internal format
+    that we use. It should not be called by the user.
 
     :param timeseries_container: a pandas DataFrame or a dictionary. The required shape/form of the object depends on
         the rest of the passed arguments.
@@ -250,9 +250,9 @@ def normalize_input_to_internal_representation(timeseries_container, column_id, 
         DataFrames in the dictionaries). If it is None, the kind column must also be none.
     :type column_value: basestring or None
 
-    :return: A tuple of 3 elements: the normalized DataFrame as a dictionary mapping from the kind (as a string) to the
-             corresponding DataFrame, the name of the id column and the name of the value column
-    :rtype: (dict, basestring, basestring)
+    :return: A tuple of 4 elements: the normalized DataFrame, the name of the id column, the name of the value column
+             and the name of the value column
+    :rtype: (pd.DataFrame, basestring, basestring, basestring)
     :raise: ``ValueError`` when the passed combination of parameters is wrong or does not fit to the input DataFrame
             or dict.
     """
