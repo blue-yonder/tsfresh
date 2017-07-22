@@ -1244,6 +1244,25 @@ def quantile(x, q):
 
 
 @set_property("fctype", "simple")
+def number_crossing_m(x, m):
+    """
+    Calculates the number of crossings of x on m. A crossing is defined as two sequential values where the first value
+    is lower than m and the next is greater, or vice-versa. If you set m to zero, you will get the number of zero
+    crossings.
+
+    :param x: the time series to calculate the feature of
+    :type x: pandas.Series
+    :param m: the threshold for the crossing
+    :type m: float
+    :return: the value of this feature
+    :return type: float
+    """
+    x = np.asarray(x)
+    x = x[x != m]
+    return sum(np.abs(np.diff(np.sign(x - m))))/2
+
+
+@set_property("fctype", "simple")
 @set_property("minimal", True)
 def maximum(x):
     """
