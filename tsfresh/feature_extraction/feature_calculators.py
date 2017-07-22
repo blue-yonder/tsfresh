@@ -289,7 +289,7 @@ def agg_autocorrelation(x, param):
         a = 0
     else:
         a = acf(x, unbiased=True, fft=n > 1250)[1:]
-    return [("f_agg_{}".format(config["f_agg"]), getattr(np, config["f_agg"])(a)) for config in param]
+    return [("f_agg_\"{}\"".format(config["f_agg"]), getattr(np, config["f_agg"])(a)) for config in param]
 
 
 @set_property("fctype", "combiner")
