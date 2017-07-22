@@ -3,29 +3,32 @@
 Time series forecasting
 =======================
 
+Features that are extracted with *tsfresh* can be used for many different tasks, such as time series classification,
+compression or forecasting.
+This section explains how one can use the features for time series forecasting tasks.
+
 Lets assume that we have a DataFrame of one of the tsfresh :ref:`data-formats-label`.
 The "sort" column of such a container gives a sequential state to the individual measurements.
 In the case of time series this can be the *time* dimension while in the case of spectra the order is given by the
 *wavelength* or *frequency* dimensions.
 We can exploit this sequence to generate more input data out of single time series, by *rolling* over the data.
 
-Imagine the following situation:
-You have the data of certain sensors (e.g. EEG measurements) as the base to classify patients into a healthy and not
-healthy group (we oversimplify the problem here).
-Lets say you have sensor data of 100 time steps, so you may extract features for the forecasting of the patients
-healthiness by a classification algorithm.
-If you also have measurements of the healthiness for those 100 time steps (this is the target vector), then you could
-predict the healthiness of the patient in every time step, which essentially states a time series forecasting problem.
-So, to do that, you want to extract features in every time step of the original time series while for example looking at
-the last 10 steps.
+Now imagine the following situation:
+You have the price of a certain stock, lets say Apple, for 100 time steps.
+Now, you want to build a feature based model to forecast future prices of the Apple stock.
+So you will have to extract features in every time step of the original time series while looking at
+a certain number of past values.
 A rolling mechanism creates such time series for every time step by creating sub time series of the sensor data of the
-last 10 time steps.
+last *m* time steps.
+
+The following image illustrates the process:
 
 .. image:: ../images/rolling_mechanism_1.png
    :scale: 100 %
    :alt: The rolling mechanism
    :align: center
 
+So, we move the window that extract the features and then predict the next time step (which was not used to extract features).
 
 Another example can be found in streaming data, e.g. in Industry 4.0 applications.
 Here you typically get one new data row at a time and use this to for example predict machine failures. To train your model,
@@ -182,11 +185,17 @@ If you set rolling to -1, you end up with features for the time series, rolled i
 We only gave an example for the flat DataFrame format, but rolling actually works on all 3 :ref:`data-formats-label`
 that are supported by tsfresh.
 
+This process is also visualized by the following figure.
+It shows how the purple, rolled sub-timeseries are used as base for the construction of the feature matrix *X*
+(after calculation of the features by *f*).
+The green data points need to be predicted by the model are then used as rows in the target vector *y*.
 
 .. image:: ../images/rolling_mechanism_2.png
    :scale: 100 %
    :alt: The rolling mechanism
    :align: center
+
+
 
 Parameters and Implementation Notes
 -----------------------------------
