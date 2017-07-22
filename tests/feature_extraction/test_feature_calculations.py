@@ -543,12 +543,12 @@ class FeatureCalculationTestCase(TestCase):
 
     def test_number_crossing_m(self):
         x = [10, -10, 10, -10]
-        self.assertAlmostEqualOnAllArrayTypes(number_crossing_m, x, 3, 0)
-        self.assertAlmostEqualOnAllArrayTypes(number_crossing_m, x, 0, 10)
+        self.assertEqualOnAllArrayTypes(number_crossing_m, x, 3, 0)
+        self.assertEqualOnAllArrayTypes(number_crossing_m, x, 0, 10)
 
         x = [10, 20, 20, 30]
-        self.assertAlmostEqualOnAllArrayTypes(number_crossing_m, x, 0, 0)
-        self.assertAlmostEqualOnAllArrayTypes(number_crossing_m, x, 1, 15)
+        self.assertEqualOnAllArrayTypes(number_crossing_m, x, 0, 0)
+        self.assertEqualOnAllArrayTypes(number_crossing_m, x, 1, 15)
 
     def test_c3(self):
         x = [1] * 10
