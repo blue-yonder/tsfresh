@@ -261,11 +261,12 @@ def large_number_of_peaks(x, n):
     return number_peaks(x, n=n) > 5
 
 
-@set_property("fctype", "simple")
-def mean_autocorrelation(x):
+@set_property("fctype", "combiner")
+def agg_autocorrelation(x, param):
     """
-    Calculates the average autocorrelation (Compare to http://en.wikipedia.org/wiki/Autocorrelation#Estimation),
-    taken over different all possible lags (1 to length of x)
+    Calculates the value of an aggregation function f_agg (e.g. var or mean) of the autocorrelation
+    (Compare to http://en.wikipedia.org/wiki/Autocorrelation#Estimation), taken over different all possible lags
+    (1 to length of x)
 
     .. math::
 
@@ -276,16 +277,19 @@ def mean_autocorrelation(x):
 
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
+    :param param: contains dictionaries {"attr": x} with x str, name of a numpy function (e.g. mean, var, std, median),
+                   the name of the aggregator function that is applied to the autocorrelations
+    :type param: list
     :return: the value of this feature
     :return type: float
     """
     var = np.var(x)
     n = len(x)
-
     if abs(var) < 10**-10 or n == 1:
-        return 0
+        a = 0
     else:
-        return np.nanmean(acf(x, unbiased=True, fft=n > 1250)[1:])
+        a = acf(x, unbiased=True, fft=n > 1250)[1:]
+    return [("f_agg_{}".format(config["f_agg"]), getattr(np, config["f_agg"])(a)) for config in param]
 
 
 @set_property("fctype", "combiner")

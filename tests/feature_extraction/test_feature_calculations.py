@@ -137,18 +137,22 @@ class FeatureCalculationTestCase(TestCase):
         self.assertFalseOnAllArrayTypes(large_number_of_peaks, x, 5)
         self.assertFalseOnAllArrayTypes(large_number_of_peaks, x, 6)
 
-    def test_mean_autocorrelation(self):
+    def test_agg_autocorrelation(self):
 
+        param=[{"f_agg": "mean"}]
         x = [1, 1, 1, 1, 1, 1, 1]
-        self.assertAlmostEqualOnAllArrayTypes(mean_autocorrelation, x, 0)
+        expected_res = 0
+        res = dict(agg_autocorrelation(x, param=param))["f_agg_mean"]
+        self.assertAlmostEqual(res, expected_res, places=4)
 
         x = [1, 2, -3]
         expected_res = 1 / np.var(x) * (((1 * 2 + 2 * (-3)) / 2 + (1 * -3)) / 2)
-        self.assertAlmostEqualOnAllArrayTypes(mean_autocorrelation, x, expected_res)
+        res = dict(agg_autocorrelation(x, param=param))["f_agg_mean"]
+        self.assertAlmostEqual(res, expected_res, places=4)
 
         x = np.random.normal(size=3000)
         expected_res = 0
-        res = mean_autocorrelation(x)
+        res = dict(agg_autocorrelation(x, param=param))["f_agg_mean"]
         self.assertAlmostEqual(res, expected_res, places=2)
 
     def test_augmented_dickey_fuller(self):
