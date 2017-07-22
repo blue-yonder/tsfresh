@@ -139,7 +139,7 @@ class FeatureCalculationTestCase(TestCase):
 
     def test_agg_autocorrelation(self):
 
-        param=[{"f_agg": "mean"}]
+        param = [{"f_agg": "mean"}]
         x = [1, 1, 1, 1, 1, 1, 1]
         expected_res = 0
         res = dict(agg_autocorrelation(x, param=param))["f_agg_mean"]
@@ -150,10 +150,23 @@ class FeatureCalculationTestCase(TestCase):
         res = dict(agg_autocorrelation(x, param=param))["f_agg_mean"]
         self.assertAlmostEqual(res, expected_res, places=4)
 
+        np.random.seed(42)
         x = np.random.normal(size=3000)
         expected_res = 0
         res = dict(agg_autocorrelation(x, param=param))["f_agg_mean"]
         self.assertAlmostEqual(res, expected_res, places=2)
+
+        param=[{"f_agg": "median"}]
+        x = [1, 1, 1, 1, 1, 1, 1]
+        expected_res = 0
+        res = dict(agg_autocorrelation(x, param=param))["f_agg_median"]
+        self.assertAlmostEqual(res, expected_res, places=4)
+
+        x = [1, 2, -3]
+        expected_res = 1 / np.var(x) * (((1 * 2 + 2 * (-3)) / 2 + (1 * -3)) / 2)
+        res = dict(agg_autocorrelation(x, param=param))["f_agg_median"]
+        self.assertAlmostEqual(res, expected_res, places=4)
+
 
     def test_augmented_dickey_fuller(self):
         # todo: add unit test for the values of the test statistic
