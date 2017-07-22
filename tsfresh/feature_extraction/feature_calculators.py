@@ -1258,6 +1258,7 @@ def number_crossing_m(x, m):
     :return type: float
     """
     x = np.asarray(x)
+    x = x[x != m]
     return sum(np.abs(np.diff(np.sign(x - m))))/2
 
 
