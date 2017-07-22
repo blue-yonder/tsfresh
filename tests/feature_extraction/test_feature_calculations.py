@@ -346,8 +346,6 @@ class FeatureCalculationTestCase(TestCase):
         self.assertIsNanOnAllArrayTypes(ratio_value_number_to_time_series_length, [])
 
     def test_fft_coefficient(self):
-        # todo: add unit test
-
         x = range(10)
         param = [{"coeff": 0, "attr": "real"}, {"coeff": 1, "attr": "real"}, {"coeff": 2, "attr": "real"},
                  {"coeff": 0, "attr": "imag"}, {"coeff": 1, "attr": "imag"}, {"coeff": 2, "attr": "imag"},
