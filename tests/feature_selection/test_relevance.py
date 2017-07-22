@@ -65,7 +65,7 @@ class TestCalculateRelevanceTable:
                                          significance_test_feature_real_mock, X, y_binary):
         significance_test_feature_binary_mock.return_value = 0.5
         significance_test_feature_real_mock.return_value = 0.7
-        relevance_table = calculate_relevance_table(X, y_binary)
+        relevance_table = calculate_relevance_table(X, y_binary, n_jobs=0)
 
         assert 0.5 == relevance_table.loc['feature_binary'].p_value
         assert 0.7 == relevance_table.loc['feature_real'].p_value

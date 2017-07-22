@@ -128,6 +128,12 @@ def calculate_relevance_table(X, y, ml_task='auto', n_jobs=defaults.N_PROCESSES,
     elif ml_task == 'auto':
         ml_task = infer_ml_task(y)
 
+    if n_jobs == 0:
+        map_function = map
+    else:
+        pool = Pool(n_jobs)
+        map_function = partial(pool.map, chunksize=chunksize)
+
     relevance_table = pd.DataFrame(index=pd.Series(X.columns, name='feature'))
     relevance_table['type'] = [get_feature_type(X[feature]) for feature in relevance_table.index]
     table_real = relevance_table[relevance_table.type == 'real'].copy()
@@ -138,9 +144,12 @@ def calculate_relevance_table(X, y, ml_task='auto', n_jobs=defaults.N_PROCESSES,
     table_const['relevant'] = False
 
     if ml_task == 'classification':
-        relevance_tables_with_label = [(label, _calculate_relevance_table_for_binary_target(
-                table_real, table_binary, X, (y == label), test_for_binary_target_real_feature,
-                hypotheses_independent, fdr_level)) for label in y.unique()]
+        _calculate = partial(_calculate_relevance_table_for_binary_target, table_real, table_binary, X,
+                             test_for_binary_target_real_feature=test_for_binary_target_real_feature,
+                             hypotheses_independent=hypotheses_independent, fdr_level=fdr_level)
+        unique_labels = y.unique()
+        relevance_tables = map_function(_calculate, [(y == label) for label in unique_labels])
+        relevance_tables_with_label = zip(unique_labels, relevance_tables)
         relevance_table = combine_relevance_tables(relevance_tables_with_label)
     elif ml_task == 'regression':
         table_real['p_value'] = [target_real_feature_real_test(X[feature], y) for feature in table_real.index]
