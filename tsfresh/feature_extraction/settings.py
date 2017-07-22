@@ -134,6 +134,7 @@ class ComprehensiveFCParameters(dict):
                                  for i in [5, 10, 50]
                                  for f in ["max", "min", "mean", "var"]],
             "augmented_dickey_fuller": [{"attr": "teststat"}, {"attr": "pvalue"}, {"attr": "usedlag"}],
+            "number_crossing_m": [{"m": 0}, {"m": -1}, {"m": 1}],
 
         })
 

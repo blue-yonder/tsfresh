@@ -541,6 +541,15 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqualOnAllArrayTypes(time_reversal_asymmetry_statistic, x, 0, 2)
         self.assertAlmostEqualOnAllArrayTypes(time_reversal_asymmetry_statistic, x, 0, 3)
 
+    def test_number_crossing_m(self):
+        x = [10, -10, 10, -10]
+        self.assertAlmostEqualOnAllArrayTypes(number_crossing_m, x, 3, 0)
+        self.assertAlmostEqualOnAllArrayTypes(number_crossing_m, x, 0, 10)
+
+        x = [10, 20, 20, 30]
+        self.assertAlmostEqualOnAllArrayTypes(number_crossing_m, x, 0, 0)
+        self.assertAlmostEqualOnAllArrayTypes(number_crossing_m, x, 1, 15)
+
     def test_c3(self):
         x = [1] * 10
         self.assertAlmostEqualOnAllArrayTypes(c3, x, 1, 0)
