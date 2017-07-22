@@ -221,7 +221,7 @@ def restrict_input_to_index(df_or_dict, column_id, index):
 
 # todo: add more testcases
 # todo: rewrite in a more straightforward way
-def normalize_input_to_internal_representation(timeseries_container, column_id, column_sort, column_kind, column_value):
+def _normalize_input_to_internal_representation(timeseries_container, column_id, column_sort, column_kind, column_value):
     """
     Try to transform any given input to the internal representation of time series, which is a flat DataFrame
     (the first format from see :ref:`data-formats-label`).

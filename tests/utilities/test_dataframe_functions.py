@@ -16,11 +16,11 @@ class NormalizeTestCase(TestCase):
         test_dict = {"a": test_df, "b": test_df}
 
         # A kind is not allowed with dicts
-        self.assertRaises(ValueError, dataframe_functions.normalize_input_to_internal_representation, test_dict,
+        self.assertRaises(ValueError, dataframe_functions._normalize_input_to_internal_representation, test_dict,
                           "id", None, "a kind", None)
 
         # The value must be present
-        self.assertRaises(ValueError, dataframe_functions.normalize_input_to_internal_representation, test_dict,
+        self.assertRaises(ValueError, dataframe_functions._normalize_input_to_internal_representation, test_dict,
                           "id", None, None, "something other")
 
     def test_with_dictionaries_two_rows(self):
@@ -29,12 +29,12 @@ class NormalizeTestCase(TestCase):
         test_dict = {"a": test_df, "b": test_df}
 
         # If there are more than one column, the algorithm can not choose the correct column
-        self.assertRaises(ValueError, dataframe_functions.normalize_input_to_internal_representation, test_dict,
+        self.assertRaises(ValueError, dataframe_functions._normalize_input_to_internal_representation, test_dict,
                           "id", None, None, None)
 
         # Sorting should work
         result_df, column_id, column_kind, column_value = \
-            dataframe_functions.normalize_input_to_internal_representation(test_dict, "id", "sort", None, "value")
+            dataframe_functions._normalize_input_to_internal_representation(test_dict, "id", "sort", None, "value")
         self.assertEqual(column_value, "value")
         self.assertEqual(column_id, "id")
 
@@ -49,7 +49,7 @@ class NormalizeTestCase(TestCase):
 
         # Pass the id
         result_df, column_id, column_kind, column_value = \
-            dataframe_functions.normalize_input_to_internal_representation(test_dict, "id", None, None, "value")
+            dataframe_functions._normalize_input_to_internal_representation(test_dict, "id", None, None, "value")
         self.assertEqual(column_value, "value")
         self.assertEqual(column_id, "id")
 
@@ -59,7 +59,7 @@ class NormalizeTestCase(TestCase):
         # give everyting
         test_df = pd.DataFrame([{"id": 0, "kind": "a", "value": 3, "sort": 1}])
         result_df, column_id, column_kind, column_value = \
-            dataframe_functions.normalize_input_to_internal_representation(test_df, "id", "sort", "kind", "value")
+            dataframe_functions._normalize_input_to_internal_representation(test_df, "id", "sort", "kind", "value")
 
         self.assertEqual(column_id, "id")
         self.assertEqual(column_value, "value")
@@ -72,7 +72,7 @@ class NormalizeTestCase(TestCase):
         # give no kind
         test_df = pd.DataFrame([{"id": 0, "value": 3, "sort": 1}])
         result_df, column_id, column_kind, column_value = \
-            dataframe_functions.normalize_input_to_internal_representation(test_df, "id", "sort", None, "value")
+            dataframe_functions._normalize_input_to_internal_representation(test_df, "id", "sort", None, "value")
 
         self.assertEqual(column_id, "id")
         self.assertEqual(column_value, "value")
@@ -85,7 +85,7 @@ class NormalizeTestCase(TestCase):
         # Let the function find the values
         test_df = pd.DataFrame([{"id": 0, "a": 3, "b": 5, "sort": 1}])
         result_df, column_id, column_kind, column_value = \
-            dataframe_functions.normalize_input_to_internal_representation(test_df, "id", "sort", None, None)
+            dataframe_functions._normalize_input_to_internal_representation(test_df, "id", "sort", None, None)
 
         self.assertEqual(column_id, "id")
         self.assertEqual(column_value, "_values")
@@ -100,37 +100,37 @@ class NormalizeTestCase(TestCase):
 
     def test_with_wrong_input(self):
         test_df = pd.DataFrame([{"id": 0, "kind": "a", "value": 3, "sort": np.NaN}])
-        self.assertRaises(ValueError, dataframe_functions.normalize_input_to_internal_representation, test_df,
+        self.assertRaises(ValueError, dataframe_functions._normalize_input_to_internal_representation, test_df,
                           "id", "sort", "kind", "value")
 
         test_df = pd.DataFrame([{"id": 0, "kind": "a", "value": 3, "sort": 1}])
-        self.assertRaises(AttributeError, dataframe_functions.normalize_input_to_internal_representation, test_df,
+        self.assertRaises(AttributeError, dataframe_functions._normalize_input_to_internal_representation, test_df,
                           "strange_id", "sort", "kind", "value")
 
         test_df = pd.DataFrame([{"id": np.NaN, "kind": "a", "value": 3, "sort": 1}])
-        self.assertRaises(ValueError, dataframe_functions.normalize_input_to_internal_representation, test_df,
+        self.assertRaises(ValueError, dataframe_functions._normalize_input_to_internal_representation, test_df,
                           "id", "sort", "kind", "value")
 
         test_df = pd.DataFrame([{"id": 2}, {"id": 1}])
         test_dict = {"a": test_df, "b": test_df}
 
         # If there are more than one column, the algorithm can not choose the correct column
-        self.assertRaises(ValueError, dataframe_functions.normalize_input_to_internal_representation, test_dict,
+        self.assertRaises(ValueError, dataframe_functions._normalize_input_to_internal_representation, test_dict,
                           "id", None, None, None)
 
         test_dict = {"a": pd.DataFrame([{"id": 2, "value_a": 3}, {"id": 1, "value_a": 4}]),
                      "b": pd.DataFrame([{"id": 2}, {"id": 1}])}
 
         # If there are more than one column, the algorithm can not choose the correct column
-        self.assertRaises(ValueError, dataframe_functions.normalize_input_to_internal_representation, test_dict,
+        self.assertRaises(ValueError, dataframe_functions._normalize_input_to_internal_representation, test_dict,
                           "id", None, None, None)
 
         test_df = pd.DataFrame([{"id": 0, "value": np.NaN}])
-        self.assertRaises(ValueError, dataframe_functions.normalize_input_to_internal_representation, test_df,
+        self.assertRaises(ValueError, dataframe_functions._normalize_input_to_internal_representation, test_df,
                           "id", None, None, "value")
 
         test_df = pd.DataFrame([{"id": 0, "value": np.NaN}])
-        self.assertRaises(ValueError, dataframe_functions.normalize_input_to_internal_representation, test_df,
+        self.assertRaises(ValueError, dataframe_functions._normalize_input_to_internal_representation, test_df,
                           None, None, None, "value")
 
 

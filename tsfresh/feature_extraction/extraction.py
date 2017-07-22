@@ -121,10 +121,10 @@ def extract_features(timeseries_container, default_fc_parameters=None,
     # Always use the standardized way of storing the data.
     # See the function normalize_input_to_internal_representation for more information.
     df_melt, column_id, column_kind, column_value = \
-        dataframe_functions.normalize_input_to_internal_representation(timeseries_container=timeseries_container,
-                                                                       column_id=column_id, column_kind=column_kind,
-                                                                       column_sort=column_sort,
-                                                                       column_value=column_value)
+        dataframe_functions._normalize_input_to_internal_representation(timeseries_container=timeseries_container,
+                                                                        column_id=column_id, column_kind=column_kind,
+                                                                        column_sort=column_sort,
+                                                                        column_value=column_value)
 
     # Use the standard setting if the user did not supply ones himself.
     if default_fc_parameters is None:
