@@ -186,7 +186,6 @@ class FeatureCalculationTestCase(TestCase):
         self.assertLessEqual(res["attr_pvalue"], 0.05)
         self.assertEqual(res["attr_usedlag"], 0)
 
-
     def test_abs_energy(self):
         self.assertEqualOnAllArrayTypes(abs_energy, [1, 1, 1], 3)
         self.assertEqualOnAllArrayTypes(abs_energy, [1, 2, 3], 14)
@@ -351,14 +350,20 @@ class FeatureCalculationTestCase(TestCase):
 
         x = range(10)
         param = [{"coeff": 0, "attr": "real"}, {"coeff": 1, "attr": "real"}, {"coeff": 2, "attr": "real"},
-                 {"coeff": 0, "attr": "imag"}, {"coeff": 1, "attr": "imag"}, {"coeff": 2, "attr": "imag"}]
+                 {"coeff": 0, "attr": "imag"}, {"coeff": 1, "attr": "imag"}, {"coeff": 2, "attr": "imag"},
+                 {"coeff": 0, "attr": "angle"}, {"coeff": 1, "attr": "angle"}, {"coeff": 2, "attr": "angle"},
+                 {"coeff": 0, "attr": "abs"}, {"coeff": 1, "attr": "abs"}, {"coeff": 2, "attr": "abs"} ]
         expected_index = ['coeff_0__attr_"real"', 'coeff_1__attr_"real"', 'coeff_2__attr_"real"',
-                          'coeff_0__attr_"imag"', 'coeff_1__attr_"imag"', 'coeff_2__attr_"imag"']
+                          'coeff_0__attr_"imag"', 'coeff_1__attr_"imag"', 'coeff_2__attr_"imag"',
+                          'coeff_0__attr_"angle"', 'coeff_1__attr_"angle"', 'coeff_2__attr_"angle"',
+                          'coeff_0__attr_"abs"', 'coeff_1__attr_"abs"', 'coeff_2__attr_"abs"']
 
         res = pd.Series(dict(fft_coefficient(x, param)))
         six.assertCountEqual(self, list(res.index), expected_index)
         self.assertAlmostEqual(res['coeff_0__attr_"imag"'], 0, places=6)
         self.assertAlmostEqual(res['coeff_0__attr_"real"'], sum(x), places=6)
+        self.assertAlmostEqual(res['coeff_0__attr_"angle"'], 0, places=6)
+        self.assertAlmostEqual(res['coeff_0__attr_"abs"'], sum(x), places=6)
 
         x = [0, 1, 0, 0]
         res = pd.Series(dict(fft_coefficient(x, param)))
@@ -367,6 +372,7 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqual(res['coeff_0__attr_"imag"'], 0, places=6)
         self.assertAlmostEqual(res['coeff_0__attr_"real"'], 1, places=6)
         self.assertAlmostEqual(res['coeff_1__attr_"imag"'], -1, places=6)
+        self.assertAlmostEqual(res['coeff_1__attr_"angle"'], -90, places=6)
         self.assertAlmostEqual(res['coeff_1__attr_"real"'], 0, places=6)
         self.assertAlmostEqual(res['coeff_2__attr_"imag"'], 0, places=6)
         self.assertAlmostEqual(res['coeff_2__attr_"real"'], -1, places=6)
