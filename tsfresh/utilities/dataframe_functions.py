@@ -429,7 +429,7 @@ def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_di
     def roll_out_time_series(time_shift):
         # Shift out only the first "time_shift" rows
         df_temp = grouped_data.shift(time_shift)
-        df_temp[column_id] = df[column_sort].map(str)
+        df_temp[column_id] = df[column_sort]
         if column_kind:
             df_temp[column_kind] = df[column_kind]
         return df_temp.dropna()
