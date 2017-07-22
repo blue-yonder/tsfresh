@@ -185,12 +185,16 @@ class RollingTestCase(TestCase):
 
         df_full = pd.concat([first_class, second_class], ignore_index=True)
 
-        correct_indices = (["id=1, shift=3"] * 1 +
-                           ["id=1, shift=2"] * 2 +
-                           ["id=1, shift=1"] * 3 +
-                           ["id=2, shift=1"] * 1 +
-                           ["id=1, shift=0"] * 4 +
-                           ["id=2, shift=0"] * 2)
+        """ df_full is
+            a   b  time  id
+        0   1   5     0   1
+        1   2   6     1   1
+        2   3   7     2   1
+        3   4   8     3   1
+        4  10  12    20   2
+        5  11  13    21   2
+        """
+        correct_indices = ['0', '1', '1', '2', '2', '2', '20', '21', '21', '3', '3', '3', '3']
         correct_values_a = [1, 1, 2, 1, 2, 3, 10, 1, 2, 3, 4, 10, 11]
         correct_values_b = [5, 5, 6, 5, 6, 7, 12, 5, 6, 7, 8, 12, 13]
 
@@ -241,13 +245,17 @@ class RollingTestCase(TestCase):
         second_class["id"] = 2
 
         df_full = pd.concat([first_class, second_class], ignore_index=True)
+        """ df_full is 
+            a   b  time  id
+        0   1   5     0   1
+        1   2   6     1   1
+        2   3   7     2   1
+        3   4   8     3   1
+        4  10  12    20   2
+        5  11  13    21   2
+        """
 
-        correct_indices = (["id=1, shift=-3"] * 1 +
-                           ["id=1, shift=-2"] * 2 +
-                           ["id=1, shift=-1"] * 3 +
-                           ["id=2, shift=-1"] * 1 +
-                           ["id=1, shift=0"] * 4 +
-                           ["id=2, shift=0"] * 2)
+        correct_indices = ([0, 0, 0, 0, 1, 1, 1, 2, 2, 20, 20, 21, 3])
         correct_values_a = [4, 3, 4, 2, 3, 4, 11, 1, 2, 3, 4, 10, 11]
         correct_values_b = [8, 7, 8, 6, 7, 8, 13, 5, 6, 7, 8, 12, 13]
 
@@ -327,13 +335,39 @@ class RollingTestCase(TestCase):
 
         df = dataframe_functions.roll_time_series(df_dict, column_id="id", column_sort=None,
                                                   column_kind=None, rolling_direction=-1)
+        """ df is 
+        {'a': _value  sort id
+         7      1.0   0.0  0
+         3      2.0   1.0  0
+         1      3.0   2.0  0
+         0      4.0   3.0  0
+         8      2.0   1.0  1
+         4      3.0   2.0  1
+         2      4.0   3.0  1
+         9      3.0   2.0  2
+         5      4.0   3.0  2
+         10     4.0   3.0  3
+         11    10.0   4.0  4
+         6     11.0   5.0  4
+         12    11.0   5.0  5, 
+         
+         'b': _value  sort id
+         7      5.0   0.0  0
+         3      6.0   1.0  0
+         1      7.0   2.0  0
+         0      8.0   3.0  0
+         8      6.0   1.0  1
+         4      7.0   2.0  1
+         2      8.0   3.0  1
+         9      7.0   2.0  2
+         5      8.0   3.0  2
+         10     8.0   3.0  3
+         11    12.0   4.0  4
+         6     13.0   5.0  4
+         12    13.0   5.0  5}
+        """
 
-        correct_indices = (["id=1, shift=-3"] * 1 +
-                           ["id=1, shift=-2"] * 2 +
-                           ["id=1, shift=-1"] * 3 +
-                           ["id=2, shift=-1"] * 1 +
-                           ["id=1, shift=0"] * 4 +
-                           ["id=2, shift=0"] * 2)
+        correct_indices = []
 
         self.assertListEqual(list(df["a"]["id"].values), correct_indices)
         self.assertListEqual(list(df["b"]["id"].values), correct_indices)
