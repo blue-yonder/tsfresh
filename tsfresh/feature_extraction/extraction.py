@@ -146,8 +146,6 @@ def extract_features(timeseries_container, default_fc_parameters=None,
                                 disable_progressbar=disable_progressbar,
                                 default_fc_parameters=default_fc_parameters, kind_to_fc_parameters=kind_to_fc_parameters)
 
-        result.index = result.index.astype(df_melt[column_id].dtype)
-
         # Impute the result if requested
         if impute_function is not None:
             impute_function(result)
@@ -238,6 +236,7 @@ def _do_extraction(df, column_id, column_value, column_kind,
 
     if len(result) != 0:
         result = result.pivot("id", "variable", "value")
+        result.index = result.index.astype(df[column_id].dtype)
 
     return result
 
