@@ -137,19 +137,36 @@ class FeatureCalculationTestCase(TestCase):
         self.assertFalseOnAllArrayTypes(large_number_of_peaks, x, 5)
         self.assertFalseOnAllArrayTypes(large_number_of_peaks, x, 6)
 
-    def test_mean_autocorrelation(self):
+    def test_agg_autocorrelation(self):
 
+        param = [{"f_agg": "mean"}]
         x = [1, 1, 1, 1, 1, 1, 1]
-        self.assertAlmostEqualOnAllArrayTypes(mean_autocorrelation, x, 0)
+        expected_res = 0
+        res = dict(agg_autocorrelation(x, param=param))["f_agg_\"mean\""]
+        self.assertAlmostEqual(res, expected_res, places=4)
 
         x = [1, 2, -3]
         expected_res = 1 / np.var(x) * (((1 * 2 + 2 * (-3)) / 2 + (1 * -3)) / 2)
-        self.assertAlmostEqualOnAllArrayTypes(mean_autocorrelation, x, expected_res)
+        res = dict(agg_autocorrelation(x, param=param))["f_agg_\"mean\""]
+        self.assertAlmostEqual(res, expected_res, places=4)
 
+        np.random.seed(42)
         x = np.random.normal(size=3000)
         expected_res = 0
-        res = mean_autocorrelation(x)
+        res = dict(agg_autocorrelation(x, param=param))["f_agg_\"mean\""]
         self.assertAlmostEqual(res, expected_res, places=2)
+
+        param=[{"f_agg": "median"}]
+        x = [1, 1, 1, 1, 1, 1, 1]
+        expected_res = 0
+        res = dict(agg_autocorrelation(x, param=param))["f_agg_\"median\""]
+        self.assertAlmostEqual(res, expected_res, places=4)
+
+        x = [1, 2, -3]
+        expected_res = 1 / np.var(x) * (((1 * 2 + 2 * (-3)) / 2 + (1 * -3)) / 2)
+        res = dict(agg_autocorrelation(x, param=param))["f_agg_\"median\""]
+        self.assertAlmostEqual(res, expected_res, places=4)
+
 
     def test_augmented_dickey_fuller(self):
         # todo: add unit test for the values of the test statistic
