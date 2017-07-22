@@ -13,8 +13,8 @@ In tsfresh we differentiate between two types of feature calculation methods
 
     *2.* combiner
 
-The difference lays in the number of calculated features fir a singular time series.
-Rhe feature_calculator returns either one (*1.*) or multiple features (*2.*).
+The difference lays in the number of calculated features for a singular time series.
+The feature_calculator returns either one (*1.*) or multiple features (*2.*).
 So if you want to add a singular feature stick with *1.*, the simple feature calculator class.
 If it is beneficial to calculate multiples features at the same time (to e.g. perform auxiliary calculations only once
 for all features), stick with type *2.*.
