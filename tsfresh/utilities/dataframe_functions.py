@@ -226,8 +226,8 @@ def _normalize_input_to_internal_representation(timeseries_container, column_id,
     Try to transform any given input to the internal representation of time series, which is a flat DataFrame
     (the first format from see :ref:`data-formats-label`).
 
-    This function can transform pandas DataFrames in different formats or dictionaries our internal format that we use.
-    It should not be called by the user.
+    This function can transform pandas DataFrames in different formats or dictionaries into the internal format
+    that we use. It should not be called by the user.
 
     :param timeseries_container: a pandas DataFrame or a dictionary. The required shape/form of the object depends on
         the rest of the passed arguments.
@@ -252,7 +252,7 @@ def _normalize_input_to_internal_representation(timeseries_container, column_id,
 
     :return: A tuple of 4 elements: the normalized DataFrame, the name of the id column, the name of the value column
              and the name of the value column
-    :rtype: (pd.DataFrame, basestring, basestring, basestring, basestring)
+    :rtype: (pd.DataFrame, basestring, basestring, basestring)
     :raise: ``ValueError`` when the passed combination of parameters is wrong or does not fit to the input DataFrame
             or dict.
     """
