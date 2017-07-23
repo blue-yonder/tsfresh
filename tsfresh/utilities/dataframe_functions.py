@@ -490,7 +490,7 @@ def make_forecasting_frame(x, kind, max_timeshift, rolling_direction):
         """
         this mask returns an array of 1s where the last entry is a 0
         """
-        result = np.ones_like(x)
+        result = np.ones(len(x))
         result[-1] = 0
         return result
 
