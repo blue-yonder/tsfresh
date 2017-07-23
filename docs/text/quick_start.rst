@@ -7,7 +7,7 @@ Quick Start
 Install tsfresh
 ---------------
 
-As the compiled tsfresh package is hosted on pypy you can easily install it with pip
+As the compiled tsfresh package is hosted on the Python Package Index (PyPI) you can easily install it with pip
 
 .. code:: shell
 
