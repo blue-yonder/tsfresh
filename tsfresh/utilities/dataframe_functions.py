@@ -447,6 +447,9 @@ def make_forecasting_frame(x, kind, maximum_number_of_timeshifts, rolling_direct
     The returned df will contain, for every time stamp in x, the last maximum_number_of_timeshifts data points as a new
     time series, such can be used to fit a time series forecasting model.
 
+    See :ref:`rolling-label` for a detailed description of the rolling process and how the feature matrix and target
+    vector are derived.
+
     :param x: the singular time series
     :type x: np.array
     :param kind: the kind of the time series
