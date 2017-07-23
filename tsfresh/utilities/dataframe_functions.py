@@ -451,8 +451,10 @@ def make_forecasting_frame(x, kind, max_timeshift, rolling_direction):
     The returned time series container df, will contain the rolled time series as a flat data frame, the first format
     from :ref:`data-formats-label `.
 
+    When x is a pandas.Series, the index will be used as id.
+
     :param x: the singular time series
-    :type x: np.array
+    :type x: np.array or pd.Series
     :param kind: the kind of the time series
     :type kind: str
     :param rolling_direction: The sign decides, if to roll backwards (if sign is positive) or forwards in "time"
@@ -465,8 +467,14 @@ def make_forecasting_frame(x, kind, max_timeshift, rolling_direction):
     :rtype: (pd.DataFrame, pd.Series)
     """
     n = len(x)
+
+    if isinstance(x, pd.Series):
+        t = x.index
+    else:
+        t = range(n)
+
     df = pd.DataFrame({"id": ["A"] * n,
-                       "time": range(n),
+                       "time": t,
                        "val": x,
                        "kind": kind})
 
