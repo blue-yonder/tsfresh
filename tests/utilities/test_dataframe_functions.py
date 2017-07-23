@@ -246,8 +246,8 @@ class RollingTestCase(TestCase):
         """
 
         correct_indices = ([0, 0, 0, 0, 1, 1, 1, 2, 2, 3, 20, 20, 21])
-        correct_values_a = [4, 3, 4, 2, 3, 4, 11, 1, 2, 3, 4, 10, 11]
-        correct_values_b = [8, 7, 8, 6, 7, 8, 13, 5, 6, 7, 8, 12, 13]
+        correct_values_a = [1.0, 2.0, 3.0, 4.0, 2.0, 3.0, 4.0, 3.0, 4.0, 4.0, 10.0, 11.0, 11.0]
+        correct_values_b = [5.0, 6.0, 7.0, 8.0, 6.0, 7.0, 8.0, 7.0, 8.0, 8.0, 12.0, 13.0, 13.0]
 
         df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
                                                   column_kind=None, rolling_direction=-1)
@@ -268,25 +268,37 @@ class RollingTestCase(TestCase):
                                                   column_kind=None, rolling_direction=-1,
                                                   max_timeshift=1)
 
-        self.assertListEqual(list(df["id"].values), correct_indices[3:])
-        self.assertListEqual(list(df["a"].values), correct_values_a[3:])
-        self.assertListEqual(list(df["b"].values), correct_values_b[3:])
+        correct_indices = ([0, 0, 1, 1, 2, 2, 3, 20, 20, 21])
+        correct_values_a = [1.0, 2.0, 2.0, 3.0, 3.0, 4.0, 4.0, 10.0, 11.0, 11.0]
+        correct_values_b = [5.0, 6.0, 6.0, 7.0, 7.0, 8.0, 8.0, 12.0, 13.0, 13.0]
+
+        self.assertListEqual(list(df["id"].values), correct_indices)
+        self.assertListEqual(list(df["a"].values), correct_values_a)
+        self.assertListEqual(list(df["b"].values), correct_values_b)
 
         df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
                                                   column_kind=None, rolling_direction=-1,
                                                   max_timeshift=2)
 
-        self.assertListEqual(list(df["id"].values), correct_indices[1:])
-        self.assertListEqual(list(df["a"].values), correct_values_a[1:])
-        self.assertListEqual(list(df["b"].values), correct_values_b[1:])
+        correct_indices = ([0, 0, 0, 1, 1, 1, 2, 2, 3, 20, 20, 21])
+        correct_values_a = [1.0, 2.0, 3.0, 2.0, 3.0, 4.0, 3.0, 4.0, 4.0, 10.0, 11.0, 11.0]
+        correct_values_b = [5.0, 6.0, 7.0, 6.0, 7.0, 8.0, 7.0, 8.0, 8.0, 12.0, 13.0, 13.0]
+
+        self.assertListEqual(list(df["id"].values), correct_indices)
+        self.assertListEqual(list(df["a"].values), correct_values_a)
+        self.assertListEqual(list(df["b"].values), correct_values_b)
 
         df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
                                                   column_kind=None, rolling_direction=-1,
                                                   max_timeshift=4)
 
-        self.assertListEqual(list(df["id"].values), correct_indices[:])
-        self.assertListEqual(list(df["a"].values), correct_values_a[:])
-        self.assertListEqual(list(df["b"].values), correct_values_b[:])
+        correct_indices = ([0, 0, 0, 0, 1, 1, 1, 2, 2, 3, 20, 20, 21])
+        correct_values_a = [1.0, 2.0, 3.0, 4.0, 2.0, 3.0, 4.0, 3.0, 4.0, 4.0, 10.0, 11.0, 11.0]
+        correct_values_b = [5.0, 6.0, 7.0, 8.0, 6.0, 7.0, 8.0, 7.0, 8.0, 8.0, 12.0, 13.0, 13.0]
+
+        self.assertListEqual(list(df["id"].values), correct_indices)
+        self.assertListEqual(list(df["a"].values), correct_values_a)
+        self.assertListEqual(list(df["b"].values), correct_values_b)
 
     def test_stacked_rolling(self):
         first_class = pd.DataFrame({"a": [1, 2, 3, 4], "b": [5, 6, 7, 8], "time": range(4)})
@@ -301,15 +313,33 @@ class RollingTestCase(TestCase):
                                 df_full[["time", "id", "b"]].rename(columns={"b": "_value"})], ignore_index=True)
         df_stacked["kind"] = ["a"] * 6 + ["b"] * 6
 
+        """ df_stacked is 
+            time  id  _value kind
+        0      0   1       1    a
+        1      1   1       2    a
+        2      2   1       3    a
+        3      3   1       4    a
+        4     20   2      10    a
+        5     21   2      11    a
+        6      0   1       5    b
+        7      1   1       6    b
+        8      2   1       7    b
+        9      3   1       8    b
+        10    20   2      12    b
+        11    21   2      13    b
+        """
+
         df = dataframe_functions.roll_time_series(df_stacked, column_id="id", column_sort="time",
                                                   column_kind="kind", rolling_direction=-1)
 
-        correct_indices = ([4] * 2 + [3] * 4 + [2] * 6 + [0] * 2 + [0] * 8 + [0] * 4)
+        correct_indices = ([0]*2*4 + [1]*2*3 + [2]*2*2 + [3]*2*1 + [20]*4 + [21] *2)
         self.assertListEqual(list(df["id"].values), correct_indices)
 
+        print(df["_value"].values)
         self.assertListEqual(list(df["kind"].values), ["a", "b"] * 13)
         self.assertListEqual(list(df["_value"].values),
-                             [4, 8, 3, 7, 4, 8, 2, 6, 3, 7, 4, 8, 11, 13, 1, 5, 2, 6, 3, 7, 4, 8, 10, 12, 11, 13])
+                             [1., 5., 2., 6., 3., 7., 4., 8., 2., 6., 3., 7., 4., 8., 3., 7., 4., 8., 4., 8., 10., 12.,
+                              11., 13., 11., 13.])
 
     def test_dict_rolling(self):
         df_dict = {
@@ -351,15 +381,15 @@ class RollingTestCase(TestCase):
          12    13.0   5.0  5}
         """
 
-        correct_indices = []
+        correct_indices = [0, 0, 0, 0, 1, 1, 1, 2, 2, 3, 4, 4, 5]
 
         self.assertListEqual(list(df["a"]["id"].values), correct_indices)
         self.assertListEqual(list(df["b"]["id"].values), correct_indices)
 
         self.assertListEqual(list(df["a"]["_value"].values),
-                             [4, 3, 4, 2, 3, 4, 11, 1, 2, 3, 4, 10, 11])
+                             [1.0, 2.0, 3.0, 4.0, 2.0, 3.0, 4.0, 3.0, 4.0, 4.0, 10.0, 11.0, 11.0])
         self.assertListEqual(list(df["b"]["_value"].values),
-                             [8, 7, 8, 6, 7, 8, 13, 5, 6, 7, 8, 12, 13])
+                             [5.0, 6.0, 7.0, 8.0, 6.0, 7.0, 8.0, 7.0, 8.0, 8.0, 12.0, 13.0, 13.0])
 
     def test_warning_on_non_uniform_time_steps(self):
         with warnings.catch_warnings(record=True) as w:
