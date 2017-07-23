@@ -317,11 +317,10 @@ def _normalize_input_to_internal_representation(timeseries_container, column_id,
     return timeseries_container, column_id, column_kind, column_value
 
 
-def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_direction,
-                     maximum_number_of_timeshifts=None):
+def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_direction, max_timeshift=None):
     """
-    Roll the (sorted) data frames for each kind and each id separately in the "time" domain
-    (which is represented by the sort order of the sort column given by `column_sort`).
+    This method creates sub windows of the time series. It rolls the (sorted) data frames for each kind and each id
+    separately in the "time" domain (which is represented by the sort order of the sort column given by `column_sort`).
 
     For each rolling step, a new id is created by the scheme "id={id}, shift={shift}", here id is the former id of the
     column and shift is the amount of "time" shifts.
@@ -350,9 +349,8 @@ def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_di
     :type column_kind: basestring or None
     :param rolling_direction: The sign decides, if to roll backwards or forwards in "time"
     :type rolling_direction: int
-    :param maximum_number_of_timeshifts: If not None, shift only up to maximum_number_of_timeshifts.
-        If None, shift as often as possible.
-    :type maximum_number_of_timeshifts: int
+    :param max_timeshift: If not None, shift only up to max_timeshift. If None, shift as often as possible.
+    :type max_timeshift: int
 
     :return: The rolled data frame or dictionary of data frames
     :rtype: the one from df_or_dict
@@ -410,16 +408,16 @@ def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_di
     rolling_direction = np.sign(rolling_direction)
 
     grouped_data = df.groupby(grouper)
-    maximum_number_of_timeshifts = maximum_number_of_timeshifts or grouped_data.count().max().max()
+    max_timeshift = max_timeshift or grouped_data.count().max().max()
 
-    if np.isnan(maximum_number_of_timeshifts):
+    if np.isnan(max_timeshift):
         raise ValueError("Somehow the maximum length of your time series is NaN (Does your time series container have "
                          "only one row?). Can not perform rolling.")
 
     if rolling_direction > 0:
-        range_of_shifts = range(maximum_number_of_timeshifts, -1, -1)
+        range_of_shifts = range(max_timeshift, -1, -1)
     else:
-        range_of_shifts = range(-maximum_number_of_timeshifts, 1)
+        range_of_shifts = range(-max_timeshift, 1)
 
     # Todo: not default for columns_sort to be None
     if column_sort is None:
@@ -439,12 +437,12 @@ def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_di
     return df_shift.sort_values(by=[column_id, column_sort])
 
 
-def make_forecasting_frame(x, kind, maximum_number_of_timeshifts, rolling_direction):
+def make_forecasting_frame(x, kind, max_timeshift, rolling_direction):
     """
     Takes a singular time series x and constructs a DataFrame df and target vector y that can be used for a time series
     forecasting task.
 
-    The returned df will contain, for every time stamp in x, the last maximum_number_of_timeshifts data points as a new
+    The returned df will contain, for every time stamp in x, the last max_timeshift data points as a new
     time series, such can be used to fit a time series forecasting model.
 
     See :ref:`rolling-label` for a detailed description of the rolling process and how the feature matrix and target
@@ -456,9 +454,9 @@ def make_forecasting_frame(x, kind, maximum_number_of_timeshifts, rolling_direct
     :type kind: str
     :param rolling_direction: The sign decides, if to roll backwards (if sign is positive) or forwards in "time"
     :type rolling_direction: int
-    :param maximum_number_of_timeshifts: If not None, shift only up to maximum_number_of_timeshifts.
+    :param max_timeshift: If not None, shift only up to max_timeshift.
     If None, shift as often as possible.
-    :type maximum_number_of_timeshifts: int
+    :type max_timeshift: int
 
     :return: time series container df, target vector y
     :rtype: (pd.DataFrame, pd.Series)
@@ -474,7 +472,7 @@ def make_forecasting_frame(x, kind, maximum_number_of_timeshifts, rolling_direct
                                 column_sort="time",
                                 column_kind="kind",
                                 rolling_direction=rolling_direction,
-                                maximum_number_of_timeshifts=maximum_number_of_timeshifts)
+                                max_timeshift=max_timeshift)
 
     # drop the rows which should actually be predicted
     def mask_first(x):

@@ -255,8 +255,8 @@ The higher the shift value, the more steps the time series was moved into the sp
 this example).
 
 If you want to limit how far the time series shall be shifted into the specified direction, you can set the
-*maximum_number_of_timeshifts* parameter to the maximum time steps to be shifted. In the above example, setting
-*maximum_number_of_timeshifts* to 1 yields the following result (setting it to 0 will create all possible shifts):
+*max_timeshift* parameter to the maximum time steps to be shifted. In the above example, setting
+*max_timeshift* to 1 yields the following result (setting it to 0 will create all possible shifts):
 
 +-----------+------+----+----+
 | id        | time | x  | y  |
