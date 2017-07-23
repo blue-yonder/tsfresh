@@ -448,6 +448,9 @@ def make_forecasting_frame(x, kind, max_timeshift, rolling_direction):
     See :ref:`rolling-label` for a detailed description of the rolling process and how the feature matrix and target
     vector are derived.
 
+    The returned time series container df, will contain the rolled time series as a flat data frame, the first format
+    from :ref:`data-formats-label `.
+
     :param x: the singular time series
     :type x: np.array
     :param kind: the kind of the time series
