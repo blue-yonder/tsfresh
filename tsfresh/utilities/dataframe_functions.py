@@ -449,7 +449,7 @@ def make_forecasting_frame(x, kind, max_timeshift, rolling_direction):
     vector are derived.
 
     The returned time series container df, will contain the rolled time series as a flat data frame, the first format
-    from :ref:`data-formats-label `.
+    from :ref:`data-formats-label`.
 
     When x is a pandas.Series, the index will be used as id.
 
@@ -459,8 +459,7 @@ def make_forecasting_frame(x, kind, max_timeshift, rolling_direction):
     :type kind: str
     :param rolling_direction: The sign decides, if to roll backwards (if sign is positive) or forwards in "time"
     :type rolling_direction: int
-    :param max_timeshift: If not None, shift only up to max_timeshift.
-    If None, shift as often as possible.
+    :param max_timeshift: If not None, shift only up to max_timeshift. If None, shift as often as possible.
     :type max_timeshift: int
 
     :return: time series container df, target vector y
