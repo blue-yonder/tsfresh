@@ -7,20 +7,18 @@ This module contains the main function to interact with tsfresh: extract feature
 
 from __future__ import absolute_import, division
 
-import itertools
 import logging
 import warnings
 from functools import partial
-from multiprocessing import Pool
 
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
 
 from tsfresh import defaults
 from tsfresh.feature_extraction import feature_calculators
 from tsfresh.feature_extraction.settings import ComprehensiveFCParameters
 from tsfresh.utilities import dataframe_functions, profiling
+from tsfresh.utilities.distribution import MapDistributor, MultiprocessingDistributor
 from tsfresh.utilities.string_manipulation import convert_to_output_format
 
 _logger = logging.getLogger(__name__)
@@ -35,7 +33,8 @@ def extract_features(timeseries_container, default_fc_parameters=None,
                      impute_function=defaults.IMPUTE_FUNCTION,
                      profile=defaults.PROFILING,
                      profiling_filename=defaults.PROFILING_FILENAME,
-                     profiling_sorting=defaults.PROFILING_SORTING):
+                     profiling_sorting=defaults.PROFILING_SORTING,
+                     distributor_class=None):
     """
     Extract features from
 
@@ -112,6 +111,11 @@ def extract_features(timeseries_container, default_fc_parameters=None,
     :param profiling_filename: Where to save the profiling results.
     :type profiling_filename: basestring
 
+    :param distributor_class: Advanced parameter: set this to a class name that you want to use as a
+             distributor. See the utilities/distribution.py for more information. Leave to None, if you want
+             TSFresh to choose the best distributor.
+    :type distributor_class: class
+
     :return: The (maybe imputed) DataFrame containing extracted features.
     :rtype: pandas.DataFrame
     """
@@ -142,9 +146,11 @@ def extract_features(timeseries_container, default_fc_parameters=None,
 
         result = _do_extraction(df=df_melt,
                                 column_id=column_id, column_value=column_value, column_kind=column_kind,
-                                n_jobs=n_jobs, chunksize=chunksize,
+                                n_jobs=n_jobs, chunk_size=chunksize,
                                 disable_progressbar=disable_progressbar,
-                                default_fc_parameters=default_fc_parameters, kind_to_fc_parameters=kind_to_fc_parameters)
+                                default_fc_parameters=default_fc_parameters,
+                                kind_to_fc_parameters=kind_to_fc_parameters,
+                                distributor_class=distributor_class)
 
         # Impute the result if requested
         if impute_function is not None:
@@ -160,7 +166,7 @@ def extract_features(timeseries_container, default_fc_parameters=None,
 
 def _do_extraction(df, column_id, column_value, column_kind,
                    default_fc_parameters, kind_to_fc_parameters,
-                   n_jobs, chunksize, disable_progressbar):
+                   n_jobs, chunk_size, disable_progressbar, distributor_class):
     """
     Wrapper around the _do_extraction_on_chunk, which calls it on all chunks in the data frame.
     A chunk is a subset of the data, with a given kind and id - so a single time series.
@@ -193,8 +199,8 @@ def _do_extraction(df, column_id, column_value, column_kind,
     :param column_value: The name for the column keeping the value itself.
     :type column_value: str
 
-    :param chunksize: The size of one chunk for the parallelization
-    :type chunksize: None or int
+    :param chunk_size: The size of one chunk for the parallelization
+    :type chunk_size: None or int
 
     :param n_jobs: The number of processes to use for parallelization. If zero, no parallelization is used.
     :type n_jobs: int
@@ -202,37 +208,34 @@ def _do_extraction(df, column_id, column_value, column_kind,
     :param disable_progressbar: Do not show a progressbar while doing the calculation.
     :type disable_progressbar: bool
 
+    :param distributor_class: Advanced parameter: set this to a class name that you want to use as a
+             distributor. See the utilities/distribution.py for more information. Leave to None, if you want
+             TSFresh to choose the best distributor.
+    :type distributor_class: class
+
     :return: the extracted features
     :rtype: pd.DataFrame
     """
     data_in_chunks = [x + (y,) for x, y in df.groupby([column_id, column_kind])[column_value]]
 
-    total_number_of_expected_results = len(data_in_chunks)
-
-    if n_jobs == 0:
-        map_function = map
-    else:
-        pool = Pool(n_jobs)
-
-        if not chunksize:
-            chunksize = _calculate_best_chunksize(data_in_chunks, n_jobs)
-
-        map_function = partial(pool.imap_unordered, chunksize=chunksize)
-
     extraction_function = partial(_do_extraction_on_chunk,
                                   default_fc_parameters=default_fc_parameters,
                                   kind_to_fc_parameters=kind_to_fc_parameters)
 
-    # Map over all those chunks and extract the features on them
-    result = tqdm(map_function(extraction_function, data_in_chunks),
-                  total=total_number_of_expected_results,
-                  desc="Feature Extraction", disable=disable_progressbar)
+    if distributor_class is None:
+        if n_jobs == 0:
+            distributor_class = MapDistributor
+        else:
+            distributor_class = MultiprocessingDistributor
 
-    # Flatten out the lists
-    result = itertools.chain.from_iterable(result)
+    distributor = distributor_class(n_workers=n_jobs,
+                                    disable_progressbar=disable_progressbar,
+                                    progressbar_title="Feature Extraction")
+
+    result = distributor.map_reduce(extraction_function, data=data_in_chunks, chunk_size=chunk_size)
 
     # Return a dataframe in the typical form (id as index and feature names as columns)
-    result = pd.DataFrame(list(result), dtype=np.float)
+    result = pd.DataFrame(result, dtype=np.float)
 
     if len(result) != 0:
         result = result.pivot("id", "variable", "value")
@@ -289,20 +292,3 @@ def _do_extraction_on_chunk(chunk, default_fc_parameters, kind_to_fc_parameters)
                 yield {"variable": feature_name, "value": item, "id": sample_id}
 
     return list(_f())
-
-
-def _calculate_best_chunksize(iterable_list, n_jobs):
-    """
-    Helper function to calculate the best chunksize for a given number of elements to calculate.
-
-    The formula is more or less an empirical result.
-    :param iterable_list: A list which defines how many calculations there need to be.
-    :param n_jobs: The number of processes that will be used in the calculation.
-    :return: The chunksize which should be used.
-
-    TODO: Investigate which is the best chunk size for different settings.
-    """
-    chunksize, extra = divmod(len(iterable_list), n_jobs * 5)
-    if extra:
-        chunksize += 1
-    return chunksize
