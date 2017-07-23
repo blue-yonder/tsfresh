@@ -331,7 +331,7 @@ def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_di
      * The sign of rolling defines the direction of time rolling, a positive value means we are going back in time
      * It is possible to shift time series of different lengths but
      * We assume that the time series are uniformly sampled
-     * For more information, please see :ref:`rolling-label`.
+     * For more information, please see :ref:`forecasting-label`.
 
     :param df_or_dict: a pandas DataFrame or a dictionary. The required shape/form of the object depends on the rest of
         the passed arguments.
@@ -445,7 +445,7 @@ def make_forecasting_frame(x, kind, max_timeshift, rolling_direction):
     The returned df will contain, for every time stamp in x, the last max_timeshift data points as a new
     time series, such can be used to fit a time series forecasting model.
 
-    See :ref:`rolling-label` for a detailed description of the rolling process and how the feature matrix and target
+    See :ref:`forecasting-label` for a detailed description of the rolling process and how the feature matrix and target
     vector are derived.
 
     The returned time series container df, will contain the rolled time series as a flat data frame, the first format
