@@ -7,19 +7,16 @@ Features that are extracted with *tsfresh* can be used for many different tasks,
 compression or forecasting.
 This section explains how one can use the features for time series forecasting tasks.
 
-Lets assume that we have a DataFrame of one of the tsfresh :ref:`data-formats-label`.
-The "sort" column of such a container gives a sequential state to the individual measurements.
-In the case of time series this can be the *time* dimension while in the case of spectra the order is given by the
-*wavelength* or *frequency* dimensions.
-We can exploit this sequence to generate more input data out of single time series, by *rolling* over the data.
+The "sort" column of a DataFrame in the supported :ref:`data-formats-label` gives a sequential state to the
+individual measurements. In the case of time series this can be the *time* dimension while in the case of spectra the
+order is given by the *wavelength* or *frequency* dimensions.
+We can exploit this sequence to generate more input data out of a single time series, by *rolling* over the data.
 
-Now imagine the following situation:
-You have the price of a certain stock, lets say Apple, for 100 time steps.
-Now, you want to build a feature based model to forecast future prices of the Apple stock.
+Lets say you have the price of a certain stock, e.g. Apple, for 100 time steps.
+Now, you want to build a feature-based model to forecast future prices of the Apple stock.
 So you will have to extract features in every time step of the original time series while looking at
 a certain number of past values.
-A rolling mechanism creates such time series for every time step by creating sub time series of the sensor data of the
-last *m* time steps.
+A rolling mechanism will give you the sub time series of last *m* time steps to construct the features.
 
 The following image illustrates the process:
 
@@ -28,7 +25,10 @@ The following image illustrates the process:
    :alt: The rolling mechanism
    :align: center
 
-So, we move the window that extract the features and then predict the next time step (which was not used to extract features).
+
+
+So, we move the window that extract the features and then predict the next time step (which was not used to extract features) forward.
+In the above image, the window moves from left to right.
 
 Another example can be found in streaming data, e.g. in Industry 4.0 applications.
 Here you typically get one new data row at a time and use this to for example predict machine failures. To train your model,
@@ -38,6 +38,11 @@ the data after the first two time steps etc.
 Both examples imply, that you extract the features not only on the full data set, but also
 on all temporal coherent subsets of data, which is the process of *rolling*. In tsfresh, this is implemented in the
 function :func:`tsfresh.utilities.dataframe_functions.roll_time_series`.
+Further, we provide the :func:`tsfresh.utilities.dataframe_functions.make_forecasting_frame` method as a convenient
+wrapper to fast construct the container and target vector for a given sequence.
+
+The rolling mechanism
+---------------------
 
 The rolling mechanism takes a time series :math:`x` with its data rows :math:`[x_1, x_2, x_3, ..., x_n]`
 and creates :math:`n` new time series :math:`\hat x^k`, each of them with a different consecutive part
@@ -188,7 +193,7 @@ that are supported by tsfresh.
 This process is also visualized by the following figure.
 It shows how the purple, rolled sub-timeseries are used as base for the construction of the feature matrix *X*
 (after calculation of the features by *f*).
-The green data points need to be predicted by the model are then used as rows in the target vector *y*.
+The green data points need to be predicted by the model and are used as rows in the target vector *y*.
 
 .. image:: ../images/rolling_mechanism_2.png
    :scale: 100 %
@@ -203,8 +208,7 @@ Parameters and Implementation Notes
 The above example demonstrates the overall rolling mechanism, which creates new time series.
 Now we discuss the naming convention for such new time series:
 
-For identifying every subsequence, tsfresh introduces a qualifier ("shift") that shows how far the time series was shifted.
-Practically, the shift-qualifier indicates how long the sub-time series is.
+For identifying every subsequence, tsfresh uses the time stamp of the point that will be predicted as new "id".
 The above example with rolling set to 1 yields the following sub-time series:
 
 +-----------+------+----+----+
@@ -257,13 +261,14 @@ The above example with rolling set to 1 yields the following sub-time series:
 | t9        | t9   | 11 | 13 |
 +-----------+------+----+----+
 
-The id is now replaced by the old id and the shift value. Hence, every table represents a sub-time series.
+The new id is the time stamp where the shift ended.
+So above, every table represents a sub-time series.
 The higher the shift value, the more steps the time series was moved into the specified direction (into the past in
 this example).
 
 If you want to limit how far the time series shall be shifted into the specified direction, you can set the
-*max_timeshift* parameter to the maximum time steps to be shifted. In the above example, setting
-*max_timeshift* to 1 yields the following result (setting it to 0 will create all possible shifts):
+*max_timeshift* parameter to the maximum time steps to be shifted.
+In our example, setting *max_timeshift* to 1 yields the following result (setting it to 0 will create all possible shifts):
 
 +-----------+------+----+----+
 | id        | time | x  | y  |
