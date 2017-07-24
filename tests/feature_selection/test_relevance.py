@@ -79,12 +79,12 @@ class TestCalculateRelevanceTable:
         significance_test_feature_binary_mock.return_value = 0.5
         significance_test_feature_real_mock.return_value = 0.7
 
-        relevance_table = calculate_relevance_table(X, y_real)
+        relevance_table = calculate_relevance_table(X, y_real, n_jobs=0)
 
         assert 0.5 == relevance_table.loc['feature_binary'].p_value
         assert 0.7 == relevance_table.loc['feature_real'].p_value
-        significance_test_feature_binary_mock.assert_called_once_with(X['feature_binary'], y_real)
-        significance_test_feature_real_mock.assert_called_once_with(X['feature_real'], y_real)
+        significance_test_feature_binary_mock.assert_called_once_with(X['feature_binary'], y=y_real)
+        significance_test_feature_real_mock.assert_called_once_with(X['feature_real'], y=y_real)
 
 
 class TestCombineRelevanceTables:
