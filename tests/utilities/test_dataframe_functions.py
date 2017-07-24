@@ -8,6 +8,7 @@ import pandas as pd
 from tsfresh.utilities import dataframe_functions
 import numpy as np
 import six
+from pandas.testing import assert_frame_equal, assert_series_equal
 
 
 class NormalizeTestCase(TestCase):
@@ -610,3 +611,36 @@ class GetRangeValuesPerColumnTestCase(TestCase):
         self.assertEqual(col_to_max, {"value": 0})
         self.assertEqual(col_to_min, {"value": 0})
         self.assertEqual(col_to_median, {"value": 0})
+
+
+class MakeForecastingFrameTestCase(TestCase):
+
+    def test_make_forecasting_frame_list(self):
+        df, y = dataframe_functions.make_forecasting_frame(x=range(4), kind="test", max_timeshift=1, rolling_direction=1)
+        expected_df = pd.DataFrame({"id": [1, 2, 3], "kind": ["test"]*3, "val": [0., 1., 2.], "time": [0., 1., 2.]})
+
+        expected_y = pd.Series(data=[1, 2, 3], index=[1, 2, 3], name="val")
+        assert_frame_equal(df.sort_index(axis=1), expected_df.sort_index(axis=1))
+        assert_series_equal(y, expected_y)
+
+    def test_make_forecasting_frame_range(self):
+        df, y = dataframe_functions.make_forecasting_frame(x=np.arange(4), kind="test", max_timeshift=1, rolling_direction=1)
+        expected_df = pd.DataFrame({"id": [1, 2, 3], "kind": ["test"]*3, "val": [0., 1., 2.], "time": [0., 1., 2.]})
+        assert_frame_equal(df.sort_index(axis=1), expected_df.sort_index(axis=1))
+
+    def test_make_forecasting_frame_pdSeries(self):
+
+        t_index = pd.date_range('1/1/2011', periods=4, freq='H')
+        df, y = dataframe_functions.make_forecasting_frame(x=pd.Series(data=range(4), index=t_index),
+                                                           kind="test", max_timeshift=1, rolling_direction=1)
+
+        expected_y = pd.Series(data=[1, 2, 3], index=pd.DatetimeIndex(["2011-01-01 01:00:00", "2011-01-01 02:00:00",
+                                                                       "2011-01-01 03:00:00"]), name="val")
+        expected_df = pd.DataFrame({"id": pd.DatetimeIndex(["2011-01-01 01:00:00", "2011-01-01 02:00:00",
+                                                            "2011-01-01 03:00:00"]),
+                                    "kind": ["test"]*3, "val": [0., 1., 2.],
+                                    "time": pd.DatetimeIndex(["2011-01-01 00:00:00", "2011-01-01 01:00:00",
+                                                              "2011-01-01 02:00:00"])
+                                    })
+        assert_frame_equal(df.sort_index(axis=1), expected_df.sort_index(axis=1))
+        assert_series_equal(y, expected_y)
