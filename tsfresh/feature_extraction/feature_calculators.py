@@ -1504,3 +1504,42 @@ def agg_linear_trend(x, param):
         res_index.append("f_agg_\"{}\"__chunk_len_{}__attr_\"{}\"".format(f_agg, chunk_len, attr))
 
     return zip(res_index, res_data)
+
+
+@set_property("fctype", "combiner")
+def energy_ratio_by_chunks(x, param):
+    """
+    Calculates the sum of squares of each of N chunks expressed as a ratio with the sum of squares over the whole series
+
+    Takes as an input parameter the number N of chunks to divide the series into. Will output N features, each of which
+    is the energy ratio for chunk 1 through N. Note that the answer for N=1 is a trivial "1" but we handle this scenario
+    in case somebody calls it. Sum of the ratios should be 1.0.
+
+    Returns an error for N <= 0
+
+    Uses np.nansum instead of np.square to ignore NaN values.
+
+    :param x: the time series to calculate the feature of
+    :type x: pandas.Series
+    :param chunk_count: contains N, the number of chunks
+    :type chunk_count: integer
+    :return: the different feature values
+    :return type: tuples of feature name, feature value
+    """
+
+    res_data = []
+    res_index = []
+    N = int(param[0]["chunk_count"])
+
+    if N <= 0:
+        return "energy_ratio_input_invalid", 0.0
+
+    full_series_energy = np.nansum(x**2)
+    segment_length = len(x)//N
+    for i in range(N):
+        start = i*segment_length
+        end = (i+1)*segment_length
+        res_data.append(np.nansum(x[start:end]**2.0)/full_series_energy)
+        res_index.append("chunk_{}_energy_ratio".format(i))
+
+    return zip(res_index, res_data)
