@@ -472,10 +472,12 @@ def make_forecasting_frame(x, kind, max_timeshift, rolling_direction):
     else:
         t = range(n)
 
-    df = pd.DataFrame({"id": ["A"] * n,
+    df = pd.DataFrame({"id": ["id"] * n,
                        "time": t,
-                       "val": x,
+                       "value": x,
                        "kind": kind})
+
+    y = x
 
     df_shift = roll_time_series(df,
                                 column_id="id",
@@ -495,7 +497,6 @@ def make_forecasting_frame(x, kind, max_timeshift, rolling_direction):
 
     mask = df_shift.groupby(['id'])['id'].transform(mask_first).astype(bool)
     df_shift = df_shift[mask]
-    y = df["val"]
 
     return df_shift, y[1:]
 
