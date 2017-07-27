@@ -17,7 +17,7 @@ FAQ
        :ref:`data-formats-label`.
        Then, the :func:`tsfresh.dataframe_functions.roll_time_series` give you a DataFrame with the rolled time series,
        that you can pass to tsfresh.
-       On the following page you can find a detailed description: :ref:`rolling-label`.
+       On the following page you can find a detailed description: :ref:`forecasting-label`.
 
 
     3. **How can I use tsfresh with windows?**
