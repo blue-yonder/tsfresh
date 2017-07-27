@@ -106,7 +106,7 @@ class ComprehensiveFCParameters(dict):
             "time_reversal_asymmetry_statistic": [{"lag": lag} for lag in range(1, 4)],
             "c3": [{"lag": lag} for lag in range(1, 4)],
             "symmetry_looking": [{"r": r * 0.05} for r in range(20)],
-            "large_standard_deviation": [{"r": r * 0.05} for r in range(10)],
+            "large_standard_deviation": [{"r": r * 0.05} for r in range(1, 20)],
             "quantile": [{"q": q} for q in [.1, .2, .3, .4, .6, .7, .8, .9]],
             "autocorrelation": [{"lag": lag} for lag in range(10)],
             "agg_autocorrelation": [{"f_agg": s} for s in ["mean", "median", "var"]],
