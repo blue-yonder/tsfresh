@@ -128,15 +128,6 @@ class FeatureCalculationTestCase(TestCase):
         self.assertEqualOnAllArrayTypes(sum_values, [-1.2, -2, -3, -4], -10.2)
         self.assertEqualOnAllArrayTypes(sum_values, [], 0)
 
-    def test_large_number_of_peaks(self):
-        x = [0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1]
-        self.assertTrueOnAllArrayTypes(large_number_of_peaks, x, 1)
-        self.assertTrueOnAllArrayTypes(large_number_of_peaks, x, 2)
-        self.assertFalseOnAllArrayTypes(large_number_of_peaks, x, 3)
-        self.assertFalseOnAllArrayTypes(large_number_of_peaks, x, 4)
-        self.assertFalseOnAllArrayTypes(large_number_of_peaks, x, 5)
-        self.assertFalseOnAllArrayTypes(large_number_of_peaks, x, 6)
-
     def test_agg_autocorrelation(self):
 
         param = [{"f_agg": "mean"}]

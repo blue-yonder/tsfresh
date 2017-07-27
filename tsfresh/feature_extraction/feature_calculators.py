@@ -246,21 +246,6 @@ def sum_values(x):
     return np.sum(x)
 
 
-@set_property("fctype", "simple")
-def large_number_of_peaks(x, n):
-    """
-    Checks if the number of peaks is higher than n.
-
-    :param x: the time series to calculate the feature of
-    :type x: pandas.Series
-    :param n: the number of peaks to compare
-    :type n: int
-    :return: the value of this feature
-    :return type: bool
-    """
-    return number_peaks(x, n=n) > 5
-
-
 @set_property("fctype", "combiner")
 def agg_autocorrelation(x, param):
     """
