@@ -157,7 +157,7 @@ def ratio_beyond_r_sigma(x, r):
     :return type: bool
     """
     x = np.asarray(x)
-    return (sum(x > np.mean(x) + r * np.std(x)) + sum(x < np.mean(x) - r * np.std(x))) * 1.0/len(x)
+    return sum(abs(x - np.mean(x)) > r * np.std(x))/len(x)
 
 
 @set_property("fctype", "simple")
