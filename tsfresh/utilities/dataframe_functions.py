@@ -134,9 +134,9 @@ def impute_dataframe_range(df_impute, col_to_max, col_to_min, col_to_median):
                          "to replace")
 
     # Make the replacement dataframes as large as the real one
-    col_to_max = pd.DataFrame([col_to_max]*len(df_impute))
-    col_to_min = pd.DataFrame([col_to_min]*len(df_impute))
-    col_to_median = pd.DataFrame([col_to_median]*len(df_impute))
+    col_to_max = pd.DataFrame([col_to_max]*len(df_impute), index=df_impute.index)
+    col_to_min = pd.DataFrame([col_to_min]*len(df_impute), index=df_impute.index)
+    col_to_median = pd.DataFrame([col_to_median]*len(df_impute), index=df_impute.index)
 
     df_impute.where(df_impute.values != np.PINF, other=col_to_max, inplace=True)
     df_impute.where(df_impute.values != np.NINF, other=col_to_min, inplace=True)
