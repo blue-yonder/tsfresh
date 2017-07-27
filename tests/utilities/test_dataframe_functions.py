@@ -430,7 +430,7 @@ class ImputeTestCase(TestCase):
         dataframe_functions.impute(df)
 
         self.assertEqual(list(df.value_a), [0, 1, 2, 1])
-        self.assertEqual(list(df.value_b), [1, 3, 2, 1.5])
+        self.assertEqual(list(df.value_b), [1, 2, 2, 1.5])
         self.assertEqual(list(df.value_c), [0, -3, -3, 3])
 
         df = pd.DataFrame(np.transpose([[0, 1, 2, np.NaN], [1, np.PINF, 2, 3], [np.PINF, -3, np.NINF, 3]]),
