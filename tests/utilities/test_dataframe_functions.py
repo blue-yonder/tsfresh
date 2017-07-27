@@ -424,19 +424,23 @@ class ImputeTestCase(TestCase):
         self.assertEqual(list(df.value_b), [1, 3, 2, 3])
         self.assertEqual(list(df.value_c), [1, -3, -3, 3])
 
-        df = pd.DataFrame(np.transpose([[0, 1, 2, np.NaN], [1, np.PINF, 2, 3], [1, -3, np.NINF, 3]]),
+        df = pd.DataFrame(np.transpose([[0, 1, 2, np.NaN], [1, np.PINF, 2, np.NaN], [np.NaN, -3, np.NINF, 3]]),
                           columns=["value_a", "value_b", "value_c"])
         df = df.astype(np.float64, inplace=True)
         dataframe_functions.impute(df)
 
-        df = pd.DataFrame(np.transpose([[0, 1, 2, np.NaN], [1, np.PINF, 2, 3], [1, -3, np.NINF, 3]]),
+        self.assertEqual(list(df.value_a), [0, 1, 2, 1])
+        self.assertEqual(list(df.value_b), [1, 3, 2, 1.5])
+        self.assertEqual(list(df.value_c), [0, -3, -3, 3])
+
+        df = pd.DataFrame(np.transpose([[0, 1, 2, np.NaN], [1, np.PINF, 2, 3], [np.PINF, -3, np.NINF, 3]]),
                           columns=["value_a", "value_b", "value_c"])
         df = df.astype(np.float32, inplace=True)
         dataframe_functions.impute(df)
 
         self.assertEqual(list(df.value_a), [0, 1, 2, 1])
         self.assertEqual(list(df.value_b), [1, 3, 2, 3])
-        self.assertEqual(list(df.value_c), [1, -3, -3, 3])
+        self.assertEqual(list(df.value_c), [3, -3, -3, 3])
 
     def test_impute_range(self):
         def get_df():
