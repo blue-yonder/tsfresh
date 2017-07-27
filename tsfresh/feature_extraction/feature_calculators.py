@@ -147,6 +147,20 @@ def variance_larger_than_standard_deviation(x):
 
 
 @set_property("fctype", "simple")
+def ratio_beyond_r_sigma(x, r):
+    """
+    Ratio of values that are more than r*std(x) (so r sigma) away from the mean of x.
+
+    :param x: the time series to calculate the feature of
+    :type x: iterable
+    :return: the value of this feature
+    :return type: bool
+    """
+    x = np.asarray(x)
+    return sum(abs(x - np.mean(x)) > r * np.std(x))/len(x)
+
+
+@set_property("fctype", "simple")
 def large_standard_deviation(x, r):
     """
     Boolean variable denoting if the standard dev of x is higher
