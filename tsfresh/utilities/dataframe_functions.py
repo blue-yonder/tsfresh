@@ -133,24 +133,14 @@ def impute_dataframe_range(df_impute, col_to_max, col_to_min, col_to_median):
         raise ValueError("Some of the dictionaries col_to_median, col_to_max, col_to_min contains non finite values "
                          "to replace")
 
-    # Replacing values
-    # +inf -> max
-    indices = np.nonzero(df_impute.values == np.PINF)
-    if len(indices[0]) > 0:
-        replacement = [col_to_max[columns[i]] for i in indices[1]]
-        df_impute.iloc[indices] = replacement
+    # Make the replacement dataframes as large as the real one
+    col_to_max = pd.DataFrame([col_to_max]*len(df_impute))
+    col_to_min = pd.DataFrame([col_to_min]*len(df_impute))
+    col_to_median = pd.DataFrame([col_to_median]*len(df_impute))
 
-    # -inf -> min
-    indices = np.nonzero(df_impute.values == np.NINF)
-    if len(indices[0]) > 0:
-        replacement = [col_to_min[columns[i]] for i in indices[1]]
-        df_impute.iloc[indices] = replacement
-
-    # NaN -> median
-    indices = np.nonzero(np.isnan(df_impute.values))
-    if len(indices[0]) > 0:
-        replacement = [col_to_median[columns[i]] for i in indices[1]]
-        df_impute.iloc[indices] = replacement
+    df_impute.where(df_impute.values != np.PINF, other=col_to_max, inplace=True)
+    df_impute.where(df_impute.values != np.NINF, other=col_to_min, inplace=True)
+    df_impute.where(~np.isnan(df_impute.values), other=col_to_median, inplace=True)
 
     df_impute.astype(np.float64, copy=False)
     return df_impute
