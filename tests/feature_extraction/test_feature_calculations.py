@@ -14,6 +14,7 @@ from tsfresh.feature_extraction.feature_calculators import _aggregate_on_chunks
 from tsfresh.examples.driftbif_simulation import velocity
 import six
 import math
+from tsfresh.feature_extraction.settings import ComprehensiveFCParameters
 
 
 class FeatureCalculationTestCase(TestCase):
@@ -866,3 +867,28 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEquals(res['f_agg_"mean"__chunk_len_3__attr_"slope"'], 0)
         self.assertAlmostEquals(res['f_agg_"median"__chunk_len_3__attr_"intercept"'], -3)
         self.assertAlmostEquals(res['f_agg_"median"__chunk_len_3__attr_"slope"'], 0)
+
+    def test_energy_ratio_by_chunks(self):
+        x = pd.Series(range(90), index=range(90))
+        param = [{"num_segments" : 6, "segment_focus": i} for i in range(6)]
+        output = energy_ratio_by_chunks(x=x, param=param)
+
+        self.assertAlmostEqual(output[0][1], 0.0043, places=3)
+        self.assertAlmostEqual(output[1][1], 0.0316, places=3)
+        self.assertAlmostEqual(output[2][1], 0.0871, places=3)
+        self.assertAlmostEqual(output[3][1], 0.1709, places=3)
+        self.assertAlmostEqual(output[4][1], 0.2829, places=3)
+        self.assertAlmostEqual(output[5][1], 0.4232, places=3)
+
+        # Sum of the ratios should be 1.0
+        sum = 0.0
+        for name,dat in output:
+            sum = sum + dat
+        self.assertAlmostEqual(sum, 1.0)
+
+
+
+    def test_ComprehensiveFCParameters(self):
+        import pprint
+        pp = pprint.PrettyPrinter(indent=4)
+        pp.pprint(ComprehensiveFCParameters())

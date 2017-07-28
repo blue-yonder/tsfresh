@@ -135,8 +135,8 @@ class ComprehensiveFCParameters(dict):
                                  for f in ["max", "min", "mean", "var"]],
             "augmented_dickey_fuller": [{"attr": "teststat"}, {"attr": "pvalue"}, {"attr": "usedlag"}],
             "number_crossing_m": [{"m": 0}, {"m": -1}, {"m": 1}],
+            "energy_ratio_by_chunks": [{"num_segments" : 10, "segment_focus": i} for i in range(10)],
             "ratio_beyond_r_sigma": [{"r": x} for x in [0.5, 1, 1.5, 2, 2.5, 3, 5, 6, 7, 10]]
-
         })
 
         super(ComprehensiveFCParameters, self).__init__(name_to_param)
