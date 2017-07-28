@@ -14,6 +14,7 @@ from tsfresh.feature_extraction.feature_calculators import _aggregate_on_chunks
 from tsfresh.examples.driftbif_simulation import velocity
 import six
 import math
+from tsfresh.feature_extraction.settings import ComprehensiveFCParameters
 
 
 class FeatureCalculationTestCase(TestCase):
@@ -866,7 +867,7 @@ class FeatureCalculationTestCase(TestCase):
 
     def test_energy_ratio_by_chunks(self):
         x = pd.Series(range(90), index=range(90))
-        param = [{"chunk_count": 6}]
+        param = [{"num_segments" : 6, "segment_focus": i} for i in range(6)]
         output = energy_ratio_by_chunks(x=x, param=param)
 
         self.assertAlmostEqual(output[0][1], 0.0043, places=3)
@@ -882,6 +883,9 @@ class FeatureCalculationTestCase(TestCase):
             sum = sum + dat
         self.assertAlmostEqual(sum, 1.0)
 
-        print("Output 1 {}".format(output[0][1]))
 
 
+    def test_ComprehensiveFCParameters(self):
+        import pprint
+        pp = pprint.PrettyPrinter(indent=4)
+        pp.pprint(ComprehensiveFCParameters())

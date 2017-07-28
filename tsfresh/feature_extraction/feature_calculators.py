@@ -1509,37 +1509,36 @@ def agg_linear_trend(x, param):
 @set_property("fctype", "combiner")
 def energy_ratio_by_chunks(x, param):
     """
-    Calculates the sum of squares of each of N chunks expressed as a ratio with the sum of squares over the whole series
+    Calculates the sum of squares of chunk i out of N chunks expressed as a ratio with the sum of squares over the whole series
 
-    Takes as an input parameter the number N of chunks to divide the series into. Will output N features, each of which
-    is the energy ratio for chunk 1 through N. Note that the answer for N=1 is a trivial "1" but we handle this scenario
+    Takes as input parameters the number num_segments of segments to divide the series into and segment_focus
+    which is the segment number (starting at zero) to return a feature on.
+
+    Note that the answer for num_segments=1 is a trivial "1" but we handle this scenario
     in case somebody calls it. Sum of the ratios should be 1.0.
 
     Returns an error for N <= 0
 
-    Uses np.nansum instead of np.square to ignore NaN values.
-
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
-    :param chunk_count: contains N, the number of chunks
-    :type chunk_count: integer
-    :return: the different feature values
-    :return type: tuples of feature name, feature value
+    :param param: contains dictionaries {"num_segments": N, "segment_focus": i} with N, i both ints
+    :return: the feature values
+    :return feature name, feature value
     """
 
     res_data = []
     res_index = []
-    N = int(param[0]["chunk_count"])
+    full_series_energy = np.sum(x ** 2)
 
-    if N <= 0:
-        return "energy_ratio_input_invalid", 0.0
+    for parameter_combination in param:
+        num_segments = parameter_combination["num_segments"]
+        segment_focus = parameter_combination["segment_focus"]
+        assert segment_focus < num_segments
 
-    full_series_energy = np.nansum(x**2)
-    segment_length = len(x)//N
-    for i in range(N):
-        start = i*segment_length
-        end = (i+1)*segment_length
-        res_data.append(np.nansum(x[start:end]**2.0)/full_series_energy)
-        res_index.append("chunk_{}_energy_ratio".format(i))
+        segment_length = len(x)//num_segments
+        start = segment_focus*segment_length
+        end = min((segment_focus+1)*segment_length, len(x))
+        res_data.append(np.sum(x[start:end]**2.0)/full_series_energy)
+        res_index.append("num_segments_{}__segment_focus_{}".format(num_segments, segment_focus))
 
-    return zip(res_index, res_data)
+    return list(zip(res_index, res_data)) # Materialize as list for Python 3 compatibility with name handling
