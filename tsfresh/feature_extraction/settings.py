@@ -106,13 +106,12 @@ class ComprehensiveFCParameters(dict):
             "time_reversal_asymmetry_statistic": [{"lag": lag} for lag in range(1, 4)],
             "c3": [{"lag": lag} for lag in range(1, 4)],
             "symmetry_looking": [{"r": r * 0.05} for r in range(20)],
-            "large_standard_deviation": [{"r": r * 0.05} for r in range(10)],
+            "large_standard_deviation": [{"r": r * 0.05} for r in range(1, 20)],
             "quantile": [{"q": q} for q in [.1, .2, .3, .4, .6, .7, .8, .9]],
             "autocorrelation": [{"lag": lag} for lag in range(10)],
             "agg_autocorrelation": [{"f_agg": s} for s in ["mean", "median", "var"]],
             "number_cwt_peaks": [{"n": n} for n in [1, 5]],
-            "number_peaks": [{"n": n} for n in [1, 3, 5]],
-            "large_number_of_peaks": [{"n": n} for n in [1, 3, 5]],
+            "number_peaks": [{"n": n} for n in [1, 3, 5, 10, 50]],
             "binned_entropy": [{"max_bins": max_bins} for max_bins in [10]],
             "index_mass_quantile": [{"q": q} for q in [.1, .2, .3, .4, .6, .7, .8, .9]],
             "cwt_coefficients": [{"widths": width, "coeff": coeff, "w": w} for
@@ -122,7 +121,7 @@ class ComprehensiveFCParameters(dict):
             "change_quantiles": [{"ql": ql, "qh": qh, "isabs": b, "f_agg": f}
                                           for ql in [0., .2, .4, .6, .8] for qh in [.2, .4, .6, .8, 1.]
                                           for b in [False, True] for f in ["mean", "var"]],
-            "fft_coefficient": [{"coeff": k, "attr": a} for a, k in product(["real", "imag"], range(100))],
+            "fft_coefficient": [{"coeff": k, "attr": a} for a, k in product(["real", "imag", "abs", "angle"], range(100))],
             "value_count": [{"value": value} for value in [0, 1, np.NaN, np.PINF, np.NINF]],
             "range_count": [{"min": -1, "max": 1}],
             "approximate_entropy": [{"m": 2, "r": r} for r in [.1, .3, .5, .7, .9]],
@@ -136,7 +135,8 @@ class ComprehensiveFCParameters(dict):
                                  for f in ["max", "min", "mean", "var"]],
             "augmented_dickey_fuller": [{"attr": "teststat"}, {"attr": "pvalue"}, {"attr": "usedlag"}],
             "number_crossing_m": [{"m": 0}, {"m": -1}, {"m": 1}],
-            "energy_ratio_by_chunks": [{"num_segments" : 6, "segment_focus": i} for i in range(6)]
+            "energy_ratio_by_chunks": [{"num_segments" : 10, "segment_focus": i} for i in range(10)],
+            "ratio_beyond_r_sigma": [{"r": x} for x in [0.5, 1, 1.5, 2, 2.5, 3, 5, 6, 7, 10]]
         })
 
         super(ComprehensiveFCParameters, self).__init__(name_to_param)

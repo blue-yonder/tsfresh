@@ -129,15 +129,6 @@ class FeatureCalculationTestCase(TestCase):
         self.assertEqualOnAllArrayTypes(sum_values, [-1.2, -2, -3, -4], -10.2)
         self.assertEqualOnAllArrayTypes(sum_values, [], 0)
 
-    def test_large_number_of_peaks(self):
-        x = [0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1]
-        self.assertTrueOnAllArrayTypes(large_number_of_peaks, x, 1)
-        self.assertTrueOnAllArrayTypes(large_number_of_peaks, x, 2)
-        self.assertFalseOnAllArrayTypes(large_number_of_peaks, x, 3)
-        self.assertFalseOnAllArrayTypes(large_number_of_peaks, x, 4)
-        self.assertFalseOnAllArrayTypes(large_number_of_peaks, x, 5)
-        self.assertFalseOnAllArrayTypes(large_number_of_peaks, x, 6)
-
     def test_agg_autocorrelation(self):
 
         param = [{"f_agg": "mean"}]
@@ -204,13 +195,20 @@ class FeatureCalculationTestCase(TestCase):
         self.assertLessEqual(res["attr_pvalue"], 0.05)
         self.assertEqual(res["attr_usedlag"], 0)
 
-
     def test_abs_energy(self):
         self.assertEqualOnAllArrayTypes(abs_energy, [1, 1, 1], 3)
         self.assertEqualOnAllArrayTypes(abs_energy, [1, 2, 3], 14)
         self.assertEqualOnAllArrayTypes(abs_energy, [-1, 2, -3], 14)
         self.assertAlmostEqualOnAllArrayTypes(abs_energy, [-1, 1.3], 2.69)
         self.assertEqualOnAllArrayTypes(abs_energy, [1], 1)
+
+    def test_ratio_beyond_r_sigma(self):
+
+        x = [0, 1]*10 + [10, 20, -30] # std of x is 7.21, mean 3.04
+        self.assertEqualOnAllArrayTypes(ratio_beyond_r_sigma, x, 3./len(x), r=1)
+        self.assertEqualOnAllArrayTypes(ratio_beyond_r_sigma, x, 2./len(x), r=2)
+        self.assertEqualOnAllArrayTypes(ratio_beyond_r_sigma, x, 1./len(x), r=3)
+        self.assertEqualOnAllArrayTypes(ratio_beyond_r_sigma, x, 0, r=20)
 
     def test_mean_abs_change(self):
         self.assertEqualOnAllArrayTypes(mean_abs_change, [-2, 2, 5], 3.5)
@@ -365,18 +363,22 @@ class FeatureCalculationTestCase(TestCase):
         self.assertIsNanOnAllArrayTypes(ratio_value_number_to_time_series_length, [])
 
     def test_fft_coefficient(self):
-        # todo: add unit test
-
         x = range(10)
         param = [{"coeff": 0, "attr": "real"}, {"coeff": 1, "attr": "real"}, {"coeff": 2, "attr": "real"},
-                 {"coeff": 0, "attr": "imag"}, {"coeff": 1, "attr": "imag"}, {"coeff": 2, "attr": "imag"}]
+                 {"coeff": 0, "attr": "imag"}, {"coeff": 1, "attr": "imag"}, {"coeff": 2, "attr": "imag"},
+                 {"coeff": 0, "attr": "angle"}, {"coeff": 1, "attr": "angle"}, {"coeff": 2, "attr": "angle"},
+                 {"coeff": 0, "attr": "abs"}, {"coeff": 1, "attr": "abs"}, {"coeff": 2, "attr": "abs"} ]
         expected_index = ['coeff_0__attr_"real"', 'coeff_1__attr_"real"', 'coeff_2__attr_"real"',
-                          'coeff_0__attr_"imag"', 'coeff_1__attr_"imag"', 'coeff_2__attr_"imag"']
+                          'coeff_0__attr_"imag"', 'coeff_1__attr_"imag"', 'coeff_2__attr_"imag"',
+                          'coeff_0__attr_"angle"', 'coeff_1__attr_"angle"', 'coeff_2__attr_"angle"',
+                          'coeff_0__attr_"abs"', 'coeff_1__attr_"abs"', 'coeff_2__attr_"abs"']
 
         res = pd.Series(dict(fft_coefficient(x, param)))
         six.assertCountEqual(self, list(res.index), expected_index)
         self.assertAlmostEqual(res['coeff_0__attr_"imag"'], 0, places=6)
         self.assertAlmostEqual(res['coeff_0__attr_"real"'], sum(x), places=6)
+        self.assertAlmostEqual(res['coeff_0__attr_"angle"'], 0, places=6)
+        self.assertAlmostEqual(res['coeff_0__attr_"abs"'], sum(x), places=6)
 
         x = [0, 1, 0, 0]
         res = pd.Series(dict(fft_coefficient(x, param)))
@@ -385,6 +387,7 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqual(res['coeff_0__attr_"imag"'], 0, places=6)
         self.assertAlmostEqual(res['coeff_0__attr_"real"'], 1, places=6)
         self.assertAlmostEqual(res['coeff_1__attr_"imag"'], -1, places=6)
+        self.assertAlmostEqual(res['coeff_1__attr_"angle"'], -90, places=6)
         self.assertAlmostEqual(res['coeff_1__attr_"real"'], 0, places=6)
         self.assertAlmostEqual(res['coeff_2__attr_"imag"'], 0, places=6)
         self.assertAlmostEqual(res['coeff_2__attr_"real"'], -1, places=6)

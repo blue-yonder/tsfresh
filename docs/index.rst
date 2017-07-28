@@ -29,7 +29,7 @@ The following chapters will explain the tsfresh package in detail:
    Feature Filtering <text/feature_filtering>
    How to write custom Feature Calculators <text/how_to_add_custom_feature>
    Parallelization <text/parallelization>
-   How to handle rolling time series <text/rolling>
+   Time Series Forecasting <text/forecasting>
    FAQ <text/faq>
    Authors <authors>
    License <license>

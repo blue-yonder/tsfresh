@@ -147,6 +147,20 @@ def variance_larger_than_standard_deviation(x):
 
 
 @set_property("fctype", "simple")
+def ratio_beyond_r_sigma(x, r):
+    """
+    Ratio of values that are more than r*std(x) (so r sigma) away from the mean of x.
+
+    :param x: the time series to calculate the feature of
+    :type x: iterable
+    :return: the value of this feature
+    :return type: bool
+    """
+    x = np.asarray(x)
+    return sum(abs(x - np.mean(x)) > r * np.std(x))/len(x)
+
+
+@set_property("fctype", "simple")
 def large_standard_deviation(x, r):
     """
     Boolean variable denoting if the standard dev of x is higher
@@ -244,21 +258,6 @@ def sum_values(x):
     :return type: bool
     """
     return np.sum(x)
-
-
-@set_property("fctype", "simple")
-def large_number_of_peaks(x, n):
-    """
-    Checks if the number of peaks is higher than n.
-
-    :param x: the time series to calculate the feature of
-    :type x: pandas.Series
-    :param n: the number of peaks to compare
-    :type n: int
-    :return: the value of this feature
-    :return type: bool
-    """
-    return number_peaks(x, n=n) > 5
 
 
 @set_property("fctype", "combiner")
@@ -740,20 +739,36 @@ def fft_coefficient(x, param):
     .. math::
         A_k =  \\sum_{m=0}^{n-1} a_m \\exp \\left \\{ -2 \\pi i \\frac{m k}{n} \\right \\}, \\qquad k = 0, \\ldots , n-1.
 
+    The resulting coefficients will be complex, this feature calculator can return the real part (attr=="real"),
+    the imaginary part (attr=="imag), the absolute value (attr=""abs) and the angle in degrees (attr=="angle).
+
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
-    :param param: contains dictionaries {"coeff": x, "attr": s} with x int and x >= 0, s str and in ["real", "imag"]
+    :param param: contains dictionaries {"coeff": x, "attr": s} with x int and x >= 0, s str and in ["real", "imag",
+        "abs", "angle"]
     :type param: list
     :return: the different feature values
     :return type: pandas.Series
     """
 
     assert min([config["coeff"] for config in param]) >= 0, "Coefficients must be positive or zero."
-    assert set([config["attr"] for config in param]) <= set(["imag", "real"]), 'Attribute must be "real" or "imag"'
+    assert set([config["attr"] for config in param]) <= set(["imag", "real", "abs", "angle"]), \
+        'Attribute must be "real", "imag", "angle" or "abs"'
 
     fft = np.fft.rfft(x)
 
-    res = [getattr(fft[config["coeff"]], config["attr"]) if config["coeff"] < len(fft) else np.NaN for config in param]
+    def complex_agg(x, agg):
+        if agg == "real":
+            return x.real
+        elif agg == "imag":
+            return x.imag
+        elif agg == "abs":
+            return np.abs(x)
+        elif agg == "angle":
+            return np.angle(x, deg=True)
+
+    res = [complex_agg(fft[config["coeff"]], config["attr"]) if config["coeff"] < len(fft)
+           else np.NaN for config in param]
     index = ['coeff_{}__attr_"{}"'.format(config["coeff"], config["attr"]) for config in param]
     return zip(index, res)
 
