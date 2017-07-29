@@ -5,7 +5,7 @@
 import numpy as np
 import pandas as pd
 from unittest import TestCase
-import tsfresh.feature_selection.relevance
+from tsfresh.feature_selection.relevance import calculate_relevance_table
 
 
 class FeatureSignificanceTestCase(TestCase):
@@ -43,8 +43,8 @@ class FeatureSignificanceTestCase(TestCase):
         X["irr8"] = np.random.poisson(1, 1000)
         X["irr9"] = np.random.binomial(1, 0.3, 1000)
 
-        df_bh = tsfresh.feature_selection.relevance.check_fs_sig_bh(X, y, target_is_binary=True)
-        feat_rej = df_bh.loc[df_bh.relevant].Feature
+        df_bh = calculate_relevance_table(X, y)
+        feat_rej = df_bh.loc[df_bh.relevant].feature
 
         # Make sure all selected variables are relevant
         for kept_feature in feat_rej:
@@ -55,7 +55,7 @@ class FeatureSignificanceTestCase(TestCase):
         # Test type outputs
         for i in range(1, 6):
             row = df_bh.loc["rel{}".format(i)]
-            self.assertEqual(row.Feature, "rel{}".format(i))
+            self.assertEqual(row.feature, "rel{}".format(i))
             if i == 1:
                 self.assertEqual(row.type, "binary")
             else:
@@ -63,7 +63,7 @@ class FeatureSignificanceTestCase(TestCase):
 
         for i in range(1, 10):
             row = df_bh.loc["irr{}".format(i)]
-            self.assertEqual(row.Feature, "irr{}".format(i))
+            self.assertEqual(row.feature, "irr{}".format(i))
             if i not in [3, 6, 9]:
                 self.assertEqual(row.type, "real")
             else:
@@ -111,8 +111,8 @@ class FeatureSignificanceTestCase(TestCase):
         z[z == 2] = 1
         X["rel5"] = z
 
-        df_bh = tsfresh.feature_selection.relevance.check_fs_sig_bh(X, y, target_is_binary=True)
-        feat_rej = df_bh.loc[df_bh.relevant].Feature
+        df_bh = calculate_relevance_table(X, y)
+        feat_rej = df_bh.loc[df_bh.relevant].feature
 
         # Make sure all selected variables are relevant
         for kept_feature in feat_rej:
@@ -123,12 +123,12 @@ class FeatureSignificanceTestCase(TestCase):
         # Test type outputs
         for i in range(1, 6):
             row = df_bh.loc["rel{}".format(i)]
-            self.assertEqual(row.Feature, "rel{}".format(i))
+            self.assertEqual(row.feature, "rel{}".format(i))
             self.assertEqual(row.type, "binary")
 
         for i in range(1, 20):
             row = df_bh.loc["irr{}".format(i)]
-            self.assertEqual(row.Feature, "irr{}".format(i))
+            self.assertEqual(row.feature, "irr{}".format(i))
             self.assertEqual(row.type, "binary")
 
             self.assertEqual(row.relevant, False)
@@ -152,8 +152,8 @@ class FeatureSignificanceTestCase(TestCase):
         X["rel3"] = y ** 2 + np.random.normal(0, 1, 5000)
         X["rel4"] = np.sqrt(y) + np.random.binomial(2, 0.1, 5000)
 
-        df_bh = tsfresh.feature_selection.relevance.check_fs_sig_bh(X, y, target_is_binary=False)
-        feat_rej = df_bh.loc[df_bh.relevant].Feature
+        df_bh = calculate_relevance_table(X, y)
+        feat_rej = df_bh.loc[df_bh.relevant].feature
 
         # Make sure all selected variables are relevant
         for kept_feature in feat_rej:
@@ -164,12 +164,12 @@ class FeatureSignificanceTestCase(TestCase):
         # Test type outputs
         for i in range(1, 5):
             row = df_bh.loc["rel{}".format(i)]
-            self.assertEqual(row.Feature, "rel{}".format(i))
+            self.assertEqual(row.feature, "rel{}".format(i))
             self.assertEqual(row.type, "real")
 
         for i in range(1, 30):
             row = df_bh.loc["irr{}".format(i)]
-            self.assertEqual(row.Feature, "irr{}".format(i))
+            self.assertEqual(row.feature, "irr{}".format(i))
             self.assertEqual(row.type, "real")
 
             self.assertEqual(row.relevant, False)
@@ -198,8 +198,8 @@ class FeatureSignificanceTestCase(TestCase):
         X["irr8"] = np.random.poisson(1, 5000)
         X["irr9"] = np.random.binomial(1, 0.2, 5000)
 
-        df_bh = tsfresh.feature_selection.relevance.check_fs_sig_bh(X, y, target_is_binary=False)
-        feat_rej = df_bh.loc[df_bh.relevant].Feature
+        df_bh = calculate_relevance_table(X, y)
+        feat_rej = df_bh.loc[df_bh.relevant].feature
 
         # Make sure all selected variables are relevant
         for kept_feature in feat_rej:
@@ -210,7 +210,7 @@ class FeatureSignificanceTestCase(TestCase):
         # Test type outputs
         for i in range(1, 5):
             row = df_bh.loc["rel{}".format(i)]
-            self.assertEqual(row.Feature, "rel{}".format(i))
+            self.assertEqual(row.feature, "rel{}".format(i))
             if i == 1:
                 self.assertEqual(row.type, "binary")
             else:
@@ -218,7 +218,7 @@ class FeatureSignificanceTestCase(TestCase):
 
         for i in range(1, 10):
             row = df_bh.loc["irr{}".format(i)]
-            self.assertEqual(row.Feature, "irr{}".format(i))
+            self.assertEqual(row.feature, "irr{}".format(i))
             if i in [3, 6, 9]:
                 self.assertEqual(row.type, "binary")
             else:
@@ -248,8 +248,8 @@ class FeatureSignificanceTestCase(TestCase):
         X["irr5"] = np.random.binomial(0, 0.25, 1000)
         X["irr6"] = np.random.binomial(0, 0.01, 1000)
 
-        df_bh = tsfresh.feature_selection.relevance.check_fs_sig_bh(X, y, target_is_binary=False)
-        feat_rej = df_bh.loc[df_bh.relevant].Feature
+        df_bh = calculate_relevance_table(X, y)
+        feat_rej = df_bh.loc[df_bh.relevant].feature
 
         # Make sure all selected variables are relevant
         for kept_feature in feat_rej:
@@ -272,8 +272,8 @@ class FeatureSignificanceTestCase(TestCase):
         z[z == 2] = 1
         X["rel2"] = z
 
-        df_bh = tsfresh.feature_selection.relevance.check_fs_sig_bh(X, y, target_is_binary=False)
-        feat_rej = df_bh.loc[df_bh.relevant].Feature
+        df_bh = calculate_relevance_table(X, y)
+        feat_rej = df_bh.loc[df_bh.relevant].feature
 
         # Make sure all selected variables are relevant
         for kept_feature in feat_rej:
@@ -293,7 +293,7 @@ class FeatureSignificanceTestCase(TestCase):
         X["irr5"] = np.random.binomial(0, 0.25, 1000)
         X["irr6"] = np.random.binomial(0, 0.01, 1000)
 
-        df_bh = tsfresh.feature_selection.relevance.check_fs_sig_bh(X, y, target_is_binary=False)
-        feat_rej = df_bh.loc[df_bh.relevant].Feature
+        df_bh = calculate_relevance_table(X, y)
+        feat_rej = df_bh.loc[df_bh.relevant].feature
 
         self.assertEqual(len(feat_rej), 0)
