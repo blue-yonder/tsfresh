@@ -142,6 +142,6 @@ def select_features(X, y, test_for_binary_target_binary_feature=defaults.TEST_FO
         fdr_level=fdr_level, hypotheses_independent=hypotheses_independent,
     )
 
-    relevant_features = relevance_table[relevance_table.relevant].index
+    relevant_features = relevance_table[relevance_table.relevant].feature
 
     return X.loc[:, relevant_features]

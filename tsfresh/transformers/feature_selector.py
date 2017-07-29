@@ -141,7 +141,7 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
                                 chunksize=self.chunksize, fdr_level=self.fdr_level,
                                 hypotheses_independent=self.hypotheses_independent,
                                 test_for_binary_target_real_feature=self.test_for_binary_target_real_feature)
-        self.relevant_features = relevance_table.loc[relevance_table.relevant].index.tolist()
+        self.relevant_features = relevance_table.loc[relevance_table.relevant].feature.tolist()
         self.feature_importances_ = 1.0 - relevance_table.p_value.values
         self.p_values = relevance_table.p_value.values
         self.features = relevance_table.index.tolist()
