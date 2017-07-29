@@ -167,7 +167,7 @@ def calculate_relevance_table(X, y, ml_task='auto', n_jobs=defaults.N_PROCESSES,
 def _calculate_relevance_table_for_binary_target(table_real, table_binary, X, y, test_for_binary_target_real_feature,
                                                  hypotheses_independent, fdr_level, map_function):
     _calculate_real_feature = partial(target_binary_feature_real_test, y=y,
-                                      test_for_binary_target_real_feature=test_for_binary_target_real_feature)
+                                      test=test_for_binary_target_real_feature)
     _calculate_binary_feature = partial(target_binary_feature_binary_test, y=y)
     table_real['p_value'] = map_function(_calculate_real_feature, [X[feature] for feature in table_real.index])
     table_binary['p_value'] = map_function(_calculate_binary_feature, [X[feature] for feature in table_binary.index])
