@@ -423,7 +423,7 @@ def get_feature_type(feature_column):
     :type feature_column: pandas.Series
     :return: 'constant', 'binary' or 'real'
     """
-    n_unique_values = len(feature_column.unique())
+    n_unique_values = len(set(feature_column.values))
     if n_unique_values == 1:
         _logger.warning("[test_feature_significance] Feature {} is constant".format(feature_column.name))
         return 'constant'
