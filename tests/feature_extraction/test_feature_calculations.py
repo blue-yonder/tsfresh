@@ -14,6 +14,7 @@ from tsfresh.feature_extraction.feature_calculators import _aggregate_on_chunks
 from tsfresh.examples.driftbif_simulation import velocity
 import six
 import math
+from tsfresh.feature_extraction.settings import ComprehensiveFCParameters
 
 
 class FeatureCalculationTestCase(TestCase):
@@ -128,27 +129,71 @@ class FeatureCalculationTestCase(TestCase):
         self.assertEqualOnAllArrayTypes(sum_values, [-1.2, -2, -3, -4], -10.2)
         self.assertEqualOnAllArrayTypes(sum_values, [], 0)
 
-    def test_large_number_of_peaks(self):
-        x = [0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1]
-        self.assertTrueOnAllArrayTypes(large_number_of_peaks, x, 1)
-        self.assertTrueOnAllArrayTypes(large_number_of_peaks, x, 2)
-        self.assertFalseOnAllArrayTypes(large_number_of_peaks, x, 3)
-        self.assertFalseOnAllArrayTypes(large_number_of_peaks, x, 4)
-        self.assertFalseOnAllArrayTypes(large_number_of_peaks, x, 5)
-        self.assertFalseOnAllArrayTypes(large_number_of_peaks, x, 6)
+    def test_agg_autocorrelation(self):
 
-    def test_mean_autocorrelation(self):
-
+        param = [{"f_agg": "mean"}]
         x = [1, 1, 1, 1, 1, 1, 1]
-        self.assertAlmostEqualOnAllArrayTypes(mean_autocorrelation, x, 0)
+        expected_res = 0
+        res = dict(agg_autocorrelation(x, param=param))["f_agg_\"mean\""]
+        self.assertAlmostEqual(res, expected_res, places=4)
 
         x = [1, 2, -3]
-        expected_res = 1 / np.var(x) * (1 * 2 + 2 * (-3) - 3 / 2) / 2
-        self.assertAlmostEqualOnAllArrayTypes(mean_autocorrelation, x, expected_res)
+        expected_res = 1 / np.var(x) * (((1 * 2 + 2 * (-3)) / 2 + (1 * -3)) / 2)
+        res = dict(agg_autocorrelation(x, param=param))["f_agg_\"mean\""]
+        self.assertAlmostEqual(res, expected_res, places=4)
+
+        np.random.seed(42)
+        x = np.random.normal(size=3000)
+        expected_res = 0
+        res = dict(agg_autocorrelation(x, param=param))["f_agg_\"mean\""]
+        self.assertAlmostEqual(res, expected_res, places=2)
+
+        param=[{"f_agg": "median"}]
+        x = [1, 1, 1, 1, 1, 1, 1]
+        expected_res = 0
+        res = dict(agg_autocorrelation(x, param=param))["f_agg_\"median\""]
+        self.assertAlmostEqual(res, expected_res, places=4)
+
+        x = [1, 2, -3]
+        expected_res = 1 / np.var(x) * (((1 * 2 + 2 * (-3)) / 2 + (1 * -3)) / 2)
+        res = dict(agg_autocorrelation(x, param=param))["f_agg_\"median\""]
+        self.assertAlmostEqual(res, expected_res, places=4)
+
 
     def test_augmented_dickey_fuller(self):
-        pass
-        # todo: add unit test
+        # todo: add unit test for the values of the test statistic
+
+        # the adf hypothesis test checks for unit roots,
+        # so H_0 = {random drift} vs H_1 = {AR(1) model}
+
+        # H0 is true
+        np.random.seed(seed=42)
+        x = np.cumsum(np.random.uniform(size=100))
+        param = [{"attr": "teststat"}, {"attr": "pvalue"}, {"attr": "usedlag"}]
+        expected_index = ['attr_teststat', 'attr_pvalue', 'attr_usedlag']
+
+        res = augmented_dickey_fuller(x=x, param=param)
+        res = pd.Series(dict(res))
+        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertGreater(res["attr_pvalue"], 0.10)
+        self.assertEqual(res["attr_usedlag"], 0)
+
+        # H0 should be rejected for AR(1) model with x_{t} = 1/2 x_{t-1} + e_{t}
+        np.random.seed(seed=42)
+        e = np.random.normal(0.1, 0.1, size=100)
+        m = 50
+        x = [0] * m
+        x[0] = 100
+        for i in range(1, m):
+            x[i] = x[i-1] * 0.5 + e[i]
+        param = [{"attr": "teststat"}, {"attr": "pvalue"}, {"attr": "usedlag"}]
+        expected_index = ['attr_teststat', 'attr_pvalue', 'attr_usedlag']
+
+        res = augmented_dickey_fuller(x=x, param=param)
+        res = pd.Series(dict(res))
+        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertLessEqual(res["attr_pvalue"], 0.05)
+        self.assertEqual(res["attr_usedlag"], 0)
 
     def test_abs_energy(self):
         self.assertEqualOnAllArrayTypes(abs_energy, [1, 1, 1], 3)
@@ -156,6 +201,14 @@ class FeatureCalculationTestCase(TestCase):
         self.assertEqualOnAllArrayTypes(abs_energy, [-1, 2, -3], 14)
         self.assertAlmostEqualOnAllArrayTypes(abs_energy, [-1, 1.3], 2.69)
         self.assertEqualOnAllArrayTypes(abs_energy, [1], 1)
+
+    def test_ratio_beyond_r_sigma(self):
+
+        x = [0, 1]*10 + [10, 20, -30] # std of x is 7.21, mean 3.04
+        self.assertEqualOnAllArrayTypes(ratio_beyond_r_sigma, x, 3./len(x), r=1)
+        self.assertEqualOnAllArrayTypes(ratio_beyond_r_sigma, x, 2./len(x), r=2)
+        self.assertEqualOnAllArrayTypes(ratio_beyond_r_sigma, x, 1./len(x), r=3)
+        self.assertEqualOnAllArrayTypes(ratio_beyond_r_sigma, x, 0, r=20)
 
     def test_mean_abs_change(self):
         self.assertEqualOnAllArrayTypes(mean_abs_change, [-2, 2, 5], 3.5)
@@ -310,8 +363,43 @@ class FeatureCalculationTestCase(TestCase):
         self.assertIsNanOnAllArrayTypes(ratio_value_number_to_time_series_length, [])
 
     def test_fft_coefficient(self):
-        pass
-        # todo: add unit test
+        x = range(10)
+        param = [{"coeff": 0, "attr": "real"}, {"coeff": 1, "attr": "real"}, {"coeff": 2, "attr": "real"},
+                 {"coeff": 0, "attr": "imag"}, {"coeff": 1, "attr": "imag"}, {"coeff": 2, "attr": "imag"},
+                 {"coeff": 0, "attr": "angle"}, {"coeff": 1, "attr": "angle"}, {"coeff": 2, "attr": "angle"},
+                 {"coeff": 0, "attr": "abs"}, {"coeff": 1, "attr": "abs"}, {"coeff": 2, "attr": "abs"} ]
+        expected_index = ['coeff_0__attr_"real"', 'coeff_1__attr_"real"', 'coeff_2__attr_"real"',
+                          'coeff_0__attr_"imag"', 'coeff_1__attr_"imag"', 'coeff_2__attr_"imag"',
+                          'coeff_0__attr_"angle"', 'coeff_1__attr_"angle"', 'coeff_2__attr_"angle"',
+                          'coeff_0__attr_"abs"', 'coeff_1__attr_"abs"', 'coeff_2__attr_"abs"']
+
+        res = pd.Series(dict(fft_coefficient(x, param)))
+        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertAlmostEqual(res['coeff_0__attr_"imag"'], 0, places=6)
+        self.assertAlmostEqual(res['coeff_0__attr_"real"'], sum(x), places=6)
+        self.assertAlmostEqual(res['coeff_0__attr_"angle"'], 0, places=6)
+        self.assertAlmostEqual(res['coeff_0__attr_"abs"'], sum(x), places=6)
+
+        x = [0, 1, 0, 0]
+        res = pd.Series(dict(fft_coefficient(x, param)))
+        # see documentation of fft in numpy
+        # should return array([1. + 0.j, 0. - 1.j, -1. + 0.j])
+        self.assertAlmostEqual(res['coeff_0__attr_"imag"'], 0, places=6)
+        self.assertAlmostEqual(res['coeff_0__attr_"real"'], 1, places=6)
+        self.assertAlmostEqual(res['coeff_1__attr_"imag"'], -1, places=6)
+        self.assertAlmostEqual(res['coeff_1__attr_"angle"'], -90, places=6)
+        self.assertAlmostEqual(res['coeff_1__attr_"real"'], 0, places=6)
+        self.assertAlmostEqual(res['coeff_2__attr_"imag"'], 0, places=6)
+        self.assertAlmostEqual(res['coeff_2__attr_"real"'], -1, places=6)
+
+        # test what happens if coeff is biger than time series lenght
+        x = range(5)
+        param = [{"coeff": 10, "attr": "real"}]
+        expected_index = ['coeff_10__attr_"real"']
+
+        res = pd.Series(dict(fft_coefficient(x, param)))
+        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertIsNaN(res['coeff_10__attr_"real"'])
 
     def test_number_peaks(self):
         x = np.array([0, 1, 2, 1, 0, 1, 2, 3, 4, 5, 4, 3, 2, 1])
@@ -389,8 +477,14 @@ class FeatureCalculationTestCase(TestCase):
         self.assertEqualOnAllArrayTypes(number_cwt_peaks, x, 2, 2)
 
     def test_spkt_welch_density(self):
-        pass
-        # todo: add unit test
+
+        # todo: improve tests
+        x = range(10)
+        param = [{"coeff": 1}, {"coeff": 10}]
+        expected_index = ["coeff_1", "coeff_10"]
+        res = pd.Series(dict(spkt_welch_density(x, param)))
+        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertIsNaN(res["coeff_10"])
 
     def test_cwt_coefficients(self):
         x = [0.1, 0.2, 0.3]
@@ -463,11 +557,32 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqualOnAllArrayTypes(time_reversal_asymmetry_statistic, x, 0, 3)
 
         x = [1, 2, -3, 4]
-        # 1/2 * ( (4^2 * 2 + 3 * 2^2) + (3^2*1)-(2*1^1)) = 1/2 * (32+12+9-2) = 51/2
-        self.assertAlmostEqualOnAllArrayTypes(time_reversal_asymmetry_statistic, x, 25.5, 1)
-        # 4^2 * 1 - 2 * 1^2 = 16 -2
-        self.assertAlmostEqualOnAllArrayTypes(time_reversal_asymmetry_statistic, x, 14, 2)
+        # 1/2 * ( (4^2 * -3 + 3 * 2^2) + (3^2*2)-(2*1^1)) = 1/2 * (-48+12+18-2) = 20/2
+        self.assertAlmostEqualOnAllArrayTypes(time_reversal_asymmetry_statistic, x, -10, 1)
+        self.assertAlmostEqualOnAllArrayTypes(time_reversal_asymmetry_statistic, x, 0, 2)
         self.assertAlmostEqualOnAllArrayTypes(time_reversal_asymmetry_statistic, x, 0, 3)
+
+    def test_number_crossing_m(self):
+        x = [10, -10, 10, -10]
+        self.assertEqualOnAllArrayTypes(number_crossing_m, x, 3, 0)
+        self.assertEqualOnAllArrayTypes(number_crossing_m, x, 0, 10)
+
+        x = [10, 20, 20, 30]
+        self.assertEqualOnAllArrayTypes(number_crossing_m, x, 0, 0)
+        self.assertEqualOnAllArrayTypes(number_crossing_m, x, 1, 15)
+
+    def test_c3(self):
+        x = [1] * 10
+        self.assertAlmostEqualOnAllArrayTypes(c3, x, 1, 0)
+        self.assertAlmostEqualOnAllArrayTypes(c3, x, 1, 1)
+        self.assertAlmostEqualOnAllArrayTypes(c3, x, 1, 2)
+        self.assertAlmostEqualOnAllArrayTypes(c3, x, 1, 3)
+
+        x = [1, 2, -3, 4]
+        # 1/2 *(1*2*(-3)+2*(-3)*4) = 1/2 *(-6-24) = -30/2
+        self.assertAlmostEqualOnAllArrayTypes(c3, x, -15, 1)
+        self.assertAlmostEqualOnAllArrayTypes(c3, x, 0, 2)
+        self.assertAlmostEqualOnAllArrayTypes(c3, x, 0, 3)
 
     def test_binned_entropy(self):
         self.assertAlmostEqualOnAllArrayTypes(binned_entropy, [10] * 100, 0, 10)
@@ -502,14 +617,49 @@ class FeatureCalculationTestCase(TestCase):
 
     def test_mean_abs_change_quantiles(self):
 
-        self.assertAlmostEqualOnAllArrayTypes(mean_abs_change_quantiles, list(range(10)), 1, ql=0.1, qh=0.9)
-        self.assertAlmostEqualOnAllArrayTypes(mean_abs_change_quantiles, list(range(10)), 0, ql=0.15, qh=0.18)
-        self.assertAlmostEqualOnAllArrayTypes(mean_abs_change_quantiles, [0, 1, 0, 0, 0], 0.5, ql=0, qh=1)
-        self.assertAlmostEqualOnAllArrayTypes(mean_abs_change_quantiles, [0, 1, 0, 0, 0], 0.5, ql=0.1, qh=1)
-        self.assertAlmostEqualOnAllArrayTypes(mean_abs_change_quantiles, [0, 1, 0, 0, 0], 0, ql=0.1, qh=0.6)
-        self.assertAlmostEqualOnAllArrayTypes(mean_abs_change_quantiles, [0, 1, -9, 0, 0], 5, ql=0, qh=1)
-        self.assertAlmostEqualOnAllArrayTypes(mean_abs_change_quantiles, [0, 1, -9, 0, 0], 0.5, ql=0.1, qh=1)
-        self.assertAlmostEqualOnAllArrayTypes(mean_abs_change_quantiles, [0, 1, -9, 0, 0, 1, 0], 0.75, ql=0.1, qh=1)
+        self.assertAlmostEqualOnAllArrayTypes(change_quantiles, list(range(10)), 1,
+                                              ql=0.1, qh=0.9, isabs=True, f_agg="mean")
+        self.assertAlmostEqualOnAllArrayTypes(change_quantiles, list(range(10)), 0,
+                                              ql=0.15, qh=0.18, isabs=True, f_agg="mean")
+        self.assertAlmostEqualOnAllArrayTypes(change_quantiles, [0, 1, 0, 0, 0], 0.5,
+                                              ql=0, qh=1, isabs=True, f_agg="mean")
+        self.assertAlmostEqualOnAllArrayTypes(change_quantiles, [0, 1, 0, 0, 0], 0.5,
+                                              ql=0.1, qh=1, isabs=True, f_agg="mean")
+        self.assertAlmostEqualOnAllArrayTypes(change_quantiles, [0, 1, 0, 0, 0], 0,
+                                              ql=0.1, qh=0.6, isabs=True, f_agg="mean")
+        self.assertAlmostEqualOnAllArrayTypes(change_quantiles, [0, 1, -9, 0, 0], 5,
+                                              ql=0, qh=1, isabs=True, f_agg="mean")
+        self.assertAlmostEqualOnAllArrayTypes(change_quantiles, [0, 1, -9, 0, 0], 0.5,
+                                              ql=0.1, qh=1, isabs=True, f_agg="mean")
+        self.assertAlmostEqualOnAllArrayTypes(change_quantiles, [0, 1, -9, 0, 0, 1, 0], 0.75,
+                                              ql=0.1, qh=1, isabs=True, f_agg="mean")
+        
+        self.assertAlmostEqualOnAllArrayTypes(change_quantiles, list(range(10)), 1,
+                                              ql=0.1, qh=0.9, isabs=False, f_agg="mean")
+        self.assertAlmostEqualOnAllArrayTypes(change_quantiles, list(range(10)), 0,
+                                              ql=0.15, qh=0.18, isabs=False, f_agg="mean")
+        self.assertAlmostEqualOnAllArrayTypes(change_quantiles, [0, 1, 0, 0, 0], 0,
+                                              ql=0, qh=1, isabs=False, f_agg="mean")
+        self.assertAlmostEqualOnAllArrayTypes(change_quantiles, [0, 1, 0, 0, 0], 0,
+                                              ql=0.1, qh=1, isabs=False, f_agg="mean")
+        self.assertAlmostEqualOnAllArrayTypes(change_quantiles, [0, 1, 0, 0, 0], 0,
+                                              ql=0.1, qh=0.6, isabs=False, f_agg="mean")
+        self.assertAlmostEqualOnAllArrayTypes(change_quantiles, [0, 1, -9, 0, 0], 0,
+                                              ql=0, qh=1, isabs=False, f_agg="mean")
+        self.assertAlmostEqualOnAllArrayTypes(change_quantiles, [0, 1, -9, 0, 0], 0.5,
+                                              ql=0.1, qh=1, isabs=False, f_agg="mean")
+        self.assertAlmostEqualOnAllArrayTypes(change_quantiles, [0, 1, -9, 0, 0, 1, 0], 0.25,
+                                              ql=0.1, qh=1, isabs=False, f_agg="mean")
+
+        self.assertAlmostEqualOnAllArrayTypes(change_quantiles, list(range(10)), 0,
+                                              ql=0.1, qh=0.9, isabs=True, f_agg="std")
+        self.assertAlmostEqualOnAllArrayTypes(change_quantiles, [0, 1, 0, 0, 0], 0.5,
+                                              ql=0, qh=1, isabs=True, f_agg="std")
+
+        self.assertAlmostEqualOnAllArrayTypes(change_quantiles, list(range(10)), 0,
+                                              ql=0.1, qh=0.9, isabs=False, f_agg="std")
+        self.assertAlmostEqualOnAllArrayTypes(change_quantiles, [0, 1, 0, 1, 0], 1,
+                                              ql=0, qh=1, isabs=False, f_agg="std")
 
     def test_value_count(self):
         self.assertEqualPandasSeriesWrapper(value_count, [1] * 10, 10, value=1)
@@ -600,7 +750,7 @@ class FeatureCalculationTestCase(TestCase):
         param = [{"attr": "pvalue"}, {"attr": "rvalue"}, {"attr": "intercept"}, {"attr": "slope"}, {"attr": "stderr"}]
         res = linear_trend(x, param)
 
-        
+
         res = pd.Series(dict(res))
 
         expected_index = ["attr_\"pvalue\"", "attr_\"intercept\"",
@@ -717,3 +867,28 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEquals(res['f_agg_"mean"__chunk_len_3__attr_"slope"'], 0)
         self.assertAlmostEquals(res['f_agg_"median"__chunk_len_3__attr_"intercept"'], -3)
         self.assertAlmostEquals(res['f_agg_"median"__chunk_len_3__attr_"slope"'], 0)
+
+    def test_energy_ratio_by_chunks(self):
+        x = pd.Series(range(90), index=range(90))
+        param = [{"num_segments" : 6, "segment_focus": i} for i in range(6)]
+        output = energy_ratio_by_chunks(x=x, param=param)
+
+        self.assertAlmostEqual(output[0][1], 0.0043, places=3)
+        self.assertAlmostEqual(output[1][1], 0.0316, places=3)
+        self.assertAlmostEqual(output[2][1], 0.0871, places=3)
+        self.assertAlmostEqual(output[3][1], 0.1709, places=3)
+        self.assertAlmostEqual(output[4][1], 0.2829, places=3)
+        self.assertAlmostEqual(output[5][1], 0.4232, places=3)
+
+        # Sum of the ratios should be 1.0
+        sum = 0.0
+        for name,dat in output:
+            sum = sum + dat
+        self.assertAlmostEqual(sum, 1.0)
+
+
+
+    def test_ComprehensiveFCParameters(self):
+        import pprint
+        pp = pprint.PrettyPrinter(indent=4)
+        pp.pprint(ComprehensiveFCParameters())

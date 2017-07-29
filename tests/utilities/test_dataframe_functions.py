@@ -8,6 +8,7 @@ import pandas as pd
 from tsfresh.utilities import dataframe_functions
 import numpy as np
 import six
+from pandas.testing import assert_frame_equal, assert_series_equal
 
 
 class NormalizeTestCase(TestCase):
@@ -16,11 +17,11 @@ class NormalizeTestCase(TestCase):
         test_dict = {"a": test_df, "b": test_df}
 
         # A kind is not allowed with dicts
-        self.assertRaises(ValueError, dataframe_functions.normalize_input_to_internal_representation, test_dict,
+        self.assertRaises(ValueError, dataframe_functions._normalize_input_to_internal_representation, test_dict,
                           "id", None, "a kind", None)
 
         # The value must be present
-        self.assertRaises(ValueError, dataframe_functions.normalize_input_to_internal_representation, test_dict,
+        self.assertRaises(ValueError, dataframe_functions._normalize_input_to_internal_representation, test_dict,
                           "id", None, None, "something other")
 
     def test_with_dictionaries_two_rows(self):
@@ -29,12 +30,12 @@ class NormalizeTestCase(TestCase):
         test_dict = {"a": test_df, "b": test_df}
 
         # If there are more than one column, the algorithm can not choose the correct column
-        self.assertRaises(ValueError, dataframe_functions.normalize_input_to_internal_representation, test_dict,
+        self.assertRaises(ValueError, dataframe_functions._normalize_input_to_internal_representation, test_dict,
                           "id", None, None, None)
 
         # Sorting should work
         result_df, column_id, column_kind, column_value = \
-            dataframe_functions.normalize_input_to_internal_representation(test_dict, "id", "sort", None, "value")
+            dataframe_functions._normalize_input_to_internal_representation(test_dict, "id", "sort", None, "value")
         self.assertEqual(column_value, "value")
         self.assertEqual(column_id, "id")
 
@@ -49,7 +50,7 @@ class NormalizeTestCase(TestCase):
 
         # Pass the id
         result_df, column_id, column_kind, column_value = \
-            dataframe_functions.normalize_input_to_internal_representation(test_dict, "id", None, None, "value")
+            dataframe_functions._normalize_input_to_internal_representation(test_dict, "id", None, None, "value")
         self.assertEqual(column_value, "value")
         self.assertEqual(column_id, "id")
 
@@ -59,7 +60,7 @@ class NormalizeTestCase(TestCase):
         # give everyting
         test_df = pd.DataFrame([{"id": 0, "kind": "a", "value": 3, "sort": 1}])
         result_df, column_id, column_kind, column_value = \
-            dataframe_functions.normalize_input_to_internal_representation(test_df, "id", "sort", "kind", "value")
+            dataframe_functions._normalize_input_to_internal_representation(test_df, "id", "sort", "kind", "value")
 
         self.assertEqual(column_id, "id")
         self.assertEqual(column_value, "value")
@@ -72,7 +73,7 @@ class NormalizeTestCase(TestCase):
         # give no kind
         test_df = pd.DataFrame([{"id": 0, "value": 3, "sort": 1}])
         result_df, column_id, column_kind, column_value = \
-            dataframe_functions.normalize_input_to_internal_representation(test_df, "id", "sort", None, "value")
+            dataframe_functions._normalize_input_to_internal_representation(test_df, "id", "sort", None, "value")
 
         self.assertEqual(column_id, "id")
         self.assertEqual(column_value, "value")
@@ -85,7 +86,7 @@ class NormalizeTestCase(TestCase):
         # Let the function find the values
         test_df = pd.DataFrame([{"id": 0, "a": 3, "b": 5, "sort": 1}])
         result_df, column_id, column_kind, column_value = \
-            dataframe_functions.normalize_input_to_internal_representation(test_df, "id", "sort", None, None)
+            dataframe_functions._normalize_input_to_internal_representation(test_df, "id", "sort", None, None)
 
         self.assertEqual(column_id, "id")
         self.assertEqual(column_value, "_values")
@@ -100,37 +101,37 @@ class NormalizeTestCase(TestCase):
 
     def test_with_wrong_input(self):
         test_df = pd.DataFrame([{"id": 0, "kind": "a", "value": 3, "sort": np.NaN}])
-        self.assertRaises(ValueError, dataframe_functions.normalize_input_to_internal_representation, test_df,
+        self.assertRaises(ValueError, dataframe_functions._normalize_input_to_internal_representation, test_df,
                           "id", "sort", "kind", "value")
 
         test_df = pd.DataFrame([{"id": 0, "kind": "a", "value": 3, "sort": 1}])
-        self.assertRaises(AttributeError, dataframe_functions.normalize_input_to_internal_representation, test_df,
+        self.assertRaises(AttributeError, dataframe_functions._normalize_input_to_internal_representation, test_df,
                           "strange_id", "sort", "kind", "value")
 
         test_df = pd.DataFrame([{"id": np.NaN, "kind": "a", "value": 3, "sort": 1}])
-        self.assertRaises(ValueError, dataframe_functions.normalize_input_to_internal_representation, test_df,
+        self.assertRaises(ValueError, dataframe_functions._normalize_input_to_internal_representation, test_df,
                           "id", "sort", "kind", "value")
 
         test_df = pd.DataFrame([{"id": 2}, {"id": 1}])
         test_dict = {"a": test_df, "b": test_df}
 
         # If there are more than one column, the algorithm can not choose the correct column
-        self.assertRaises(ValueError, dataframe_functions.normalize_input_to_internal_representation, test_dict,
+        self.assertRaises(ValueError, dataframe_functions._normalize_input_to_internal_representation, test_dict,
                           "id", None, None, None)
 
         test_dict = {"a": pd.DataFrame([{"id": 2, "value_a": 3}, {"id": 1, "value_a": 4}]),
                      "b": pd.DataFrame([{"id": 2}, {"id": 1}])}
 
         # If there are more than one column, the algorithm can not choose the correct column
-        self.assertRaises(ValueError, dataframe_functions.normalize_input_to_internal_representation, test_dict,
+        self.assertRaises(ValueError, dataframe_functions._normalize_input_to_internal_representation, test_dict,
                           "id", None, None, None)
 
         test_df = pd.DataFrame([{"id": 0, "value": np.NaN}])
-        self.assertRaises(ValueError, dataframe_functions.normalize_input_to_internal_representation, test_df,
+        self.assertRaises(ValueError, dataframe_functions._normalize_input_to_internal_representation, test_df,
                           "id", None, None, "value")
 
         test_df = pd.DataFrame([{"id": 0, "value": np.NaN}])
-        self.assertRaises(ValueError, dataframe_functions.normalize_input_to_internal_representation, test_df,
+        self.assertRaises(ValueError, dataframe_functions._normalize_input_to_internal_representation, test_df,
                           None, None, None, "value")
 
 
@@ -185,14 +186,18 @@ class RollingTestCase(TestCase):
 
         df_full = pd.concat([first_class, second_class], ignore_index=True)
 
-        correct_indices = (["id=1, shift=3"] * 1 +
-                           ["id=1, shift=2"] * 2 +
-                           ["id=1, shift=1"] * 3 +
-                           ["id=2, shift=1"] * 1 +
-                           ["id=1, shift=0"] * 4 +
-                           ["id=2, shift=0"] * 2)
-        correct_values_a = [1, 1, 2, 1, 2, 3, 10, 1, 2, 3, 4, 10, 11]
-        correct_values_b = [5, 5, 6, 5, 6, 7, 12, 5, 6, 7, 8, 12, 13]
+        """ df_full is
+            a   b  time  id
+        0   1   5     0   1
+        1   2   6     1   1
+        2   3   7     2   1
+        3   4   8     3   1
+        4  10  12    20   2
+        5  11  13    21   2
+        """
+        correct_indices = [0, 1, 1, 2, 2, 2, 3, 3, 3, 3, 20, 21, 21]
+        correct_values_a = [1.0, 1.0, 2.0, 1.0, 2.0, 3.0, 1.0, 2.0, 3.0, 4.0, 10.0, 10.0, 11.0]
+        correct_values_b = [5.0, 5.0, 6.0, 5.0, 6.0, 7.0, 5.0, 6.0, 7.0, 8.0, 12.0, 12.0, 13.0]
 
         df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
                                                   column_kind=None, rolling_direction=1)
@@ -203,7 +208,8 @@ class RollingTestCase(TestCase):
 
         df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
                                                   column_kind=None, rolling_direction=1,
-                                                  maximum_number_of_timeshifts=None)
+                                                  max_timeshift=4)
+
 
         self.assertListEqual(list(df["id"]), correct_indices)
         self.assertListEqual(list(df["a"].values), correct_values_a)
@@ -211,27 +217,16 @@ class RollingTestCase(TestCase):
 
         df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
                                                   column_kind=None, rolling_direction=1,
-                                                  maximum_number_of_timeshifts=1)
+                                                  max_timeshift=2)
 
-        self.assertListEqual(list(df["id"]), correct_indices[3:])
-        self.assertListEqual(list(df["a"].values), correct_values_a[3:])
-        self.assertListEqual(list(df["b"].values), correct_values_b[3:])
+        correct_indices = [0, 1, 1, 2, 2, 2,  3, 3, 3, 20, 21, 21]
+        correct_values_a = [1.0, 1.0, 2.0, 1.0, 2.0, 3.0, 2.0, 3.0, 4.0, 10.0, 10.0, 11.0]
+        correct_values_b = [5.0, 5.0, 6.0, 5.0, 6.0, 7.0, 6.0, 7.0, 8.0, 12.0, 12.0, 13.0]
 
-        df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
-                                                  column_kind=None, rolling_direction=1,
-                                                  maximum_number_of_timeshifts=2)
+        self.assertListEqual(list(df["id"]), correct_indices)
+        self.assertListEqual(list(df["a"].values), correct_values_a)
+        self.assertListEqual(list(df["b"].values), correct_values_b)
 
-        self.assertListEqual(list(df["id"]), correct_indices[1:])
-        self.assertListEqual(list(df["a"].values), correct_values_a[1:])
-        self.assertListEqual(list(df["b"].values), correct_values_b[1:])
-
-        df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
-                                                  column_kind=None, rolling_direction=1,
-                                                  maximum_number_of_timeshifts=4)
-
-        self.assertListEqual(list(df["id"]), correct_indices[:])
-        self.assertListEqual(list(df["a"].values), correct_values_a[:])
-        self.assertListEqual(list(df["b"].values), correct_values_b[:])
 
     def test_negative_rolling(self):
         first_class = pd.DataFrame({"a": [1, 2, 3, 4], "b": [5, 6, 7, 8], "time": range(4)})
@@ -241,15 +236,19 @@ class RollingTestCase(TestCase):
         second_class["id"] = 2
 
         df_full = pd.concat([first_class, second_class], ignore_index=True)
+        """ df_full is 
+            a   b  time  id
+        0   1   5     0   1
+        1   2   6     1   1
+        2   3   7     2   1
+        3   4   8     3   1
+        4  10  12    20   2
+        5  11  13    21   2
+        """
 
-        correct_indices = (["id=1, shift=-3"] * 1 +
-                           ["id=1, shift=-2"] * 2 +
-                           ["id=1, shift=-1"] * 3 +
-                           ["id=2, shift=-1"] * 1 +
-                           ["id=1, shift=0"] * 4 +
-                           ["id=2, shift=0"] * 2)
-        correct_values_a = [4, 3, 4, 2, 3, 4, 11, 1, 2, 3, 4, 10, 11]
-        correct_values_b = [8, 7, 8, 6, 7, 8, 13, 5, 6, 7, 8, 12, 13]
+        correct_indices = ([0, 0, 0, 0, 1, 1, 1, 2, 2, 3, 20, 20, 21])
+        correct_values_a = [1.0, 2.0, 3.0, 4.0, 2.0, 3.0, 4.0, 3.0, 4.0, 4.0, 10.0, 11.0, 11.0]
+        correct_values_b = [5.0, 6.0, 7.0, 8.0, 6.0, 7.0, 8.0, 7.0, 8.0, 8.0, 12.0, 13.0, 13.0]
 
         df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
                                                   column_kind=None, rolling_direction=-1)
@@ -260,7 +259,7 @@ class RollingTestCase(TestCase):
 
         df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
                                                   column_kind=None, rolling_direction=-1,
-                                                  maximum_number_of_timeshifts=None)
+                                                  max_timeshift=None)
 
         self.assertListEqual(list(df["id"].values), correct_indices)
         self.assertListEqual(list(df["a"].values), correct_values_a)
@@ -268,27 +267,39 @@ class RollingTestCase(TestCase):
 
         df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
                                                   column_kind=None, rolling_direction=-1,
-                                                  maximum_number_of_timeshifts=1)
+                                                  max_timeshift=1)
 
-        self.assertListEqual(list(df["id"].values), correct_indices[3:])
-        self.assertListEqual(list(df["a"].values), correct_values_a[3:])
-        self.assertListEqual(list(df["b"].values), correct_values_b[3:])
+        correct_indices = ([0, 0, 1, 1, 2, 2, 3, 20, 20, 21])
+        correct_values_a = [1.0, 2.0, 2.0, 3.0, 3.0, 4.0, 4.0, 10.0, 11.0, 11.0]
+        correct_values_b = [5.0, 6.0, 6.0, 7.0, 7.0, 8.0, 8.0, 12.0, 13.0, 13.0]
 
-        df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
-                                                  column_kind=None, rolling_direction=-1,
-                                                  maximum_number_of_timeshifts=2)
-
-        self.assertListEqual(list(df["id"].values), correct_indices[1:])
-        self.assertListEqual(list(df["a"].values), correct_values_a[1:])
-        self.assertListEqual(list(df["b"].values), correct_values_b[1:])
+        self.assertListEqual(list(df["id"].values), correct_indices)
+        self.assertListEqual(list(df["a"].values), correct_values_a)
+        self.assertListEqual(list(df["b"].values), correct_values_b)
 
         df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
                                                   column_kind=None, rolling_direction=-1,
-                                                  maximum_number_of_timeshifts=4)
+                                                  max_timeshift=2)
 
-        self.assertListEqual(list(df["id"].values), correct_indices[:])
-        self.assertListEqual(list(df["a"].values), correct_values_a[:])
-        self.assertListEqual(list(df["b"].values), correct_values_b[:])
+        correct_indices = ([0, 0, 0, 1, 1, 1, 2, 2, 3, 20, 20, 21])
+        correct_values_a = [1.0, 2.0, 3.0, 2.0, 3.0, 4.0, 3.0, 4.0, 4.0, 10.0, 11.0, 11.0]
+        correct_values_b = [5.0, 6.0, 7.0, 6.0, 7.0, 8.0, 7.0, 8.0, 8.0, 12.0, 13.0, 13.0]
+
+        self.assertListEqual(list(df["id"].values), correct_indices)
+        self.assertListEqual(list(df["a"].values), correct_values_a)
+        self.assertListEqual(list(df["b"].values), correct_values_b)
+
+        df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
+                                                  column_kind=None, rolling_direction=-1,
+                                                  max_timeshift=4)
+
+        correct_indices = ([0, 0, 0, 0, 1, 1, 1, 2, 2, 3, 20, 20, 21])
+        correct_values_a = [1.0, 2.0, 3.0, 4.0, 2.0, 3.0, 4.0, 3.0, 4.0, 4.0, 10.0, 11.0, 11.0]
+        correct_values_b = [5.0, 6.0, 7.0, 8.0, 6.0, 7.0, 8.0, 7.0, 8.0, 8.0, 12.0, 13.0, 13.0]
+
+        self.assertListEqual(list(df["id"].values), correct_indices)
+        self.assertListEqual(list(df["a"].values), correct_values_a)
+        self.assertListEqual(list(df["b"].values), correct_values_b)
 
     def test_stacked_rolling(self):
         first_class = pd.DataFrame({"a": [1, 2, 3, 4], "b": [5, 6, 7, 8], "time": range(4)})
@@ -303,21 +314,33 @@ class RollingTestCase(TestCase):
                                 df_full[["time", "id", "b"]].rename(columns={"b": "_value"})], ignore_index=True)
         df_stacked["kind"] = ["a"] * 6 + ["b"] * 6
 
+        """ df_stacked is 
+            time  id  _value kind
+        0      0   1       1    a
+        1      1   1       2    a
+        2      2   1       3    a
+        3      3   1       4    a
+        4     20   2      10    a
+        5     21   2      11    a
+        6      0   1       5    b
+        7      1   1       6    b
+        8      2   1       7    b
+        9      3   1       8    b
+        10    20   2      12    b
+        11    21   2      13    b
+        """
+
         df = dataframe_functions.roll_time_series(df_stacked, column_id="id", column_sort="time",
                                                   column_kind="kind", rolling_direction=-1)
 
-        correct_indices = (["id=1, shift=-3"] * 2 +
-                           ["id=1, shift=-2"] * 4 +
-                           ["id=1, shift=-1"] * 6 +
-                           ["id=2, shift=-1"] * 2 +
-                           ["id=1, shift=0"] * 8 +
-                           ["id=2, shift=0"] * 4)
-
+        correct_indices = ([0]*2*4 + [1]*2*3 + [2]*2*2 + [3]*2*1 + [20]*4 + [21] *2)
         self.assertListEqual(list(df["id"].values), correct_indices)
 
+        print(df["_value"].values)
         self.assertListEqual(list(df["kind"].values), ["a", "b"] * 13)
         self.assertListEqual(list(df["_value"].values),
-                             [4, 8, 3, 7, 4, 8, 2, 6, 3, 7, 4, 8, 11, 13, 1, 5, 2, 6, 3, 7, 4, 8, 10, 12, 11, 13])
+                             [1., 5., 2., 6., 3., 7., 4., 8., 2., 6., 3., 7., 4., 8., 3., 7., 4., 8., 4., 8., 10., 12.,
+                              11., 13., 11., 13.])
 
     def test_dict_rolling(self):
         df_dict = {
@@ -327,21 +350,47 @@ class RollingTestCase(TestCase):
 
         df = dataframe_functions.roll_time_series(df_dict, column_id="id", column_sort=None,
                                                   column_kind=None, rolling_direction=-1)
+        """ df is 
+        {a: _value  sort id
+         7      1.0   0.0  0
+         3      2.0   1.0  0
+         1      3.0   2.0  0
+         0      4.0   3.0  0
+         8      2.0   1.0  1
+         4      3.0   2.0  1
+         2      4.0   3.0  1
+         9      3.0   2.0  2
+         5      4.0   3.0  2
+         10     4.0   3.0  3
+         11    10.0   4.0  4
+         6     11.0   5.0  4
+         12    11.0   5.0  5, 
+         
+         b: _value  sort id
+         7      5.0   0.0  0
+         3      6.0   1.0  0
+         1      7.0   2.0  0
+         0      8.0   3.0  0
+         8      6.0   1.0  1
+         4      7.0   2.0  1
+         2      8.0   3.0  1
+         9      7.0   2.0  2
+         5      8.0   3.0  2
+         10     8.0   3.0  3
+         11    12.0   4.0  4
+         6     13.0   5.0  4
+         12    13.0   5.0  5}
+        """
 
-        correct_indices = (["id=1, shift=-3"] * 1 +
-                           ["id=1, shift=-2"] * 2 +
-                           ["id=1, shift=-1"] * 3 +
-                           ["id=2, shift=-1"] * 1 +
-                           ["id=1, shift=0"] * 4 +
-                           ["id=2, shift=0"] * 2)
+        correct_indices = [0, 0, 0, 0, 1, 1, 1, 2, 2, 3, 4, 4, 5]
 
         self.assertListEqual(list(df["a"]["id"].values), correct_indices)
         self.assertListEqual(list(df["b"]["id"].values), correct_indices)
 
         self.assertListEqual(list(df["a"]["_value"].values),
-                             [4, 3, 4, 2, 3, 4, 11, 1, 2, 3, 4, 10, 11])
+                             [1.0, 2.0, 3.0, 4.0, 2.0, 3.0, 4.0, 3.0, 4.0, 4.0, 10.0, 11.0, 11.0])
         self.assertListEqual(list(df["b"]["_value"].values),
-                             [8, 7, 8, 6, 7, 8, 13, 5, 6, 7, 8, 12, 13])
+                             [5.0, 6.0, 7.0, 8.0, 6.0, 7.0, 8.0, 7.0, 8.0, 8.0, 12.0, 13.0, 13.0])
 
     def test_warning_on_non_uniform_time_steps(self):
         with warnings.catch_warnings(record=True) as w:
@@ -424,19 +473,23 @@ class ImputeTestCase(TestCase):
         self.assertEqual(list(df.value_b), [1, 3, 2, 3])
         self.assertEqual(list(df.value_c), [1, -3, -3, 3])
 
-        df = pd.DataFrame(np.transpose([[0, 1, 2, np.NaN], [1, np.PINF, 2, 3], [1, -3, np.NINF, 3]]),
+        df = pd.DataFrame(np.transpose([[0, 1, 2, np.NaN], [1, np.PINF, 2, np.NaN], [np.NaN, -3, np.NINF, 3]]),
                           columns=["value_a", "value_b", "value_c"])
         df = df.astype(np.float64, inplace=True)
         dataframe_functions.impute(df)
 
-        df = pd.DataFrame(np.transpose([[0, 1, 2, np.NaN], [1, np.PINF, 2, 3], [1, -3, np.NINF, 3]]),
+        self.assertEqual(list(df.value_a), [0, 1, 2, 1])
+        self.assertEqual(list(df.value_b), [1, 2, 2, 1.5])
+        self.assertEqual(list(df.value_c), [0, -3, -3, 3])
+
+        df = pd.DataFrame(np.transpose([[0, 1, 2, np.NaN], [1, np.PINF, 2, 3], [np.PINF, -3, np.NINF, 3]]),
                           columns=["value_a", "value_b", "value_c"])
         df = df.astype(np.float32, inplace=True)
         dataframe_functions.impute(df)
 
         self.assertEqual(list(df.value_a), [0, 1, 2, 1])
         self.assertEqual(list(df.value_b), [1, 3, 2, 3])
-        self.assertEqual(list(df.value_c), [1, -3, -3, 3])
+        self.assertEqual(list(df.value_c), [3, -3, -3, 3])
 
     def test_impute_range(self):
         def get_df():
@@ -562,3 +615,36 @@ class GetRangeValuesPerColumnTestCase(TestCase):
         self.assertEqual(col_to_max, {"value": 0})
         self.assertEqual(col_to_min, {"value": 0})
         self.assertEqual(col_to_median, {"value": 0})
+
+
+class MakeForecastingFrameTestCase(TestCase):
+
+    def test_make_forecasting_frame_list(self):
+        df, y = dataframe_functions.make_forecasting_frame(x=range(4), kind="test", max_timeshift=1, rolling_direction=1)
+        expected_df = pd.DataFrame({"id": [1, 2, 3], "kind": ["test"]*3, "value": [0., 1., 2.], "time": [0., 1., 2.]})
+
+        expected_y = pd.Series(data=[1, 2, 3], index=[1, 2, 3], name="value")
+        assert_frame_equal(df.sort_index(axis=1), expected_df.sort_index(axis=1))
+        assert_series_equal(y, expected_y)
+
+    def test_make_forecasting_frame_range(self):
+        df, y = dataframe_functions.make_forecasting_frame(x=np.arange(4), kind="test", max_timeshift=1, rolling_direction=1)
+        expected_df = pd.DataFrame({"id": [1, 2, 3], "kind": ["test"]*3, "value": [0., 1., 2.], "time": [0., 1., 2.]})
+        assert_frame_equal(df.sort_index(axis=1), expected_df.sort_index(axis=1))
+
+    def test_make_forecasting_frame_pdSeries(self):
+
+        t_index = pd.date_range('1/1/2011', periods=4, freq='H')
+        df, y = dataframe_functions.make_forecasting_frame(x=pd.Series(data=range(4), index=t_index),
+                                                           kind="test", max_timeshift=1, rolling_direction=1)
+
+        expected_y = pd.Series(data=[1, 2, 3], index=pd.DatetimeIndex(["2011-01-01 01:00:00", "2011-01-01 02:00:00",
+                                                                       "2011-01-01 03:00:00"]), name="value")
+        expected_df = pd.DataFrame({"id": pd.DatetimeIndex(["2011-01-01 01:00:00", "2011-01-01 02:00:00",
+                                                            "2011-01-01 03:00:00"]),
+                                    "kind": ["test"]*3, "value": [0., 1., 2.],
+                                    "time": pd.DatetimeIndex(["2011-01-01 00:00:00", "2011-01-01 01:00:00",
+                                                              "2011-01-01 02:00:00"])
+                                    })
+        assert_frame_equal(df.sort_index(axis=1), expected_df.sort_index(axis=1))
+        assert_series_equal(y, expected_y)

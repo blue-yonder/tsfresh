@@ -121,10 +121,10 @@ def extract_features(timeseries_container, default_fc_parameters=None,
     # Always use the standardized way of storing the data.
     # See the function normalize_input_to_internal_representation for more information.
     df_melt, column_id, column_kind, column_value = \
-        dataframe_functions.normalize_input_to_internal_representation(timeseries_container=timeseries_container,
-                                                                       column_id=column_id, column_kind=column_kind,
-                                                                       column_sort=column_sort,
-                                                                       column_value=column_value)
+        dataframe_functions._normalize_input_to_internal_representation(timeseries_container=timeseries_container,
+                                                                        column_id=column_id, column_kind=column_kind,
+                                                                        column_sort=column_sort,
+                                                                        column_value=column_value)
 
     # Use the standard setting if the user did not supply ones himself.
     if default_fc_parameters is None:
@@ -146,11 +146,9 @@ def extract_features(timeseries_container, default_fc_parameters=None,
                                 disable_progressbar=disable_progressbar,
                                 default_fc_parameters=default_fc_parameters, kind_to_fc_parameters=kind_to_fc_parameters)
 
-    result.index = result.index.astype(df_melt[column_id].dtype)
-
-    # Impute the result if requested
-    if impute_function is not None:
-        impute_function(result)
+        # Impute the result if requested
+        if impute_function is not None:
+            impute_function(result)
 
     # Turn off profiling if it was turned on
     if profile:
@@ -238,6 +236,7 @@ def _do_extraction(df, column_id, column_value, column_kind,
 
     if len(result) != 0:
         result = result.pivot("id", "variable", "value")
+        result.index = result.index.astype(df[column_id].dtype)
 
     return result
 

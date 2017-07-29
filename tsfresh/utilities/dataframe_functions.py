@@ -133,24 +133,14 @@ def impute_dataframe_range(df_impute, col_to_max, col_to_min, col_to_median):
         raise ValueError("Some of the dictionaries col_to_median, col_to_max, col_to_min contains non finite values "
                          "to replace")
 
-    # Replacing values
-    # +inf -> max
-    indices = np.nonzero(df_impute.values == np.PINF)
-    if len(indices[0]) > 0:
-        replacement = [col_to_max[columns[i]] for i in indices[1]]
-        df_impute.iloc[indices] = replacement
+    # Make the replacement dataframes as large as the real one
+    col_to_max = pd.DataFrame([col_to_max]*len(df_impute), index=df_impute.index)
+    col_to_min = pd.DataFrame([col_to_min]*len(df_impute), index=df_impute.index)
+    col_to_median = pd.DataFrame([col_to_median]*len(df_impute), index=df_impute.index)
 
-    # -inf -> min
-    indices = np.nonzero(df_impute.values == np.NINF)
-    if len(indices[0]) > 0:
-        replacement = [col_to_min[columns[i]] for i in indices[1]]
-        df_impute.iloc[indices] = replacement
-
-    # NaN -> median
-    indices = np.nonzero(np.isnan(df_impute.values))
-    if len(indices[0]) > 0:
-        replacement = [col_to_median[columns[i]] for i in indices[1]]
-        df_impute.iloc[indices] = replacement
+    df_impute.where(df_impute.values != np.PINF, other=col_to_max, inplace=True)
+    df_impute.where(df_impute.values != np.NINF, other=col_to_min, inplace=True)
+    df_impute.where(~np.isnan(df_impute.values), other=col_to_median, inplace=True)
 
     df_impute.astype(np.float64, copy=False)
     return df_impute
@@ -221,13 +211,13 @@ def restrict_input_to_index(df_or_dict, column_id, index):
 
 # todo: add more testcases
 # todo: rewrite in a more straightforward way
-def normalize_input_to_internal_representation(timeseries_container, column_id, column_sort, column_kind, column_value):
+def _normalize_input_to_internal_representation(timeseries_container, column_id, column_sort, column_kind, column_value):
     """
-    Try to transform any given input to the internal representation of time series, which is a mapping from string
-    (the kind) to a pandas DataFrame with exactly two columns (the value and the id).
+    Try to transform any given input to the internal representation of time series, which is a flat DataFrame
+    (the first format from see :ref:`data-formats-label`).
 
-    This function can transform pandas DataFrames in different formats or dictionaries to pandas DataFrames in different
-    formats. It is used internally in the extract_features function and should not be called by the user.
+    This function can transform pandas DataFrames in different formats or dictionaries into the internal format
+    that we use. It should not be called by the user.
 
     :param timeseries_container: a pandas DataFrame or a dictionary. The required shape/form of the object depends on
         the rest of the passed arguments.
@@ -250,9 +240,9 @@ def normalize_input_to_internal_representation(timeseries_container, column_id, 
         DataFrames in the dictionaries). If it is None, the kind column must also be none.
     :type column_value: basestring or None
 
-    :return: A tuple of 3 elements: the normalized DataFrame as a dictionary mapping from the kind (as a string) to the
-             corresponding DataFrame, the name of the id column and the name of the value column
-    :rtype: (dict, basestring, basestring)
+    :return: A tuple of 4 elements: the normalized DataFrame, the name of the id column, the name of the value column
+             and the name of the value column
+    :rtype: (pd.DataFrame, basestring, basestring, basestring)
     :raise: ``ValueError`` when the passed combination of parameters is wrong or does not fit to the input DataFrame
             or dict.
     """
@@ -317,11 +307,10 @@ def normalize_input_to_internal_representation(timeseries_container, column_id, 
     return timeseries_container, column_id, column_kind, column_value
 
 
-def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_direction,
-                     maximum_number_of_timeshifts=None):
+def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_direction, max_timeshift=None):
     """
-    Roll the (sorted) data frames for each kind and each id separately in the "time" domain
-    (which is represented by the sort order of the sort column given by `column_sort`).
+    This method creates sub windows of the time series. It rolls the (sorted) data frames for each kind and each id
+    separately in the "time" domain (which is represented by the sort order of the sort column given by `column_sort`).
 
     For each rolling step, a new id is created by the scheme "id={id}, shift={shift}", here id is the former id of the
     column and shift is the amount of "time" shifts.
@@ -330,9 +319,9 @@ def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_di
 
      * This method will create new IDs!
      * The sign of rolling defines the direction of time rolling, a positive value means we are going back in time
-     * It is possible to shift time series of different lenghts but
+     * It is possible to shift time series of different lengths but
      * We assume that the time series are uniformly sampled
-     * For more information, please see :ref:`rolling-label`.
+     * For more information, please see :ref:`forecasting-label`.
 
     :param df_or_dict: a pandas DataFrame or a dictionary. The required shape/form of the object depends on the rest of
         the passed arguments.
@@ -350,9 +339,8 @@ def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_di
     :type column_kind: basestring or None
     :param rolling_direction: The sign decides, if to roll backwards or forwards in "time"
     :type rolling_direction: int
-    :param maximum_number_of_timeshifts: If not None, shift only up to maximum_number_of_timeshifts.
-        If None, shift as often as possible.
-    :type maximum_number_of_timeshifts: int
+    :param max_timeshift: If not None, shift only up to max_timeshift. If None, shift as often as possible.
+    :type max_timeshift: int
 
     :return: The rolled data frame or dictionary of data frames
     :rtype: the one from df_or_dict
@@ -386,7 +374,8 @@ def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_di
     else:
         grouper = (column_id,)
 
-    if column_sort is not None:
+    if column_sort is not None and df[column_sort].dtype != np.object:
+
         # Require no Nans in column
         if df[column_sort].isnull().any():
             raise ValueError("You have NaN values in your sort column.")
@@ -409,27 +398,95 @@ def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_di
     rolling_direction = np.sign(rolling_direction)
 
     grouped_data = df.groupby(grouper)
-    maximum_number_of_timeshifts = maximum_number_of_timeshifts or grouped_data.count().max().max()
+    max_timeshift = max_timeshift or grouped_data.count().max().max()
 
-    if np.isnan(maximum_number_of_timeshifts):
+    if np.isnan(max_timeshift):
         raise ValueError("Somehow the maximum length of your time series is NaN (Does your time series container have "
                          "only one row?). Can not perform rolling.")
 
     if rolling_direction > 0:
-        range_of_shifts = range(maximum_number_of_timeshifts, -1, -1)
+        range_of_shifts = range(max_timeshift, -1, -1)
     else:
-        range_of_shifts = range(-maximum_number_of_timeshifts, 1)
+        range_of_shifts = range(-max_timeshift, 1)
+
+    # Todo: not default for columns_sort to be None
+    if column_sort is None:
+        column_sort = "sort"
+        df[column_sort] = range(df.shape[0])
 
     def roll_out_time_series(time_shift):
         # Shift out only the first "time_shift" rows
         df_temp = grouped_data.shift(time_shift)
-        df_temp[column_id] = "id=" + df[column_id].map(str) + ", shift={}".format(time_shift)
+        df_temp[column_id] = df[column_sort]
         if column_kind:
             df_temp[column_kind] = df[column_kind]
         return df_temp.dropna()
 
-    return pd.concat([roll_out_time_series(time_shift) for time_shift in range_of_shifts],
-                     ignore_index=True)
+    df_shift = pd.concat([roll_out_time_series(time_shift) for time_shift in range_of_shifts], ignore_index=True)
+
+    return df_shift.sort_values(by=[column_id, column_sort])
+
+
+def make_forecasting_frame(x, kind, max_timeshift, rolling_direction):
+    """
+    Takes a singular time series x and constructs a DataFrame df and target vector y that can be used for a time series
+    forecasting task.
+
+    The returned df will contain, for every time stamp in x, the last max_timeshift data points as a new
+    time series, such can be used to fit a time series forecasting model.
+
+    See :ref:`forecasting-label` for a detailed description of the rolling process and how the feature matrix and target
+    vector are derived.
+
+    The returned time series container df, will contain the rolled time series as a flat data frame, the first format
+    from :ref:`data-formats-label`.
+
+    When x is a pandas.Series, the index will be used as id.
+
+    :param x: the singular time series
+    :type x: np.array or pd.Series
+    :param kind: the kind of the time series
+    :type kind: str
+    :param rolling_direction: The sign decides, if to roll backwards (if sign is positive) or forwards in "time"
+    :type rolling_direction: int
+    :param max_timeshift: If not None, shift only up to max_timeshift. If None, shift as often as possible.
+    :type max_timeshift: int
+
+    :return: time series container df, target vector y
+    :rtype: (pd.DataFrame, pd.Series)
+    """
+    n = len(x)
+
+    if isinstance(x, pd.Series):
+        t = x.index
+    else:
+        t = range(n)
+
+    df = pd.DataFrame({"id": ["id"] * n,
+                       "time": t,
+                       "value": x,
+                       "kind": kind})
+
+    df_shift = roll_time_series(df,
+                                column_id="id",
+                                column_sort="time",
+                                column_kind="kind",
+                                rolling_direction=rolling_direction,
+                                max_timeshift=max_timeshift)
+
+    # drop the rows which should actually be predicted
+    def mask_first(x):
+        """
+        this mask returns an array of 1s where the last entry is a 0
+        """
+        result = np.ones(len(x))
+        result[-1] = 0
+        return result
+
+    mask = df_shift.groupby(['id'])['id'].transform(mask_first).astype(bool)
+    df_shift = df_shift[mask]
+
+    return df_shift, df["value"][1:]
 
 
 

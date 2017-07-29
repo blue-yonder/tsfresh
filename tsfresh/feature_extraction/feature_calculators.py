@@ -24,6 +24,7 @@ import pandas as pd
 from scipy.signal import welch, cwt, ricker, find_peaks_cwt
 from statsmodels.tsa.ar_model import AR
 from statsmodels.tsa.stattools import adfuller
+from statsmodels.tsa.stattools import acf
 from scipy.stats import linregress
 
 # todo: make sure '_' works in parameter names in all cases, add a warning if not
@@ -146,6 +147,20 @@ def variance_larger_than_standard_deviation(x):
 
 
 @set_property("fctype", "simple")
+def ratio_beyond_r_sigma(x, r):
+    """
+    Ratio of values that are more than r*std(x) (so r sigma) away from the mean of x.
+
+    :param x: the time series to calculate the feature of
+    :type x: iterable
+    :return: the value of this feature
+    :return type: bool
+    """
+    x = np.asarray(x)
+    return sum(abs(x - np.mean(x)) > r * np.std(x))/len(x)
+
+
+@set_property("fctype", "simple")
 def large_standard_deviation(x, r):
     """
     Boolean variable denoting if the standard dev of x is higher
@@ -245,70 +260,65 @@ def sum_values(x):
     return np.sum(x)
 
 
-@set_property("fctype", "simple")
-def large_number_of_peaks(x, n):
+@set_property("fctype", "combiner")
+def agg_autocorrelation(x, param):
     """
-    Checks if the number of peaks is higher than n.
-
-    :param x: the time series to calculate the feature of
-    :type x: pandas.Series
-    :param n: the number of peaks to compare
-    :type n: int
-    :return: the value of this feature
-    :return type: bool
-    """
-    return number_peaks(x, n=n) > 5
-
-
-@set_property("fctype", "simple")
-def mean_autocorrelation(x):
-    """
-    Calculates the average autocorrelation (Compare to http://en.wikipedia.org/wiki/Autocorrelation#Estimation),
-    taken over different all possible lags (1 to length of x)
+    Calculates the value of an aggregation function f_agg (e.g. var or mean) of the autocorrelation
+    (Compare to http://en.wikipedia.org/wiki/Autocorrelation#Estimation), taken over different all possible lags
+    (1 to length of x)
 
     .. math::
 
-        \\frac{1}{n} \\sum_{l=1,\ldots, n} \\frac{1}{(n-l)\sigma^{2}} \\sum_{t=1}^{n-l}(X_{t}-\\mu )(X_{t+l}-\\mu)
+        \\frac{1}{n-1} \\sum_{l=1,\ldots, n} \\frac{1}{(n-l)\sigma^{2}} \\sum_{t=1}^{n-l}(X_{t}-\\mu )(X_{t+l}-\\mu)
 
     where :math:`n` is the length of the time series :math:`X_i`, :math:`\sigma^2` its variance and :math:`\mu` its
     mean.
 
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
+    :param param: contains dictionaries {"attr": x} with x str, name of a numpy function (e.g. mean, var, std, median),
+                   the name of the aggregator function that is applied to the autocorrelations
+    :type param: list
     :return: the value of this feature
     :return type: float
     """
     var = np.var(x)
     n = len(x)
-
     if abs(var) < 10**-10 or n == 1:
-        return 0
+        a = 0
     else:
-        r = np.correlate(x - np.mean(x), x - np.mean(x), mode='full')
-        r = r[0: (n - 1)] / np.arange(n - 1, 0, -1)
-        return np.nanmean(r / var)
+        a = acf(x, unbiased=True, fft=n > 1250)[1:]
+    return [("f_agg_\"{}\"".format(config["f_agg"]), getattr(np, config["f_agg"])(a)) for config in param]
 
 
-@set_property("fctype", "simple")
-def augmented_dickey_fuller(x):
+@set_property("fctype", "combiner")
+def augmented_dickey_fuller(x, param):
     """
     The Augmented Dickey-Fuller test is a hypothesis test which checks whether a unit root is present in a time
     series sample. This feature calculator returns the value of the respective test statistic.
 
     See the statsmodels implementation for references and more details.
-
+    
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
+    :param param: contains dictionaries {"attr": x} with x str, either "teststat", "pvalue" or "usedlag"
+    :type param: list
     :return: the value of this feature
     :return type: float
     """
-
+    res = None
     try:
-        return adfuller(x)[0]
+        res = adfuller(x)
     except LinAlgError:
-        return np.NaN
+        res = np.NaN, np.NaN, np.NaN
     except ValueError:  # occurs if sample size is too small
-        return np.NaN
+        res = np.NaN, np.NaN, np.NaN
+
+    return [("attr_{}".format(config["attr"]),
+                  res[0] if config["attr"] == "teststat"
+             else res[1] if config["attr"] == "pvalue"
+             else res[2] if config["attr"] == "usedlag" else np.NaN)
+            for config in param]
 
 
 @set_property("fctype", "simple")
@@ -726,25 +736,40 @@ def fft_coefficient(x, param):
     Calculates the fourier coefficients of the one-dimensional discrete Fourier Transform for real input by fast
     fourier transformation algorithm
 
+    .. math::
+        A_k =  \\sum_{m=0}^{n-1} a_m \\exp \\left \\{ -2 \\pi i \\frac{m k}{n} \\right \\}, \\qquad k = 0, \\ldots , n-1.
+
+    The resulting coefficients will be complex, this feature calculator can return the real part (attr=="real"),
+    the imaginary part (attr=="imag), the absolute value (attr=""abs) and the angle in degrees (attr=="angle).
+
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
-    :param param: contains dictionaries {"coeff": x} with x int and x >= 0
+    :param param: contains dictionaries {"coeff": x, "attr": s} with x int and x >= 0, s str and in ["real", "imag",
+        "abs", "angle"]
     :type param: list
     :return: the different feature values
     :return type: pandas.Series
     """
 
-    coefficients = set([config["coeff"] for config in param])
-    for coeff in coefficients:
-        if coeff < 0:
-            raise ValueError("Coefficients must be positive or zero.")
+    assert min([config["coeff"] for config in param]) >= 0, "Coefficients must be positive or zero."
+    assert set([config["attr"] for config in param]) <= set(["imag", "real", "abs", "angle"]), \
+        'Attribute must be "real", "imag", "angle" or "abs"'
 
-    maximum_coefficient = max(max(coefficients), 1)
-    fft = np.fft.rfft(x, min(len(x), 2 * maximum_coefficient))
+    fft = np.fft.rfft(x)
 
-    res = [fft[q] if q < len(fft) else 0 for q in coefficients]
-    res = [r.real if isinstance(r, complex) else r for r in res]
-    index = ["coeff_{}".format(q) for q in coefficients]
+    def complex_agg(x, agg):
+        if agg == "real":
+            return x.real
+        elif agg == "imag":
+            return x.imag
+        elif agg == "abs":
+            return np.abs(x)
+        elif agg == "angle":
+            return np.angle(x, deg=True)
+
+    res = [complex_agg(fft[config["coeff"]], config["attr"]) if config["coeff"] < len(fft)
+           else np.NaN for config in param]
+    index = ['coeff_{}__attr_"{}"'.format(config["coeff"], config["attr"]) for config in param]
     return zip(index, res)
 
 
@@ -995,10 +1020,12 @@ def ar_coefficient(x, param):
 
 
 @set_property("fctype", "simple")
-def mean_abs_change_quantiles(x, ql, qh):
+def change_quantiles(x, ql, qh, isabs, f_agg):
     """
-    First fixes a corridor given by the quantiles ql and qh of the distribution of x. Then calculates the average
-    absolute value of consecutive changes of the series x inside this corridor. Think about selecting a corridor on the
+    First fixes a corridor given by the quantiles ql and qh of the distribution of x.
+    Then calculates the average, absolute value of consecutive changes of the series x inside this corridor.
+
+    Think about selecting a corridor on the
     y-Axis and only calculating the mean of the absolute change of the time series inside this corridor.
 
     :param x: the time series to calculate the feature of
@@ -1007,6 +1034,11 @@ def mean_abs_change_quantiles(x, ql, qh):
     :type ql: float
     :param qh: the higher quantile of the corridor
     :type qh: float
+    :param isabs: should the absolute differences be taken?
+    :type isabs: bool
+    :param f_agg: the aggregator function that is applied to the differences in the bin
+    :type f_agg: str, name of a numpy function (e.g. mean, var, std, median)
+
     :return: the value of this feature
     :return type: float
     """
@@ -1014,7 +1046,10 @@ def mean_abs_change_quantiles(x, ql, qh):
 
     if ql >= qh:
         ValueError("ql={} should be lower than qh={}".format(ql, qh))
-    div = np.abs(np.diff(x))
+
+    div = np.diff(x)
+    if isabs:
+        div = np.abs(div)
     # All values that originate from the corridor between the quantiles ql and qh will have the category 0,
     # other will be np.NaN
     try:
@@ -1028,7 +1063,9 @@ def mean_abs_change_quantiles(x, ql, qh):
         return 0
     else:
         ind_inside_corridor = np.where(ind == 1)
-        return np.mean(div[ind_inside_corridor])
+        aggregator = getattr(np, f_agg)
+        return aggregator(div[ind_inside_corridor])
+
 
 
 @set_property("fctype", "simple")
@@ -1066,12 +1103,51 @@ def time_reversal_asymmetry_statistic(x, lag):
     """
     n = len(x)
     x = np.asarray(x)
-    if 2 * lag > n:
+    if 2 * lag >= n:
         return 0
-    elif 2 * lag == n:
-        return x[n-1] * x[n-1] * x[0] - x[lag-1] * x[0] * x[0]
     else:
-        return np.mean((np.roll(x, 2 * -lag) * np.roll(x, 2 * -lag) * x - np.roll(x, -lag) * x * x)[0:(n - 2 * lag)])
+        return np.mean((np.roll(x, 2 * -lag) * np.roll(x, 2 * -lag) * np.roll(x, -lag) -
+                        np.roll(x, -lag) * x * x)[0:(n - 2 * lag)])
+
+
+@set_property("fctype", "simple")
+def c3(x, lag):
+    """
+    This function calculates the value of
+
+    .. math::
+
+        \\frac{1}{n-2lag} \sum_{i=0}^{n-2lag} x_{i + 2 \cdot lag}^2 \cdot x_{i + lag} \cdot x_{i}
+
+    which is
+
+    .. math::
+
+        \\mathbb{E}[L^2(X)^2 \cdot L(X) \cdot X]
+
+    where :math:`\\mathbb{E}` is the mean and :math:`L` is the lag operator. It was proposed in [1] as a measure of
+    non linearity in the time series.
+
+    References
+    ----------
+
+    .. [1] Schreiber, T. and Schmitz, A. (1997).
+       Discrimination power of measures for nonlinearity in a time series
+       PHYSICAL REVIEW E, VOLUME 55, NUMBER 5
+
+    :param x: the time series to calculate the feature of
+    :type x: pandas.Series
+    :param lag: the lag that should be used in the calculation of the feature
+    :type lag: int
+    :return: the value of this feature
+    :return type: float
+    """
+    n = len(x)
+    x = np.asarray(x)
+    if 2 * lag >= n:
+        return 0
+    else:
+        return np.mean((np.roll(x, 2 * -lag) * np.roll(x, -lag) * x)[0:(n - 2 * lag)])
 
 
 @set_property("fctype", "simple")
@@ -1184,6 +1260,25 @@ def quantile(x, q):
     """
     x = pd.Series(x)
     return pd.Series.quantile(x, q)
+
+
+@set_property("fctype", "simple")
+def number_crossing_m(x, m):
+    """
+    Calculates the number of crossings of x on m. A crossing is defined as two sequential values where the first value
+    is lower than m and the next is greater, or vice-versa. If you set m to zero, you will get the number of zero
+    crossings.
+
+    :param x: the time series to calculate the feature of
+    :type x: pandas.Series
+    :param m: the threshold for the crossing
+    :type m: float
+    :return: the value of this feature
+    :return type: float
+    """
+    x = np.asarray(x)
+    x = x[x != m]
+    return sum(np.abs(np.diff(np.sign(x - m))))/2
 
 
 @set_property("fctype", "simple")
@@ -1300,7 +1395,8 @@ def approximate_entropy(x, m, r):
 def friedrich_coefficients(x, param):
     """
     Coefficients of polynomial :math:`h(x)`, which has been fitted to 
-    the deterministic dynamics of Langevin model 
+    the deterministic dynamics of Langevin model
+
     .. math::
         \dot{x}(t) = h(x(t)) + \mathcal{N}(0,R)
 
@@ -1340,6 +1436,7 @@ def max_langevin_fixed_point(x, r, m):
     """
     Largest fixed point of dynamics  :math:argmax_x {h(x)=0}` estimated from polynomial :math:`h(x)`, 
     which has been fitted to the deterministic dynamics of Langevin model
+    
     .. math::
         \dot(x)(t) = h(x(t)) + R \mathcal(N)(0,1)
 
@@ -1422,3 +1519,41 @@ def agg_linear_trend(x, param):
         res_index.append("f_agg_\"{}\"__chunk_len_{}__attr_\"{}\"".format(f_agg, chunk_len, attr))
 
     return zip(res_index, res_data)
+
+
+@set_property("fctype", "combiner")
+def energy_ratio_by_chunks(x, param):
+    """
+    Calculates the sum of squares of chunk i out of N chunks expressed as a ratio with the sum of squares over the whole series
+
+    Takes as input parameters the number num_segments of segments to divide the series into and segment_focus
+    which is the segment number (starting at zero) to return a feature on.
+
+    Note that the answer for num_segments=1 is a trivial "1" but we handle this scenario
+    in case somebody calls it. Sum of the ratios should be 1.0.
+
+    Returns an error for N <= 0
+
+    :param x: the time series to calculate the feature of
+    :type x: pandas.Series
+    :param param: contains dictionaries {"num_segments": N, "segment_focus": i} with N, i both ints
+    :return: the feature values
+    :return feature name, feature value
+    """
+
+    res_data = []
+    res_index = []
+    full_series_energy = np.sum(x ** 2)
+
+    for parameter_combination in param:
+        num_segments = parameter_combination["num_segments"]
+        segment_focus = parameter_combination["segment_focus"]
+        assert segment_focus < num_segments
+
+        segment_length = len(x)//num_segments
+        start = segment_focus*segment_length
+        end = min((segment_focus+1)*segment_length, len(x))
+        res_data.append(np.sum(x[start:end]**2.0)/full_series_energy)
+        res_index.append("num_segments_{}__segment_focus_{}".format(num_segments, segment_focus))
+
+    return list(zip(res_index, res_data)) # Materialize as list for Python 3 compatibility with name handling
