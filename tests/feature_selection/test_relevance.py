@@ -96,14 +96,10 @@ class TestCombineRelevanceTables:
         relevance_table['p_value'] = [0.1, 0.2, 0.3, 0.4]
         return relevance_table
 
-    def test_appends_label_to_p_value_column(self, relevance_table):
-        result = combine_relevance_tables([(0, relevance_table)])
-        assert 'p_value_0' in result.columns
-
     def test_disjuncts_relevance(self, relevance_table):
         relevance_table_2 = relevance_table.copy()
         relevance_table_2.relevant = [False, True, True, False]
-        result = combine_relevance_tables([(0, relevance_table), (1, relevance_table_2)])
+        result = combine_relevance_tables([relevance_table, relevance_table_2])
 
         assert ([True, True, True, False] == result.relevant).all()
 
@@ -111,22 +107,14 @@ class TestCombineRelevanceTables:
         relevance_table_2 = relevance_table.copy()
         relevance_table_2.reindex(reversed(relevance_table.index))
 
-        result = combine_relevance_tables([(0, relevance_table), (1, relevance_table_2)])
+        result = combine_relevance_tables([relevance_table, relevance_table_2])
 
         assert ([True, False, True, False] == result.relevant).all()
-
-    def test_preserves_p_values(self, relevance_table):
-        relevance_table_2 = relevance_table.copy()
-        relevance_table_2.p_value = 1.0 - relevance_table_2.p_value
-        result = combine_relevance_tables([(0, relevance_table), (1, relevance_table_2)])
-
-        assert (relevance_table.p_value == result.p_value_0).all()
-        assert (relevance_table_2.p_value == result.p_value_1).all()
 
     def test_aggregates_p_value(self, relevance_table):
         relevance_table_2 = relevance_table.copy()
         relevance_table_2.p_value = [0.2, 0.1, 0.4, 0.3]
-        result = combine_relevance_tables([(0, relevance_table), (1, relevance_table_2)])
+        result = combine_relevance_tables([relevance_table, relevance_table_2])
 
         assert (np.array([0.1, 0.1, 0.3, 0.3]) == result.p_value).all()
 

@@ -146,24 +146,35 @@ def calculate_relevance_table(X, y, ml_task='auto', n_jobs=defaults.N_PROCESSES,
     table_const['p_value'] = np.NaN
     table_const['relevant'] = False
 
+    if len(table_const) == len(relevance_table):
+        return table_const
+
     if ml_task == 'classification':
-        _calculate_binary_target = partial(_calculate_relevance_table_for_binary_target, table_real, table_binary, X,
-                                           test_for_binary_target_real_feature=test_for_binary_target_real_feature,
-                                           hypotheses_independent=hypotheses_independent, fdr_level=fdr_level,
-                                           map_function=map_function)
-        unique_labels = y.unique()
-        relevance_tables = map(_calculate_binary_target, [(y == label) for label in unique_labels])
-        relevance_tables_with_label = zip(unique_labels, relevance_tables)
-        relevance_table = combine_relevance_tables(relevance_tables_with_label)
+        tables = []
+        for label in y.unique():
+            tmp = _calculate_relevance_table_for_binary_target(
+                table_real, table_binary, X, (y == label),
+                test_for_binary_target_real_feature=test_for_binary_target_real_feature,
+                hypotheses_independent=hypotheses_independent, fdr_level=fdr_level, map_function=map_function
+            )
+            tables.append(tmp)
+        relevance_table = combine_relevance_tables(tables)
     elif ml_task == 'regression':
         _calculate_real_feature = partial(target_real_feature_real_test, y=y)
         _calculate_binary_feature = partial(target_real_feature_binary_test, y=y)
-        table_real['p_value'] = map_function(_calculate_real_feature, [X[feature] for feature in table_real.index])
-        table_binary['p_value'] = map_function(_calculate_binary_feature, [X[feature] for feature in table_binary.index])
+        table_real['p_value'] = pd.Series(
+            map_function(_calculate_real_feature, [X[feature] for feature in table_real.index]),
+            index=table_real.index
+        )
+        table_binary['p_value'] = pd.Series(
+            map_function(_calculate_binary_feature, [X[feature] for feature in table_binary.index]),
+            index=table_binary.index
+        )
         relevance_table = pd.concat([table_real, table_binary])
         relevance_table = benjamini_hochberg_test(relevance_table, hypotheses_independent, fdr_level)
 
     relevance_table = pd.concat([relevance_table, table_const], axis=0)
+
     return relevance_table
 
 
@@ -172,8 +183,14 @@ def _calculate_relevance_table_for_binary_target(table_real, table_binary, X, y,
     _calculate_real_feature = partial(target_binary_feature_real_test, y=y,
                                       test=test_for_binary_target_real_feature)
     _calculate_binary_feature = partial(target_binary_feature_binary_test, y=y)
-    table_real['p_value'] = map_function(_calculate_real_feature, [X[feature] for feature in table_real.index])
-    table_binary['p_value'] = map_function(_calculate_binary_feature, [X[feature] for feature in table_binary.index])
+    table_real['p_value'] = pd.Series(
+        map_function(_calculate_real_feature, [X[feature] for feature in table_real.index]),
+        index=table_real.index
+    )
+    table_binary['p_value'] = pd.Series(
+        map_function(_calculate_binary_feature, [X[feature] for feature in table_binary.index]),
+        index=table_binary.index
+    )
     relevance_table = pd.concat([table_real, table_binary])
     return benjamini_hochberg_test(relevance_table, hypotheses_independent, fdr_level)
 
@@ -379,31 +396,22 @@ def infer_ml_task(y):
     return ml_task
 
 
-def combine_relevance_tables(relevance_tables_with_label):
+def combine_relevance_tables(relevance_tables):
     """
-    Create a combined relevance table out of a list of tuples consisting of a target label
-    and its corresponding relevance table.
-    The combined relevance table containing the p_values for all target labels.
+    Create a combined relevance table out of a list of relevance tables,
+    aggregating the p-values and the relevances.
 
-    :param relevance_tables_with_label: A list of tuples: label, relevance table
-    :type relevance_tables_with_label: List[Tuple[Any, pd.DataFrame]]
+    :param relevance_tables: A list of relevance tables
+    :type relevance_tables: List[pd.DataFrame]
     :return: The combined relevance table
     :rtype: pandas.DataFrame
     """
-    def _append_label_to_p_value_column(a):
-        label, df = a
-        return df.rename(columns={'p_value': 'p_value_{}'.format(label)})
-
     def _combine(a, b):
         a.relevant |= b.relevant
-        p_value_column = [col for col in b.columns if col.startswith('p_value_')][0]
-        return a.join(b[p_value_column])
+        a.p_value = a.p_value.combine(b.p_value, min, 1)
+        return a
 
-    relevance_tables = map(_append_label_to_p_value_column, relevance_tables_with_label)
-    relevance_table = reduce(_combine, relevance_tables)
-    p_value_columns = [col for col in relevance_table.columns if col.startswith('p_value_')]
-    relevance_table['p_value'] = relevance_table[p_value_columns].values.min(axis=1)
-    return relevance_table
+    return reduce(_combine, relevance_tables)
 
 
 def get_feature_type(feature_column):
