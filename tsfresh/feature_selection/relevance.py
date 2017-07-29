@@ -135,7 +135,10 @@ def calculate_relevance_table(X, y, ml_task='auto', n_jobs=defaults.N_PROCESSES,
         map_function = partial(pool.map, chunksize=chunksize)
 
     relevance_table = pd.DataFrame(index=pd.Series(X.columns, name='feature'))
-    relevance_table['type'] = map_function(get_feature_type, [(X[feature]) for feature in relevance_table.index])
+    relevance_table['type'] = pd.Series(
+        map_function(get_feature_type, [X[feature] for feature in relevance_table.index]),
+        index=relevance_table.index
+    )
     table_real = relevance_table[relevance_table.type == 'real'].copy()
     table_binary = relevance_table[relevance_table.type == 'binary'].copy()
 
