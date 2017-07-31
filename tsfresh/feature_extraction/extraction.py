@@ -166,7 +166,7 @@ def extract_features(timeseries_container, default_fc_parameters=None,
 
 def _do_extraction(df, column_id, column_value, column_kind,
                    default_fc_parameters, kind_to_fc_parameters,
-                   n_jobs, chunk_size, disable_progressbar, distributor_class):
+                   n_jobs, chunk_size, disable_progressbar, distributor):
     """
     Wrapper around the _do_extraction_on_chunk, which calls it on all chunks in the data frame.
     A chunk is a subset of the data, with a given kind and id - so a single time series.
@@ -208,31 +208,28 @@ def _do_extraction(df, column_id, column_value, column_kind,
     :param disable_progressbar: Do not show a progressbar while doing the calculation.
     :type disable_progressbar: bool
 
-    :param distributor_class: Advanced parameter: set this to a class name that you want to use as a
+    :param distributor: Advanced parameter: set this to an instance name that you want to use as a
              distributor. See the utilities/distribution.py for more information. Leave to None, if you want
              TSFresh to choose the best distributor.
-    :type distributor_class: class
+    :type distributor: Distributor
 
     :return: the extracted features
     :rtype: pd.DataFrame
     """
     data_in_chunks = [x + (y,) for x, y in df.groupby([column_id, column_kind])[column_value]]
 
-    extraction_function = partial(_do_extraction_on_chunk,
-                                  default_fc_parameters=default_fc_parameters,
-                                  kind_to_fc_parameters=kind_to_fc_parameters)
-
-    if distributor_class is None:
+    if distributor is None:
         if n_jobs == 0:
             distributor_class = MapDistributor
         else:
             distributor_class = MultiprocessingDistributor
 
-    distributor = distributor_class(n_workers=n_jobs,
-                                    disable_progressbar=disable_progressbar,
-                                    progressbar_title="Feature Extraction")
+        distributor = distributor_class(n_workers=n_jobs,
+                                        disable_progressbar=disable_progressbar,
+                                        progressbar_title="Feature Extraction")
 
-    result = distributor.map_reduce(extraction_function, data=data_in_chunks, chunk_size=chunk_size)
+    kwargs = dict(default_fc_parameters=default_fc_parameters, kind_to_fc_parameters=kind_to_fc_parameters)
+    result = distributor.map_reduce(_do_extraction_on_chunk, data=data_in_chunks, chunk_size=chunk_size, kwargs=kwargs)
 
     # Return a dataframe in the typical form (id as index and feature names as columns)
     result = pd.DataFrame(result, dtype=np.float)
