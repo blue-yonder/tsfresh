@@ -606,7 +606,12 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqualOnAllArrayTypes(autocorrelation, [1, 2, 1, 2, 1, 2], 1, 2)
         self.assertAlmostEqualOnAllArrayTypes(autocorrelation, [1, 2, 1, 2, 1, 2], -1, 3)
         self.assertAlmostEqualOnAllArrayTypes(autocorrelation, [1, 2, 1, 2, 1, 2], 1, 4)
+        # Autocorrelation lag is larger than length of the time series
         self.assertIsNanOnAllArrayTypes(autocorrelation, [1, 2, 1, 2, 1, 2], 200)
+        self.assertIsNanOnAllArrayTypes(autocorrelation, [np.nan], 0)
+        self.assertIsNanOnAllArrayTypes(autocorrelation, [], 0)
+        # time series with length 1 has no variance, therefore no result for autocorrelation at lag 0
+        self.assertIsNanOnAllArrayTypes(autocorrelation, [1], 0)
 
     def test_quantile(self):
         self.assertAlmostEqualOnAllArrayTypes(quantile, [1, 1, 1, 3, 4, 7, 9, 11, 13, 13], 1.0, 0.2)
