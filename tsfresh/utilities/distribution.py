@@ -10,7 +10,7 @@ from multiprocessing import Pool
 from tqdm import tqdm
 
 
-def function_with_partly_reduce(chunk_list, map_function):
+def function_with_partly_reduce(chunk_list, map_function, decode_function, kwargs):
     """
     Small helper function to call a function (map_function)
     on a list of data chunks (chunk_list) and convert the results into
@@ -20,12 +20,16 @@ def function_with_partly_reduce(chunk_list, map_function):
 
     :param chunk_list: A list of data chunks to process.
     :type chunk_list: list
-    :param map_function: A function, which is called on each chunk in the list seperately.
+    :param map_function: A function, which is called on each chunk in the list separately.
     :type map_function: callable
+    :param decode_function: A function, which decodes each chunk in a format the map_function can handle,
+          if e.g. the distributor needs a special transportation format.
+    :type decode_function: callable
     :return: A list of the results of the function evaluated on each chunk and flattened.
     :rtype: list
     """
-    results = (map_function(chunk) for chunk in chunk_list)
+    kwargs = kwargs or {}
+    results = (map_function(chunk, **kwargs) for chunk in decode_function(chunk_list))
     results = list(itertools.chain.from_iterable(results))
     return results
 
@@ -91,7 +95,7 @@ class Distributor:
             chunksize += 1
         return chunksize
 
-    def map_reduce(self, map_function, data, chunk_size=None, data_length=None):
+    def map_reduce(self, map_function, data, kwargs=None, chunk_size=None, data_length=None):
         """
         Main function of the class: calculate the map_function for each element in the data and return
         the flattened list of results.
@@ -121,12 +125,14 @@ class Distributor:
             chunk_size = self._calculate_best_chunksize(data_length)
 
         partitioned_chunks = self.partition(data, chunk_size=chunk_size)
+        encoded_chunks = map(self.encode_function, partitioned_chunks)
 
         total_number_of_expected_results = math.ceil(data_length / chunk_size)
 
-        specialized_function_with_partly_reduce = partial(function_with_partly_reduce, map_function=map_function)
+        specialized_function_with_partly_reduce = partial(function_with_partly_reduce, map_function=map_function,
+                                                          decode_function=self.decode_function, kwargs=kwargs)
 
-        result = tqdm(self.distribute(specialized_function_with_partly_reduce, partitioned_chunks),
+        result = tqdm(self.distribute(specialized_function_with_partly_reduce, encoded_chunks),
                       total=total_number_of_expected_results,
                       desc=self.progressbar_title, disable=self.disable_progressbar)
 
@@ -147,6 +153,14 @@ class Distributor:
             worker.
         """
         raise NotImplementedError
+
+    @staticmethod
+    def encode_function(data):
+        return data
+
+    @staticmethod
+    def decode_function(data):
+        return data
 
 
 class MapDistributor(Distributor):
