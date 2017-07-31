@@ -8,29 +8,33 @@ from tsfresh.feature_selection.significance_tests import target_binary_feature_b
 
 
 @pytest.fixture()
-def binary_feature():
+def set_random_seed():
+    np.random.seed(seed=42)
+
+
+@pytest.fixture()
+def binary_feature(set_random_seed):
     return pd.Series(np.random.binomial(1, 0.5, 250), name="TEST")
 
 
 @pytest.fixture()
-def binary_target_not_related():
+def binary_target_not_related(set_random_seed):
     return pd.Series(np.random.binomial(1, 0.5, 250))
 
 
 @pytest.fixture()
-def real_feature():
+def real_feature(set_random_seed):
     return pd.Series(np.random.normal(0, 1, 250), name="TEST")
 
 
 @pytest.fixture()
-def real_target_not_related():
+def real_target_not_related(set_random_seed):
     return pd.Series(np.random.normal(0, 1, 250))
 
 
 class TestUnsignificant:
     @pytest.fixture()
     def minimal_p_value_for_unsignificant_features(self):
-        np.random.seed(seed=42)
         return 0.05
 
 
@@ -81,7 +85,6 @@ class TestUnsignificant:
 class TestSignificant:
     @pytest.fixture()
     def maximal_p_value_for_significant_features(self):
-        np.random.seed(seed=42)
         return 0.15
 
     def test_feature_selection_target_binary_features_binary(self, maximal_p_value_for_significant_features,
