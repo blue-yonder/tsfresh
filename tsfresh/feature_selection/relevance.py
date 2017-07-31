@@ -153,43 +153,36 @@ def calculate_relevance_table(X, y, ml_task='auto', n_jobs=defaults.N_PROCESSES,
     if ml_task == 'classification':
         tables = []
         for label in y.unique():
-            tmp = _calculate_relevance_table_for_binary_target(
-                table_real, table_binary, X, (y == label),
-                test_for_binary_target_real_feature=test_for_binary_target_real_feature,
-                hypotheses_independent=hypotheses_independent, fdr_level=fdr_level, map_function=map_function
+            _test_real_feature = partial(target_binary_feature_real_test, y=(y == label),
+                                              test=test_for_binary_target_real_feature)
+            _test_binary_feature = partial(target_binary_feature_binary_test, y=(y == label))
+            tmp = _calculate_relevance_table_for_implicit_target(
+                table_real, table_binary, X, _test_real_feature, _test_binary_feature, hypotheses_independent,
+                fdr_level, map_function
             )
             tables.append(tmp)
         relevance_table = combine_relevance_tables(tables)
     elif ml_task == 'regression':
-        _calculate_real_feature = partial(target_real_feature_real_test, y=y)
-        _calculate_binary_feature = partial(target_real_feature_binary_test, y=y)
-        table_real['p_value'] = pd.Series(
-            map_function(_calculate_real_feature, [X[feature] for feature in table_real.index]),
-            index=table_real.index
+        _test_real_feature = partial(target_real_feature_real_test, y=y)
+        _test_binary_feature = partial(target_real_feature_binary_test, y=y)
+        relevance_table = _calculate_relevance_table_for_implicit_target(
+            table_real, table_binary, X, _test_real_feature, _test_binary_feature, hypotheses_independent, fdr_level,
+            map_function
         )
-        table_binary['p_value'] = pd.Series(
-            map_function(_calculate_binary_feature, [X[feature] for feature in table_binary.index]),
-            index=table_binary.index
-        )
-        relevance_table = pd.concat([table_real, table_binary])
-        relevance_table = benjamini_hochberg_test(relevance_table, hypotheses_independent, fdr_level)
 
     relevance_table = pd.concat([relevance_table, table_const], axis=0)
 
     return relevance_table
 
 
-def _calculate_relevance_table_for_binary_target(table_real, table_binary, X, y, test_for_binary_target_real_feature,
-                                                 hypotheses_independent, fdr_level, map_function):
-    _calculate_real_feature = partial(target_binary_feature_real_test, y=y,
-                                      test=test_for_binary_target_real_feature)
-    _calculate_binary_feature = partial(target_binary_feature_binary_test, y=y)
+def _calculate_relevance_table_for_implicit_target(table_real, table_binary, X, test_real_feature, test_binary_feature,
+                                                   hypotheses_independent, fdr_level, map_function):
     table_real['p_value'] = pd.Series(
-        map_function(_calculate_real_feature, [X[feature] for feature in table_real.index]),
+        map_function(test_real_feature, [X[feature] for feature in table_real.index]),
         index=table_real.index
     )
     table_binary['p_value'] = pd.Series(
-        map_function(_calculate_binary_feature, [X[feature] for feature in table_binary.index]),
+        map_function(test_binary_feature, [X[feature] for feature in table_binary.index]),
         index=table_binary.index
     )
     relevance_table = pd.concat([table_real, table_binary])
