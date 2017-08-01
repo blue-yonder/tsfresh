@@ -5,7 +5,7 @@
 import pandas as pd
 import numpy as np
 from tests.fixtures import DataTestCase
-from tsfresh.feature_extraction import ComprehensiveFCParameters
+import mock
 from tsfresh.transformers.relevant_feature_augmenter import RelevantFeatureAugmenter
 
 
@@ -106,3 +106,19 @@ class RelevantFeatureAugmenterTestCase(DataTestCase):
 
         self.assertEqual(sum(["pre_keep" == column for column in transformed_X.columns]), 1)
         self.assertEqual(sum(["pre_drop" == column for column in transformed_X.columns]), 0)
+
+
+    @mock.patch('tsfresh.transformers.feature_selector.calculate_relevance_table')
+    def test_does_impute(self, calculate_relevance_table_mock):
+        df = pd.DataFrame([[1, 1, 1], [2, 1, 1]], columns=['id', 'time', 'value'])
+        X = pd.DataFrame(index=[1])
+        y = pd.Series([0, 1])
+        fc_parameters = {"autocorrelation": [{'lag': 2}]}
+
+        calculate_relevance_table_mock.return_value = pd.DataFrame(columns=['feature', 'p_value', 'relevant'])
+        augmenter = RelevantFeatureAugmenter(column_id='id', column_sort='time', default_fc_parameters=fc_parameters)
+        augmenter.set_timeseries_container(df)
+        augmenter.fit(X, y)
+
+        assert calculate_relevance_table_mock.call_count == 1
+        assert not calculate_relevance_table_mock.call_args[0][0].isnull().any().any()
