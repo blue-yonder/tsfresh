@@ -298,7 +298,7 @@ def augmented_dickey_fuller(x, param):
     series sample. This feature calculator returns the value of the respective test statistic.
 
     See the statsmodels implementation for references and more details.
-    
+
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
     :param param: contains dictionaries {"attr": x} with x str, either "teststat", "pvalue" or "usedlag"
@@ -1184,16 +1184,16 @@ def sample_entropy(x):
     ----------
     [1] http://en.wikipedia.org/wiki/Sample_Entropy
     [2] https://www.ncbi.nlm.nih.gov/pubmed/10843903?dopt=Abstract
-    
+
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
     :param tolerance: normalization factor; equivalent to the common practice of expressing the tolerance as r times the standard deviation
     :type tolerance: float
     :return: the value of this feature
     :return type: float
-    """ 
+    """
     x = np.array(x)
-    
+
     sample_length = 1 # number of sequential points of the time series
     tolerance = 0.2 * np.std(x) # 0.2 is a common value for r - why?
 
@@ -1219,21 +1219,32 @@ def sample_entropy(x):
                 curr[jj] = 0
         for j in range(nj):
             prev[j] = curr[j]
-            
+
     N = n * (n - 1) / 2
     B = np.vstack(([N], B[0]))
-    
+
     # sample entropy = -1 * (log (A/B))
-    similarity_ratio = A / B 
+    similarity_ratio = A / B
     se = -1 * np.log(similarity_ratio)
     se = np.reshape(se, -1)
     return se[0]
-    
+
 
 @set_property("fctype", "simple")
 def autocorrelation(x, lag):
     """
-    Calculates the lag autocorrelation of a lag value of lag.
+    Calculates the autocorrelation of the specified lag, according to the formula [1]
+
+    .. math::
+
+        \\frac{1}{(n-l)\sigma^{2}} \\sum_{t=1}^{n-l}(X_{t}-\\mu )(X_{t+l}-\\mu)
+
+    where :math:`n` is the length of the time series :math:`X_i`, :math:`\sigma^2` its variance and :math:`\mu` its
+    mean. `l` denotes the lag.
+
+    .. rubric:: References
+
+    [1] https://en.wikipedia.org/wiki/Autocorrelation#Estimation
 
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
@@ -1242,8 +1253,21 @@ def autocorrelation(x, lag):
     :return: the value of this feature
     :return type: float
     """
-    x = pd.Series(x)
-    return pd.Series.autocorr(x, lag)
+    # This is important: If a series is passed, the product below is calculated
+    # based on the index, which corresponds to squaring the series.
+    if type(x) is pd.Series:
+        x = x.values
+    if len(x) < lag:
+        return np.nan
+    # Slice the relevant subseries based on the lag
+    y1 = x[:(len(x)-lag)]
+    y2 = x[lag:]
+    # Subtract the mean of the whole series x
+    x_mean = np.mean(x)
+    # The result is sometimes referred to as "covariation"
+    sum_product = np.sum((y1-x_mean)*(y2-x_mean))
+    # Return the normalized unbiased covariance
+    return sum_product / ((len(x) - lag) * np.var(x))
 
 
 @set_property("fctype", "simple")
@@ -1355,7 +1379,7 @@ def approximate_entropy(x, m, r):
     For short time-series this method is highly dependent on the parameters,
     but should be stable for N > 2000, see:
 
-        Yentes et al. (2012) - 
+        Yentes et al. (2012) -
         *The Appropriate Use of Approximate Entropy and Sample Entropy with Short Data Sets*
 
 
@@ -1394,7 +1418,7 @@ def approximate_entropy(x, m, r):
 @set_property("fctype", "combiner")
 def friedrich_coefficients(x, param):
     """
-    Coefficients of polynomial :math:`h(x)`, which has been fitted to 
+    Coefficients of polynomial :math:`h(x)`, which has been fitted to
     the deterministic dynamics of Langevin model
 
     .. math::
@@ -1434,9 +1458,9 @@ def friedrich_coefficients(x, param):
 @set_property("fctype", "simple")
 def max_langevin_fixed_point(x, r, m):
     """
-    Largest fixed point of dynamics  :math:argmax_x {h(x)=0}` estimated from polynomial :math:`h(x)`, 
+    Largest fixed point of dynamics  :math:argmax_x {h(x)=0}` estimated from polynomial :math:`h(x)`,
     which has been fitted to the deterministic dynamics of Langevin model
-    
+
     .. math::
         \dot(x)(t) = h(x(t)) + R \mathcal(N)(0,1)
 
@@ -1464,7 +1488,7 @@ def max_langevin_fixed_point(x, r, m):
         max_fixed_point = np.max(np.real(np.roots(coeff)))
     except (np.linalg.LinAlgError, ValueError):
         return np.nan
-    
+
     return max_fixed_point
 
 
