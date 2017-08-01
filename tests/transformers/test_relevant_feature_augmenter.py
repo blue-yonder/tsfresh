@@ -47,24 +47,6 @@ class RelevantFeatureAugmenterTestCase(DataTestCase):
         self.assertEqual(list(transformed_X.columns), [])
         self.assertEqual(list(transformed_X.index), list(X.index))
 
-    def test_impute_works(self):
-        self.kind_to_fc_parameters["a"].update({"kurtosis": None})
-
-        augmeter = RelevantFeatureAugmenter(kind_to_fc_parameters=self.kind_to_fc_parameters,
-                                            column_value="val", column_id="id", column_sort="sort",
-                                            column_kind="kind")
-
-        y = pd.Series({10: 1, 500: 0})
-        X = pd.DataFrame(index=[10, 500])
-
-        augmeter.set_timeseries_container(self.test_df)
-        augmeter.fit(X, y)
-
-        transformed_X = augmeter.transform(X.copy())
-
-        self.assertEqual(list(transformed_X.columns), [])
-        self.assertEqual(list(transformed_X.index), list(X.index))
-
     def test_evaluate_only_added_features_true(self):
         """
         The boolean flag `evaluate_only_extracted_features` makes sure that only the time series based features are
