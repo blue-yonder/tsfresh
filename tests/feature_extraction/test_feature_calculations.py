@@ -195,6 +195,14 @@ class FeatureCalculationTestCase(TestCase):
         self.assertLessEqual(res["attr_pvalue"], 0.05)
         self.assertEqual(res["attr_usedlag"], 0)
 
+        # Check if LinAlgError and ValueError are catched
+        res_linalg_error = augmented_dickey_fuller(x=np.repeat(np.nan, 100), param=param)
+        res_value_error = augmented_dickey_fuller(x=[], param=param)
+        for index, val in res_linalg_error:
+            self.assertIsNaN(val)
+        for index, val in res_value_error:
+            self.assertIsNaN(val)
+
     def test_abs_energy(self):
         self.assertEqualOnAllArrayTypes(abs_energy, [1, 1, 1], 3)
         self.assertEqualOnAllArrayTypes(abs_energy, [1, 2, 3], 14)
