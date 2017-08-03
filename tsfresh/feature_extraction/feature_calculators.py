@@ -329,8 +329,8 @@ def partial_autocorrelation(x, param):
     max_demanded_lag = max([lag["lag"] for lag in param])
     n = len(x)
 
-    # Check if list is too short or consists only of NaNs
-    if n <= 1 or sum(np.isnan(x)) == n:
+    # Check if list is too short to make calculations
+    if n <= 1:
         pacf_coeffs = [np.nan] * (max_demanded_lag + 1)
     else:
         if (n <= max_demanded_lag):

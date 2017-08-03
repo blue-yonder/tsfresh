@@ -215,10 +215,6 @@ class FeatureCalculationTestCase(TestCase):
         res = partial_autocorrelation([], param=param)
         for lag_no, lag_val in res:
             self.assertIsNaN(lag_val)
-        # List contains only np.nan
-        res = partial_autocorrelation([np.nan, np.nan, np.nan], param=param)
-        for lag_no, lag_val in res:
-            self.assertIsNaN(lag_val)
         # List contains only zeros
         res = partial_autocorrelation(np.zeros(100), param=param)
         for lag_no, lag_val in res:
