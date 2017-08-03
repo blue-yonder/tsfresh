@@ -4,16 +4,16 @@ Feature Calculation
 ===================
 
 
-Overview on extracted feature
-'''''''''''''''''''''''''''''
+Overview on extracted features
+''''''''''''''''''''''''''''''
 
-tsfresh already calculates a comprehensive number of features. If you are interested in which features are calculated,
-just go to our
+tsfresh already calculates a comprehensive number of features. Follow this
+link to see a full list:
 
-:mod:`tsfresh.feature_extraction.feature_calculators`
+.. autosummary::
+    :toctree: _generated
 
-module. You will find the documentation of every calculated feature there.
-
+    tsfresh.feature_extraction.feature_calculators
 
 Feature naming
 ''''''''''''''
