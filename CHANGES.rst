@@ -4,6 +4,39 @@ Changelog
 
 tsfresh uses `Semantic Versioning <http://semver.org/>`_
 
+Version 0.9.0
+=============
+- new feature calculators:
+    - ratio_beyond_r_sigma
+    - energy_ratio_by_chunks
+    - number_crossing_m
+    - c3
+    - angle & abs for fft coefficients
+    - agg_autocorrelation
+    - p-Value and usedLag for augmented_dickey_fuller
+    - change_quantiles
+- changed the calculation of the following features:
+    - fft_coefficients
+    - autocorrelation
+    - time_reversal_asymmetry_statistic
+- removed the following feature calculators:
+    - large_number_of_peak
+    - mean_autocorrelation
+    - mean_abs_change_quantiles
+- add support for multi classification in the feature selection
+- improved description of the rolling mechanism
+- added function make_forecasting_frame method for forecasting tasks
+- internally ditched the pandas representation of the time series, yielding drastic speed improvements
+- replaced feature calculator types from aggregate/aggregate with parameter/apply to simple/combiner
+- add test for the ipython notebooks
+- added notebook to inspect dft features
+- make sure that RelevantFeatureAugmentor always imputes
+- fixed the following bugs
+    - impute was replacing whole columns by mean
+    - fft coefficient were only calculated on truncated part
+    - allow to suppress warnings from impute function
+    - added missing lag in time_reversal_asymmetry_statistic
+
 Version 0.8.1
 =============
 - new features:

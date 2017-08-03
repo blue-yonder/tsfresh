@@ -5,7 +5,7 @@
 import pandas as pd
 from tsfresh import defaults
 from sklearn.base import BaseEstimator, TransformerMixin
-from tsfresh.feature_selection.feature_selector import check_fs_sig_bh
+from tsfresh.feature_selection.relevance import calculate_relevance_table
 
 
 class FeatureSelector(BaseEstimator, TransformerMixin):
@@ -59,7 +59,7 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
                  test_for_real_target_binary_feature=defaults.TEST_FOR_REAL_TARGET_BINARY_FEATURE,
                  test_for_real_target_real_feature=defaults.TEST_FOR_REAL_TARGET_REAL_FEATURE,
                  fdr_level=defaults.FDR_LEVEL, hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
-                 n_jobs=defaults.N_PROCESSES, chunksize=defaults.CHUNKSIZE):
+                 n_jobs=defaults.N_PROCESSES, chunksize=defaults.CHUNKSIZE, ml_task='auto'):
         """
         Create a new FeatureSelector instance.
 
@@ -89,6 +89,12 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
 
         :param chunksize: Size of the chunks submitted to the worker processes
         :type chunksize: int
+
+        :param ml_task: The intended machine learning task. Either `'classification'`, `'regression'` or `'auto'`.
+                    Defaults to `'auto'`, meaning the intended task is inferred from `y`.
+                    If `y` has a boolean, integer or object dtype, the task is assumend to be classification,
+                    else regression.
+        :type ml_task: str
         """
         self.relevant_features = None
         self.feature_importances_ = None
@@ -105,6 +111,7 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
 
         self.n_jobs = n_jobs
         self.chunksize = chunksize
+        self.ml_task = ml_task
 
     def fit(self, X, y):
         """
@@ -117,7 +124,7 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
         :param X: data sample with the features, which will be classified as relevant or not
         :type X: pandas.DataFrame or numpy.array
 
-        :param y: target vecotr to be used, to classify the features
+        :param y: target vector to be used, to classify the features
         :type y: pandas.Series or numpy.array
 
         :return: the fitted estimator with the information, which features are relevant
@@ -129,13 +136,15 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
         if not isinstance(y, pd.Series):
             y = pd.Series(y.copy())
 
-        df_bh = check_fs_sig_bh(X, y, self.n_jobs, self.chunksize,
-                                self.fdr_level, self.hypotheses_independent,
-                                self.test_for_binary_target_real_feature)
-        self.relevant_features = df_bh.loc[df_bh.rejected].Feature.tolist()
-        self.feature_importances_ = 1.0 - df_bh.p_value.values
-        self.p_values = df_bh.p_value.values
-        self.features = df_bh.Feature.tolist()
+        relevance_table = calculate_relevance_table(
+                                X, y, ml_task=self.ml_task, n_jobs=self.n_jobs,
+                                chunksize=self.chunksize, fdr_level=self.fdr_level,
+                                hypotheses_independent=self.hypotheses_independent,
+                                test_for_binary_target_real_feature=self.test_for_binary_target_real_feature)
+        self.relevant_features = relevance_table.loc[relevance_table.relevant].feature.tolist()
+        self.feature_importances_ = 1.0 - relevance_table.p_value.values
+        self.p_values = relevance_table.p_value.values
+        self.features = relevance_table.index.tolist()
 
         return self
 

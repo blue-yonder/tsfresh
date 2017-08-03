@@ -10,7 +10,7 @@ several time series and meta-information simultaneously.
 To limit the number of irrelevant features, tsfresh deploys the fresh algorithm (fresh stands for `FeatuRe Extraction
 based on Scalable Hypothesis tests`) [1]_.
 
-The algorithm is called by :func:`tsfresh.feature_selection.feature_selector.check_fs_sig_bh`.
+The algorithm is called by :func:`tsfresh.feature_selection.relevance.calculate_relevance_table`.
 It is an efficient, scalable feature extraction algorithm, which filters the available features in an early stage of the
 machine learning pipeline with respect to their significance for the classification or regression task, while
 controlling the expected percentage of selected but irrelevant features.
@@ -48,7 +48,7 @@ Phase 3 - Multiple test procedure
 
 The vector of p-values is evaluated on basis of the Benjamini-Yekutieli procedure [2]_ in order to decide which features
 to keep.
-This multiple testing procedure is contained in the submodule :mod:`tsfresh.feature_selection.feature_selector`.
+This multiple testing procedure is contained in the submodule :mod:`tsfresh.feature_selection.benjamini_hochberg_test`.
 
 In the figure from above, this corresponds to the change from p-values to selected features.
 
