@@ -737,7 +737,8 @@ def fft_coefficient(x, param):
     fourier transformation algorithm
 
     .. math::
-        A_k =  \\sum_{m=0}^{n-1} a_m \\exp \\left \\{ -2 \\pi i \\frac{m k}{n} \\right \\}, \\qquad k = 0, \\ldots , n-1.
+        A_k =  \\sum_{m=0}^{n-1} a_m \\exp \\left \\{ -2 \\pi i \\frac{m k}{n} \\right \\}, \\qquad k = 0,
+        \\ldots , n-1.
 
     The resulting coefficients will be complex, this feature calculator can return the real part (attr=="real"),
     the imaginary part (attr=="imag), the absolute value (attr=""abs) and the angle in degrees (attr=="angle).
@@ -1086,13 +1087,11 @@ def time_reversal_asymmetry_statistic(x, lag):
     where :math:`\\mathbb{E}` is the mean and :math:`L` is the lag operator. It was proposed in [1] as a
     promising feature to extract from time series.
 
-    References
-    ----------
+    .. rubric:: References
 
-    .. [1] Fulcher, B.D., Jones, N.S. (2014).
-       Highly comparative feature-based time-series classification.
-       Knowledge and Data Engineering, IEEE Transactions on 26, 3026–3037.
-
+    |  [1] Fulcher, B.D., Jones, N.S. (2014).
+    |  Highly comparative feature-based time-series classification.
+    |  Knowledge and Data Engineering, IEEE Transactions on 26, 3026–3037.
 
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
@@ -1128,12 +1127,11 @@ def c3(x, lag):
     where :math:`\\mathbb{E}` is the mean and :math:`L` is the lag operator. It was proposed in [1] as a measure of
     non linearity in the time series.
 
-    References
-    ----------
+    .. rubric:: References
 
-    .. [1] Schreiber, T. and Schmitz, A. (1997).
-       Discrimination power of measures for nonlinearity in a time series
-       PHYSICAL REVIEW E, VOLUME 55, NUMBER 5
+    |  [1] Schreiber, T. and Schmitz, A. (1997).
+    |  Discrimination power of measures for nonlinearity in a time series
+    |  PHYSICAL REVIEW E, VOLUME 55, NUMBER 5
 
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
@@ -1180,14 +1178,16 @@ def binned_entropy(x, max_bins):
 def sample_entropy(x):
     """
     Calculate and return sample entropy of x.
-    References:
-    ----------
-    [1] http://en.wikipedia.org/wiki/Sample_Entropy
-    [2] https://www.ncbi.nlm.nih.gov/pubmed/10843903?dopt=Abstract
 
+    .. rubric:: References
+
+    |  [1] http://en.wikipedia.org/wiki/Sample_Entropy
+    |  [2] https://www.ncbi.nlm.nih.gov/pubmed/10843903?dopt=Abstract
+    
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
-    :param tolerance: normalization factor; equivalent to the common practice of expressing the tolerance as r times the standard deviation
+    :param tolerance: normalization factor; equivalent to the common practice of expressing the tolerance as r times \
+    the standard deviation
     :type tolerance: float
     :return: the value of this feature
     :return type: float
@@ -1424,13 +1424,14 @@ def friedrich_coefficients(x, param):
     .. math::
         \dot{x}(t) = h(x(t)) + \mathcal{N}(0,R)
 
-    as described by
-
-        Friedrich et al. (2000): Physics Letters A 271, p. 217-222
-        *Extracting model equations from experimental data*
-
+    as described by [1].
 
     For short time-series this method is highly dependent on the parameters.
+
+    .. rubric:: References
+
+    |  [1] Friedrich et al. (2000): Physics Letters A 271, p. 217-222
+    |  *Extracting model equations from experimental data*
 
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
@@ -1548,7 +1549,8 @@ def agg_linear_trend(x, param):
 @set_property("fctype", "combiner")
 def energy_ratio_by_chunks(x, param):
     """
-    Calculates the sum of squares of chunk i out of N chunks expressed as a ratio with the sum of squares over the whole series
+    Calculates the sum of squares of chunk i out of N chunks expressed as a ratio with the sum of squares over the whole
+    series
 
     Takes as input parameters the number num_segments of segments to divide the series into and segment_focus
     which is the segment number (starting at zero) to return a feature on.
@@ -1562,7 +1564,7 @@ def energy_ratio_by_chunks(x, param):
     :type x: pandas.Series
     :param param: contains dictionaries {"num_segments": N, "segment_focus": i} with N, i both ints
     :return: the feature values
-    :return feature name, feature value
+    :return type: list of tuples (index, data)
     """
 
     res_data = []
