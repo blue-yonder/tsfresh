@@ -7,7 +7,7 @@ Feature Calculation
 Overview on extracted features
 ''''''''''''''''''''''''''''''
 
-tsfresh calculates a comprehensive number of features in the
+*tsfresh* calculates a comprehensive number of features. All feature calculators are contained in the
 
 .. autosummary::
    :toctree: _generated
@@ -15,7 +15,9 @@ tsfresh calculates a comprehensive number of features in the
 
     tsfresh.feature_extraction.feature_calculators
 
-module. See this exhaustive list:
+submodule. 
+
+The following, exhaustive list contains all features that are calculated in the current version of *tsfresh*:
 
 .. include:: _generated/tsfresh.feature_extraction.feature_calculators.rst
 
