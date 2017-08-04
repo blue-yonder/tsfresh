@@ -366,7 +366,7 @@ def augmented_dickey_fuller(x, param):
     except ValueError:  # occurs if sample size is too small
         res = np.NaN, np.NaN, np.NaN
 
-    return [("attr_{}".format(config["attr"]),
+    return [('attr_"{}""'.format(config["attr"]),
                   res[0] if config["attr"] == "teststat"
              else res[1] if config["attr"] == "pvalue"
              else res[2] if config["attr"] == "usedlag" else np.NaN)
@@ -1235,7 +1235,7 @@ def sample_entropy(x):
 
     |  [1] http://en.wikipedia.org/wiki/Sample_Entropy
     |  [2] https://www.ncbi.nlm.nih.gov/pubmed/10843903?dopt=Abstract
-    
+
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
     :param tolerance: normalization factor; equivalent to the common practice of expressing the tolerance as r times \
