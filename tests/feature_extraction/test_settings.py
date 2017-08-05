@@ -12,6 +12,7 @@ from tsfresh.feature_extraction.settings import ComprehensiveFCParameters, Minim
     EfficientFCParameters, from_columns
 import six
 from tsfresh.feature_extraction import feature_calculators
+from pandas.testing import assert_frame_equal
 
 
 class TestSettingsObject(TestCase):
@@ -52,6 +53,24 @@ class TestSettingsObject(TestCase):
 
         self.assertEqual(kind_to_fc_parameters[tsn]["value_count"],
                          [{"value": np.PINF}, {"value": np.NINF}, {"value": np.NaN}])
+
+        # test that it passes for all functions
+        fset = ComprehensiveFCParameters()
+        X_org = extract_features(pd.DataFrame({"value": [1, 2, 3], "id": [1, 1, 1]}),
+                                 default_fc_parameters=fset,
+                                 column_id="id", column_value="value",
+                                 n_jobs=0)
+
+        inferred_fset = from_columns(X_org)
+
+        X_new = extract_features(pd.DataFrame({"value": [1, 2, 3], "id": [1, 1, 1]}),
+                                 kind_to_fc_parameters=inferred_fset,
+                                 column_id="id", column_value="value",
+                                 n_jobs=0)
+
+        assert_frame_equal(X_org.sort_index(), X_new.sort_index())
+
+
 
     def test_default_calculates_all_features(self):
         """
