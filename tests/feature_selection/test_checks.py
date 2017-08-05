@@ -113,40 +113,26 @@ class TestChecksRealReal:
             target_real_feature_real_test(x=real_series, y=real_series_with_nan)
 
 
-
-class TestFeatureSignificanceTestsChecks:
+class TestChecksRealBinary:
     """
-    Test cases for the configuration and type tests of the feature selectors.
+    Test the checks for the `target_real_feature_binary_test`.
     """
-    def test_fs_tr_fb_binary(self):
+    def test_feature_is_binary(self, real_series):
         with pytest.raises(ValueError):
-            target_real_feature_binary_test(x=pd.Series([0, 1, 2]), y=pd.Series([0, 1, 2]))
+            target_real_feature_binary_test(x=real_series, y=real_series)
 
-        target_real_feature_binary_test(x=pd.Series([0, 2, 0]), y=pd.Series([0, 1, 2]))
-
-
-
-
-
-    def test_fs_tr_fb_series(self):
+    def test_feature_is_series(self, real_series, binary_series):
         with pytest.raises(TypeError):
-            target_real_feature_binary_test(x=[0, 1, 2], y=pd.Series([0, 1, 2]))
+            target_real_feature_binary_test(x=binary_series.values, y=real_series)
+
+    def test_feature_is_series(self, real_series, binary_series):
         with pytest.raises(TypeError):
-            target_real_feature_binary_test(x=pd.Series([0, 1, 2]), y=[0, 1, 2])
+            target_real_feature_binary_test(x=binary_series, y=real_series.values)
 
-
-
-
-
-
-
-    def test_fb_tr_feature_nan(self, binary_series_with_nan, real_series):
+    def test_checks_feature_nan(self, binary_series_with_nan, real_series):
         with pytest.raises(ValueError):
             target_real_feature_binary_test(x=binary_series_with_nan, y=real_series)
 
-    def test_fb_tr_target_nan(self, real_series_with_nan, binary_series):
+    def test_checks_target_nan(self, real_series_with_nan, binary_series):
         with pytest.raises(ValueError):
             target_real_feature_binary_test(x=binary_series, y=real_series_with_nan)
-
-
-
