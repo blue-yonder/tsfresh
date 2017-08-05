@@ -110,6 +110,10 @@ pygments_style = 'sphinx'
 # If true, keep warnings as "system message" paragraphs in the built documents.
 keep_warnings = True
 
+# Boolean indicating whether to scan all found documents for autosummary
+# directives, and to generate stub pages for each
+autosummary_generate = True
+
 
 # -- Options for HTML output ---------------------------------------------------
 
