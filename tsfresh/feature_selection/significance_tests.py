@@ -57,10 +57,12 @@ def target_binary_feature_binary_test(x, y):
     :raise: ``ValueError`` if the target or the feature is not binary.
     """
     __check_if_pandas_series(x, y)
+    _check_for_nans(x, y)
 
     # Check for correct value range
     __check_for_binary_feature(x)
     __check_for_binary_target(y)
+
 
     # Extract the unique values
     x0, x1 = x.unique()
@@ -103,6 +105,7 @@ def target_binary_feature_real_test(x, y, test):
     :raise: ``ValueError`` if the target is not binary.
     """
     __check_if_pandas_series(x, y)
+    _check_for_nans(x, y)
 
     # Check for correct value range
     __check_for_binary_target(y)
@@ -144,6 +147,7 @@ def target_real_feature_binary_test(x, y):
     :raise: ``ValueError`` if the feature is not binary.
     """
     __check_if_pandas_series(x, y)
+    _check_for_nans(x, y)
 
     # Check for correct value range
     __check_for_binary_feature(x)
@@ -176,6 +180,7 @@ def target_real_feature_real_test(x, y):
     :rtype: float
     """
     __check_if_pandas_series(x, y)
+    _check_for_nans(x, y)
 
     tau, p_value = stats.kendalltau(x, y)
     return p_value
@@ -240,3 +245,18 @@ def __check_for_binary_feature(x):
               "Instead found " + str(set(x)) + " in feature ''" + str(x.name) + "''.")
         if len(set(x)) > 2:
             raise ValueError("[target_binary_feature_binary_test] Feature is not binary!")
+
+
+def _check_for_nans(x, y):
+    """
+    Helper function to check if target or feature contains NaNs.
+    :param x: A feature
+    :type x: pandas.Series
+    :param y: The target
+    :type y: pandas.Series
+    :raises: `ValueError` if target or feature contains NaNs.
+    """
+    if x.isnull().any():
+        raise ValueError('Feature {} contains NaN values'.format(x.name))
+    elif y.isnull().any():
+        raise ValueError('Target contains NaN values')
