@@ -10,7 +10,7 @@ from multiprocessing import Pool
 from tqdm import tqdm
 
 
-def function_with_partly_reduce(chunk_list, map_function, decode_function, kwargs):
+def function_with_partly_reduce(chunk_list, map_function, kwargs):
     """
     Small helper function to call a function (map_function)
     on a list of data chunks (chunk_list) and convert the results into
@@ -22,14 +22,11 @@ def function_with_partly_reduce(chunk_list, map_function, decode_function, kwarg
     :type chunk_list: list
     :param map_function: A function, which is called on each chunk in the list separately.
     :type map_function: callable
-    :param decode_function: A function, which decodes each chunk in a format the map_function can handle,
-          if e.g. the distributor needs a special transportation format.
-    :type decode_function: callable
     :return: A list of the results of the function evaluated on each chunk and flattened.
     :rtype: list
     """
     kwargs = kwargs or {}
-    results = (map_function(chunk, **kwargs) for chunk in decode_function(chunk_list))
+    results = (map_function(chunk, **kwargs) for chunk in chunk_list)
     results = list(itertools.chain.from_iterable(results))
     return results
 
@@ -125,14 +122,11 @@ class Distributor:
             chunk_size = self._calculate_best_chunksize(data_length)
 
         partitioned_chunks = self.partition(data, chunk_size=chunk_size)
-        encoded_chunks = map(self.encode_function, partitioned_chunks)
 
         total_number_of_expected_results = math.ceil(data_length / chunk_size)
 
-        specialized_function_with_partly_reduce = partial(function_with_partly_reduce, map_function=map_function,
-                                                          decode_function=self.decode_function, kwargs=kwargs)
-
-        result = tqdm(self.distribute(specialized_function_with_partly_reduce, encoded_chunks),
+        map_kwargs = {"map_function": map_function, "kwargs": kwargs}
+        result = tqdm(self.distribute(function_with_partly_reduce, partitioned_chunks, map_kwargs),
                       total=total_number_of_expected_results,
                       desc=self.progressbar_title, disable=self.disable_progressbar)
 
@@ -140,7 +134,7 @@ class Distributor:
 
         return result
 
-    def distribute(self, func, partitioned_chunks):
+    def distribute(self, func, partitioned_chunks, kwargs):
         """
         Abstract base function to do the distribution work of jobs.
         Must be implemented in the derived classes.
