@@ -1,19 +1,19 @@
 
+
 Authors
 ==========
 
 
-Development Lead
+Development Team
 ----------------
 
 - Maximilian Christ (`maximilianchrist.com <http://maximilianchrist.com>`_, `max.christ@me.com <max.christ@me.com>`_)
+- Nils Braun  (`nilslennartbraun@gmail.com <nilslennartbraun@gmail.com>`_)
+- Julius Neuffer (`julius.neuffer@blue-yonder.com <julius.neuffer@blue-yonder.com>`_)
 
 Contributions
 -------------
-
-- Nils Braun  (`nilslennartbraun@gmail.com <nilslennartbraun@gmail.com>`_)
-- Julius Neuffer (`julius.neuffer@blue-yonder.com <julius.neuffer@blue-yonder.com>`_)
-- Andreas W. Kempa-Liehr (`a.kempa-liehr@auckland.ac.nz <a.kempa-liehr@auckland.ac.nz>`_)
+- Andreas W. Kempa-Liehr
 - Markus Frey
 - Niklas Haas
 - earthgecko
