@@ -1,3 +1,4 @@
+
 Authors
 ==========
 
@@ -10,8 +11,8 @@ Development Lead
 Contributions
 -------------
 
-- Julius Neuffer (`julius.neuffer@blue-yonder.com <julius.neuffer@blue-yonder.com>`_)
 - Nils Braun  (`nilslennartbraun@gmail.com <nilslennartbraun@gmail.com>`_)
+- Julius Neuffer (`julius.neuffer@blue-yonder.com <julius.neuffer@blue-yonder.com>`_)
 - Andreas W. Kempa-Liehr (`a.kempa-liehr@auckland.ac.nz <a.kempa-liehr@auckland.ac.nz>`_)
 - Markus Frey
 - Niklas Haas
