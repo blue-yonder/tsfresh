@@ -71,7 +71,7 @@ def download_robot_execution_failures():
         f.write(r.text)
 
 
-def load_robot_execution_failures():
+def load_robot_execution_failures(multiclass=False):
     """
     Load the Robot Execution Failures LP1 Data Set[1].
     The Time series are passed as a flat DataFrame.
@@ -84,6 +84,8 @@ def load_robot_execution_failures():
     >>> print(df.shape)
     (1320, 8)
 
+    :param multiclass: If True, return all target labels. The default returns only "normal" vs all other labels.
+    :type multiclass: bool
     :return: time series data as :class:`pandas.DataFrame` and target vector as :class:`pandas.Series`
     :rtype: tuple
     """
@@ -102,10 +104,10 @@ def load_robot_execution_failures():
             if line[0] not in ['\t', '\n']:
                 cur_id += 1
                 time = 0
-                if line.strip() == 'normal':
-                    id_to_target[cur_id] = 0
+                if multiclass:
+                    id_to_target[cur_id] = line.strip()
                 else:
-                    id_to_target[cur_id] = 1
+                    id_to_target[cur_id] = (line.strip() == 'normal')
             # Data row --> split and convert values, create complete df row
             elif line[0] == '\t':
                 values = list(map(int, line.split('\t')[1:]))

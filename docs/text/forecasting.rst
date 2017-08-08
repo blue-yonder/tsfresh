@@ -1,28 +1,34 @@
-.. _rolling-label:
+.. _forecasting-label:
 
-How to handle rolling time series
-=================================
+Time series forecasting
+=======================
 
-Lets assume that we have a DataFrame of one of the tsfresh :ref:`data-formats-label`.
-The "sort" column of such a container gives a sequential state to the individual measurements.
-In the case of time series this can be the *time* dimension while in the case of spectra the order is given by the
-*wavelength* or *frequency* dimensions.
-We can exploit this sequence to generate more input data out of single time series, by *rolling* over the data.
+Features that are extracted with *tsfresh* can be used for many different tasks, such as time series classification,
+compression or forecasting.
+This section explains how one can use the features for time series forecasting tasks.
 
-Imagine the following situation:
-You have the data of certain sensors (e.g. EEG measurements) as the base to classify patients into a healthy and not
-healthy group (we oversimplify the problem here).
-Lets say you have sensor data of 100 time steps, so you may extract features for the forecasting of the patients
-healthiness by a classification algorithm.
-If you also have measurements of the healthiness for those 100 time steps (this is the target vector), then you could
-predict the healthiness of the patient in every time step, which essentially states a time series forecasting problem.
-So, to do that, you want to extract features in every time step of the original time series while for example looking at
-the last 10 steps.
-A rolling mechanism creates such time series for every time step by creating sub time series of the sensor data of the
-last 10 time steps.
+The "sort" column of a DataFrame in the supported :ref:`data-formats-label` gives a sequential state to the
+individual measurements. In the case of time series this can be the *time* dimension while in the case of spectra the
+order is given by the *wavelength* or *frequency* dimensions.
+We can exploit this sequence to generate more input data out of a single time series, by *rolling* over the data.
 
-The scenario described above cannot be easily computed by tsfresh in the current version.
-However, it is planned to be included in one of the upcoming releases (> v0.8.1).
+Lets say you have the price of a certain stock, e.g. Apple, for 100 time steps.
+Now, you want to build a feature-based model to forecast future prices of the Apple stock.
+So you will have to extract features in every time step of the original time series while looking at
+a certain number of past values.
+A rolling mechanism will give you the sub time series of last *m* time steps to construct the features.
+
+The following image illustrates the process:
+
+.. image:: ../images/rolling_mechanism_1.png
+   :scale: 100 %
+   :alt: The rolling mechanism
+   :align: center
+
+
+
+So, we move the window that extract the features and then predict the next time step (which was not used to extract features) forward.
+In the above image, the window moves from left to right.
 
 Another example can be found in streaming data, e.g. in Industry 4.0 applications.
 Here you typically get one new data row at a time and use this to for example predict machine failures. To train your model,
@@ -32,6 +38,11 @@ the data after the first two time steps etc.
 Both examples imply, that you extract the features not only on the full data set, but also
 on all temporal coherent subsets of data, which is the process of *rolling*. In tsfresh, this is implemented in the
 function :func:`tsfresh.utilities.dataframe_functions.roll_time_series`.
+Further, we provide the :func:`tsfresh.utilities.dataframe_functions.make_forecasting_frame` method as a convenient
+wrapper to fast construct the container and target vector for a given sequence.
+
+The rolling mechanism
+---------------------
 
 The rolling mechanism takes a time series :math:`x` with its data rows :math:`[x_1, x_2, x_3, ..., x_n]`
 and creates :math:`n` new time series :math:`\hat x^k`, each of them with a different consecutive part
@@ -179,91 +190,126 @@ If you set rolling to -1, you end up with features for the time series, rolled i
 We only gave an example for the flat DataFrame format, but rolling actually works on all 3 :ref:`data-formats-label`
 that are supported by tsfresh.
 
+This process is also visualized by the following figure.
+It shows how the purple, rolled sub-timeseries are used as base for the construction of the feature matrix *X*
+(after calculation of the features by *f*).
+The green data points need to be predicted by the model and are used as rows in the target vector *y*.
+
+.. image:: ../images/rolling_mechanism_2.png
+   :scale: 100 %
+   :alt: The rolling mechanism
+   :align: center
+
+
+
 Parameters and Implementation Notes
 -----------------------------------
 
 The above example demonstrates the overall rolling mechanism, which creates new time series.
 Now we discuss the naming convention for such new time series:
 
-For identifying every subsequence, tsfresh introduces a qualifier ("shift") that shows how far the time series was shifted.
-Practically, the shift-qualifier indicates how long the sub-time series is.
+For identifying every subsequence, tsfresh uses the time stamp of the point that will be predicted as new "id".
 The above example with rolling set to 1 yields the following sub-time series:
 
 +-----------+------+----+----+
 | id        | time | x  | y  |
 +===========+======+====+====+
-| 1,shift=3 | t1   | 1  | 5  |
-+-----------+------+----+----+
-
-
-+-----------+------+----+----+
-| id        | time | x  | y  |
-+===========+======+====+====+
-| 1,shift=2 | t1   | 1  | 5  |
-+-----------+------+----+----+
-| 1,shift=2 | t2   | 2  | 6  |
+| t1        | t1   | 1  | 5  |
 +-----------+------+----+----+
 
 +-----------+------+----+----+
 | id        | time | x  | y  |
 +===========+======+====+====+
-| 1,shift=1 | t1   | 1  | 5  |
+| t2        | t1   | 1  | 5  |
 +-----------+------+----+----+
-| 1,shift=1 | t2   | 2  | 6  |
-+-----------+------+----+----+
-| 1,shift=1 | t3   | 3  | 7  |
-+-----------+------+----+----+
-| 2,shift=1 | t8   | 10 | 12 |
+| t2        | t2   | 2  | 6  |
 +-----------+------+----+----+
 
 +-----------+------+----+----+
 | id        | time | x  | y  |
 +===========+======+====+====+
-| 1,shift=0 | t1   | 1  | 5  |
+| t3        | t1   | 1  | 5  |
 +-----------+------+----+----+
-| 1,shift=0 | t2   | 2  | 6  |
+| t3        | t2   | 2  | 6  |
 +-----------+------+----+----+
-| 1,shift=0 | t3   | 3  | 7  |
-+-----------+------+----+----+
-| 1,shift=0 | t4   | 4  | 8  |
-+-----------+------+----+----+
-| 2,shift=0 | t8   | 10 | 12 |
-+-----------+------+----+----+
-| 2,shift=0 | t9   | 11 | 13 |
+| t3        | t3   | 3  | 7  |
 +-----------+------+----+----+
 
-The id is now replaced by the old id and the shift value. Hence, every table represents a sub-time series.
++-----------+------+----+----+
+| id        | time | x  | y  |
++===========+======+====+====+
+| t4        | t1   | 1  | 5  |
++-----------+------+----+----+
+| t4        | t2   | 2  | 6  |
++-----------+------+----+----+
+| t4        | t3   | 3  | 7  |
++-----------+------+----+----+
+| t4        | t4   | 4  | 8  |
++-----------+------+----+----+
+
++-----------+------+----+----+
+| id        | time | x  | y  |
++===========+======+====+====+
+| t8        | t8   | 10 | 12 |
++-----------+------+----+----+
+
++-----------+------+----+----+
+| id        | time | x  | y  |
++===========+======+====+====+
+| t9        | t8   | 10 | 12 |
++-----------+------+----+----+
+| t9        | t9   | 11 | 13 |
++-----------+------+----+----+
+
+The new id is the time stamp where the shift ended.
+So above, every table represents a sub-time series.
 The higher the shift value, the more steps the time series was moved into the specified direction (into the past in
 this example).
 
 If you want to limit how far the time series shall be shifted into the specified direction, you can set the
-*maximum_number_of_timeshifts* parameter to the maximum time steps to be shifted. In the above example, setting
-*maximum_number_of_timeshifts* to 1 yields the following result (setting it to 0 will create all possible shifts):
+*max_timeshift* parameter to the maximum time steps to be shifted.
+In our example, setting *max_timeshift* to 1 yields the following result (setting it to 0 will create all possible shifts):
 
 +-----------+------+----+----+
 | id        | time | x  | y  |
 +===========+======+====+====+
-| 1,shift=1 | t1   | 1  | 5  |
-+-----------+------+----+----+
-| 1,shift=1 | t2   | 2  | 6  |
-+-----------+------+----+----+
-| 1,shift=1 | t3   | 3  | 7  |
-+-----------+------+----+----+
-| 2,shift=1 | t8   | 10 | 12 |
+| t1        | t1   | 1  | 5  |
 +-----------+------+----+----+
 
 +-----------+------+----+----+
 | id        | time | x  | y  |
 +===========+======+====+====+
-| 1,shift=0 | t1   | 1  | 5  |
+| t2        | t1   | 1  | 5  |
 +-----------+------+----+----+
-| 1,shift=0 | t2   | 2  | 6  |
+| t2        | t2   | 2  | 6  |
 +-----------+------+----+----+
-| 1,shift=0 | t3   | 3  | 7  |
+
 +-----------+------+----+----+
-| 1,shift=0 | t4   | 4  | 8  |
+| id        | time | x  | y  |
++===========+======+====+====+
+| t3        | t2   | 2  | 6  |
 +-----------+------+----+----+
-| 2,shift=0 | t8   | 10 | 12 |
+| t3        | t3   | 3  | 7  |
 +-----------+------+----+----+
-| 2,shift=0 | t9   | 11 | 13 |
+
++-----------+------+----+----+
+| id        | time | x  | y  |
++===========+======+====+====+
+| t4        | t3   | 3  | 7  |
++-----------+------+----+----+
+| t4        | t4   | 4  | 8  |
++-----------+------+----+----+
+
++-----------+------+----+----+
+| id        | time | x  | y  |
++===========+======+====+====+
+| t8        | t8   | 10 | 12 |
++-----------+------+----+----+
+
++-----------+------+----+----+
+| id        | time | x  | y  |
++===========+======+====+====+
+| t9        | t8   | 10 | 12 |
++-----------+------+----+----+
+| t9        | t9   | 11 | 13 |
 +-----------+------+----+----+

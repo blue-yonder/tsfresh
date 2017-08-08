@@ -3,18 +3,6 @@
 Feature Calculation
 ===================
 
-
-Overview on extracted feature
-'''''''''''''''''''''''''''''
-
-tsfresh already calculates a comprehensive number of features. If you are interested in which features are calculated,
-just go to our
-
-:mod:`tsfresh.feature_extraction.feature_calculators`
-
-module. You will find the documentation of every calculated feature there.
-
-
 Feature naming
 ''''''''''''''
 
