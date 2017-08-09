@@ -8,6 +8,7 @@ from tsfresh import extract_features
 from tsfresh.examples.robot_execution_failures import load_robot_execution_failures, download_robot_execution_failures
 from pandas import DataFrame, Series
 import six
+import numpy as np
 
 
 class RobotExecutionFailuresTestCase(TestCase):
@@ -26,3 +27,14 @@ class RobotExecutionFailuresTestCase(TestCase):
 
         six.assertCountEqual(self, df.index.values, [1, 2])
         self.assertGreater(len(df), 0)
+
+    def test_binary_target_is_default(self):
+        _, y = load_robot_execution_failures()
+
+        assert len(y.unique()) == 2
+
+    def test_multilabel_target_on_request(self):
+        _, y = load_robot_execution_failures(multiclass=True)
+
+        assert len(y.unique()) > 2
+        assert y.dtype == np.object

@@ -99,7 +99,7 @@ def extract_features(timeseries_container, default_fc_parameters=None,
     :type disable_progressbar: bool
 
     :param impute_function: None, if no imputing should happen or the function to call for imputing.
-    :type impute_function: None or function
+    :type impute_function: None or callable
 
     :param profile: Turn on profiling during feature extraction
     :type profile: bool

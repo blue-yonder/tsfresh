@@ -24,7 +24,7 @@ import pandas as pd
 from scipy.signal import welch, cwt, ricker, find_peaks_cwt
 from statsmodels.tsa.ar_model import AR
 from statsmodels.tsa.stattools import adfuller
-from statsmodels.tsa.stattools import acf
+from statsmodels.tsa.stattools import acf, pacf
 from scipy.stats import linregress
 
 # todo: make sure '_' works in parameter names in all cases, add a warning if not
@@ -292,13 +292,65 @@ def agg_autocorrelation(x, param):
 
 
 @set_property("fctype", "combiner")
+def partial_autocorrelation(x, param):
+    """
+    Calculates the value of the partial autocorrelation function at the given lag. The lag `k` partial autocorrelation
+    of a time series :math:`\\lbrace x_t, t = 1 \\ldots T \\rbrace` equals the partial correlation of :math:`x_t` and
+    :math:`x_{t-k}`, adjusted for the intermediate variables
+    :math:`\\lbrace x_{t-1}, \\ldots, x_{t-k+1} \\rbrace` ([1]).
+    Following [2], it can be defined as
+
+    .. math::
+
+        \\alpha_k = \\frac{ Cov(x_t, x_{t-k} | x_{t-1}, \\ldots, x_{t-k+1})}
+        {\\sqrt{ Var(x_t | x_{t-1}, \\ldots, x_{t-k+1}) Var(x_{t-k} | x_{t-1}, \\ldots, x_{t-k+1} )}}
+
+    with (a) :math:`x_t = f(x_{t-1}, \\ldots, x_{t-k+1})` and (b) :math:`x_{t-k} = f(x_{t-1}, \\ldots, x_{t-k+1})`
+    being AR(k-1) models that can be fitted by OLS. Be aware that in (a), the regression is done on past values to
+    predict :math:`x_t` whereas in (b), future values are used to calculate the past value :math:`x_{t-k}`.
+    It is said in [1] that "for an AR(p), the partial autocorrelations [ :math:`\\alpha_k` ] will be nonzero for `k<=p`
+    and zero for `k>p`."
+    With this property, it is used to determine the lag of an AR-Process.
+
+    .. rubric:: References
+
+    |  [1] Box, G. E., Jenkins, G. M., Reinsel, G. C., & Ljung, G. M. (2015).
+    |  Time series analysis: forecasting and control. John Wiley & Sons.
+    |  [2] https://onlinecourses.science.psu.edu/stat510/node/62
+
+    :param x: the time series to calculate the feature of
+    :type x: pandas.Series
+    :param param: contains dictionaries {"lag": val} with int val indicating the lag to be returned
+    :type param: list
+    :return: the value of this feature
+    :return type: float
+    """
+    # Check the difference between demanded lags by param and possible lags to calculate (depends on len(x))
+    max_demanded_lag = max([lag["lag"] for lag in param])
+    n = len(x)
+
+    # Check if list is too short to make calculations
+    if n <= 1:
+        pacf_coeffs = [np.nan] * (max_demanded_lag + 1)
+    else:
+        if (n <= max_demanded_lag):
+            max_lag = n - 1
+        else:
+            max_lag = max_demanded_lag
+        pacf_coeffs = list(pacf(x, method="ld", nlags=max_lag))
+        pacf_coeffs = pacf_coeffs + [np.nan] * max(0, (max_demanded_lag - max_lag))
+
+    return [("lag_{}".format(lag["lag"]), pacf_coeffs[lag["lag"]]) for lag in param]
+
+
+@set_property("fctype", "combiner")
 def augmented_dickey_fuller(x, param):
     """
     The Augmented Dickey-Fuller test is a hypothesis test which checks whether a unit root is present in a time
     series sample. This feature calculator returns the value of the respective test statistic.
 
     See the statsmodels implementation for references and more details.
-    
+
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
     :param param: contains dictionaries {"attr": x} with x str, either "teststat", "pvalue" or "usedlag"
@@ -314,7 +366,7 @@ def augmented_dickey_fuller(x, param):
     except ValueError:  # occurs if sample size is too small
         res = np.NaN, np.NaN, np.NaN
 
-    return [("attr_{}".format(config["attr"]),
+    return [('attr_"{}"'.format(config["attr"]),
                   res[0] if config["attr"] == "teststat"
              else res[1] if config["attr"] == "pvalue"
              else res[2] if config["attr"] == "usedlag" else np.NaN)
@@ -737,7 +789,8 @@ def fft_coefficient(x, param):
     fourier transformation algorithm
 
     .. math::
-        A_k =  \\sum_{m=0}^{n-1} a_m \\exp \\left \\{ -2 \\pi i \\frac{m k}{n} \\right \\}, \\qquad k = 0, \\ldots , n-1.
+        A_k =  \\sum_{m=0}^{n-1} a_m \\exp \\left \\{ -2 \\pi i \\frac{m k}{n} \\right \\}, \\qquad k = 0,
+        \\ldots , n-1.
 
     The resulting coefficients will be complex, this feature calculator can return the real part (attr=="real"),
     the imaginary part (attr=="imag), the absolute value (attr=""abs) and the angle in degrees (attr=="angle).
@@ -1086,13 +1139,11 @@ def time_reversal_asymmetry_statistic(x, lag):
     where :math:`\\mathbb{E}` is the mean and :math:`L` is the lag operator. It was proposed in [1] as a
     promising feature to extract from time series.
 
-    References
-    ----------
+    .. rubric:: References
 
-    .. [1] Fulcher, B.D., Jones, N.S. (2014).
-       Highly comparative feature-based time-series classification.
-       Knowledge and Data Engineering, IEEE Transactions on 26, 3026–3037.
-
+    |  [1] Fulcher, B.D., Jones, N.S. (2014).
+    |  Highly comparative feature-based time-series classification.
+    |  Knowledge and Data Engineering, IEEE Transactions on 26, 3026–3037.
 
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
@@ -1128,12 +1179,11 @@ def c3(x, lag):
     where :math:`\\mathbb{E}` is the mean and :math:`L` is the lag operator. It was proposed in [1] as a measure of
     non linearity in the time series.
 
-    References
-    ----------
+    .. rubric:: References
 
-    .. [1] Schreiber, T. and Schmitz, A. (1997).
-       Discrimination power of measures for nonlinearity in a time series
-       PHYSICAL REVIEW E, VOLUME 55, NUMBER 5
+    |  [1] Schreiber, T. and Schmitz, A. (1997).
+    |  Discrimination power of measures for nonlinearity in a time series
+    |  PHYSICAL REVIEW E, VOLUME 55, NUMBER 5
 
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
@@ -1180,20 +1230,22 @@ def binned_entropy(x, max_bins):
 def sample_entropy(x):
     """
     Calculate and return sample entropy of x.
-    References:
-    ----------
-    [1] http://en.wikipedia.org/wiki/Sample_Entropy
-    [2] https://www.ncbi.nlm.nih.gov/pubmed/10843903?dopt=Abstract
-    
+
+    .. rubric:: References
+
+    |  [1] http://en.wikipedia.org/wiki/Sample_Entropy
+    |  [2] https://www.ncbi.nlm.nih.gov/pubmed/10843903?dopt=Abstract
+
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
-    :param tolerance: normalization factor; equivalent to the common practice of expressing the tolerance as r times the standard deviation
+    :param tolerance: normalization factor; equivalent to the common practice of expressing the tolerance as r times \
+    the standard deviation
     :type tolerance: float
     :return: the value of this feature
     :return type: float
-    """ 
+    """
     x = np.array(x)
-    
+
     sample_length = 1 # number of sequential points of the time series
     tolerance = 0.2 * np.std(x) # 0.2 is a common value for r - why?
 
@@ -1219,21 +1271,32 @@ def sample_entropy(x):
                 curr[jj] = 0
         for j in range(nj):
             prev[j] = curr[j]
-            
+
     N = n * (n - 1) / 2
     B = np.vstack(([N], B[0]))
-    
+
     # sample entropy = -1 * (log (A/B))
-    similarity_ratio = A / B 
+    similarity_ratio = A / B
     se = -1 * np.log(similarity_ratio)
     se = np.reshape(se, -1)
     return se[0]
-    
+
 
 @set_property("fctype", "simple")
 def autocorrelation(x, lag):
     """
-    Calculates the lag autocorrelation of a lag value of lag.
+    Calculates the autocorrelation of the specified lag, according to the formula [1]
+
+    .. math::
+
+        \\frac{1}{(n-l)\sigma^{2}} \\sum_{t=1}^{n-l}(X_{t}-\\mu )(X_{t+l}-\\mu)
+
+    where :math:`n` is the length of the time series :math:`X_i`, :math:`\sigma^2` its variance and :math:`\mu` its
+    mean. `l` denotes the lag.
+
+    .. rubric:: References
+
+    [1] https://en.wikipedia.org/wiki/Autocorrelation#Estimation
 
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
@@ -1242,8 +1305,21 @@ def autocorrelation(x, lag):
     :return: the value of this feature
     :return type: float
     """
-    x = pd.Series(x)
-    return pd.Series.autocorr(x, lag)
+    # This is important: If a series is passed, the product below is calculated
+    # based on the index, which corresponds to squaring the series.
+    if type(x) is pd.Series:
+        x = x.values
+    if len(x) < lag:
+        return np.nan
+    # Slice the relevant subseries based on the lag
+    y1 = x[:(len(x)-lag)]
+    y2 = x[lag:]
+    # Subtract the mean of the whole series x
+    x_mean = np.mean(x)
+    # The result is sometimes referred to as "covariation"
+    sum_product = np.sum((y1-x_mean)*(y2-x_mean))
+    # Return the normalized unbiased covariance
+    return sum_product / ((len(x) - lag) * np.var(x))
 
 
 @set_property("fctype", "simple")
@@ -1355,7 +1431,7 @@ def approximate_entropy(x, m, r):
     For short time-series this method is highly dependent on the parameters,
     but should be stable for N > 2000, see:
 
-        Yentes et al. (2012) - 
+        Yentes et al. (2012) -
         *The Appropriate Use of Approximate Entropy and Sample Entropy with Short Data Sets*
 
 
@@ -1394,19 +1470,20 @@ def approximate_entropy(x, m, r):
 @set_property("fctype", "combiner")
 def friedrich_coefficients(x, param):
     """
-    Coefficients of polynomial :math:`h(x)`, which has been fitted to 
+    Coefficients of polynomial :math:`h(x)`, which has been fitted to
     the deterministic dynamics of Langevin model
 
     .. math::
         \dot{x}(t) = h(x(t)) + \mathcal{N}(0,R)
 
-    as described by
-
-        Friedrich et al. (2000): Physics Letters A 271, p. 217-222
-        *Extracting model equations from experimental data*
-
+    as described by [1].
 
     For short time-series this method is highly dependent on the parameters.
+
+    .. rubric:: References
+
+    |  [1] Friedrich et al. (2000): Physics Letters A 271, p. 217-222
+    |  *Extracting model equations from experimental data*
 
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
@@ -1434,9 +1511,9 @@ def friedrich_coefficients(x, param):
 @set_property("fctype", "simple")
 def max_langevin_fixed_point(x, r, m):
     """
-    Largest fixed point of dynamics  :math:argmax_x {h(x)=0}` estimated from polynomial :math:`h(x)`, 
+    Largest fixed point of dynamics  :math:argmax_x {h(x)=0}` estimated from polynomial :math:`h(x)`,
     which has been fitted to the deterministic dynamics of Langevin model
-    
+
     .. math::
         \dot(x)(t) = h(x(t)) + R \mathcal(N)(0,1)
 
@@ -1464,7 +1541,7 @@ def max_langevin_fixed_point(x, r, m):
         max_fixed_point = np.max(np.real(np.roots(coeff)))
     except (np.linalg.LinAlgError, ValueError):
         return np.nan
-    
+
     return max_fixed_point
 
 
@@ -1524,7 +1601,8 @@ def agg_linear_trend(x, param):
 @set_property("fctype", "combiner")
 def energy_ratio_by_chunks(x, param):
     """
-    Calculates the sum of squares of chunk i out of N chunks expressed as a ratio with the sum of squares over the whole series
+    Calculates the sum of squares of chunk i out of N chunks expressed as a ratio with the sum of squares over the whole
+    series
 
     Takes as input parameters the number num_segments of segments to divide the series into and segment_focus
     which is the segment number (starting at zero) to return a feature on.
@@ -1538,7 +1616,7 @@ def energy_ratio_by_chunks(x, param):
     :type x: pandas.Series
     :param param: contains dictionaries {"num_segments": N, "segment_focus": i} with N, i both ints
     :return: the feature values
-    :return feature name, feature value
+    :return type: list of tuples (index, data)
     """
 
     res_data = []

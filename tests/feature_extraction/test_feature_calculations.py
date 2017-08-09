@@ -159,6 +159,70 @@ class FeatureCalculationTestCase(TestCase):
         res = dict(agg_autocorrelation(x, param=param))["f_agg_\"median\""]
         self.assertAlmostEqual(res, expected_res, places=4)
 
+    def test_partial_autocorrelation(self):
+
+        # Test for altering time series
+        # len(x) < max_lag
+        param = [{"lag": lag} for lag in range(10)]
+        x = [1, 2, 1, 2, 1, 2]
+        expected_res = [("lag_0", 1.0), ("lag_1", -1.0), ("lag_2", np.nan)]
+        res = partial_autocorrelation(x, param=param)
+        self.assertAlmostEqual(res[0][1], expected_res[0][1], places=4)
+        self.assertAlmostEqual(res[1][1], expected_res[1][1], places=4)
+        self.assertIsNaN(res[2][1])
+
+        # Linear signal
+        param = [{"lag": lag} for lag in range(10)]
+        x = np.linspace(0, 1, 3000)
+        expected_res = [("lag_0", 1.0), ("lag_1", 1.0), ("lag_2", 0)]
+        res = partial_autocorrelation(x, param=param)
+        self.assertAlmostEqual(res[0][1], expected_res[0][1], places=2)
+        self.assertAlmostEqual(res[1][1], expected_res[1][1], places=2)
+        self.assertAlmostEqual(res[2][1], expected_res[2][1], places=2)
+
+        # Random noise
+        np.random.seed(42)
+        x = np.random.normal(size=3000)
+        param = [{"lag": lag} for lag in range(10)]
+        expected_res = [("lag_0", 1.0), ("lag_1", 0), ("lag_2", 0)]
+        res = partial_autocorrelation(x, param=param)
+        self.assertAlmostEqual(res[0][1], expected_res[0][1], places=1)
+        self.assertAlmostEqual(res[1][1], expected_res[1][1], places=1)
+        self.assertAlmostEqual(res[2][1], expected_res[2][1], places=1)
+
+        # On a simulated AR process
+        np.random.seed(42)
+        param = [{"lag": lag} for lag in range(10)]
+        # Simulate AR process
+        T = 3000
+        epsilon = np.random.randn(T)
+        x = np.repeat(1.0, T)
+        for t in range(T - 1):
+            x[t + 1] = 0.5 * x[t] + 2 + epsilon[t]
+        expected_res = [("lag_0", 1.0), ("lag_1", 0.5), ("lag_2", 0)]
+        res = partial_autocorrelation(x, param=param)
+        self.assertAlmostEqual(res[0][1], expected_res[0][1], places=1)
+        self.assertAlmostEqual(res[1][1], expected_res[1][1], places=1)
+        self.assertAlmostEqual(res[2][1], expected_res[2][1], places=1)
+
+        # Some pathological cases
+        param = [{"lag": lag} for lag in range(10)]
+        # List of length 1
+        res = partial_autocorrelation([1], param=param)
+        for lag_no, lag_val in res:
+            self.assertIsNaN(lag_val)
+        # Empty list
+        res = partial_autocorrelation([], param=param)
+        for lag_no, lag_val in res:
+            self.assertIsNaN(lag_val)
+        # List contains only zeros
+        res = partial_autocorrelation(np.zeros(100), param=param)
+        for lag_no, lag_val in res:
+            if lag_no == "lag_0":
+                self.assertEqual(lag_val, 1.0)
+            else:
+                self.assertIsNaN(lag_val)
+
 
     def test_augmented_dickey_fuller(self):
         # todo: add unit test for the values of the test statistic
@@ -170,13 +234,13 @@ class FeatureCalculationTestCase(TestCase):
         np.random.seed(seed=42)
         x = np.cumsum(np.random.uniform(size=100))
         param = [{"attr": "teststat"}, {"attr": "pvalue"}, {"attr": "usedlag"}]
-        expected_index = ['attr_teststat', 'attr_pvalue', 'attr_usedlag']
+        expected_index = ['attr_"teststat"', 'attr_"pvalue"', 'attr_"usedlag"']
 
         res = augmented_dickey_fuller(x=x, param=param)
         res = pd.Series(dict(res))
         six.assertCountEqual(self, list(res.index), expected_index)
-        self.assertGreater(res["attr_pvalue"], 0.10)
-        self.assertEqual(res["attr_usedlag"], 0)
+        self.assertGreater(res['attr_"pvalue"'], 0.10)
+        self.assertEqual(res['attr_"usedlag"'], 0)
 
         # H0 should be rejected for AR(1) model with x_{t} = 1/2 x_{t-1} + e_{t}
         np.random.seed(seed=42)
@@ -187,13 +251,21 @@ class FeatureCalculationTestCase(TestCase):
         for i in range(1, m):
             x[i] = x[i-1] * 0.5 + e[i]
         param = [{"attr": "teststat"}, {"attr": "pvalue"}, {"attr": "usedlag"}]
-        expected_index = ['attr_teststat', 'attr_pvalue', 'attr_usedlag']
+        expected_index = ['attr_"teststat"', 'attr_"pvalue"', 'attr_"usedlag"']
 
         res = augmented_dickey_fuller(x=x, param=param)
         res = pd.Series(dict(res))
         six.assertCountEqual(self, list(res.index), expected_index)
-        self.assertLessEqual(res["attr_pvalue"], 0.05)
-        self.assertEqual(res["attr_usedlag"], 0)
+        self.assertLessEqual(res['attr_"pvalue"'], 0.05)
+        self.assertEqual(res['attr_"usedlag"'], 0)
+
+        # Check if LinAlgError and ValueError are catched
+        res_linalg_error = augmented_dickey_fuller(x=np.repeat(np.nan, 100), param=param)
+        res_value_error = augmented_dickey_fuller(x=[], param=param)
+        for index, val in res_linalg_error:
+            self.assertIsNaN(val)
+        for index, val in res_value_error:
+            self.assertIsNaN(val)
 
     def test_abs_energy(self):
         self.assertEqualOnAllArrayTypes(abs_energy, [1, 1, 1], 3)
@@ -416,7 +488,7 @@ class FeatureCalculationTestCase(TestCase):
         param = [{"q": 0.5}]
         expected_index = ["q_0.5"]
         res = index_mass_quantile(x, param)
-        
+
         res = pd.Series(dict(res))
         six.assertCountEqual(self, list(res.index), expected_index)
         self.assertAlmostEqual(res["q_0.5"], 0.5, places=1)
@@ -426,7 +498,7 @@ class FeatureCalculationTestCase(TestCase):
         param = [{"q": 0.5}]
         expected_index = ["q_0.5"]
         res = index_mass_quantile(x[x > 0], param)
-        
+
         res = pd.Series(dict(res))
         six.assertCountEqual(self, list(res.index), expected_index)
         self.assertAlmostEqual(res["q_0.5"], 0.5, places=1)
@@ -435,7 +507,7 @@ class FeatureCalculationTestCase(TestCase):
         param = [{"q": 0.5}, {"q": 0.99}]
         expected_index = ["q_0.5", "q_0.99"]
         res = index_mass_quantile(x, param)
-        
+
         res = pd.Series(dict(res))
         six.assertCountEqual(self, list(res.index), expected_index)
         self.assertAlmostEqual(res["q_0.5"], 1, places=1)
@@ -446,7 +518,7 @@ class FeatureCalculationTestCase(TestCase):
         expected_index = ["q_0.3", "q_0.6",
                           "q_0.9"]
         res = index_mass_quantile(x, param)
-        
+
         res = pd.Series(dict(res))
 
         six.assertCountEqual(self, list(res.index), expected_index)
@@ -458,7 +530,7 @@ class FeatureCalculationTestCase(TestCase):
         param = [{"q": 0.5}]
         expected_index = ["q_0.5"]
         res = index_mass_quantile(x, param)
-        
+
         res = pd.Series(dict(res))
         six.assertCountEqual(self, list(res.index), expected_index)
         self.assertTrue(np.isnan(res["q_0.5"]))
@@ -467,7 +539,7 @@ class FeatureCalculationTestCase(TestCase):
         param = [{"q": 0.5}]
         expected_index = ["q_0.5"]
         res = index_mass_quantile(x, param)
-        
+
         res = pd.Series(dict(res))
         six.assertCountEqual(self, list(res.index), expected_index)
         self.assertTrue(np.isnan(res["q_0.5"]))
@@ -499,7 +571,7 @@ class FeatureCalculationTestCase(TestCase):
 
         res = cwt_coefficients(x, param)
 
-        
+
         res = pd.Series(dict(res))
 
         # todo: add unit test for the values
@@ -519,7 +591,7 @@ class FeatureCalculationTestCase(TestCase):
         res = ar_coefficient(x, param)
         expected_index = ["k_1__coeff_0", "k_1__coeff_1"]
 
-        
+
         res = pd.Series(dict(res))
         six.assertCountEqual(self, list(res.index), expected_index)
         self.assertAlmostEqual(res["k_1__coeff_0"], 1, places=2)
@@ -539,7 +611,7 @@ class FeatureCalculationTestCase(TestCase):
                           "k_2__coeff_0", "k_2__coeff_1",
                           "k_2__coeff_2", "k_2__coeff_3"]
 
-        
+
         res = pd.Series(dict(res))
 
         self.assertIsInstance(res, pd.Series)
@@ -606,7 +678,13 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqualOnAllArrayTypes(autocorrelation, [1, 2, 1, 2, 1, 2], 1, 2)
         self.assertAlmostEqualOnAllArrayTypes(autocorrelation, [1, 2, 1, 2, 1, 2], -1, 3)
         self.assertAlmostEqualOnAllArrayTypes(autocorrelation, [1, 2, 1, 2, 1, 2], 1, 4)
+        self.assertAlmostEqualOnAllArrayTypes(autocorrelation, pd.Series([0, 1, 2, 0, 1, 2]), -0.75, 2)
+        # Autocorrelation lag is larger than length of the time series
         self.assertIsNanOnAllArrayTypes(autocorrelation, [1, 2, 1, 2, 1, 2], 200)
+        self.assertIsNanOnAllArrayTypes(autocorrelation, [np.nan], 0)
+        self.assertIsNanOnAllArrayTypes(autocorrelation, [], 0)
+        # time series with length 1 has no variance, therefore no result for autocorrelation at lag 0
+        self.assertIsNanOnAllArrayTypes(autocorrelation, [1], 0)
 
     def test_quantile(self):
         self.assertAlmostEqualOnAllArrayTypes(quantile, [1, 1, 1, 3, 4, 7, 9, 11, 13, 13], 1.0, 0.2)
@@ -633,7 +711,7 @@ class FeatureCalculationTestCase(TestCase):
                                               ql=0.1, qh=1, isabs=True, f_agg="mean")
         self.assertAlmostEqualOnAllArrayTypes(change_quantiles, [0, 1, -9, 0, 0, 1, 0], 0.75,
                                               ql=0.1, qh=1, isabs=True, f_agg="mean")
-        
+
         self.assertAlmostEqualOnAllArrayTypes(change_quantiles, list(range(10)), 1,
                                               ql=0.1, qh=0.9, isabs=False, f_agg="mean")
         self.assertAlmostEqualOnAllArrayTypes(change_quantiles, list(range(10)), 0,
@@ -715,7 +793,7 @@ class FeatureCalculationTestCase(TestCase):
         x = np.zeros(1000)
 
         res = friedrich_coefficients(x, param)
-        
+
         res = pd.Series(dict(res))
 
         expected_index = ["m_2__r_30__coeff_0",
@@ -770,7 +848,7 @@ class FeatureCalculationTestCase(TestCase):
         param = [{"attr": "rvalue"}]
         res = linear_trend(x, param)
 
-        
+
         res = pd.Series(dict(res))
 
         self.assertLess(abs(res["attr_\"rvalue\""]), 0.1)
@@ -780,7 +858,7 @@ class FeatureCalculationTestCase(TestCase):
         param = [{"attr": "intercept"}, {"attr": "slope"}]
         res = linear_trend(x, param)
 
-        
+
         res = pd.Series(dict(res))
 
         self.assertAlmostEquals(res["attr_\"intercept\""], 42)
@@ -841,7 +919,7 @@ class FeatureCalculationTestCase(TestCase):
         x = pd.Series([np.NaN, np.NaN, np.NaN, -3, -3, -3])
         res = agg_linear_trend(x=x, param=param)
 
-        
+
         res = pd.Series(dict(res))
 
         self.assertIsNaN(res['f_agg_"max"__chunk_len_3__attr_"intercept"'])
@@ -856,7 +934,7 @@ class FeatureCalculationTestCase(TestCase):
         x = pd.Series([np.NaN, np.NaN, -3, -3, -3, -3])
         res = agg_linear_trend(x=x, param=param)
 
-        
+
         res = pd.Series(dict(res))
 
         self.assertAlmostEquals(res['f_agg_"max"__chunk_len_3__attr_"intercept"'], -3)
