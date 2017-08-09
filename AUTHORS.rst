@@ -4,8 +4,8 @@ Authors
 ==========
 
 
-Development Team
-----------------
+Core Development Team
+---------------------
 
 - Maximilian Christ (`maximilianchrist.com <http://maximilianchrist.com>`_, `max.christ@me.com <max.christ@me.com>`_)
 - Nils Braun  (`nilslennartbraun@gmail.com <nilslennartbraun@gmail.com>`_)
