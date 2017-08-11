@@ -73,8 +73,8 @@ def find_motifs(length, data, motif_count):
         match_pattern = data[start:start + length]
         pattern_scores = _match_scores(data[start + length:-length], match_pattern)
         candidates.append((start,
-                           np.argmin(pattern_scores) + start + (2 * length),
-                           np.min(pattern_scores) + start + (2 * length)))
+                           np.argmin(pattern_scores) + start + length,
+                           np.min(pattern_scores)))
     return _candidates_top_uniques(length, candidates, motif_count)
 
 

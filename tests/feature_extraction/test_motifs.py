@@ -71,10 +71,10 @@ class TestMotifSubelements(unittest.TestCase):
         self.length = 10
         series = np.concatenate([sample_array1, sample_array1, sample_array1])
         found_motifs = motifs.find_motifs(self.length, series, 5)
-        self.assertEqual(len(found_motifs),5)
+        self.assertEqual(len(found_motifs),4)
         # The pattern below is generated because the series is made of repeating sample arrays so they will always
         # match on the period of the sample array
-        self.assertTrue(all([x[1]-x[0]==42 for x in found_motifs]))
+        self.assertTrue(all([x[1]-x[0]==32 for x in found_motifs]))
 
     def test_count_motifs(self):
         found_motifs = [(16, 23, 1.7320508075688772), (17, 24, 3.3166247903553998), (20, 28, 4.5825756949558398), (14, 25, 5.0990195135927845), (19, 27, 5.4772255750516612)]
