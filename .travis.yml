@@ -6,6 +6,7 @@ sudo: false
 cache:
   directories:
     - $HOME/.cache/pip
+    - $HOME/virtualenv
 # Use python 2.7.11 and 3.5.2
 # global defines the envs for all jobs
 env:
@@ -30,13 +31,13 @@ jobs:
     - stage: unit tests
       script: py.test tests/units
       python: 3.5.2
-    - stage: integration test
-      script: py.test tests
+    - stage: test
+      script: python setup.py test
       python: 2.7.11
       after_success:
         - coveralls
-    - stage: integration test
-      script: py.test tests
+    - stage: test
+      script: python setup.py test
       python: 3.5.2
     - stage: deploy to pipy
       script: skip
