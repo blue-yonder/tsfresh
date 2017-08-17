@@ -1,4 +1,5 @@
 import numpy as np
+from six.moves import range
 """
 Functions and support for finding, grooming, and filtering time series data motifs
 by Ezekiel Kruglick
@@ -69,7 +70,7 @@ def find_motifs(length, data, motif_count):
     if length * 8 > len(data):
         raise ValueError("Motif size too large for dataset.")
     candidates = []
-    for start in xrange(len(data) - (3 * length)):
+    for start in range(len(data) - (3 * length)):
         match_pattern = data[start:start + length]
         pattern_scores = _match_scores(data[start + length:-length], match_pattern)
         candidates.append((start,
