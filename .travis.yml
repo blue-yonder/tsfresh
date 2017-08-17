@@ -20,22 +20,26 @@ jobs:
   include:
     - stage: prepare cache
       script: true
-      python:
-        - '2.7.11'
-        - '3.5.2'
-    - stage: test
+      python: 2.7.11
+    - stage: prepare cache
+      script: true
+      python: 3.5.2
+    - stage: unit tests
       script: py.test tests/units
-      python:
-        - '2.7.11'
-        - '3.5.2'
-    - stage: test
+      python: 2.7.11
+    - stage: unit tests
+      script: py.test tests/units
+      python: 3.5.2
+    - stage: integration test
       script: py.test tests
-      python:
-        - '2.7.11'
-        - '3.5.2'
+      python: 2.7.11
       after_success:
         - coveralls
+    - stage: integration test
+      script: py.test tests
+      python: 3.5.2
     - stage: deploy to pipy
+      script: skip
       deploy:
         provider: pypi
         user: MaxChrist
