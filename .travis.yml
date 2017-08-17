@@ -7,9 +7,6 @@ cache:
   directories:
     - $HOME/.cache/pip
 # Use python 2.7.11 and 3.5.2
-python:
-  - '2.7.11'
-  - '3.5.2'
 # global defines the envs for all jobs
 env:
   - NUMBER_OF_CPUS=2
@@ -23,12 +20,21 @@ jobs:
   include:
     - stage: prepare cache
       script: true
-    - stage: run tests
+      python:
+        - '2.7.11'
+        - '3.5.2'
+    - stage: test
       script: py.test tests/units
-    - stage: run tests
-      script: py.test tests/integrations
-    - stage: coveralls
-      script: coveralls
+      python:
+        - '2.7.11'
+        - '3.5.2'
+    - stage: test
+      script: py.test tests
+      python:
+        - '2.7.11'
+        - '3.5.2'
+      after_success:
+        - coveralls
     - stage: deploy to pipy
       deploy:
         provider: pypi
