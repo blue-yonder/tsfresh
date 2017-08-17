@@ -7,15 +7,17 @@ cache:
   directories:
     - $HOME/.cache/pip
     - $HOME/virtualenv
+before_cache:
+  - find $HOME/virtualenv | grep -E "(__pycache__|\.pyc|\.pyo$)" | xargs rm -rf
 # Use python 2.7.11 and 3.5.2
 # global defines the envs for all jobs
 env:
-  - NUMBER_OF_CPUS=2
+  - NUMBER_OF_CPUS=1
 install:
-  - pip install --upgrade pip wheel
+  - pip install --upgrade pip wheel setuptools
   - pip install numpy scipy coveralls
   - pip install -r requirements.txt -r test-requirements.txt
-  - pip install .
+  - pip install -U .
   - pip freeze
 jobs:
   include:
@@ -25,20 +27,27 @@ jobs:
     - stage: prepare cache
       script: true
       python: 3.5.2
+
     - stage: unit tests
       script: py.test tests/units
       python: 2.7.11
     - stage: unit tests
       script: py.test tests/units
       python: 3.5.2
+
     - stage: test
-      script: python setup.py test
+      script: 
+        - sed -i 's/\-n 4/\-n 2/g' setup.cfg
+        - python setup.py test
       python: 2.7.11
       after_success:
         - coveralls
     - stage: test
-      script: python setup.py test
+      script: 
+        - sed -i 's/\-n 4/\-n 2/g' setup.cfg
+        - python setup.py test
       python: 3.5.2
+
     - stage: deploy to pipy
       script: skip
       deploy:
