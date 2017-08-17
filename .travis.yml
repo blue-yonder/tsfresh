@@ -6,10 +6,6 @@ sudo: false
 cache:
   directories:
     - $HOME/.cache/pip
-    - $HOME/virtualenv
-before_cache:
-  - find $HOME/virtualenv | grep -E "(__pycache__|\.pyc|\.pyo$)" | xargs rm -rf
-# Use python 2.7.11 and 3.5.2
 # global defines the envs for all jobs
 env:
   - NUMBER_OF_CPUS=1
