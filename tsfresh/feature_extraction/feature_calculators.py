@@ -1635,3 +1635,13 @@ def energy_ratio_by_chunks(x, param):
         res_index.append("num_segments_{}__segment_focus_{}".format(num_segments, segment_focus))
 
     return list(zip(res_index, res_data)) # Materialize as list for Python 3 compatibility with name handling
+
+# @set_property("fctype", "combiner")
+# @set_property("high_comp_cost", True)
+# def motif_explorer(x, param):
+#
+#     # In here, how do I refer to the whole column of time series data to fin motifs from it?
+#
+#     # will be calling motifs.find motifs on it, then going into param for-loop finding features
+#
+#     pass
