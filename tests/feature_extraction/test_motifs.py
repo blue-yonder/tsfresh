@@ -83,7 +83,7 @@ class TestMotifSubelements(unittest.TestCase):
                         (14, 25, 5.0990195135927845), (19, 27, 5.4772255750516612)]
         series = np.concatenate([sample_array1, sample_array1, sample_array1])
         count = motifs.count_motifs(series, found_motifs[0], dist=15)
-        self.assertIsInstance(count, int)
+        self.assertIsInstance(count, six.integer_types)
         self.assertEqual(count, 25)
 
 
