@@ -42,8 +42,8 @@ class TestMotifSubelements(unittest.TestCase):
 
     def test_sliding_window(self):
         answer = motifs._sliding_window(sample_array1, 5)
-        self.assertItemsEqual(answer[1], [-63., 5., 157., -21., -20.])
-        self.assertItemsEqual(answer[-1], [8., -2., 1., 2., -9.])
+        six.assertCountEqual(self, answer[1], [-63., 5., 157., -21., -20.])
+        six.assertCountEqual(self, answer[-1], [8., -2., 1., 2., -9.])
 
     def test_match_scores(self):
         answer = motifs._match_scores(sample_array1, sample_array1[5:10])
