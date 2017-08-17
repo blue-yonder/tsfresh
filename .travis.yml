@@ -2,22 +2,25 @@ language: python
 sudo: false
 cache: pip
 python:
-- '2.7.11'
-- '3.5.2'
+  - '2.7.11'
+  - '3.5.2'
 env:
-- TEST_SUITE=units
-- TEST_SUITE=integrations
+  global:
+    - NUMBER_OF_CPUS=2
+  matrix:
+    - TEST_SUITE=units
+    - TEST_SUITE=integrations
 install:
-- pip install --upgrade pip
-- pip install numpy
-- pip install scipy
-- pip install coveralls
-- pip install .
-- pip install -r requirements.txt
-- pip install -r test-requirements.txt
-- pip freeze
+  - pip install --upgrade pip
+  - pip install numpy
+  - pip install scipy
+  - pip install coveralls
+  - pip install .
+  - pip install -r requirements.txt
+  - pip install -r test-requirements.txt
+  - pip freeze
 script:
-- py.test tests/$TEST_SUITE
+  - py.test tests/$TEST_SUITE
 deploy:
   provider: pypi
   user: MaxChrist
@@ -28,4 +31,4 @@ deploy:
     tags: true
     repo: blue-yonder/tsfresh
 after_success:
-- coveralls
+  - coveralls
