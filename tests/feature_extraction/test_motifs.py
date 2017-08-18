@@ -11,6 +11,7 @@ import numpy.testing as npt
 from tsfresh.feature_extraction import motifs
 import pandas as pd
 
+
 class TestMotifSubelements(unittest.TestCase):
     def setUp(self):
         self.length = 3

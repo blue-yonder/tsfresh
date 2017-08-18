@@ -45,9 +45,19 @@ def distance(x, y, type="euclid"):
 def _sliding_window(data, pattern_length):
     """
 
-    :param data:
-    :param pattern_length:
-    :return:
+    Takes the data, which should be a one dimensional numpy ndarray or pandas Series and constructs a numpy view on
+    containing the subsequences of length pattern_length.
+
+    So lets say you have the array [1, 2, 4, 5] and want all subsequences of length 3. Calling this method with
+    pattern_length = 3 will return [[1, 2, 3], [2, 3, 4], [3, 4, 5]]
+
+    :param data: the vector to look for subsequences in
+    :type data: numpy.ndarray or pandas.Series
+
+    :param pattern_length: the length of sliding windows
+    :type data: int
+
+    :return: two dimensional array
     """
     assert isinstance(data, np.ndarray) or isinstance(data, pd.Series)
     assert isinstance(pattern_length, six.integer_types)
@@ -67,7 +77,7 @@ def _match_scores(data, pattern):
     """
 
     :param data:
-    :param match_pattern:
+    :param pattern:
     :return:
     """
 
@@ -132,19 +142,23 @@ def find_motifs(data, motif_length, motif_count):
     :return type: list
     """
 
+    # todo: why the factor 8? why not 7 or 6
     if motif_length * 8 > len(data):
         raise ValueError("Motif size too large for dataset.")
 
     candidates = []
 
+    # todo: wouldn't 2 * motif_length be enough?
     for start in range(len(data) - (3 * motif_length)):
 
-        pattern = data[start:start + motif_length]
+        end = start + motif_length
+
+        pattern = data[start:end]
         # todo: why you are not matching backwards? You only look for matches of the pattern starting at start
-        pattern_scores = _match_scores(data[start + motif_length:-motif_length], pattern)
+        pattern_scores = _match_scores(data[end:-motif_length], pattern)
 
         candidates.append((start,
-                           np.argmin(pattern_scores) + start + motif_length,
+                           np.argmin(pattern_scores) + end,
                            np.min(pattern_scores)))
 
     return _candidates_top_uniques(motif_length, candidates, motif_count)
@@ -166,7 +180,7 @@ def count_motifs(data, motif, dist=10):
 
     # Todo: turn off the backmatching, see following comment
     # It's interesting that this can return values for distance measures better than the "best" found during motif
-    # finding. I think this is backmatching,
+    # finding. I think this is back matching,
 
     l = len(motif)
     pattern = data[motif[0]:motif[0] + l]
