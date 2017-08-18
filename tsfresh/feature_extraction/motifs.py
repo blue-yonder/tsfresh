@@ -40,9 +40,20 @@ def distance(x, y, type="euclid"):
         raise ValueError("Have not implemented distance of type {}".format(type))
 
 
-def _sliding_window(data, sample_length):
+def _sliding_window(data, pattern_length):
+    """
 
-    assert isinstance(sample_length, int)
+    :param data:
+    :param pattern_length:
+    :return:
+    """
+    assert isinstance(data, np.ndarray) or isinstance(data, pd.Series)
+    assert isinstance(pattern_length, six.integer_types)
+    assert len(data.shape) == 1
+
+    # we will create a view on the original array, we do not override the original array, so we make a copy
+    data = np.copy(data)
+
     # todo: I removed the +1 here, because the last window was not returned, can you verfy that?
     dimensions = (data.shape[-1] - pattern_length, pattern_length)
     steplen = (data.strides[-1],) + data.strides
