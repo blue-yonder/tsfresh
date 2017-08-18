@@ -9,24 +9,40 @@ A motif is a characteristic subsequence of the inspected time series.
 by Ezekiel Kruglick
 """
 
+from __future__ import division, absolute_import, print_function
 import numpy as np
 from six.moves import range
 
 
-
-def distance(x, y):
+def distance(x, y, type="euclid"):
     """
     This calculates the distance metric between two 1-D sequences. Default below is the num of squares, override this
     function to use another metric
-    :param x: first single dimensional data (list, 1-D numpy array)
-    :param y: second single dimensional data
-    :return: distance metric between the two data parameters
+
+    :param x: first vector
+    :rtype x: iterable
+    :param y: second vector
+    :rtype y: iterable
+    :param type: how to calculate the distance
+    :rtype type: str
+
+    :return: the calculated distance between both vectors
     """
-    return np.sqrt(np.sum((x - y) ** 2))
+
+    x = np.asarray(x)
+    y = np.asarray(y)
+
+    assert len(x) == len(y)
+
+    if type.lower() == "euclid":
+        return np.linalg.norm(x-y, ord=2)
+    else:
+        raise ValueError("Have not implemented distance of type {}".format(type))
 
 
 def _sliding_window(data, sample_length):
-    assert (isinstance(sample_length, int))
+
+    assert isinstance(sample_length, int)
     dimensions = (data.shape[-1] - sample_length + 1, sample_length) + data.shape[:-1]
     steplen = (data.strides[-1],) + data.strides
     return np.lib.stride_tricks.as_strided(data, shape=dimensions, strides=steplen)
@@ -91,6 +107,7 @@ def count_motifs(data, motif, dist=10):
     """
     It's interesting that this can return values for distance measures better than the "best" found during motif
     finding. I think this is backmatching,
+
     :param data: time series data to search
     :param motif: motif in tuple format (start, best match, score)
     :param dist: Count any segment found to be this close
