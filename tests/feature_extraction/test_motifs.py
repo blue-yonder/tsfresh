@@ -2,12 +2,12 @@
 # This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
 # This module Ezekiel Kruglick 2017
 
-from __future__ import absolute_import, division
-from __future__ import print_function
+from __future__ import absolute_import, division, print_function
+
 import unittest
+import six
 import numpy as np
 from tsfresh.feature_extraction import motifs
-import six
 
 sample_array1 = np.array([9., -63., 5., 157., -21., -20., 27., -72., -123.,
                           94., 154., -57., -48., 18., -5., 14., 5., -7.,

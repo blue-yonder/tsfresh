@@ -1,9 +1,17 @@
-import numpy as np
-from six.moves import range
+# -*- coding: utf-8 -*-
+# This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
+# Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
+
 """
-Functions and support for finding, grooming, and filtering time series data motifs
+Functions and support for finding, grooming, and filtering time series motifs.
+A motif is a characteristic subsequence of the inspected time series.
+
 by Ezekiel Kruglick
 """
+
+import numpy as np
+from six.moves import range
+
 
 
 def distance(x, y):
