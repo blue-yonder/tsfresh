@@ -9,7 +9,7 @@ import six
 import numpy as np
 import numpy.testing as npt
 from tsfresh.feature_extraction import motifs
-
+import pandas as pd
 
 class TestMotifSubelements(unittest.TestCase):
     def setUp(self):
@@ -51,6 +51,10 @@ class TestMotifSubelements(unittest.TestCase):
         six.assertCountEqual(self, answer[-1], [8., -2., 1., 2., -9.])
 
         data = np.arange(5)
+        expected_result = np.array([[0, 1], [1, 2], [2, 3], [3, 4]])
+        npt.assert_array_equal(expected_result, motifs._sliding_window(data, pattern_length=2))
+
+        data = pd.Series(np.arange(5))
         expected_result = np.array([[0, 1], [1, 2], [2, 3], [3, 4]])
         npt.assert_array_equal(expected_result, motifs._sliding_window(data, pattern_length=2))
 
