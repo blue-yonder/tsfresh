@@ -172,6 +172,11 @@ def calculate_relevance_table(X, y, ml_task='auto', n_jobs=defaults.N_PROCESSES,
 
     relevance_table = pd.concat([relevance_table, table_const], axis=0)
 
+    if n_jobs != 0:
+        pool.close()
+        pool.terminate()
+        pool.join()
+        
     return relevance_table
 
 
