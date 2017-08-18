@@ -43,7 +43,8 @@ def distance(x, y, type="euclid"):
 def _sliding_window(data, sample_length):
 
     assert isinstance(sample_length, int)
-    dimensions = (data.shape[-1] - sample_length + 1, sample_length) + data.shape[:-1]
+    # todo: I removed the +1 here, because the last window was not returned, can you verfy that?
+    dimensions = (data.shape[-1] - pattern_length, pattern_length)
     steplen = (data.strides[-1],) + data.strides
     return np.lib.stride_tricks.as_strided(data, shape=dimensions, strides=steplen)
 

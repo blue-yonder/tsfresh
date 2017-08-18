@@ -7,6 +7,7 @@ from __future__ import absolute_import, division, print_function
 import unittest
 import six
 import numpy as np
+import numpy.testing as npt
 from tsfresh.feature_extraction import motifs
 
 
@@ -47,7 +48,11 @@ class TestMotifSubelements(unittest.TestCase):
     def test_sliding_window(self):
         answer = motifs._sliding_window(self.s1, 5)
         six.assertCountEqual(self, answer[1], [-63., 5., 157., -21., -20.])
-        six.assertCountEqual(self, answer[-1], [8., -2., 1., 2., -9.])
+        six.assertCountEqual(self, answer[-2], [8., -2., 1., 2., -9.])
+
+        data = np.arange(5)
+        expected_result = np.array([[0, 1], [1, 2], [2, 3], [3, 4], [4, 5]])
+        npt.assert_array_equal(expected_result, motifs._sliding_window(data, pattern_length=2))
 
     def test_match_scores(self):
         answer = motifs._match_scores(self.s1, self.s1[5:10])
