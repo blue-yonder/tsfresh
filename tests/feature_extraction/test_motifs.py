@@ -29,7 +29,7 @@ class TestMotifSubelements(unittest.TestCase):
         answer = motifs.distance(test_array1, test_array2)
         self.assertEqual(answer, 0.0)
 
-        test_array1 = np.random.normal(10)
+        test_array1 = np.random.normal(size=10)
         test_array2 = np.copy(test_array1)
         answer = motifs.distance(test_array1, test_array2)
         self.assertEqual(answer, 0.0)
@@ -37,7 +37,7 @@ class TestMotifSubelements(unittest.TestCase):
     def test_distance_calculator_for_simple_different_arrays(self):
         test_array1 = np.ones(50, dtype=np.float)
         test_array2 = 2 * np.ones(50, dtype=np.float)
-        answer = motifs.distance(test_array1, test_array2)
+        answer = motifs.distance(test_array1, test_array2, type="euclid")
         self.assertAlmostEqual(answer, np.sqrt(50))
 
     def test_distance_calculator_for_complex_different_arrays(self):
