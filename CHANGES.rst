@@ -4,6 +4,17 @@ Changelog
 
 tsfresh uses `Semantic Versioning <http://semver.org/>`_
 
+Version 0.10.0
+=============
+- new feature calculators:
+    - partial autocorrelation
+- added list of calculated features to documentation
+- added two ipython notebooks to
+    - illustrate PCA on features
+    - illustrate the Benjamini Yekutieli procedure
+- fixed the following bugs
+    - improperly quotation of dickey fuller settings
+
 Version 0.9.0
 =============
 - new feature calculators:
