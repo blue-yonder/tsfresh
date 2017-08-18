@@ -84,7 +84,3 @@ class TestMotifSubelements(unittest.TestCase):
         count = motifs.count_motifs(series, found_motifs[0], dist=15)
         self.assertIsInstance(count, six.integer_types)
         self.assertEqual(count, 25)
-
-
-if __name__ == '__main__':
-    unittest.main()
