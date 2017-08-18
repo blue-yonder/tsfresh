@@ -56,8 +56,7 @@ def _sliding_window(data, pattern_length):
     # we will create a view on the original array, we do not override the original array, so we make a copy
     data = np.copy(data)
 
-    # todo: I removed the +1 here, because the last window was not returned, can you verfy that?
-    dimensions = (data.shape[-1] - pattern_length, pattern_length)
+    dimensions = (len(data) - pattern_length + 1, pattern_length)
     steplen = (data.strides[-1],) + data.strides
 
     # TODO: can we somehow remove the dependence on `as_strided`? even its own docstrings warns not to use it...
