@@ -117,9 +117,11 @@ def _candidates_top_uniques(length, candidates, count):
 
     top_uniques = []
     for candidate in candidates:
-        if candidate[0] not in [y for x in top_uniques for y in range(x[1], x[1] + length)] \
-                and candidate[0] not in [y for x in top_uniques for y in
-                                         range(x[0] - length, x[0] + length)]:
+
+        # todo: the lists should not be constructed from scratch in every iteration, maybe work with append?
+        if          candidate[0] not in [y for x in top_uniques for y in range(x[1],          x[1] + length)] \
+                and candidate[0] not in [y for x in top_uniques for y in range(x[0] - length, x[0] + length)]:
+
             top_uniques.append(candidate)
         if len(top_uniques) >= count:
             break
