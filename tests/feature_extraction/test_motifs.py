@@ -75,13 +75,13 @@ class TestMotifSubelements(unittest.TestCase):
         self.assertNotEqual(answer[0][1], answer[3][0])
 
     def test_find_motifs_a(self):
-        found_motifs = motifs.find_motifs(self.length, self.s1, 5)
+        found_motifs = motifs.find_motifs(self.s1, self.length, 5)
         self.assertEqual(len(found_motifs), 5)
 
     def test_find_motifs_b(self):
         self.length = 10
         series = np.concatenate([self.s1, self.s1, self.s1])
-        found_motifs = motifs.find_motifs(self.length, series, 5)
+        found_motifs = motifs.find_motifs(series, self.length, 5)
         self.assertEqual(len(found_motifs), 4)
         # The pattern below is generated because the series is made of repeating sample arrays so they will always
         # match on the period of the sample array

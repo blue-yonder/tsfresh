@@ -60,8 +60,15 @@ def _sliding_window(data, pattern_length):
     return np.lib.stride_tricks.as_strided(data, shape=dimensions, strides=steplen)
 
 
-def _match_scores(data, match_pattern):
-    return np.array([distance(x, match_pattern) for x in _sliding_window(data, len(match_pattern))])
+def _match_scores(data, pattern):
+    """
+
+    :param data:
+    :param match_pattern:
+    :return:
+    """
+
+    return np.array([distance(x, pattern) for x in _sliding_window(data, len(pattern))])
 
 
 def _best_n_matches(data, sample, count=1):
