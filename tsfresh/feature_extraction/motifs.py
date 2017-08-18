@@ -11,7 +11,9 @@ by Ezekiel Kruglick
 
 from __future__ import division, absolute_import, print_function
 import numpy as np
+import pandas as pd
 from six.moves import range
+import six
 
 
 def distance(x, y, type="euclid"):
@@ -20,11 +22,11 @@ def distance(x, y, type="euclid"):
     function to use another metric
 
     :param x: first vector
-    :rtype x: iterable
+    :type x: iterable
     :param y: second vector
-    :rtype y: iterable
+    :type y: iterable
     :param type: how to calculate the distance
-    :rtype type: str
+    :type type: str
 
     :return: the calculated distance between both vectors
     """
@@ -57,6 +59,8 @@ def _sliding_window(data, pattern_length):
     # todo: I removed the +1 here, because the last window was not returned, can you verfy that?
     dimensions = (data.shape[-1] - pattern_length, pattern_length)
     steplen = (data.strides[-1],) + data.strides
+
+    # TODO: can we somehow remove the dependence on `as_strided`? even its own docstrings warns not to use it...
     return np.lib.stride_tricks.as_strided(data, shape=dimensions, strides=steplen)
 
 
@@ -72,9 +76,16 @@ def _match_scores(data, pattern):
 
 
 def _best_n_matches(data, sample, count=1):
+    """
+
+    :param data:
+    :param sample:
+    :param count:
+    :return:
+    """
     match_scores = np.absolute(_sliding_window(data, sample))
     top_list = []
-    for i in range(count):
+    for _ in range(count):
         top_spot = np.argmax(match_scores)
         match_scores[top_spot:top_spot + len(sample)] = np.zeros((len(sample, )))
         top_list.append(top_spot)
@@ -86,11 +97,15 @@ def _candidates_top_uniques(length, candidates, count):
     The candidate filter if statement first makes sure this isn't a reverse match (A-->B, don't also return B-->A),
     then takes the top item of any overlapping motifs (first ones in are the best ones, then exclude lower ones),
     then eliminates any matches that contain parts of the better ones above
+
     :param candidates:
     :param count:
     :return:
     """
+
+    # sort candidates by distance
     candidates.sort(key=lambda result: result[2])
+
     top_uniques = []
     for candidate in candidates:
         if candidate[0] not in [y for x in top_uniques for y in range(x[1], x[1] + length)] \
@@ -102,38 +117,61 @@ def _candidates_top_uniques(length, candidates, count):
     return top_uniques[0:count]
 
 
-def find_motifs(length, data, motif_count):
+def find_motifs(data, motif_length, motif_count):
+    """
+    Goes over the data iterable and searches for motifs in it. The result is a list of tuples holding the start_point
+    of each motif, the best match point, and its distance
+
+    :param data: times series data to match motifs in
+    :type data: iterable
+    :param motif_length: length of the motifs to look for
+    :type motif_length: int
+    :param motif_count: how many motifs to return
+    :type motif_count: int
+
+    :return: tuples of length 3 holding start_point of each motif, best match point, and distance
+    :return type: list
     """
 
-    :param length: length of the motifs to look for
-    :param data: times series data to match motifs in
-    :param motif_count: how many motifs to return
-    :return: tuples of length 3 holding start_point of each motif, best match point, and distance metric
-    """
-    if length * 8 > len(data):
+    if motif_length * 8 > len(data):
         raise ValueError("Motif size too large for dataset.")
+
     candidates = []
-    for start in range(len(data) - (3 * length)):
-        match_pattern = data[start:start + length]
-        pattern_scores = _match_scores(data[start + length:-length], match_pattern)
+
+    for start in range(len(data) - (3 * motif_length)):
+
+        pattern = data[start:start + motif_length]
+        # todo: why you are not matching backwards? You only look for matches of the pattern starting at start
+        pattern_scores = _match_scores(data[start + motif_length:-motif_length], pattern)
+
         candidates.append((start,
-                           np.argmin(pattern_scores) + start + length,
+                           np.argmin(pattern_scores) + start + motif_length,
                            np.min(pattern_scores)))
-    return _candidates_top_uniques(length, candidates, motif_count)
+
+    return _candidates_top_uniques(motif_length, candidates, motif_count)
 
 
 def count_motifs(data, motif, dist=10):
     """
-    It's interesting that this can return values for distance measures better than the "best" found during motif
-    finding. I think this is backmatching,
 
     :param data: time series data to search
+    :type data: iterable
     :param motif: motif in tuple format (start, best match, score)
+    :type motif: list of tuples
     :param dist: Count any segment found to be this close
+    :type dist: numeric
+
     :return: returns an integer count
+    :return type: int
     """
-    length = len(motif)
-    match_pattern = data[motif[0]:motif[0] + length]
-    pattern_scores = _match_scores(data, match_pattern)
-    pattern_scores[motif[0] - length:motif[0] + length] = np.inf
+
+    # Todo: turn off the backmatching, see following comment
+    # It's interesting that this can return values for distance measures better than the "best" found during motif
+    # finding. I think this is backmatching,
+
+    l = len(motif)
+    pattern = data[motif[0]:motif[0] + l]
+
+    pattern_scores = _match_scores(data, pattern)
+    pattern_scores[motif[0] - l:motif[0] + l] = np.inf
     return np.sum(pattern_scores < dist)
