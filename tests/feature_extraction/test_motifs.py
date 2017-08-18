@@ -63,6 +63,24 @@ class TestMotifSubelements(unittest.TestCase):
         answer = motifs._match_scores(self.s1, self.s1[5:10])
         self.assertEqual(answer[5], 0.0)
 
+        data = np.array([0, 1, 2])
+        pattern = [0, 1, 2]
+        result = motifs._match_scores(data, pattern)
+        expected_result = [0]
+        self.assertEqual(result, expected_result)
+
+        data = np.array([0, 1, 2])
+        pattern = [0, 1, -1]
+        result = motifs._match_scores(data, pattern)
+        expected_result = [3]
+        self.assertEqual(result, expected_result)
+
+        data = np.array([-2, 1, -3])
+        pattern = [-2, 1]
+        result = motifs._match_scores(data, pattern)
+        expected_result = [0, 5]
+        self.assertListEqual(list(result), expected_result)
+
     def test_candidate_duplicate_removal(self):
         candidates = [(1862, 1984, 4.4220442590667863),
                       (1984, 1862, 4.4220442590667863),
