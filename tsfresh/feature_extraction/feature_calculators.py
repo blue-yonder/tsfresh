@@ -1641,7 +1641,7 @@ def energy_ratio_by_chunks(x, param):
 # def motif_explorer(x, param):
 #
 #     # In here, how do I refer to the whole column of time series data to fin motifs from it?
-#
+#     # TODO: normalize the time series
 #     # will be calling motifs.find motifs on it, then going into param for-loop finding features
 #
 #     pass
