@@ -238,6 +238,11 @@ def _do_extraction(df, column_id, column_value, column_kind,
         result = result.pivot("id", "variable", "value")
         result.index = result.index.astype(df[column_id].dtype)
 
+    if n_jobs != 0:
+        pool.close()
+        pool.terminate()
+        pool.join()
+        
     return result
 
 
