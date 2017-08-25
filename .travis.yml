@@ -24,14 +24,14 @@ jobs:
       script: true
       python: 3.5.2
 
-    - stage: unit tests
       script: py.test tests/units
+    - stage: Run unit tests
       python: 2.7.11
     - stage: unit tests
       script: py.test tests/units
       python: 3.5.2
 
-    - stage: test
+    - stage: Run the full test suite
       script: 
         - sed -i 's/\-n 4/\-n 2/g' setup.cfg
         - python setup.py test
@@ -44,7 +44,7 @@ jobs:
         - python setup.py test
       python: 3.5.2
 
-    - stage: deploy to pipy
+    - stage: Deploy to pipy
       script: skip
       deploy:
         provider: pypi
