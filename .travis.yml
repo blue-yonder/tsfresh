@@ -1,35 +1,54 @@
+# Travis Build file for tsfresh
 language: python
+# We do not use sudo here, so we can use docker containers, which have better caching
+sudo: false
+# We want the pip folder to be cached, to speed up installation
 cache:
   directories:
     - $HOME/.cache/pip
-before_cache:
-  - rm -f $HOME/.cache/pip/log/debug.log
-python:
-- '2.7.11'
-- '3.5.2'
 install:
-- pip install --upgrade pip
-- pip install numpy
-- pip install scipy
-- pip install coveralls
-- pip install .
-- pip install -r requirements.txt
-- pip install -r test-requirements.txt
-- pip freeze
-env:
-- NUMBER_OF_CPUS=1
-script:
-# hack to set xdist to use only 1 node instead of 32
-- sed -i 's/\-n 4/\-n 1/g' setup.cfg
-- python setup.py test
-deploy:
-  provider: pypi
-  user: MaxChrist
-  password:
-    secure: Jh0Z69Mh+esOpegXyXoecFOkpMhaQaiJbQVEvVvQ2K1rCmCE20a19/TGfPUrynpqOYXZvvb5Ok6CtlzAi9J5huA3MRSf4iYPsUe8i7n0FK4JU5BP7VqM3/7cQZMdD5SeYFV3e3JURDcKYfoG7N+DNb+LfluYK5MBkRLhdEVRqSeHocPY4QRzzhJi1ljX99ThdRPrsQqYaD3tpZxJhbJDgHLtvMr39+407uQSDnubvFz3iu90DZiN2fIP5bEN6PDuaGXNZMA1p40DjSkGc7epg0U4vHn6CSya1nXlqjXUqXYJY5Ha2kbMAN7hfmU+gId09+FSHQRuanKJkRqSBksVgATCAeSAiqAe3EPAsG75ewhXDeusQZMzRy7DxQzjOJG9oIyWMVmZFlIoNlpg2eifN9uUc7FfyGHiVfWwUDslszpc/81hQViMPP0NoMAop4zcWR3ChCMnHMycPQEmWuV65WfL7yN6SuTokxSmepubPtFs+4UIlI0rgZWCHVIgGZqI8LFn958pLtpQ+32Ew8HGU3IiOfao9HbGreQ2Lgqo2L2EyNDWiHfJ3oZ1+6BP/1GqI6j7x7oPdwoE1jvY4CSC7iMAiieZNnrvywvmJpZB69CGefxQJzWcm+yD03QwNBFFaabCbKwbn+q3eUOUrPRuvTkhVLRWDxQNH/zaZyuZQ+Q=
-  distributions: "sdist bdist_wheel"
-  on:
-    tags: true
-    repo: blue-yonder/tsfresh
-after_success:
-- coveralls
+  - pip install --upgrade pip wheel setuptools
+  - pip install numpy scipy coveralls
+  - pip install -r requirements.txt -r test-requirements.txt
+  - pip install -U .
+  - pip freeze
+jobs:
+  include:
+    - stage: prepare cache
+      script: true
+      python: 2.7.11
+    - stage: prepare cache
+      script: true
+      python: 3.5.2
+
+    - stage: Run unit tests
+      script: py.test tests/units -n 2
+      python: 2.7.11
+    - stage: Run unit tests
+      script: py.test tests/units -n 2
+      python: 3.5.2
+
+    - stage: Run the full test suite
+      script:
+        - sed -i 's/\-n auto/\-n 2/g' setup.cfg
+        - python setup.py test
+      python: 2.7.11
+      after_success:
+        - coveralls
+    - stage: Run the full test suite
+      script:
+        - sed -i 's/\-n auto/\-n 2/g' setup.cfg
+        - python setup.py test
+      python: 3.5.2
+
+    - stage: Deploy to pipy
+      script: skip
+      deploy:
+        provider: pypi
+        user: MaxChrist
+        password:
+          secure: Jh0Z69Mh+esOpegXyXoecFOkpMhaQaiJbQVEvVvQ2K1rCmCE20a19/TGfPUrynpqOYXZvvb5Ok6CtlzAi9J5huA3MRSf4iYPsUe8i7n0FK4JU5BP7VqM3/7cQZMdD5SeYFV3e3JURDcKYfoG7N+DNb+LfluYK5MBkRLhdEVRqSeHocPY4QRzzhJi1ljX99ThdRPrsQqYaD3tpZxJhbJDgHLtvMr39+407uQSDnubvFz3iu90DZiN2fIP5bEN6PDuaGXNZMA1p40DjSkGc7epg0U4vHn6CSya1nXlqjXUqXYJY5Ha2kbMAN7hfmU+gId09+FSHQRuanKJkRqSBksVgATCAeSAiqAe3EPAsG75ewhXDeusQZMzRy7DxQzjOJG9oIyWMVmZFlIoNlpg2eifN9uUc7FfyGHiVfWwUDslszpc/81hQViMPP0NoMAop4zcWR3ChCMnHMycPQEmWuV65WfL7yN6SuTokxSmepubPtFs+4UIlI0rgZWCHVIgGZqI8LFn958pLtpQ+32Ew8HGU3IiOfao9HbGreQ2Lgqo2L2EyNDWiHfJ3oZ1+6BP/1GqI6j7x7oPdwoE1jvY4CSC7iMAiieZNnrvywvmJpZB69CGefxQJzWcm+yD03QwNBFFaabCbKwbn+q3eUOUrPRuvTkhVLRWDxQNH/zaZyuZQ+Q=
+        distributions: "sdist bdist_wheel"
+        on:
+          tags: true
+          repo: blue-yonder/tsfresh
