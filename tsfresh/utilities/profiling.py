@@ -62,7 +62,6 @@ def end_profiling(profiler, filename, sorting=None):
     ps = pstats.Stats(profiler, stream=s).sort_stats(sorting)
     ps.print_stats()
 
-    file = open(filename, "w")
-    _logger.info("[calculate_ts_features] Finished profiling of time series feature extraction")
-    file.write(s.getvalue())
-    file.close()
+    with open(filename, "w") as file:
+        _logger.info("[calculate_ts_features] Finished profiling of time series feature extraction")
+        file.write(s.getvalue())
