@@ -4,8 +4,16 @@ Changelog
 
 tsfresh uses `Semantic Versioning <http://semver.org/>`_
 
+Version 0.10.1
+==============
+- split test suite into unit and integration tests
+- fixed the following bugs
+    - use name of value column as time series kind
+    - prevent the spawning of subprocesses which lead to high memory consumption
+    - fix deployment from travis to pypi
+
 Version 0.10.0
-=============
+==============
 - new feature calculators:
     - partial autocorrelation
 - added list of calculated features to documentation
