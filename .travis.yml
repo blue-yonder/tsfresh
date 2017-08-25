@@ -7,8 +7,6 @@ cache:
   directories:
     - $HOME/.cache/pip
 # global defines the envs for all jobs
-env:
-  - NUMBER_OF_CPUS=1
 install:
   - pip install --upgrade pip wheel setuptools
   - pip install numpy scipy coveralls
@@ -24,23 +22,21 @@ jobs:
       script: true
       python: 3.5.2
 
-      script: py.test tests/units
     - stage: Run unit tests
+      script: py.test tests/units
       python: 2.7.11
     - stage: unit tests
       script: py.test tests/units
       python: 3.5.2
 
     - stage: Run the full test suite
-      script: 
-        - sed -i 's/\-n 4/\-n 2/g' setup.cfg
+      script:
         - python setup.py test
       python: 2.7.11
       after_success:
         - coveralls
     - stage: test
-      script: 
-        - sed -i 's/\-n 4/\-n 2/g' setup.cfg
+      script:
         - python setup.py test
       python: 3.5.2
 
