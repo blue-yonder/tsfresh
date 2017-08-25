@@ -7,6 +7,8 @@ cache:
   directories:
     - $HOME/.cache/pip
 # global defines the envs for all jobs
+env:
+  - NUMBER_OF_CPUS=2
 install:
   - pip install --upgrade pip wheel setuptools
   - pip install numpy scipy coveralls
