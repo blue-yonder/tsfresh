@@ -81,31 +81,45 @@ class TestMotifSubelements(unittest.TestCase):
         expected_result = [0, 5]
         self.assertListEqual(list(result), expected_result)
 
+    def test_generate_candidates(self):
+        answer = motifs._generate_candidates(self.s1, self.length)
+        self.assertEqual(len(answer),23)
+
     def test_candidate_duplicate_removal(self):
-        candidates = [(1862, 1984, 4.4220442590667863),
-                      (1984, 1862, 4.4220442590667863),
-                      (1863, 1985, 4.4960457316429485),
-                      (1985, 1863, 4.4960457316429485),
-                      (73, 1762, 4.8654597310856209),
-                      (1762, 73, 4.8654597310856209),
-                      (65, 62, 5.093744473040184),
-                      (1904, 1898, 5.1468554369121344),
-                      (64, 61, 5.1830888985252646),
-                      (1888, 1885, 5.2769356323613037)]
-        answer = motifs._candidates_top_uniques(self.length, candidates, 4)
-        self.assertNotEqual(answer[0][1], answer[1][0])
-        self.assertNotEqual(answer[0][1], answer[2][0])
-        self.assertNotEqual(answer[0][1], answer[3][0])
+        candidates = [(1962, 1984, 4.4220442590667863),
+                      (1964, 1986, 4.4220442590667863),
+                      (1863, 1885, 4.4960457316429485),
+                      (73, 95, 4.8654597310856209),
+                      (72, 94, 4.654597310856209),
+                      (62, 84, 5.093744473040184),
+                      (1904, 1926, 5.1468554369121344),
+                      (1888, 1910, 5.2769356323613037)]
+        answer = motifs._candidates_top_uniques(candidates[0][1]-candidates[0][0], candidates, 4)
+        # testing with set comparisons is nice and general way to check for overlaps
+        set_1 = set(list(range(answer[0][0], answer[0][1])))
+        set_2 = set(list(range(answer[1][0], answer[1][1])))
+        set_3 = set(list(range(answer[2][0], answer[2][1])))
+        set_4 = set(list(range(answer[3][0], answer[3][1])))
+        self.assertFalse(any([
+            set_1 & set_2,
+            set_1 & set_3,
+            set_1 & set_4,
+            set_2 & set_3,
+            set_2 & set_4,
+            set_3 & set_4
+        ]))
+
 
     def test_find_motifs_a(self):
         found_motifs = motifs.find_motifs(self.s1, self.length, 5)
         self.assertEqual(len(found_motifs), 5)
 
     def test_find_motifs_b(self):
-        self.length = 10
+        self.length = 8
+        MOTIF_COUNTS = 3
         series = np.concatenate([self.s1, self.s1, self.s1])
-        found_motifs = motifs.find_motifs(series, self.length, 5)
-        self.assertEqual(len(found_motifs), 4)
+        found_motifs = motifs.find_motifs(series, self.length, MOTIF_COUNTS)
+        self.assertEqual(len(found_motifs), MOTIF_COUNTS)
         # The pattern below is generated because the series is made of repeating sample arrays so they will always
         # match on the period of the sample array
         self.assertTrue(all([x[1] - x[0] == 32 for x in found_motifs]))
