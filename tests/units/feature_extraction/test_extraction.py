@@ -14,12 +14,14 @@ from tests.fixtures import DataTestCase
 from tsfresh.feature_extraction.extraction import extract_features
 from tsfresh.feature_extraction.settings import ComprehensiveFCParameters
 
+import tempfile
 
 class ExtractionTestCase(DataTestCase):
     """The unit tests in this module make sure if the time series features are created properly"""
 
     def setUp(self):
         self.n_jobs = 1
+        self.directory = tempfile.gettempdir()
 
     def test_extract_features(self):
         # todo: implement more methods and test more aspects
@@ -95,7 +97,7 @@ class ExtractionTestCase(DataTestCase):
     def test_profiling_file_written_out(self):
 
         df = pd.DataFrame(data={"id": np.repeat([1, 2], 10), "val": np.random.normal(0, 1, 20)})
-        profiling_filename = "test_profiling.txt"
+        profiling_filename = os.path.join(self.directory, "test_profiling.txt")
         X = extract_features(df, column_id="id",
                              column_value="val", n_jobs=self.n_jobs,
                              profile=True, profiling_filename=profiling_filename)
@@ -104,7 +106,8 @@ class ExtractionTestCase(DataTestCase):
         os.remove(profiling_filename)
 
     def test_profiling_cumulative_file_written_out(self):
-        PROFILING_FILENAME = "test_profiling_cumulative.txt"
+
+        PROFILING_FILENAME = os.path.join(self.directory, "test_profiling_cumulative.txt")
         PROFILING_SORTING = "cumulative"
 
         df = pd.DataFrame(data={"id": np.repeat([1, 2], 10), "val": np.random.normal(0, 1, 20)})
