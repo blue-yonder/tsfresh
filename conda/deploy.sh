@@ -6,7 +6,7 @@ fi
 bash miniconda.sh  -b -p $HOME/miniconda
 
 export PATH="$HOME/miniconda/bin:$PATH"
-export VERSION=TRAVIS_TAG 
+export VERSION=0.10.1
 export BUILD_DIR=/tmp/build
 export PKG_NAME=tsfresh
 
