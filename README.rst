@@ -1,5 +1,5 @@
 |Documentation Status| |Build Status| |Coverage Status| |license|
-|Gitter chat| |py27 status| |py352 status|
+|Gitter chat| |py27 status| |py352 status| |Anaconda server badge|
 
 tsfresh
 =======
@@ -106,3 +106,4 @@ instructions.
 .. |py27 status| image:: https://img.shields.io/badge/python2.7-supported-green.svg
 .. |py352 status| image:: https://img.shields.io/badge/python3.5.2-supported-green.svg
    :target: https://github.com/blue-yonder/tsfresh/issues/8
+.. |Anaconda server badge| image:: https://anaconda.org/nbraun/tsfresh/badges/version.svg   :target: https://anaconda.org/nbraun/tsfresh
