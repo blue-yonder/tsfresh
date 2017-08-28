@@ -64,13 +64,16 @@ def _sliding_window(data, pattern_length):
     assert len(data.shape) == 1
 
     # we will create a view on the original array, we do not override the original array, so we make a copy
-    data = np.copy(data)
+    # data = np.copy(data)
 
     dimensions = (len(data) - pattern_length + 1, pattern_length)
     steplen = (data.strides[-1],) + data.strides
 
     # TODO: can we somehow remove the dependence on `as_strided`? even its own docstrings warns not to use it...
-    return np.lib.stride_tricks.as_strided(data, shape=dimensions, strides=steplen)
+    # Dangerous so we set writeable to false per developers, note that numpy developers specifically recongize this function for rolling windows
+    # https://github.com/numpy/numpy/issues/6565
+    # Note this eliminates array copy
+    return np.lib.stride_tricks.as_strided(data, shape=dimensions, strides=steplen, writeable=False)
 
 
 def _match_scores(data, pattern):
@@ -116,19 +119,21 @@ def _candidates_top_uniques(length, candidates, count):
     candidates.sort(key=lambda result: result[2])
 
     top_uniques = []
+    indexes_of_better_motifs = set()
+
     for candidate in candidates:
 
-        # todo: the lists should not be constructed from scratch in every iteration, maybe work with append?
-        if          candidate[0] not in [y for x in top_uniques for y in range(x[1],          x[1] + length)] \
-                and candidate[0] not in [y for x in top_uniques for y in range(x[0] - length, x[0] + length)]:
-
+        # compare makes sure candidate doesn't overlay existing top item
+        if candidate[0] not in indexes_of_better_motifs:
             top_uniques.append(candidate)
+            indexes_of_better_motifs.update(range(candidate[0]-length, candidate[0]+length))
+
         if len(top_uniques) >= count:
             break
     return top_uniques[0:count]
 
 
-def find_motifs(data, motif_length, motif_count):
+def find_motifs(data, motif_length, motif_count, min_data_mulitple=8):
     """
     Goes over the data iterable and searches for motifs in it. The result is a list of tuples holding the start_point
     of each motif, the best match point, and its distance
@@ -144,26 +149,27 @@ def find_motifs(data, motif_length, motif_count):
     :return type: list
     """
 
-    # todo: why the factor 8? why not 7 or 6
-    if motif_length * 8 > len(data):
+    if motif_length * min_data_mulitple > len(data):
         raise ValueError("Motif size too large for dataset.")
 
-    candidates = []
+    candidates = _generate_candidates(data, motif_length)
 
+    return _candidates_top_uniques(motif_length, candidates, motif_count)
+
+
+def _generate_candidates(data, motif_length):
+    candidates = []
     # todo: wouldn't 2 * motif_length be enough?
     for start in range(len(data) - (3 * motif_length)):
-
         end = start + motif_length
 
         pattern = data[start:end]
-        # todo: why you are not matching backwards? You only look for matches of the pattern starting at start
         pattern_scores = _match_scores(data[end:-motif_length], pattern)
 
         candidates.append((start,
                            np.argmin(pattern_scores) + end,
                            np.min(pattern_scores)))
-
-    return _candidates_top_uniques(motif_length, candidates, motif_count)
+    return candidates
 
 
 def count_motifs(data, motif, dist=10):

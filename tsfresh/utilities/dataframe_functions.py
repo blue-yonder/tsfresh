@@ -280,7 +280,7 @@ def _normalize_input_to_internal_representation(timeseries_container, column_id,
     if column_kind is None and column_value is not None:
         column_kind = "_variables"
         timeseries_container = timeseries_container.copy()
-        timeseries_container[column_kind] = "feature"
+        timeseries_container[column_kind] = column_value
     if column_kind is not None and column_value is None:
         raise ValueError("If passing the kind, you also have to pass the value.")
 
