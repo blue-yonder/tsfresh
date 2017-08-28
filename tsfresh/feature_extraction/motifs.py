@@ -195,4 +195,4 @@ def count_motifs(data, motif, dist=10):
 
     pattern_scores = _match_scores(data, pattern)
     pattern_scores[motif[0] - l:motif[0] + l] = np.inf
-    return np.sum(pattern_scores < dist)
+    return int(sum(pattern_scores < dist))
