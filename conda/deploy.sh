@@ -16,6 +16,7 @@ conda config --set always_yes yes --set changeps1 no
 conda install conda-build
 conda install anaconda-client
 
+cd conda
 conda build tsfresh -c conda-forge --old-build-string --output-folder $BUILD_DIR
 cd $BUILD_DIR
 conda convert $OS/PKG_NAME-$VERSION-0.tar.bz2 -p all
