@@ -20,6 +20,6 @@ cd conda
 conda build tsfresh -c conda-forge --old-build-string --output-folder $BUILD_DIR
 cd $BUILD_DIR
 if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-  conda convert $OS/$PKG_NAME-$VERSION-py27_0.tar.bz2 -p all
+  conda convert linux-64/$PKG_NAME-$VERSION-py27_0.tar.bz2 -p all
   anaconda -t $CONDA_UPLOAD_TOKEN upload -u nbraun -l nightly $BUILD_DIR/*/$PKG_NAME-$VERSION-py27_0.tar.bz2 --force
 fi
