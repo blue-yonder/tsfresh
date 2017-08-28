@@ -11,6 +11,7 @@ export BUILD_DIR= /tmp/build
 export PKG_NAME=tsfresh
 
 rehash
+conda config --set always_yes yes --set changeps1 no
 
 conda install conda-build
 conda install anaconda-client
