@@ -7,7 +7,7 @@ bash miniconda.sh  -b -p $HOME/miniconda
 
 export PATH="$HOME/miniconda/bin:$PATH"
 export VERSION=TRAVIS_TAG 
-export BUILD_DIR= /tmp/build
+export BUILD_DIR=/tmp/build
 export PKG_NAME=tsfresh
 
 rehash
