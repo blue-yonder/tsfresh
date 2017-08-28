@@ -41,11 +41,8 @@ jobs:
         - python setup.py test
       python: 3.5.2
 
-    - stage: Deploy to anaconda (always on for testing)
+    - stage: Deploy to pipy and conda
       script: conda/deploy.sh
-
-    - stage: Deploy to pipy
-      script: skip
       deploy:
         provider: pypi
         user: MaxChrist

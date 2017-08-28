@@ -6,7 +6,7 @@ fi
 bash miniconda.sh  -b -p $HOME/miniconda
 
 export PATH="$HOME/miniconda/bin:$PATH"
-export VERSION=0.10.1
+export VERSION=$TRAVIS_TAG
 export BUILD_DIR=/tmp/build
 export PKG_NAME=tsfresh
 
@@ -21,5 +21,8 @@ conda build tsfresh -c conda-forge --old-build-string --output-folder $BUILD_DIR
 cd $BUILD_DIR
 if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
   conda convert linux-64/$PKG_NAME-$VERSION-py27_0.tar.bz2 -p all
-  anaconda -t $CONDA_UPLOAD_TOKEN upload -u nbraun -l nightly $BUILD_DIR/*/$PKG_NAME-$VERSION-py27_0.tar.bz2 --force
+else
+  conda convert linux-64/$PKG_NAME-$VERSION-py35_0.tar.bz2 -p all
 fi
+
+anaconda -t $CONDA_UPLOAD_TOKEN upload -u nbraun -l nightly $BUILD_DIR/*/$PKG_NAME-$VERSION-*_0.tar.bz2 --force
