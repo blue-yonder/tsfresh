@@ -52,3 +52,5 @@ jobs:
         on:
           tags: true
           repo: blue-yonder/tsfresh
+notifications:
+   slack: tsfresh:uIzPVnlBQs32xE5jbq34f0Cq
