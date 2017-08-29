@@ -28,36 +28,36 @@ class TestMotifSubelements(unittest.TestCase):
     def test_distance_calculator_for_identical_arrays(self):
         test_array1 = np.ones(50, dtype=np.float)
         test_array2 = np.ones(50, dtype=np.float)
-        answer = motifs.distance(test_array1, test_array2)
+        answer = motifs._distance(test_array1, test_array2)
         self.assertEqual(answer, 0.0)
 
         test_array1 = np.random.normal(size=10)
         test_array2 = np.copy(test_array1)
-        answer = motifs.distance(test_array1, test_array2)
+        answer = motifs._distance(test_array1, test_array2)
         self.assertEqual(answer, 0.0)
 
     def test_distance_calculator_for_simple_different_arrays(self):
         test_array1 = np.ones(50, dtype=np.float)
         test_array2 = 2 * np.ones(50, dtype=np.float)
-        answer = motifs.distance(test_array1, test_array2, type="euclid")
+        answer = motifs._distance(test_array1, test_array2, type="euclid")
         self.assertAlmostEqual(answer, np.sqrt(50))
 
     def test_distance_calculator_for_complex_different_arrays(self):
-        answer = motifs.distance(self.s1, self.s2)
+        answer = motifs._distance(self.s1, self.s2)
         self.assertAlmostEqual(answer, np.sqrt(20370))
 
     def test_sliding_window(self):
-        answer = motifs._sliding_window(self.s1, 5)
+        answer = motifs._array_of_sliding_windows(self.s1, 5)
         six.assertCountEqual(self, answer[1], [-63., 5., 157., -21., -20.])
         six.assertCountEqual(self, answer[-1], [8., -2., 1., 2., -9.])
 
         data = np.arange(5)
         expected_result = np.array([[0, 1], [1, 2], [2, 3], [3, 4]])
-        npt.assert_array_equal(expected_result, motifs._sliding_window(data, pattern_length=2))
+        npt.assert_array_equal(expected_result, motifs._array_of_sliding_windows(data, pattern_length=2))
 
         data = pd.Series(np.arange(5))
         expected_result = np.array([[0, 1], [1, 2], [2, 3], [3, 4]])
-        npt.assert_array_equal(expected_result, motifs._sliding_window(data, pattern_length=2))
+        npt.assert_array_equal(expected_result, motifs._array_of_sliding_windows(data, pattern_length=2))
 
     def test_match_scores(self):
         answer = motifs._match_scores(self.s1, self.s1[5:10])
@@ -83,7 +83,7 @@ class TestMotifSubelements(unittest.TestCase):
 
     def test_generate_candidates(self):
         answer = motifs._generate_candidates(self.s1, self.length)
-        self.assertEqual(len(answer),23)
+        self.assertEqual(len(answer), 23)
 
     def test_candidate_duplicate_removal(self):
         candidates = [(1962, 1984, 4.4220442590667863),
@@ -94,7 +94,7 @@ class TestMotifSubelements(unittest.TestCase):
                       (62, 84, 5.093744473040184),
                       (1904, 1926, 5.1468554369121344),
                       (1888, 1910, 5.2769356323613037)]
-        answer = motifs._candidates_top_uniques(candidates[0][1]-candidates[0][0], candidates, 4)
+        answer = motifs._filter_top_unique_motifs(candidates, candidates[0][1] - candidates[0][0], 4)
         # testing with set comparisons is nice and general way to check for overlaps
         set_1 = set(list(range(answer[0][0], answer[0][1])))
         set_2 = set(list(range(answer[1][0], answer[1][1])))
@@ -121,10 +121,11 @@ class TestMotifSubelements(unittest.TestCase):
         # match on the period of the sample array
         self.assertTrue(all([x[1] - x[0] == 32 for x in found_motifs]))
 
-    def test_count_motifs(self):
-        found_motifs = [(16, 23, 1.7320508075688772), (17, 24, 3.3166247903553998), (20, 28, 4.5825756949558398),
-                        (14, 25, 5.0990195135927845), (19, 27, 5.4772255750516612)]
-        series = np.concatenate([self.s1, self.s1, self.s1])
-        count = motifs.count_motifs(series, found_motifs[0], dist=15)
-        self.assertIsInstance(count, six.integer_types)
-        self.assertEqual(count, 25)
+    # Todo: Max, uncomment if we use the count_motif method
+    # def test_count_motifs(self):
+    #     found_motifs = [(16, 23, 1.7320508075688772), (17, 24, 3.3166247903553998), (20, 28, 4.5825756949558398),
+    #                     (14, 25, 5.0990195135927845), (19, 27, 5.4772255750516612)]
+    #     series = np.concatenate([self.s1, self.s1, self.s1])
+    #     count = motifs.count_motifs(series, found_motifs[0], dist=15)
+    #     self.assertIsInstance(count, six.integer_types)
+    #     self.assertEqual(count, 25)
