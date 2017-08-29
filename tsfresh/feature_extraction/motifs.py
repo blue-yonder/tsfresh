@@ -93,7 +93,7 @@ def _match_scores(data, pattern):
     :return: the array of distance of pattern to each sliding window
     :rtype: numpy.ndarray
     """
-    assert len(data) > len(pattern)
+    assert len(data) >= len(pattern)
 
     res = [_distance(x, pattern) for x in _array_of_sliding_windows(data, len(pattern))]
     return np.array(res)
