@@ -26,7 +26,7 @@ jobs:
       script:
         - py.test tests/units -n 2
         - sed -i 's/\-n auto/\-n 2/g' setup.cfg
-        - "if [ $TRAVIS_PULL_REQUEST == false ] && [$TRAVIS_BRANCH == 'master']; then python setup.py test; fi"
+        - "if [ $TRAVIS_PULL_REQUEST != false ] && [$TRAVIS_BRANCH == 'master']; then python setup.py test; fi"
       python: 3.5.2
       deploy:
         provider: pypi
