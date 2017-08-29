@@ -83,7 +83,7 @@ class TestMotifSubelements(unittest.TestCase):
 
     def test_generate_candidates(self):
         answer = motifs._generate_candidates(self.s1, self.length)
-        self.assertEqual(len(answer),23)
+        self.assertEqual(len(answer), 23)
 
     def test_candidate_duplicate_removal(self):
         candidates = [(1962, 1984, 4.4220442590667863),
@@ -121,10 +121,11 @@ class TestMotifSubelements(unittest.TestCase):
         # match on the period of the sample array
         self.assertTrue(all([x[1] - x[0] == 32 for x in found_motifs]))
 
-    def test_count_motifs(self):
-        found_motifs = [(16, 23, 1.7320508075688772), (17, 24, 3.3166247903553998), (20, 28, 4.5825756949558398),
-                        (14, 25, 5.0990195135927845), (19, 27, 5.4772255750516612)]
-        series = np.concatenate([self.s1, self.s1, self.s1])
-        count = motifs.count_motifs(series, found_motifs[0], dist=15)
-        self.assertIsInstance(count, six.integer_types)
-        self.assertEqual(count, 25)
+    # Todo: Max, uncomment if we use the count_motif method
+    # def test_count_motifs(self):
+    #     found_motifs = [(16, 23, 1.7320508075688772), (17, 24, 3.3166247903553998), (20, 28, 4.5825756949558398),
+    #                     (14, 25, 5.0990195135927845), (19, 27, 5.4772255750516612)]
+    #     series = np.concatenate([self.s1, self.s1, self.s1])
+    #     count = motifs.count_motifs(series, found_motifs[0], dist=15)
+    #     self.assertIsInstance(count, six.integer_types)
+    #     self.assertEqual(count, 25)

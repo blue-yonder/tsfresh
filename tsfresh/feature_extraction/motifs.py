@@ -99,26 +99,28 @@ def _match_scores(data, pattern):
     return np.array(res)
 
 
-def _best_n_matches(data, sample, count=1):
-    """
-
-    :param data:
-    :type data:
-    :param sample:
-    :type sample:
-    :param count:
-    :type count:
-    
-    :return:
-    :rtype: list
-    """
-    match_scores = np.absolute(_array_of_sliding_windows(data, sample))
-    top_list = []
-    for _ in range(count):
-        top_spot = np.argmax(match_scores)
-        match_scores[top_spot:top_spot + len(sample)] = np.zeros((len(sample, )))
-        top_list.append(top_spot)
-    return top_list
+# todo: Max, do we need this method?
+# def _best_n_matches(data, sample, count=1):
+#     """
+#
+#     :param data:
+#     :type data:
+#     :param sample:
+#     :type sample:
+#     :param count:
+#     :type count:
+#
+#     :return:
+#     :rtype: list
+#     """
+#     # todo: Max, I do not get why you call the absolute value of the sliding window arrays
+#     match_scores = np.absolute(_array_of_sliding_windows(data, sample))
+#     top_list = []
+#     for _ in range(count):
+#         top_spot = np.argmax(match_scores)
+#         match_scores[top_spot:top_spot + len(sample)] = np.zeros((len(sample, )))
+#         top_list.append(top_spot)
+#     return top_list
 
 
 def _filter_top_unique_motifs(candidates, length, count):
@@ -144,16 +146,17 @@ def _filter_top_unique_motifs(candidates, length, count):
     top_uniques = []
     indexes_of_better_motifs = set()
 
-    for candidate in candidates:
+    for c in candidates:
 
-        # compare makes sure candidate doesn't overlay existing top item
-        if candidate[0] not in indexes_of_better_motifs:
-            top_uniques.append(candidate)
-            indexes_of_better_motifs.update(range(candidate[0]-length, candidate[0]+length))
+        # compare makes sure c doesn't overlay existing top item
+        if c[0] not in indexes_of_better_motifs:
+            top_uniques.append(c)
+            indexes_of_better_motifs.update(range(c[0]-length, c[0]+length))
 
         if len(top_uniques) >= count:
             break
-    return top_uniques[0:count]
+
+    return top_uniques
 
 
 def _generate_candidates(data, motif_length):
@@ -167,13 +170,13 @@ def _generate_candidates(data, motif_length):
     :return: list of candidates
     :rtype: list
     """
-
     candidates = []
-    # todo: Max: wouldn't 2 * motif_length be enough?
-    for start in range(len(data) - (3 * motif_length)):
+
+    for start in range(len(data) - 3 * motif_length):
         end = start + motif_length
 
         pattern = data[start:end]
+        # todo: Max, why are we not matching motifs at the end?, in my opinion it should be "data[end:]"
         pattern_scores = _match_scores(data[end:-motif_length], pattern)
 
         candidates.append((start,
@@ -207,28 +210,30 @@ def find_motifs(data, motif_length, motif_count, min_data_multiple=8):
 
     return _filter_top_unique_motifs(candidates, motif_length, motif_count)
 
-
-def count_motifs(data, motif, dist=10):
-    """
-    
-    :param data: time series data to search
-    :type data: iterable
-    :param motif: motif in tuple format (start, best match, score)
-    :type motif: list of tuples
-    :param dist: Count any segment found to be this close
-    :type dist: numeric
-
-    :return: returns an integer count
-    :return type: int
-    """
-
-    # Todo: Max, maybe we should turn off the backmatching, see the following comment
-    # It's interesting that this can return values for distance measures better than the "best" found during motif
-    # finding. I think this is back matching,
-
-    l = len(motif)
-    pattern = data[motif[0]:motif[0] + l]
-
-    pattern_scores = _match_scores(data, pattern)
-    pattern_scores[motif[0] - l:motif[0] + l] = np.inf
-    return int(sum(pattern_scores < dist))
+# todo: Max, do we need this method?
+# def count_motifs(data, motif, dist=10):
+#     """
+#
+#     :param data: time series data to search
+#     :type data: iterable
+#     :param motif: singular motif in tuple format (start, best match, score)
+#     :type motif: tuple
+#     :param dist: Count any segment found to be this close
+#     :type dist: numeric
+#
+#     :return: returns an integer count
+#     :return type: int
+#     """
+#
+#     # Todo: Max, maybe we should turn off the backmatching, see the following comment
+#     # It's interesting that this can return values for distance measures better than the "best" found during motif
+#     # finding. I think this is back matching,
+#
+#     l = len(motif)
+#     s = motif[0]
+#
+#     pattern = data[s:s + l]
+#
+#     pattern_scores = _match_scores(data, pattern)
+#     pattern_scores[s - l:s + l] = np.inf
+#     return int(sum(pattern_scores < dist))
