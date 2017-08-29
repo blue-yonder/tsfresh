@@ -22,23 +22,18 @@ jobs:
       python: 3.5.2
 
     - stage: Run unit tests
-      script: py.test tests/units -n 2
+      script: 
+        - py.test tests/units -n 2
+        - sed -i 's/\-n auto/\-n 2/g' setup.cfg
+        - "if [ $TRAVIS_PULL_REQUEST == false ] && [$TRAVIS_BRANCH == 'master']; then python setup.py test; fi"
       python: 2.7.11
       after_success:
         - coveralls
     - stage: Run unit tests
-      script: py.test tests/units -n 2
-      python: 3.5.2
-
-    - stage: Run the full test suite
       script:
+        - py.test tests/units -n 2
         - sed -i 's/\-n auto/\-n 2/g' setup.cfg
-        - test $TRAVIS_PULL_REQUEST = false && test $TRAVIS_BRANCH = "master" && python setup.py test;
-      python: 2.7.11
-    - stage: Run the full test suite
-      script:
-        - sed -i 's/\-n auto/\-n 2/g' setup.cfg
-        - test $TRAVIS_PULL_REQUEST = false && test $TRAVIS_BRANCH = "master" && python setup.py test
+        - "if [ $TRAVIS_PULL_REQUEST == false ] && [$TRAVIS_BRANCH == 'master']; then python setup.py test; fi"
       python: 3.5.2
 
     - stage: Deploy to pipy
