@@ -1,5 +1,9 @@
 set -ex
 
+if [[ -z "$TRAVIS_TAG" ]]; then
+  exit 0;
+fi
+
 if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
   wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
 else
