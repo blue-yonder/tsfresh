@@ -16,7 +16,7 @@ from six.moves import range
 import six
 
 
-def distance(x, y, type="euclid"):
+def _distance(x, y, type="euclid"):
     """
     This calculates the distance metric between two 1-D sequences. Default below is the num of squares, override this
     function to use another metric
@@ -39,7 +39,7 @@ def distance(x, y, type="euclid"):
     if type.lower() == "euclid":
         return np.linalg.norm(x-y, ord=2)
     else:
-        raise ValueError("Have not implemented distance of type {}".format(type))
+        raise ValueError("There is no implementation of a _distance of type {}".format(type))
 
 
 def _sliding_window(data, pattern_length):
@@ -84,7 +84,7 @@ def _match_scores(data, pattern):
     :return:
     """
 
-    return np.array([distance(x, pattern) for x in _sliding_window(data, len(pattern))])
+    return np.array([_distance(x, pattern) for x in _sliding_window(data, len(pattern))])
 
 
 def _best_n_matches(data, sample, count=1):
