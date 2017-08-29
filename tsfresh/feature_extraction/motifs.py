@@ -121,16 +121,16 @@ def _best_n_matches(data, sample, count=1):
     return top_list
 
 
-def _candidates_top_uniques(length, candidates, count):
+def _filter_top_unique_motifs(candidates, length, count):
     """
     The candidate filter if statement first makes sure this isn't a reverse match (A-->B, don't also return B-->A),
     then takes the top item of any overlapping motifs (first ones in are the best ones, then exclude lower ones),
     then eliminates any matches that contain parts of the better ones above
     
-    :param length:
-    :type length:
     :param candidates:
     :type candidates:
+    :param length:
+    :type length:
     :param count:
     :type count:
     
@@ -205,12 +205,11 @@ def find_motifs(data, motif_length, motif_count, min_data_multiple=8):
 
     candidates = _generate_candidates(data, motif_length)
 
-    return _candidates_top_uniques(motif_length, candidates, motif_count)
+    return _filter_top_unique_motifs(candidates, motif_length, motif_count)
 
 
 def count_motifs(data, motif, dist=10):
     """
-    
     
     :param data: time series data to search
     :type data: iterable

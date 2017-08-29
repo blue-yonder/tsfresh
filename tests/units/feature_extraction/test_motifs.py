@@ -94,7 +94,7 @@ class TestMotifSubelements(unittest.TestCase):
                       (62, 84, 5.093744473040184),
                       (1904, 1926, 5.1468554369121344),
                       (1888, 1910, 5.2769356323613037)]
-        answer = motifs._candidates_top_uniques(candidates[0][1]-candidates[0][0], candidates, 4)
+        answer = motifs._filter_top_unique_motifs(candidates, candidates[0][1] - candidates[0][0], 4)
         # testing with set comparisons is nice and general way to check for overlaps
         set_1 = set(list(range(answer[0][0], answer[0][1])))
         set_2 = set(list(range(answer[1][0], answer[1][1])))
