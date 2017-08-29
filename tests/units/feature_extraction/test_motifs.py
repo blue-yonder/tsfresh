@@ -47,17 +47,17 @@ class TestMotifSubelements(unittest.TestCase):
         self.assertAlmostEqual(answer, np.sqrt(20370))
 
     def test_sliding_window(self):
-        answer = motifs._sliding_window(self.s1, 5)
+        answer = motifs._array_of_sliding_windows(self.s1, 5)
         six.assertCountEqual(self, answer[1], [-63., 5., 157., -21., -20.])
         six.assertCountEqual(self, answer[-1], [8., -2., 1., 2., -9.])
 
         data = np.arange(5)
         expected_result = np.array([[0, 1], [1, 2], [2, 3], [3, 4]])
-        npt.assert_array_equal(expected_result, motifs._sliding_window(data, pattern_length=2))
+        npt.assert_array_equal(expected_result, motifs._array_of_sliding_windows(data, pattern_length=2))
 
         data = pd.Series(np.arange(5))
         expected_result = np.array([[0, 1], [1, 2], [2, 3], [3, 4]])
-        npt.assert_array_equal(expected_result, motifs._sliding_window(data, pattern_length=2))
+        npt.assert_array_equal(expected_result, motifs._array_of_sliding_windows(data, pattern_length=2))
 
     def test_match_scores(self):
         answer = motifs._match_scores(self.s1, self.s1[5:10])
