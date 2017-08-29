@@ -42,7 +42,7 @@ jobs:
       python: 3.5.2
     
     - stage: Deploy to pipy and conda
-      script: conda/deploy.sh
+      script: skip
       deploy:
         provider: pypi
         user: MaxChrist
