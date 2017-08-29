@@ -40,7 +40,7 @@ jobs:
         - sed -i 's/\-n auto/\-n 2/g' setup.cfg
         - python setup.py test
       python: 3.5.2
-
+    
     - stage: Deploy to pipy and conda
       script: conda/deploy.sh
       deploy:
@@ -52,3 +52,16 @@ jobs:
         on:
           tags: true
           repo: blue-yonder/tsfresh
+    - stage: Deploy to conda
+      script: conda/deploy.sh
+      on:
+        tags: true
+        repo: blue-yonder/tsfresh
+      python: 2.7.11
+    - stage: Deploy to conda
+      script: conda/deploy.sh
+      on:
+        tags: true
+        repo: blue-yonder/tsfresh
+      python: 3.5.2
+
