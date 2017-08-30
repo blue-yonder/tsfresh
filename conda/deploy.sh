@@ -30,4 +30,4 @@ else
   conda convert linux-64/$PKG_NAME-$VERSION-py35_0.tar.bz2 -p all
 fi
 
-anaconda -t $CONDA_UPLOAD_TOKEN upload -u nbraun -l nightly $BUILD_DIR/*/$PKG_NAME-$VERSION-*_0.tar.bz2 --force
+anaconda -t $CONDA_UPLOAD_TOKEN upload -u tsfresh -l nightly $BUILD_DIR/*/$PKG_NAME-$VERSION-*_0.tar.bz2 --force
