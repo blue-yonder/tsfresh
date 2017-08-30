@@ -14,35 +14,20 @@ install:
   - pip freeze
 jobs:
   include:
-    - stage: prepare cache
-      script: true
-      python: 2.7.11
-    - stage: prepare cache
-      script: true
-      python: 3.5.2
-
-    - stage: Run unit tests
-      script: py.test tests/units -n 2
-      python: 2.7.11
-    - stage: Run unit tests
-      script: py.test tests/units -n 2
-      python: 3.5.2
-
-    - stage: Run the full test suite
-      script:
+    - stage: Run unit tests and deploy
+      script: 
         - sed -i 's/\-n auto/\-n 2/g' setup.cfg
-        - python setup.py test
+        - "if [ $TRAVIS_PULL_REQUEST == false ] && ! [ $TRAVIS_BRANCH == 'master']; then py.test tests/units -n2; else python setup.py test; fi"
+        - conda/deploy.sh
       python: 2.7.11
       after_success:
         - coveralls
-    - stage: Run the full test suite
+    - stage: Run unit tests and deploy
       script:
         - sed -i 's/\-n auto/\-n 2/g' setup.cfg
-        - python setup.py test
+        - "if [ $TRAVIS_PULL_REQUEST == false ] && ! [ $TRAVIS_BRANCH == 'master']; then py.test tests/units -n2; else python setup.py test; fi"
+        - conda/deploy.sh
       python: 3.5.2
-    
-    - stage: Deploy to pipy and conda
-      script: skip
       deploy:
         provider: pypi
         user: MaxChrist
@@ -52,10 +37,5 @@ jobs:
         on:
           tags: true
           repo: blue-yonder/tsfresh
-    - stage: Deploy to conda
-      script: conda/deploy.sh
-      python: 2.7.11
-    - stage: Deploy to conda
-      script: conda/deploy.sh
-      python: 3.5.2
-
+notifications:
+   slack: tsfresh:uIzPVnlBQs32xE5jbq34f0Cq
