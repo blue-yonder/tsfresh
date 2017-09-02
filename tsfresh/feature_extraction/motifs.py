@@ -38,7 +38,7 @@ def _distance(x, y, type="euclid"):
     assert len(x) == len(y)
 
     if type.lower() == "euclid":
-        return np.linalg.norm(x-y, ord=2)
+        return np.linalg.norm(x - y, ord=2)
     else:
         raise ValueError("There is no implementation of a _distance of type {}".format(type))
 
@@ -77,7 +77,7 @@ def _array_of_sliding_windows(data, pattern_length):
     return np.lib.stride_tricks.as_strided(data, shape=dimensions, strides=steplen, writeable=False)
 
 
-def _match_scores(data, pattern):
+def _match_scores(data, pattern, good_starts):
     """
     Calculates the distance of the pattern pattern to each subsequence in the sequence data. This method returns a list 
     of distances. 
@@ -95,7 +95,8 @@ def _match_scores(data, pattern):
     """
     assert len(data) >= len(pattern)
 
-    res = [_distance(x, pattern) for x in _array_of_sliding_windows(data, len(pattern))]
+    windows = _array_of_sliding_windows(data, len(pattern))
+    res = [_distance(x, pattern) for x in windows[good_starts, :]]
     return np.array(res)
 
 
@@ -151,7 +152,7 @@ def _filter_top_unique_motifs(candidates, length, count):
         # compare makes sure c doesn't overlay existing top item
         if c[0] not in indexes_of_better_motifs:
             top_uniques.append(c)
-            indexes_of_better_motifs.update(range(c[0]-length, c[0]+length))
+            indexes_of_better_motifs.update(range(c[0] - length, c[0] + length))
 
         if len(top_uniques) >= count:
             break
@@ -159,11 +160,22 @@ def _filter_top_unique_motifs(candidates, length, count):
     return top_uniques
 
 
+def _flatten(l):
+    """
+
+    Flattes the list of list l. For example, [[0, 1], [2]] becomes [0, 1, 2]
+
+    :param l: list of lists
+    :return:
+    """
+    return [item for sublist in l for item in sublist]
+
+
 def _generate_candidates(data, motif_length):
     """
     
     :param data: times series data to match motifs in
-    :type data: iterable
+    :type data: list of iteralables
     :param motif_length: length of the motifs to look for
     :type motif_length: int
     
@@ -172,12 +184,18 @@ def _generate_candidates(data, motif_length):
     """
     candidates = []
 
-    for start in range(len(data) - 3 * motif_length):
+    data = _flatten(data)
+
+    good_starts = [[True] * (len(l) - 3 * motif_length) + [False] * 3 * motif_length for l in data]
+    good_starts = _flatten(good_starts)
+    ind_good_start = np.where(good_starts)
+
+    for start in ind_good_start:
         end = start + motif_length
 
         pattern = data[start:end]
         # todo: Max, why are we not matching motifs at the end?, in my opinion it should be "data[end:]"
-        pattern_scores = _match_scores(data[end:-motif_length], pattern)
+        pattern_scores = _match_scores(data[end:], pattern, good_starts[end:])
 
         candidates.append((start,
                            np.argmin(pattern_scores) + end,
@@ -191,7 +209,7 @@ def find_motifs(data, motif_length, motif_count, min_data_multiple=8):
     of each motif, the best match point, and its distance
 
     :param data: times series data to match motifs in
-    :type data: iterable
+    :type data: list of iterables
     :param motif_length: length of the motifs to look for
     :type motif_length: int
     :param motif_count: how many motifs to return
