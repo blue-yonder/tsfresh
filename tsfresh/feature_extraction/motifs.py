@@ -184,11 +184,11 @@ def _generate_candidates(data, motif_length):
     """
     candidates = []
 
-    data = _flatten(data)
-
     good_starts = [[True] * (len(l) - 3 * motif_length) + [False] * 3 * motif_length for l in data]
     good_starts = _flatten(good_starts)
     ind_good_start = np.where(good_starts)
+
+    data = _flatten(data)
 
     for start in ind_good_start:
         end = start + motif_length
