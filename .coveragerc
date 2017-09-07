@@ -11,6 +11,7 @@ omit = tsfresh/utilities/profiling.py
        tsfresh/convenience/__init__.py
        tsfresh/examples/har_dataset.py
        tsfresh/examples/robot_execution_failures.py
+       tsfresh/examples/driftbif_simulation.py
        tsfresh/examples/test_tsfresh_baseline_dataset.py
        tsfresh/scripts/test_timing.py
 
