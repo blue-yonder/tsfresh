@@ -1,0 +1,46 @@
+{% set name = "tsfresh" %}
+{% set version = environ['VERSION'] %}
+
+package:
+  name: '{{ name|lower }}'
+  version: '{{ version }}'
+
+source:
+  fn: '{{ name }}-{{ version }}.tar.gz'
+  url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
+
+build:
+  number: 0
+  script: python setup.py install  --single-version-externally-managed --record=record.txt
+
+requirements:
+  build:
+    - python
+    - pyscaffold
+    - setuptools
+  run:
+    - python
+    - requests >=2.9.1
+    - numpy >=1.10.4
+    - pandas >=0.20.3
+    - scipy >=0.17.0
+    - statsmodels >=0.6.1
+    - patsy >=0.4.1
+    - scikit-learn >=0.17.1
+    - future >=0.16.0
+    - six >=1.10.0
+    - tqdm >=4.10.0
+
+
+about:
+  home: https://github.com/blue-yonder/tsfresh/
+  license: MIT
+  license_family: MIT
+  license_file: 'LICENSE.txt'
+  summary: Time Series Feature extraction based on scalable hypothesis tests
+  description: "This repository contains the *TSFRESH* python package. For more information, please see our github page: https://github.com/blue-yonder/tsfresh/"
+  doc_url: 'http://tsfresh.readthedocs.io/en/{{ version }}'
+  dev_url: 'https://github.com/blue-yonder/tsfresh/'
+
+extra:
+  recipe-maintainers: 'Nils Braun <nilslennartbraun@gmail.com>'
