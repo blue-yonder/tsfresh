@@ -777,13 +777,13 @@ class FeatureCalculationTestCase(TestCase):
 
         # active Brownian motion
         ds = velocity(tau=3.8, delta_t=0.05, R=3e-4, seed=0)
-        v = ds.simulate(1000000, v0=np.zeros(1))
+        v = ds.simulate(10000, v0=np.zeros(1))
         coeff = _estimate_friedrich_coefficients(v[:, 0], **default_params)
         self.assertTrue(abs(coeff[-1]) < 0.0001)
 
         # Brownian motion
         ds = velocity(tau=2.0 / 0.3 - 3.8, delta_t=0.05, R=3e-4, seed=0)
-        v = ds.simulate(1000000, v0=np.zeros(1))
+        v = ds.simulate(10000, v0=np.zeros(1))
         coeff = _estimate_friedrich_coefficients(v[:, 0], **default_params)
         self.assertTrue(abs(coeff[-1]) < 0.0001)
 
@@ -799,8 +799,6 @@ class FeatureCalculationTestCase(TestCase):
         expected_index = ["m_2__r_30__coeff_0",
                           "m_2__r_30__coeff_1",
                           "m_2__r_30__coeff_2"]
-
-        self.assertIsInstance(res, pd.Series)
         six.assertCountEqual(self, list(res.index), expected_index)
         self.assertTrue(np.sum(np.isnan(res)), 3)
 
@@ -812,13 +810,13 @@ class FeatureCalculationTestCase(TestCase):
 
         # active Brownian motion
         ds = velocity(tau=3.8, delta_t=0.05, R=3e-4, seed=0)
-        v = ds.simulate(1000000, v0=np.zeros(1))
+        v = ds.simulate(100000, v0=np.zeros(1))
         v0 = max_langevin_fixed_point(v[:, 0], **default_params)
-        self.assertTrue(abs(ds.deterministic - v0) < 0.0001)
+        self.assertTrue(abs(ds.deterministic - v0) < 0.001)
 
         # Brownian motion
         ds = velocity(tau=2.0 / 0.3 - 3.8, delta_t=0.05, R=3e-4, seed=0)
-        v = ds.simulate(1000000, v0=np.zeros(1))
+        v = ds.simulate(10000, v0=np.zeros(1))
         v0 = max_langevin_fixed_point(v[:, 0], **default_params)
         self.assertTrue(v0 < 0.001)
 
