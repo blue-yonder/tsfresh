@@ -148,21 +148,16 @@ class Distributor:
         """
         raise NotImplementedError
 
-    @staticmethod
-    def encode_function(data):
-        return data
-
-    @staticmethod
-    def decode_function(data):
-        return data
+    def close(self):
+        pass
 
 
 class MapDistributor(Distributor):
     """
     Distributor using the python build-in map, which calculates each job one after the other.
     """
-    def distribute(self, func, partitioned_chunks):
-        return map(func, partitioned_chunks)
+    def distribute(self, func, partitioned_chunks, kwargs):
+        return map(partial(func, **kwargs), partitioned_chunks)
 
 
 class LocalDaskDistributor(Distributor):
@@ -190,5 +185,11 @@ class MultiprocessingDistributor(Distributor):
 
         self.pool = Pool(processes=self.n_workers)
 
-    def distribute(self, func, partitioned_chunks):
-        return self.pool.imap_unordered(func, partitioned_chunks)
+    def distribute(self, func, partitioned_chunks, kwargs):
+        return self.pool.imap_unordered(partial(func, **kwargs), partitioned_chunks)
+
+    def close(self):
+        self.pool.close()
+        self.pool.terminate()
+        self.pool.join()
+       

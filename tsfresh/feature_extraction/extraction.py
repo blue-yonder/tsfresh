@@ -34,7 +34,7 @@ def extract_features(timeseries_container, default_fc_parameters=None,
                      profile=defaults.PROFILING,
                      profiling_filename=defaults.PROFILING_FILENAME,
                      profiling_sorting=defaults.PROFILING_SORTING,
-                     distributor_class=None):
+                     distributor=None):
     """
     Extract features from
 
@@ -150,7 +150,7 @@ def extract_features(timeseries_container, default_fc_parameters=None,
                                 disable_progressbar=disable_progressbar,
                                 default_fc_parameters=default_fc_parameters,
                                 kind_to_fc_parameters=kind_to_fc_parameters,
-                                distributor_class=distributor_class)
+                                distributor=distributor)
 
         # Impute the result if requested
         if impute_function is not None:
@@ -238,11 +238,7 @@ def _do_extraction(df, column_id, column_value, column_kind,
         result = result.pivot("id", "variable", "value")
         result.index = result.index.astype(df[column_id].dtype)
 
-    if n_jobs != 0:
-        pool.close()
-        pool.terminate()
-        pool.join()
-        
+    distributor.close()        
     return result
 
 
