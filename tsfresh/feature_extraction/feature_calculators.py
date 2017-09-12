@@ -827,7 +827,7 @@ def fft_coefficient(x, param):
     # Spectral Centroid:
     fft_abs = np.abs(fft)
     res += [fft_abs[:len(x)//2].dot(np.arange(0, len(x)//2, 1)) / fft_abs[:len(x)//2].sum()]
-    index += ['coeff_centroid__attr_abs']
+    index += ['centroid']
 
     return zip(index, res)
 
