@@ -799,7 +799,7 @@ def fft_coefficient(x, param):
     :type x: pandas.Series
     :param param: contains dictionaries {"coeff": x, "attr": s} with x int and x >= 0, s str and in ["real", "imag",
         "abs", "angle"]
-    :type param: list
+    :type param: list (e.g. [{"coeff": 0, "attr": "real"}, {"coeff": 0, "attr": "imag"}, ...]
     :return: the different feature values
     :return type: pandas.Series
     """
@@ -823,7 +823,30 @@ def fft_coefficient(x, param):
     res = [complex_agg(fft[config["coeff"]], config["attr"]) if config["coeff"] < len(fft)
            else np.NaN for config in param]
     index = ['coeff_{}__attr_"{}"'.format(config["coeff"], config["attr"]) for config in param]
+
+    # Spectral Centroid:
+    fft_abs = np.abs(fft)
+    res += [fft_abs[:len(x)//2].dot(np.arange(0, len(x)//2, 1)) / fft_abs[:len(x)//2].sum()]
+    index += ['centroid']
+
     return zip(index, res)
+
+
+@set_property("fctype", "simple")
+def spectral_centroid(x):
+    """
+    Returns the spectral centroid, which is the average frequency in the absolute fourier transform spectrum.
+
+    :param x: the time series to calculate the feature of
+    :type x: pandas.Series
+    :return: the value of this feature
+    :return type: float
+    """
+
+    fft_abs = abs(np.fft.rfft(x))
+
+    # Spectral centroid (weights average over abs values):
+    return fft_abs[:len(x)//2].dot(np.arange(0, len(x)//2, 1)) / fft_abs[:len(x)//2].sum()
 
 
 @set_property("fctype", "simple")
