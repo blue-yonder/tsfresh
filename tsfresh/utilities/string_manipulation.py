@@ -64,3 +64,35 @@ def convert_to_output_format(param):
             return str(x)
 
     return "__".join(str(key) + "_" + add_parenthesis_if_string_value(param[key]) for key in sorted(param))
+
+
+def is_valid_ip_and_port_v4(s):
+    """
+    Checks if the string s contains an valid IPv4 ip address with port number. 
+    For example 192.168.0.1:8786 would be an valid address
+    
+    :param s: the input
+    :type s: string
+    
+    :return: true if s is an ip address
+    :rtype: bool
+    """
+    s = s.strip()
+
+    if s.count('.') == 3 and s.count(':') == 1:
+
+        if s.count(".0") > 0 and s.count(".0") != s.count(".0.") + s.count(".0:"):
+            return False
+
+        if s[::-1].find(".") < s.find(":"):
+            ip = s.split(".")
+            ip[3], port = ip[3].split(":")
+
+            if all(i.isdigit() for i in ip) and port.isdigit():
+                return all(0 <= int(i) < 256 for i in ip)
+            else:
+                return False
+        else:
+            return False
+    else:
+        return False
