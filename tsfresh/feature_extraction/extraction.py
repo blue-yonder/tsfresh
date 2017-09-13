@@ -9,17 +9,17 @@ from __future__ import absolute_import, division
 
 import logging
 import warnings
-from functools import partial
 
 import numpy as np
 import pandas as pd
+import six
 
 from tsfresh import defaults
 from tsfresh.feature_extraction import feature_calculators
 from tsfresh.feature_extraction.settings import ComprehensiveFCParameters
 from tsfresh.utilities import dataframe_functions, profiling
-from tsfresh.utilities.distribution import MapDistributor, MultiprocessingDistributor
-from tsfresh.utilities.string_manipulation import convert_to_output_format
+from tsfresh.utilities.distribution import MapDistributor, MultiprocessingDistributor, ClusterDaskDistributor
+from tsfresh.utilities.string_manipulation import convert_to_output_format, is_valid_ip_and_port
 
 _logger = logging.getLogger(__name__)
 
@@ -228,6 +228,15 @@ def _do_extraction(df, column_id, column_value, column_kind,
                                         disable_progressbar=disable_progressbar,
                                         progressbar_title="Feature Extraction")
 
+    elif isinstance(distributor, six.string_types):
+        if is_valid_ip_and_port(distributor):
+            distributor = ClusterDaskDistributor(n_workers=n_jobs,
+                                                 disable_progressbar=disable_progressbar,
+                                                 progressbar_title="Feature Extraction",
+                                                 address=distributor)
+        else:
+            raise ValueError(distributor + " is not a valid ip address")
+
     kwargs = dict(default_fc_parameters=default_fc_parameters, kind_to_fc_parameters=kind_to_fc_parameters)
     result = distributor.map_reduce(_do_extraction_on_chunk, data=data_in_chunks, chunk_size=chunk_size, kwargs=kwargs)
 
@@ -238,7 +247,7 @@ def _do_extraction(df, column_id, column_value, column_kind,
         result = result.pivot("id", "variable", "value")
         result.index = result.index.astype(df[column_id].dtype)
 
-    distributor.close()        
+    distributor.close()
     return result
 
 
