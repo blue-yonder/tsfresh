@@ -179,6 +179,21 @@ class LocalDaskDistributor(Distributor):
         return result
 
 
+class ClusterDaskDistributor(Distributor):
+    """
+    Distributor using a dask cluster
+    """
+    def __init__(self, n_workers, disable_progressbar, progressbar_title, address):
+        Distributor.__init__(self, n_workers, disable_progressbar, progressbar_title)
+
+        from distributed import Client
+        self.client = Client(address=address)
+
+    def distribute(self, func, partitioned_chunks):
+        result = self.client.gather(self.client.map(func, partitioned_chunks))
+        return result
+
+
 class MultiprocessingDistributor(Distributor):
     """
     Distributor using a multiprocessing Pool to calculate the jobs in parallel on the local machine.
