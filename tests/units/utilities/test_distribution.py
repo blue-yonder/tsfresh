@@ -12,14 +12,26 @@ class DistributorTestCase(TestCase):
     def test_partion(self):
 
         distributor = Distributor()
+
         data = [1, 3, 10, -10, 343.0]
         distro = distributor.partition(data, 3)
-
         self.assertEqual(distro.next(), [1, 3, 10])
         self.assertEqual(distro.next(), [-10, 343.0])
 
         data = np.arange(10)
         distro = distributor.partition(data, 2)
-
         self.assertEqual(distro.next(), [0, 1])
         self.assertEqual(distro.next(), [2, 3])
+
+    def test__calculate_best_chunksize(self):
+
+        distributor = Distributor(n_workers=2)
+        self.assertEqual(distributor._calculate_best_chunksize(10), 1)
+        self.assertEqual(distributor._calculate_best_chunksize(11), 2)
+        self.assertEqual(distributor._calculate_best_chunksize(100), 10)
+        self.assertEqual(distributor._calculate_best_chunksize(101), 11)
+
+        distributor = Distributor(n_workers=3)
+        self.assertEqual(distributor._calculate_best_chunksize(10), 1)
+        self.assertEqual(distributor._calculate_best_chunksize(30), 2)
+        self.assertEqual(distributor._calculate_best_chunksize(31), 3)
