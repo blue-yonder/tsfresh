@@ -207,6 +207,9 @@ class ClusterDaskDistributor(Distributor):
         result = self.client.gather(self.client.map(func, partitioned_chunks))
         return result
 
+    def close(self):
+        self.client.close()
+
 
 class MultiprocessingDistributor(Distributor):
     """
