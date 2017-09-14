@@ -15,13 +15,13 @@ class DistributorTestCase(TestCase):
 
         data = [1, 3, 10, -10, 343.0]
         distro = distributor.partition(data, 3)
-        self.assertEqual(distro.next(), [1, 3, 10])
-        self.assertEqual(distro.next(), [-10, 343.0])
+        self.assertEqual(next(distro), [1, 3, 10])
+        self.assertEqual(next(distro), [-10, 343.0])
 
         data = np.arange(10)
         distro = distributor.partition(data, 2)
-        self.assertEqual(distro.next(), [0, 1])
-        self.assertEqual(distro.next(), [2, 3])
+        self.assertEqual(next(distro), [0, 1])
+        self.assertEqual(next(distro), [2, 3])
 
     def test__calculate_best_chunksize(self):
 
