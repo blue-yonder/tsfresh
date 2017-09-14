@@ -1,6 +1,12 @@
+# -*- coding: utf-8 -*-
+# This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
+# Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
+
 import ast
 import numpy as np
 from six import string_types
+import ipaddress
+import six
 
 def get_config_from_string(parts):
     """
@@ -64,3 +70,31 @@ def convert_to_output_format(param):
             return str(x)
 
     return "__".join(str(key) + "_" + add_parenthesis_if_string_value(param[key]) for key in sorted(param))
+
+
+def is_valid_ip_and_port(s):
+    """
+    Checks if the string s contains an valid IPv4 ip address with port number. 
+    For example 192.168.0.1:8786 would be an valid address
+    
+    :param s: the input
+    :type s: string
+    
+    :return: true if s is an ip address
+    :rtype: bool
+    """
+    s = s.strip()
+
+    if s.count(":") == 1:
+        s = s.split(":")[0]
+    else:
+        return False
+
+    if six.PY2 and not isinstance(s, unicode):
+        s = unicode(s)
+
+    try:
+        ipaddress.ip_address(s)
+        return True
+    except ValueError:
+        return False

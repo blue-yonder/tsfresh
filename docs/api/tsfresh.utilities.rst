@@ -22,3 +22,18 @@ profiling
     :undoc-members:
     :show-inheritance:
 
+string_manipulation
+-------------------
+
+.. automodule:: tsfresh.utilities.string_manipulation
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+distribution
+------------
+
+.. automodule:: tsfresh.utilities.distribution
+    :members:
+    :undoc-members:
+    :show-inheritance:
