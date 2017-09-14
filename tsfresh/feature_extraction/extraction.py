@@ -238,7 +238,7 @@ def _do_extraction(df, column_id, column_value, column_kind,
             raise ValueError(distributor + " is not a valid ip address")
 
     kwargs = dict(default_fc_parameters=default_fc_parameters, kind_to_fc_parameters=kind_to_fc_parameters)
-    result = distributor.map_reduce(_do_extraction_on_chunk, data=data_in_chunks, chunk_size=chunk_size, kwargs=kwargs)
+    result = distributor.map_reduce(_do_extraction_on_chunk, data=data_in_chunks, chunk_size=chunk_size, function_kwargs=kwargs)
 
     # Return a dataframe in the typical form (id as index and feature names as columns)
     result = pd.DataFrame(result, dtype=np.float)
