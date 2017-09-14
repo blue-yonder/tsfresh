@@ -189,6 +189,20 @@ class ClusterDaskDistributor(Distributor):
         from distributed import Client
         self.client = Client(address=address)
 
+    def _calculate_best_chunksize(self, data_length):
+        """
+        Uses the number of dask workers during execution to setup the chunksize
+        
+        :param data_length: 
+        :return: 
+        """
+
+        n_workers = len(self.client.scheduler_info()["workers"])
+        chunksize, extra = divmod(data_length, n_workers * 5)
+        if extra:
+            chunksize += 1
+        return chunksize
+        
     def distribute(self, func, partitioned_chunks):
         result = self.client.gather(self.client.map(func, partitioned_chunks))
         return result
