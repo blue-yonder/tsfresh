@@ -18,7 +18,8 @@ from tsfresh import defaults
 from tsfresh.feature_extraction import feature_calculators
 from tsfresh.feature_extraction.settings import ComprehensiveFCParameters
 from tsfresh.utilities import dataframe_functions, profiling
-from tsfresh.utilities.distribution import MapDistributor, MultiprocessingDistributor, ClusterDaskDistributor
+from tsfresh.utilities.distribution import MapDistributor, MultiprocessingDistributor, ClusterDaskDistributor, \
+    Distributor
 from tsfresh.utilities.string_manipulation import convert_to_output_format, is_valid_ip_and_port
 
 _logger = logging.getLogger(__name__)
@@ -219,23 +220,25 @@ def _do_extraction(df, column_id, column_value, column_kind,
     data_in_chunks = [x + (y,) for x, y in df.groupby([column_id, column_kind])[column_value]]
 
     if distributor is None:
+
         if n_jobs == 0:
             distributor_class = MapDistributor
         else:
             distributor_class = MultiprocessingDistributor
 
-        distributor = distributor_class(n_workers=n_jobs,
-                                        disable_progressbar=disable_progressbar,
+        distributor = distributor_class(n_workers=n_jobs, disable_progressbar=disable_progressbar,
                                         progressbar_title="Feature Extraction")
 
     elif isinstance(distributor, six.string_types):
+
         if is_valid_ip_and_port(distributor):
-            distributor = ClusterDaskDistributor(n_workers=n_jobs,
-                                                 disable_progressbar=disable_progressbar,
-                                                 progressbar_title="Feature Extraction",
-                                                 address=distributor)
+            distributor = ClusterDaskDistributor(n_workers=n_jobs,  disable_progressbar=disable_progressbar,
+                                                 progressbar_title="Feature Extraction", address=distributor)
         else:
             raise ValueError(distributor + " is not a valid ip address")
+
+    if not isinstance(distributor, Distributor):
+        raise ValueError("the passed distributor is neither None nor an IP address or a Distributor object")
 
     kwargs = dict(default_fc_parameters=default_fc_parameters, kind_to_fc_parameters=kind_to_fc_parameters)
     result = distributor.map_reduce(_do_extraction_on_chunk, data=data_in_chunks, chunk_size=chunk_size, function_kwargs=kwargs)
