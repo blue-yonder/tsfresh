@@ -451,6 +451,7 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqual(res['coeff_0__attr_"real"'], sum(x), places=6)
         self.assertAlmostEqual(res['coeff_0__attr_"angle"'], 0, places=6)
         self.assertAlmostEqual(res['coeff_0__attr_"abs"'], sum(x), places=6)
+        self.assertAlmostEqual(res['centroid'], 0.896937, places=2)
 
         x = [0, 1, 0, 0]
         res = pd.Series(dict(fft_coefficient(x, param)))
@@ -463,6 +464,7 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqual(res['coeff_1__attr_"real"'], 0, places=6)
         self.assertAlmostEqual(res['coeff_2__attr_"imag"'], 0, places=6)
         self.assertAlmostEqual(res['coeff_2__attr_"real"'], -1, places=6)
+        self.assertAlmostEqual(res['centroid'], 0.5, places=2)
 
         # test what happens if coeff is biger than time series lenght
         x = range(5)
