@@ -826,6 +826,60 @@ def fft_coefficient(x, param):
     return zip(index, res)
 
 
+@set_property("fctype", "combiner")
+def aggregated_fft(x, param):
+    """
+    Returns the spectral centroid (mean), variance, skew, and kurtosis of the absolute fourier transform spectrum.
+
+    :param x: the time series to calculate the feature of
+    :type x: pandas.Series
+    :param param: contains dictionaries {"aggtype": s} where s str and in ["centroid", "variance",
+        "skew", "kurtosis"]
+    :type param: list
+    :return: the different feature values
+    :return type: pandas.Series
+    """
+
+    assert set([config["aggtype"] for config in param]) <= set(["centroid", "variance", "skew", "kurtosis"]), \
+        'Attribute must be "centroid", "variance", "skew", "kurtosis"'
+
+
+    def fft_moment(fft_abs_truncated, moment):
+        return fft_abs_truncated.dot(np.arange(len(fft_abs_truncated)) ** moment) / fft_abs_truncated.sum()
+
+    def get_centroid(x):
+        return fft_moment(x, 1)
+
+    def get_variance(x):
+        return fft_moment(x, 2) - get_centroid(x) ** 2
+
+    def get_skew(x):
+        return (
+            fft_moment(x, 3) - 3 * get_centroid(x) * get_variance(x) - get_centroid(x)**3
+        ) / get_variance(x)**(3./2)
+
+    def get_kurtosis(x):
+        return (
+            fft_moment(x, 4) - 4*get_centroid(x)*fft_moment(x, 3)
+                + get_centroid(x)**2*get_variance(x) + 3*get_centroid(x)**4
+        ) / get_variance(x)**2
+
+
+    calculation = dict(
+        centroid=get_centroid,
+        variance=get_variance,
+        skew=get_skew,
+        kurtosis=get_kurtosis
+    )
+
+    fft_abs = abs(np.fft.rfft(x))
+    fft_abs_truncated = fft_abs[:len(fft_abs) // 2]
+
+    res = [calculation[config["aggtype"]](fft_abs_truncated) for config in param]
+    index = ['aggtype_{}'.format(config["aggtype"]) for config in param]
+    return zip(index, res)
+
+
 @set_property("fctype", "simple")
 def number_peaks(x, n):
     """

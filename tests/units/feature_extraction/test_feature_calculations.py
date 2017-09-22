@@ -473,6 +473,24 @@ class FeatureCalculationTestCase(TestCase):
         six.assertCountEqual(self, list(res.index), expected_index)
         self.assertIsNaN(res['coeff_10__attr_"real"'])
 
+    def test_aggregated_fft(self):
+        x = range(10)
+        param = [
+            {"aggtype": "centriod"},
+            {"aggtype": "variance"},
+            {"aggtype": "skew"},
+            {"aggtype": "kurtosis"}
+        ]
+        expected_index = ['aggtype_centroid', 'aggtype_variance', 'aggtype_skew', 'aggtype_kurtosis']
+        res = pd.Series(dict(aggregated_fft(x, param)))
+        # self.assertAlmostEqual(res['aggtype_centroid', )
+        # self.assertAlmostEqual(res['aggtype_variance', )
+        # self.assertAlmostEqual(res['aggtype_skew'], )
+        # self.assertAlmostEqual(res['aggtype_kurtosis'],)
+
+        x = [0, 1, 0, 0]
+
+
     def test_number_peaks(self):
         x = np.array([0, 1, 2, 1, 0, 1, 2, 3, 4, 5, 4, 3, 2, 1])
         self.assertEqualOnAllArrayTypes(number_peaks, x, 2, 1)
