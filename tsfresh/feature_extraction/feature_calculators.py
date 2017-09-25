@@ -827,7 +827,7 @@ def fft_coefficient(x, param):
 
 
 @set_property("fctype", "combiner")
-def aggregated_fft(x, param):
+def fft_aggregated(x, param):
     """
     Returns the spectral centroid (mean), variance, skew, and kurtosis of the absolute fourier transform spectrum.
 
@@ -844,26 +844,20 @@ def aggregated_fft(x, param):
         'Attribute must be "centroid", "variance", "skew", "kurtosis"'
 
 
-    def fft_moment(fft_abs_truncated, moment):
-        return fft_abs_truncated.dot(np.arange(len(fft_abs_truncated)) ** moment) / fft_abs_truncated.sum()
+    def get_moment(y, moment):
+        return y.dot(np.arange(len(y)) ** moment) / y.sum()
 
-    def get_centroid(x):
-        return fft_moment(x, 1)
+    def get_centroid(y):
+        return get_moment(y, 1)
 
-    def get_variance(x):
-        return fft_moment(x, 2) - get_centroid(x) ** 2
+    def get_variance(y):
+        return get_moment(y, 2) - get_centroid(y) ** 2
 
-    def get_skew(x):
-        return (
-            fft_moment(x, 3) - 3 * get_centroid(x) * get_variance(x) - get_centroid(x)**3
-        ) / get_variance(x)**(3./2)
+    def get_skew(y):
+        return skewness(y)
 
-    def get_kurtosis(x):
-        return (
-            fft_moment(x, 4) - 4*get_centroid(x)*fft_moment(x, 3)
-                + get_centroid(x)**2*get_variance(x) + 3*get_centroid(x)**4
-        ) / get_variance(x)**2
-
+    def get_kurtosis(y):
+        return kurtosis(y)
 
     calculation = dict(
         centroid=get_centroid,
@@ -873,9 +867,8 @@ def aggregated_fft(x, param):
     )
 
     fft_abs = abs(np.fft.rfft(x))
-    fft_abs_truncated = fft_abs[:len(fft_abs) // 2]
 
-    res = [calculation[config["aggtype"]](fft_abs_truncated) for config in param]
+    res = [calculation[config["aggtype"]](fft_abs) for config in param]
     index = ['aggtype_{}'.format(config["aggtype"]) for config in param]
     return zip(index, res)
 
