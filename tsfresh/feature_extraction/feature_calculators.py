@@ -845,18 +845,53 @@ def fft_aggregated(x, param):
 
 
     def get_moment(y, moment):
-        return y.dot(np.arange(len(y)) ** moment) / y.sum()
+        """
+        Returns the (non centered) moment of the distribution y:
+        E[y**moment] = \sum_i[index(y_i)^moment * y_i] / \sum_i[y_i]
+        
+        :param y: the discrete distribution from which one wants to calculate the moment 
+        :type y: pandas.Series or np.array
+        :param moment: the moment one wants to calcalate (choose 1,2,3, ... )
+        :type moment: int
+        :return: the moment requested
+        :return type: float
+        """
+        return y.dot(np.arange(len(y))**moment) / y.sum()
 
     def get_centroid(y):
+        """
+        :param y: the discrete distribution from which one wants to calculate the centroid 
+        :type y: pandas.Series or np.array
+        :return: the centroid of distribution y (aka distribution mean, first moment)
+        :return type: float 
+        """
         return get_moment(y, 1)
 
     def get_variance(y):
+        """
+        :param y: the discrete distribution from which one wants to calculate the variance 
+        :type y: pandas.Series or np.array
+        :return: the variance of distribution y
+        :return type: float 
+        """
         return get_moment(y, 2) - get_centroid(y) ** 2
 
     def get_skew(y):
+        """
+        :param y: the discrete distribution from which one wants to calculate the skew 
+        :type y: pandas.Series or np.array
+        :return: the skew of distribution y
+        :return type: float 
+        """
         return skewness(y)
 
     def get_kurtosis(y):
+        """
+        :param y: the discrete distribution from which one wants to calculate the kurtosis 
+        :type y: pandas.Series or np.array
+        :return: the kurtosis of distribution y
+        :return type: float 
+        """
         return kurtosis(y)
 
     calculation = dict(
