@@ -480,39 +480,39 @@ class FeatureCalculationTestCase(TestCase):
             {"aggtype": "skew"},
             {"aggtype": "kurtosis"}
         ]
-        expected_index = ['aggtype_centroid', 'aggtype_variance', 'aggtype_skew', 'aggtype_kurtosis']
+        expected_index = ['aggtype_"centroid"', 'aggtype_"variance"', 'aggtype_"skew"', 'aggtype_"kurtosis"']
 
         x = range(10)
         res = pd.Series(dict(fft_aggregated(x, param)))
         six.assertCountEqual(self, list(res.index), expected_index)
-        self.assertAlmostEqual(res['aggtype_centroid'], 1.135, places=3)
-        self.assertAlmostEqual(res['aggtype_variance'], 2.368, places=3)
-        self.assertAlmostEqual(res['aggtype_skew'], 2.1, places=3)
-        self.assertAlmostEqual(res['aggtype_kurtosis'], 4.467, places=3)
+        self.assertAlmostEqual(res['aggtype_"centroid"'], 1.135, places=3)
+        self.assertAlmostEqual(res['aggtype_"variance"'], 2.368, places=3)
+        self.assertAlmostEqual(res['aggtype_"skew"'], 2.1, places=3)
+        self.assertAlmostEqual(res['aggtype_"kurtosis"'], 4.467, places=3)
 
         x = range(5)
         res = pd.Series(dict(fft_aggregated(x, param)))
         six.assertCountEqual(self, list(res.index), expected_index)
-        self.assertAlmostEqual(res['aggtype_centroid'], 0.563, places=3)
-        self.assertAlmostEqual(res['aggtype_variance'], 0.557, places=3)
-        self.assertAlmostEqual(res['aggtype_skew'], 1.396, places=3)
-        self.assertIsNaN(res['aggtype_kurtosis'])
+        self.assertAlmostEqual(res['aggtype_"centroid"'], 0.563, places=3)
+        self.assertAlmostEqual(res['aggtype_"variance"'], 0.557, places=3)
+        self.assertAlmostEqual(res['aggtype_"skew"'], 1.396, places=3)
+        self.assertIsNaN(res['aggtype_"kurtosis"'])
 
         x = [0, 1, 0, 0]
         res = pd.Series(dict(fft_aggregated(x, param)))
         six.assertCountEqual(self, list(res.index), expected_index)
-        self.assertAlmostEqual(res['aggtype_centroid'], 1., places=3)
-        self.assertAlmostEqual(res['aggtype_variance'], 0.667, places=3)
-        self.assertAlmostEqual(res['aggtype_skew'], 0., places=3)
-        self.assertIsNaN(res['aggtype_kurtosis'])
+        self.assertAlmostEqual(res['aggtype_"centroid"'], 1., places=3)
+        self.assertAlmostEqual(res['aggtype_"variance"'], 0.667, places=3)
+        self.assertAlmostEqual(res['aggtype_"skew"'], 0., places=3)
+        self.assertIsNaN(res['aggtype_"kurtosis"'])
 
         x = np.sin(2 * np.pi / 10 * np.arange(30))
         res = pd.Series(dict(fft_aggregated(x, param)))
         six.assertCountEqual(self, list(res.index), expected_index)
-        self.assertAlmostEqual(res['aggtype_centroid'], 3., places=6)
-        self.assertAlmostEqual(res['aggtype_variance'], 0., places=6)
-        self.assertAlmostEqual(res['aggtype_skew'], 4., places=6)
-        self.assertAlmostEqual(res['aggtype_kurtosis'], 16., places=6)
+        self.assertAlmostEqual(res['aggtype_"centroid"'], 3., places=6)
+        self.assertAlmostEqual(res['aggtype_"variance"'], 0., places=6)
+        self.assertAlmostEqual(res['aggtype_"skew"'], 4., places=6)
+        self.assertAlmostEqual(res['aggtype_"kurtosis"'], 16., places=6)
 
     def test_number_peaks(self):
         x = np.array([0, 1, 2, 1, 0, 1, 2, 3, 4, 5, 4, 3, 2, 1])

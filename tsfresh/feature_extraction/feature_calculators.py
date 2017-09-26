@@ -878,21 +878,34 @@ def fft_aggregated(x, param):
 
     def get_skew(y):
         """
+        Calculates the skew as the third standardized moment.
+        Ref: https://en.wikipedia.org/wiki/Skewness#Definition
+        
         :param y: the discrete distribution from which one wants to calculate the skew 
         :type y: pandas.Series or np.array
         :return: the skew of distribution y
         :return type: float 
         """
-        return skewness(y)
+
+        return \
+        (
+            get_moment(y, 3) - 3*get_centroid(y)*get_variance(y) - get_centroid(y)**3
+        ) / get_variance(y)**(1.5)
 
     def get_kurtosis(y):
         """
+        Calculates the kurtosis as the fourth standardized moment.
+        Ref: https://en.wikipedia.org/wiki/Kurtosis#Pearson_moments
+        
         :param y: the discrete distribution from which one wants to calculate the kurtosis 
         :type y: pandas.Series or np.array
         :return: the kurtosis of distribution y
         :return type: float 
         """
-        return kurtosis(y)
+        return (
+            get_moment(y, 4) - 4*get_centroid(y)*get_moment(y, 3)
+            + 6*get_moment(y, 2)*get_centroid(y)**2 - 3*get_centroid(y)
+        ) / get_variance(y)**2
 
     calculation = dict(
         centroid=get_centroid,
@@ -904,7 +917,7 @@ def fft_aggregated(x, param):
     fft_abs = abs(np.fft.rfft(x))
 
     res = [calculation[config["aggtype"]](fft_abs) for config in param]
-    index = ['aggtype_{}'.format(config["aggtype"]) for config in param]
+    index = ['aggtype_"{}"'.format(config["aggtype"]) for config in param]
     return zip(index, res)
 
 
