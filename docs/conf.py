@@ -62,7 +62,7 @@ master_doc = 'index'
 
 # General information about the project.
 import datetime
-now = datetime.datetime()
+now = datetime.datetime.today()
 project = u'tsfresh'
 copyright = u'2016-{}, Maximilian Christ et al./ Blue Yonder GmbH'.format(now.year)
 
