@@ -392,6 +392,46 @@ def abs_energy(x):
 
 
 @set_property("fctype", "simple")
+def cid_ce(x, normalize):
+    """
+    This function calculator is an estimate for a time series complexity (A more complex time series has more peaks,
+    valleys etc.). It calculates the value of
+
+    .. math::
+
+        \\sqrt{ \\sum_{i=0}^{n-2lag} ( x_{i} - x_{i+1})^2 }
+
+    This measure was proposed in
+
+    .. rubric:: References
+
+    |  [1] Batista, Gustavo EAPA, et al (2014).
+    |  CID: an efficient complexity-invariant distance for time series.
+    |  Data Mining and Knowledge Difscovery 28.3 (2014): 634-669.
+
+    :param x: the time series to calculate the feature of
+    :type x: pandas.Series
+    :param normalize: should the time series be z-transformed?
+    :type normalize: bool
+
+    :return: the value of this feature
+    :return type: float
+    """
+
+    x = np.asarray(x)
+
+    if normalize:
+        s = np.std(x)
+        if s!=0:
+            x = (x - np.mean(x))/s
+        else:
+            return 0.0
+
+    x = np.diff(x)
+    return np.sqrt(np.sum((x * x)))
+
+
+@set_property("fctype", "simple")
 def mean_abs_change(x):
     """
     Returns the mean over the absolute differences between subsequent time series values which is

@@ -274,6 +274,15 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqualOnAllArrayTypes(abs_energy, [-1, 1.3], 2.69)
         self.assertEqualOnAllArrayTypes(abs_energy, [1], 1)
 
+    def test_cid_ce(self):
+        self.assertEqualOnAllArrayTypes(cid_ce, [1, 1, 1], 0, normalize=True)
+        self.assertEqualOnAllArrayTypes(cid_ce, [0, 4], 2, normalize=True)
+        self.assertEqualOnAllArrayTypes(cid_ce, [100, 104], 2, normalize=True)
+
+        self.assertEqualOnAllArrayTypes(cid_ce, [1, 1, 1], 0, normalize=False)
+        self.assertEqualOnAllArrayTypes(cid_ce, [0.5, 3.5, 7.5], 5, normalize=False)
+        self.assertEqualOnAllArrayTypes(cid_ce, [-4.33, -1.33, 2.67], 5, normalize=False)
+
     def test_ratio_beyond_r_sigma(self):
 
         x = [0, 1]*10 + [10, 20, -30] # std of x is 7.21, mean 3.04

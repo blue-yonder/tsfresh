@@ -105,6 +105,7 @@ class ComprehensiveFCParameters(dict):
         name_to_param.update({
             "time_reversal_asymmetry_statistic": [{"lag": lag} for lag in range(1, 4)],
             "c3": [{"lag": lag} for lag in range(1, 4)],
+            "cid_ce": [{"normalize": True}, {"normalize": False}],
             "symmetry_looking": [{"r": r * 0.05} for r in range(20)],
             "large_standard_deviation": [{"r": r * 0.05} for r in range(1, 20)],
             "quantile": [{"q": q} for q in [.1, .2, .3, .4, .6, .7, .8, .9]],
