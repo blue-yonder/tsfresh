@@ -41,7 +41,9 @@ data_file_name = os.path.join(module_path, 'data', 'robotfailure-mld', 'lp1.data
 
 def download_robot_execution_failures():
     """
-    Download the Robot Execution Failures LP1 Data Set[1] from the UCI Machine Learning Repository[2] and store it locally.
+    Download the Robot Execution Failures LP1 Data Set[#1] from the UCI Machine Learning Repository [#2] and store it
+    locally.
+
     :return:
 
     Examples
