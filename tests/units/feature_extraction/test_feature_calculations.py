@@ -510,16 +510,15 @@ class FeatureCalculationTestCase(TestCase):
         self.assertIsNaN(res['aggtype_"skew"'])
         self.assertIsNaN(res['aggtype_"kurtosis"'])
 
-        # Gaussian should have a Kurtosis of 3:
-        # However, the fourier transform of a Gaussian in the positive halfspace is a half Gaussian.
-        # The mean should scale wih
+        # Gaussian test:
         def normal(y, mean_, sigma_):
             return 1/(2 * np.pi * sigma_ ** 2) * np.exp(-(y - mean_) ** 2 / (2 * sigma_ ** 2))
         mean_ = 500.; sigma_ = 1.; range_ = int(2*mean_)
         x = list(map(lambda x: normal(x, mean_, sigma_), range(range_)))
 
-        # Expected fft centroid / var based on those of half-normal dist
-        # Ref: https://en.wikipedia.org/wiki/Half-normal_distribution
+        # The fourier transform of a Normal dist in the positive halfspace is a half normal,
+        # Hand calculated values of centroid and variance based for the half-normal dist:
+        # (Ref: https://en.wikipedia.org/wiki/Half-normal_distribution)
         expected_fft_centroid = (range_/(2*np.pi*sigma_))*np.sqrt(2/np.pi)
         expected_fft_var = (range_/(2*np.pi*sigma_))**2*(1-2/np.pi)
 
