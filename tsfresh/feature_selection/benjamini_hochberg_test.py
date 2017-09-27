@@ -4,7 +4,7 @@
 
 def benjamini_hochberg_test(df_pvalues, hypotheses_independent, fdr_level):
     """
-    This is an implementation of the benjamini hochberg procedure that determines if the null hypothesis
+    This is an implementation of the benjamini hochberg procedure [#1] that determines if the null hypothesis
     for a given feature can be rejected. For this the test regards the features' p-values
     and controls the global false discovery rate, which is the ratio of false rejections by all rejections:
 
