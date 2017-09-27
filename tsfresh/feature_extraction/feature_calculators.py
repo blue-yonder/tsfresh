@@ -887,10 +887,15 @@ def fft_aggregated(x, param):
         :return type: float 
         """
 
-        return \
-        (
-            get_moment(y, 3) - 3*get_centroid(y)*get_variance(y) - get_centroid(y)**3
-        ) / get_variance(y)**(1.5)
+        variance = get_variance(y)
+        # In the limit of a dirac delta, skew should be 0 and variance 0.  However, in the discrete limit,
+        # the skew blows up as variance --> 0, hence return nan when variance is smaller than a resolution of 0.5:
+        if variance < 0.5:
+            return np.nan
+        else:
+            return (
+                get_moment(y, 3) - 3*get_centroid(y)*variance - get_centroid(y)**3
+            ) / get_variance(y)**(1.5)
 
     def get_kurtosis(y):
         """
@@ -902,10 +907,17 @@ def fft_aggregated(x, param):
         :return: the kurtosis of distribution y
         :return type: float 
         """
-        return (
-            get_moment(y, 4) - 4*get_centroid(y)*get_moment(y, 3)
-            + 6*get_moment(y, 2)*get_centroid(y)**2 - 3*get_centroid(y)
-        ) / get_variance(y)**2
+
+        variance = get_variance(y)
+        # In the limit of a dirac delta, kurtosis should be 3 and variance 0.  However, in the discrete limit,
+        # the kurtosis blows up as variance --> 0, hence return nan when variance is smaller than a resolution of 0.5:
+        if variance < 0.5:
+            return np.nan
+        else:
+            return (
+                get_moment(y, 4) - 4*get_centroid(y)*get_moment(y, 3)
+                + 6*get_moment(y, 2)*get_centroid(y)**2 - 3*get_centroid(y)
+            ) / get_variance(y)**2
 
     calculation = dict(
         centroid=get_centroid,
