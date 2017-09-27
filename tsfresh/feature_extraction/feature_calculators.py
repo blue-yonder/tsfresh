@@ -308,7 +308,7 @@ def partial_autocorrelation(x, param):
     with (a) :math:`x_t = f(x_{t-1}, \\ldots, x_{t-k+1})` and (b) :math:`x_{t-k} = f(x_{t-1}, \\ldots, x_{t-k+1})`
     being AR(k-1) models that can be fitted by OLS. Be aware that in (a), the regression is done on past values to
     predict :math:`x_t` whereas in (b), future values are used to calculate the past value :math:`x_{t-k}`.
-    It is said in [1] that "for an AR(p), the partial autocorrelations [ :math:`\\alpha_k` ] will be nonzero for `k<=p`
+    It is said in [#1] that "for an AR(p), the partial autocorrelations [ :math:`\\alpha_k` ] will be nonzero for `k<=p`
     and zero for `k>p`."
     With this property, it is used to determine the lag of an AR-Process.
 
@@ -1136,7 +1136,7 @@ def time_reversal_asymmetry_statistic(x, lag):
 
         \\mathbb{E}[L^2(X)^2 \cdot L(X) - L(X) \cdot X^2]
 
-    where :math:`\\mathbb{E}` is the mean and :math:`L` is the lag operator. It was proposed in [1] as a
+    where :math:`\\mathbb{E}` is the mean and :math:`L` is the lag operator. It was proposed in [#1] as a
     promising feature to extract from time series.
 
     .. rubric:: References
@@ -1176,7 +1176,7 @@ def c3(x, lag):
 
         \\mathbb{E}[L^2(X)^2 \cdot L(X) \cdot X]
 
-    where :math:`\\mathbb{E}` is the mean and :math:`L` is the lag operator. It was proposed in [1] as a measure of
+    where :math:`\\mathbb{E}` is the mean and :math:`L` is the lag operator. It was proposed in [#1] as a measure of
     non linearity in the time series.
 
     .. rubric:: References
@@ -1283,7 +1283,7 @@ def sample_entropy(x):
 @set_property("fctype", "simple")
 def autocorrelation(x, lag):
     """
-    Calculates the autocorrelation of the specified lag, according to the formula [1]
+    Calculates the autocorrelation of the specified lag, according to the formula [#1]
 
     .. math::
 
