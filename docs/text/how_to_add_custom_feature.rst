@@ -102,7 +102,7 @@ Step 3. Add custom settings for your feature
 
 Finally, you have to add custom settings if your feature is a simple or combiner feature with parameters. To do so,
 just append your feature with sane default parameters to the ``name_to_param`` dictionary inside the
-:class:`tsfresh.ComprehensiveFCParameters` constructor:
+:class:`tsfresh.feature_extraction.settings.ComprehensiveFCParameters` constructor:
 
 .. code:: python
 
@@ -117,7 +117,7 @@ just append your feature with sane default parameters to the ``name_to_param`` d
 That is it, tsfresh will calculate your feature the next time you run it.
 
 Please make sure, that the different feature extraction settings
-(e.g. :class:`tsfresh.feature_extraction.settings.EfficientCParameters`,
+(e.g. :class:`tsfresh.feature_extraction.settings.EfficientFCParameters`,
 :class:`tsfresh.feature_extraction.settings.MinimalFCParameters` or
 :class:`tsfresh.feature_extraction.settings.ComprehensiveFCParameters`) do include different sets of
 feature calculators to use. You can control, which feature extraction settings object will include your new
