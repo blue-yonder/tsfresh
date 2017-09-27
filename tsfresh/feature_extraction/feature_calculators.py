@@ -297,8 +297,8 @@ def partial_autocorrelation(x, param):
     Calculates the value of the partial autocorrelation function at the given lag. The lag `k` partial autocorrelation
     of a time series :math:`\\lbrace x_t, t = 1 \\ldots T \\rbrace` equals the partial correlation of :math:`x_t` and
     :math:`x_{t-k}`, adjusted for the intermediate variables
-    :math:`\\lbrace x_{t-1}, \\ldots, x_{t-k+1} \\rbrace` ([1]).
-    Following [2], it can be defined as
+    :math:`\\lbrace x_{t-1}, \\ldots, x_{t-k+1} \\rbrace` ([#1]).
+    Following [#2], it can be defined as
 
     .. math::
 
@@ -1474,7 +1474,7 @@ def friedrich_coefficients(x, param):
     .. math::
         \dot{x}(t) = h(x(t)) + \mathcal{N}(0,R)
 
-    as described by [1].
+    as described by [#1].
 
     For short time-series this method is highly dependent on the parameters.
 
