@@ -1238,9 +1238,7 @@ def sample_entropy(x):
 
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
-    :param tolerance: normalization factor; equivalent to the common practice of expressing the tolerance as r times \
-    the standard deviation
-    :type tolerance: float
+
     :return: the value of this feature
     :return type: float
     """
