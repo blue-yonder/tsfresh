@@ -178,7 +178,7 @@ def calculate_relevance_table(X, y, ml_task='auto', n_jobs=defaults.N_PROCESSES,
         pool.join()
 
     if sum(relevance_table['relevant']) == 0:
-        _logger.Warning("No feature was found relevant for {} for fdr level = {}. "
+        _logger.warning("No feature was found relevant for {} for fdr level = {}. "
                         "Consider using a lower fdr level or other features.".format(ml_task, fdr_level))
 
     return relevance_table
