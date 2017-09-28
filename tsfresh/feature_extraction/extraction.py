@@ -221,18 +221,18 @@ def _do_extraction(df, column_id, column_value, column_kind,
     if distributor is None:
 
         if n_jobs == 0:
-            distributor_class = MapDistributor
+            distributor = MapDistributor(disable_progressbar=disable_progressbar,
+                                         progressbar_title="Feature Extraction")
         else:
-            distributor_class = MultiprocessingDistributor
-
-        distributor = distributor_class(n_workers=n_jobs, disable_progressbar=disable_progressbar,
-                                        progressbar_title="Feature Extraction")
+            distributor = MultiprocessingDistributor(n_workers=n_jobs, disable_progressbar=disable_progressbar,
+                                                     progressbar_title="Feature Extraction")
 
     if not isinstance(distributor, Distributor):
         raise ValueError("the passed distributor is neither None nor an IP address or a Distributor object")
 
     kwargs = dict(default_fc_parameters=default_fc_parameters, kind_to_fc_parameters=kind_to_fc_parameters)
-    result = distributor.map_reduce(_do_extraction_on_chunk, data=data_in_chunks, chunk_size=chunk_size, function_kwargs=kwargs)
+    result = distributor.map_reduce(_do_extraction_on_chunk, data=data_in_chunks, chunk_size=chunk_size,
+                                    function_kwargs=kwargs)
 
     # Return a dataframe in the typical form (id as index and feature names as columns)
     result = pd.DataFrame(result, dtype=np.float)
