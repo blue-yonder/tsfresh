@@ -123,6 +123,7 @@ class ComprehensiveFCParameters(dict):
                                           for ql in [0., .2, .4, .6, .8] for qh in [.2, .4, .6, .8, 1.]
                                           for b in [False, True] for f in ["mean", "var"]],
             "fft_coefficient": [{"coeff": k, "attr": a} for a, k in product(["real", "imag", "abs", "angle"], range(100))],
+            "fft_aggregated": [{"aggtype": s} for s in ["centroid", "variance", "skew", "kurtosis"]],
             "value_count": [{"value": value} for value in [0, 1, np.NaN, np.PINF, np.NINF]],
             "range_count": [{"min": -1, "max": 1}],
             "approximate_entropy": [{"m": 2, "r": r} for r in [.1, .3, .5, .7, .9]],
