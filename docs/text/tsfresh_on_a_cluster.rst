@@ -30,14 +30,27 @@ So, how can you use such a Distributor? You will have to pass it into as the dis
 
 .. code:: python
 
+    from tsfresh.examples.robot_execution_failures import \
+     download_robot_execution_failures, \
+     load_robot_execution_failures
     from tsfresh.feature_extraction import extract_features
     from tsfresh.utilities.distribution import MultiprocessingDistributor
 
-    # here we construct a Distributor that will spawn the calculations over four threads on the local machine
-    Distributor = MultiprocessingDistributor(n_workers==4, disable_progressbar=False,
+    download_robot_execution_failures()
+    df, y = load_robot_execution_failures()
+
+
+    # here we construct a Distributor that will spawn the calculations
+    # over four threads on the local machine
+    Distributor = MultiprocessingDistributor(n_workers=4,
+                                             disable_progressbar=False,
                                              progressbar_title="Feature Extraction")
-    # we will just have to pass the Distributor object to the feature extraction, along the other parameters
-    X = extract_features(distributor=Distributor, ...)
+
+    # we will just have to pass the Distributor object to
+    # the feature extraction, along the other parameters
+    X = extract_features(timeseries_container=df,
+                     column_id='id', column_sort='time',
+                     distributor=Distributor)
 
 
 Using dask to distribute the calculations
