@@ -180,7 +180,7 @@ class MapDistributor(Distributor):
     Distributor using the python build-in map, which calculates each job sequentially one after the other.
     """
 
-    def __init__(self, disable_progressbar, progressbar_title):
+    def __init__(self, disable_progressbar=False, progressbar_title="Feature Extraction"):
         """
         Creates a new MapDistributor instance
 
@@ -317,7 +317,6 @@ class ClusterDaskDistributor(Distributor):
 
     def close(self):
         """
-
         Closes the connection to the Dask Scheduler
 
         :return:
@@ -330,7 +329,7 @@ class MultiprocessingDistributor(Distributor):
     Distributor using a multiprocessing Pool to calculate the jobs in parallel on the local machine.
     """
 
-    def __init__(self, n_workers, disable_progressbar, progressbar_title):
+    def __init__(self, n_workers, disable_progressbar=False, progressbar_title="Feature Extraction"):
         """
         Creates a new MultiprocessingDistributor instance
 
