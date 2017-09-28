@@ -17,7 +17,7 @@ from tsfresh import defaults
 from tsfresh.feature_extraction import feature_calculators
 from tsfresh.feature_extraction.settings import ComprehensiveFCParameters
 from tsfresh.utilities import dataframe_functions, profiling
-from tsfresh.utilities.distribution import MapDistributor, MultiprocessingDistributor, Distributor
+from tsfresh.utilities.distribution import MapDistributor, MultiprocessingDistributor, DistributorBaseClass
 from tsfresh.utilities.string_manipulation import convert_to_output_format
 
 _logger = logging.getLogger(__name__)
@@ -209,7 +209,7 @@ def _do_extraction(df, column_id, column_value, column_kind,
 
     :param distributor: Advanced parameter:  See the utilities/distribution.py for more information.
                          Leave to None, if you want TSFresh to choose the best distributor.
-    :type distributor: Distributor
+    :type distributor: DistributorBaseClass
 
     :return: the extracted features
     :rtype: pd.DataFrame
@@ -225,8 +225,8 @@ def _do_extraction(df, column_id, column_value, column_kind,
             distributor = MultiprocessingDistributor(n_workers=n_jobs, disable_progressbar=disable_progressbar,
                                                      progressbar_title="Feature Extraction")
 
-    if not isinstance(distributor, Distributor):
-        raise ValueError("the passed distributor is neither None nor an IP address or a Distributor object")
+    if not isinstance(distributor, DistributorBaseClass):
+        raise ValueError("the passed distributor is neither None nor an IP address or a DistributorBaseClass object")
 
     kwargs = dict(default_fc_parameters=default_fc_parameters, kind_to_fc_parameters=kind_to_fc_parameters)
     result = distributor.map_reduce(_do_extraction_on_chunk, data=data_in_chunks, chunk_size=chunk_size,

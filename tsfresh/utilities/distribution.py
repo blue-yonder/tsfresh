@@ -39,14 +39,14 @@ def _function_with_partly_reduce(chunk_list, map_function, kwargs):
     return results
 
 
-class Distributor:
+class DistributorBaseClass:
     """
     The distributor abstract base class.
     
-    The main purpose of the instances of the Distributor subclasses is to evaluate a function (called map_function)
+    The main purpose of the instances of the DistributorBaseClass subclasses is to evaluate a function (called map_function)
     on a list of data items (called data).
     
-    This is done on chunks of the data, meaning, that the Distributor classes will chunk the data into chunks, 
+    This is done on chunks of the data, meaning, that the DistributorBaseClass classes will chunk the data into chunks,
     distribute the data and apply the feature calculator functions from
     :mod:`tsfresh.feature_extraction.feature_calculators` on the time series.
     
@@ -78,7 +78,7 @@ class Distributor:
 
     def __init__(self):
         """
-        Constructs the Distributor class
+        Constructs the DistributorBaseClass class
         """
         raise NotImplementedError
 
@@ -101,12 +101,12 @@ class Distributor:
 
     def map_reduce(self, map_function, data, function_kwargs=None, chunk_size=None, data_length=None):
         """
-        This method contains the core functionality of the Distributor class.
+        This method contains the core functionality of the DistributorBaseClass class.
         
         It maps the map_function to each element of the data and reduces the results to return a flattened list.
 
         How the jobs are calculated, is determined by the classes 
-        :func:`tsfresh.utilities.distribution.Distributor.distribute` method, which can distribute the jobs in multiple
+        :func:`tsfresh.utilities.distribution.DistributorBaseClass.distribute` method, which can distribute the jobs in multiple
         threads, across multiple processing units etc.
 
         To not transport each element of the data individually, the data is split into chunks, according to the chunk
@@ -170,12 +170,12 @@ class Distributor:
 
     def close(self):
         """
-        Abstract base function to clean the Distributor after use, e.g. close the connection to a DaskScheduler
+        Abstract base function to clean the DistributorBaseClass after use, e.g. close the connection to a DaskScheduler
         """
         pass
 
 
-class MapDistributor(Distributor):
+class MapDistributor(DistributorBaseClass):
     """
     Distributor using the python build-in map, which calculates each job sequentially one after the other.
     """
@@ -219,7 +219,7 @@ class MapDistributor(Distributor):
         return 1
 
 
-class LocalDaskDistributor(Distributor):
+class LocalDaskDistributor(DistributorBaseClass):
     """
     Distributor using a local dask cluster and inproc communication.
     """
@@ -264,7 +264,7 @@ class LocalDaskDistributor(Distributor):
         self.client.close()
 
 
-class ClusterDaskDistributor(Distributor):
+class ClusterDaskDistributor(DistributorBaseClass):
     """
     Distributor using a dask cluster, meaning that the calculation is spread over a cluster
     """
@@ -321,7 +321,7 @@ class ClusterDaskDistributor(Distributor):
         self.client.close()
 
 
-class MultiprocessingDistributor(Distributor):
+class MultiprocessingDistributor(DistributorBaseClass):
     """
     Distributor using a multiprocessing Pool to calculate the jobs in parallel on the local machine.
     """
