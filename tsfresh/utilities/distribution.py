@@ -134,12 +134,15 @@ class Distributor:
 
         chunk_generator = self.partition(data, chunk_size=chunk_size)
 
-        total_number_of_expected_results = math.ceil(data_length / chunk_size)
-
         map_kwargs = {"map_function": map_function, "kwargs": function_kwargs}
-        result = tqdm(self.distribute(_function_with_partly_reduce, chunk_generator, map_kwargs),
-                      total=total_number_of_expected_results,
-                      desc=self.progressbar_title, disable=self.disable_progressbar)
+
+        if hasattr(self, "progressbar_title"):
+            total_number_of_expected_results = math.ceil(data_length / chunk_size)
+            result = tqdm(self.distribute(_function_with_partly_reduce, chunk_generator, map_kwargs),
+                          total=total_number_of_expected_results,
+                          desc=self.progressbar_title, disable=self.disable_progressbar)
+        else:
+            result = self.distribute(_function_with_partly_reduce, chunk_generator, map_kwargs),
 
         result = list(itertools.chain.from_iterable(result))
 
