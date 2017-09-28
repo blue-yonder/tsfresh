@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 # This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2017
-
 """
 This module contains the Distributor class, such objects are used to distribute the calculation of features. 
 Essentially, a Distributor organizes the application of feature calculators to data chunks.
@@ -42,21 +41,23 @@ def _function_with_partly_reduce(chunk_list, map_function, kwargs):
 
 class Distributor:
     """
-    The distributor base class. 
+    The distributor abstract base class.
     
-    The main purpose of the instances of this type is to evaluate a function (called map_function) on a list of data 
-    items (called data).
+    The main purpose of the instances of the Distributor subclasses is to evaluate a function (called map_function)
+    on a list of data items (called data).
     
     This is done on chunks of the data, meaning, that the Distributor classes will chunk the data into chunks, 
-    distribute the data and apply the function on the elements of the chunks.  
+    distribute the data and apply the feature calculator functions from
+    :mod:`tsfresh.feature_extraction.feature_calculators` on the time series.
     
-    Dependent on the implementation of the distribute function, this is done in parallel or using a cluster of nodes
+    Dependent on the implementation of the distribute function, this is done in parallel or using a cluster of nodes.
     """
 
     @staticmethod
     def partition(data, chunk_size):
         """
-        This generator chunks a list of data into slices of size chunk_size, the last slice can be shorter
+        This generator chunks a list of data into slices of length chunk_size. If the chunk_size is not a divider of the
+        data length, the last slice will be shorter than chunk_size.
 
         :param data: The data to chunk.
         :type data: list
@@ -108,8 +109,9 @@ class Distributor:
         :func:`tsfresh.utilities.distribution.Distributor.distribute`method, which can distribute the jobs in multiple 
         threads, across multiple processing units etc.
 
-        To not transport each element of the data invidually, the data is chunked, according to the chunk size (or an 
-        empirical guess if none is given). By this, worker processes not tiny but adequate sized parts of the data.
+        To not transport each element of the data individually, the data is split into chunks, according to the chunk
+        size (or an empirical guess if none is given). By this, worker processes not tiny but adequate sized parts of
+        the data.
 
         :param map_function: a function to apply to each data item.
         :type map_function: callable
@@ -176,9 +178,43 @@ class MapDistributor(Distributor):
     Distributor using the python build-in map, which calculates each job sequentially one after the other.
     """
 
-    def __init__(self, n_workers=1, disable_progressbar=False, progressbar_title=None):
+    def __init__(self, disable_progressbar, progressbar_title):
         """
         Creates a new MapDistributor instance
+
+        :param disable_progressbar: whether to show a progressbar or not.
+        :type disable_progressbar: bool
+        :param progressbar_title: the title of the progressbar
+        :type progressbar_title: basestring
+        """
+        self.disable_progressbar = disable_progressbar
+        self.progressbar_title = progressbar_title
+
+    def distribute(self, func, partitioned_chunks, kwargs):
+        """
+        Calculates the features in a sequential fashion by pythons map command
+
+        :param func: the function to send to each worker.
+        :type func: callable
+        :param partitioned_chunks: The list of data chunks - each element is again
+            a list of chunks - and should be processed by one worker.
+        :type partitioned_chunks: iterable
+
+        :return: The result of the calculation as a list - each item should be the result of the application of func
+            to a single element.
+        """
+        return map(partial(func, **kwargs), partitioned_chunks)
+
+
+class LocalDaskDistributor(Distributor):
+    """
+    Distributor using a local dask cluster and inproc communication.
+    """
+
+    def __init__(self, n_workers, disable_progressbar, progressbar_title):
+        """
+
+        Initiates a LocalDaskDistributor instance.
 
         :param n_workers: How many workers should the distributor have. How this information is used
             depends on the implementation of the given distributor.
@@ -188,30 +224,35 @@ class MapDistributor(Distributor):
         :param progressbar_title: the title of the progressbar
         :type progressbar_title: basestring
         """
-
-        self.n_workers = n_workers or 1
-        self.disable_progressbar = disable_progressbar
-        self.progressbar_title = progressbar_title
-    
-    def distribute(self, func, partitioned_chunks, kwargs):
-        return map(partial(func, **kwargs), partitioned_chunks)
-
-class LocalDaskDistributor(Distributor):
-    """
-    Distributor using a local dask cluster and inproc communication.
-    """
-    def __init__(self, n_workers, disable_progressbar, progressbar_title):
         Distributor.__init__(self, n_workers, disable_progressbar, progressbar_title)
 
         from distributed import LocalCluster, Client
+
         cluster = LocalCluster(n_workers=self.n_workers, processes=True)
         self.client = Client(cluster)
 
     def distribute(self, func, partitioned_chunks):
+        """
+        Calculates the features in a parallel fashion by distributing the map command to the dask workers on a local
+        machine
+
+        :param func: the function to send to each worker.
+        :type func: callable
+        :param partitioned_chunks: The list of data chunks - each element is again
+            a list of chunks - and should be processed by one worker.
+        :type partitioned_chunks: iterable
+
+        :return: The result of the calculation as a list - each item should be the result of the application of func
+            to a single element.
+        """
         result = self.client.gather(self.client.map(func, partitioned_chunks))
         return result
 
     def close(self):
+        """
+        Closes the connection to the local Dask Scheduler
+        :return:
+        """
         self.client.close()
 
 
@@ -219,9 +260,14 @@ class ClusterDaskDistributor(Distributor):
     """
     Distributor using a dask cluster, meaning that the calculation is spread over a cluster
     """
-    def __init__(self, n_workers, disable_progressbar, progressbar_title, address):
 
-        Distributor.__init__(self, n_workers, disable_progressbar, progressbar_title)
+    def __init__(self, address):
+        """
+        Sets up a distributor that connects to a Dask Scheduler to distribute the calculaton of the features
+
+        :param address: the ip address and port number of the Dask Scheduler
+        :type address: str
+        """
 
         from distributed import Client
         from tsfresh.utilities.string_manipulation import is_valid_ip_and_port
@@ -229,22 +275,43 @@ class ClusterDaskDistributor(Distributor):
         assert is_valid_ip_and_port(address)
         self.client = Client(address=address)
 
-    def _calculate_best_chunksize(self, data_length):
+    def _calculate_best_chunk_size(self, data_length):
         """
-        Uses the number of dask workers during execution to setup the chunksize
-        """
+        Uses the number of dask workers in the cluster (during execution time, meaning when you start the extraction)
+        to find the optimal chunk_size.
 
+        :param data_length: A length which defines how many calculations there need to be.
+        :type data_length: int
+        """
         n_workers = len(self.client.scheduler_info()["workers"])
-        chunksize, extra = divmod(data_length, n_workers * 5)
+        chunk_size, extra = divmod(data_length, n_workers * 5)
         if extra:
-            chunksize += 1
-        return chunksize
+            chunk_size += 1
+        return chunk_size
 
     def distribute(self, func, partitioned_chunks):
+        """
+        Calculates the features in a parallel fashion by distributing the map command to the dask workers on a cluster
+
+        :param func: the function to send to each worker.
+        :type func: callable
+        :param partitioned_chunks: The list of data chunks - each element is again
+            a list of chunks - and should be processed by one worker.
+        :type partitioned_chunks: iterable
+
+        :return: The result of the calculation as a list - each item should be the result of the application of func
+            to a single element.
+        """
         result = self.client.gather(self.client.map(func, partitioned_chunks))
         return result
 
     def close(self):
+        """
+
+        Closes the connection to the Dask Scheduler
+
+        :return:
+        """
         self.client.close()
 
 
@@ -252,15 +319,44 @@ class MultiprocessingDistributor(Distributor):
     """
     Distributor using a multiprocessing Pool to calculate the jobs in parallel on the local machine.
     """
+
     def __init__(self, n_workers, disable_progressbar, progressbar_title):
+        """
+        Creates a new MultiprocessingDistributor instance
+
+        :param n_workers: How many workers should the distributor have. How this information is used
+            depends on the implementation of the given distributor.
+        :type n_workers: int
+        :param disable_progressbar: whether to show a progressbar or not.
+        :type disable_progressbar: bool
+        :param progressbar_title: the title of the progressbar
+        :type progressbar_title: basestring
+        """
         Distributor.__init__(self, n_workers, disable_progressbar, progressbar_title)
 
         self.pool = Pool(processes=self.n_workers)
 
     def distribute(self, func, partitioned_chunks, kwargs):
+        """
+        Calculates the features in a parallel fashion by distributing the map command to a thread pool
+
+        :param func: the function to send to each worker.
+        :type func: callable
+        :param partitioned_chunks: The list of data chunks - each element is again
+            a list of chunks - and should be processed by one worker.
+        :type partitioned_chunks: iterable
+
+        :return: The result of the calculation as a list - each item should be the result of the application of func
+            to a single element.
+        """
         return self.pool.imap_unordered(partial(func, **kwargs), partitioned_chunks)
 
     def close(self):
+        """
+        Collects the result from the workers and closes the thread pool.
+
+        :return:
+        """
         self.pool.close()
         self.pool.terminate()
         self.pool.join()
