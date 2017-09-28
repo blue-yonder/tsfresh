@@ -81,7 +81,7 @@ class Distributor:
         """
         raise NotImplementedError
 
-    def _calculate_best_chunksize(self, data_length):
+    def _calculate_best_chunk_size(self, data_length):
         """
         Calculates the best chunk size for a list of length data_length. The current implemented formula is more or 
         less an empirical result for multiprocessing case on one machine.
@@ -93,10 +93,10 @@ class Distributor:
 
         TODO: Investigate which is the best chunk size for different settings.
         """
-        chunksize, extra = divmod(data_length, self.n_workers * 5)
+        chunk_size, extra = divmod(data_length, self.n_workers * 5)
         if extra:
-            chunksize += 1
-        return chunksize
+            chunk_size += 1
+        return chunk_size
 
     def map_reduce(self, map_function, data, function_kwargs=None, chunk_size=None, data_length=None):
         """
@@ -130,7 +130,7 @@ class Distributor:
             data_length = len(data)
 
         if not chunk_size:
-            chunk_size = self._calculate_best_chunksize(data_length)
+            chunk_size = self._calculate_best_chunk_size(data_length)
 
         chunk_generator = self.partition(data, chunk_size=chunk_size)
 
