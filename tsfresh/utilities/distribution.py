@@ -106,7 +106,7 @@ class Distributor:
         It maps the map_function to each element of the data and reduces the results to return a flattened list.
 
         How the jobs are calculated, is determined by the classes 
-        :func:`tsfresh.utilities.distribution.Distributor.distribute`method, which can distribute the jobs in multiple 
+        :func:`tsfresh.utilities.distribution.Distributor.distribute` method, which can distribute the jobs in multiple
         threads, across multiple processing units etc.
 
         To not transport each element of the data individually, the data is split into chunks, according to the chunk

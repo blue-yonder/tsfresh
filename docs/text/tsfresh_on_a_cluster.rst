@@ -39,6 +39,6 @@ At the moment, we provide a Dask distributor, meaning that if you have a Dask cl
 on it.
 
 To construct your custom Distributor, you will have to define an object that inherits from the abstract base class
-:class:`tsfresh.utilities.distribution.Distribution`
+:class:`tsfresh.utilities.distribution.Distributor`
 
 
