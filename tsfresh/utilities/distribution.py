@@ -185,7 +185,6 @@ class MapDistributor(Distributor):
     def distribute(self, func, partitioned_chunks, kwargs):
         return map(partial(func, **kwargs), partitioned_chunks)
 
-
 class LocalDaskDistributor(Distributor):
     """
     Distributor using a local dask cluster and inproc communication.
@@ -210,9 +209,13 @@ class ClusterDaskDistributor(Distributor):
     Distributor using a dask cluster, meaning that the calculation is spread over a cluster
     """
     def __init__(self, n_workers, disable_progressbar, progressbar_title, address):
+
         Distributor.__init__(self, n_workers, disable_progressbar, progressbar_title)
 
         from distributed import Client
+        from tsfresh.utilities.string_manipulation import is_valid_ip_and_port
+
+        assert is_valid_ip_and_port(address)
         self.client = Client(address=address)
 
     def _calculate_best_chunksize(self, data_length):
