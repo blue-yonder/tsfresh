@@ -25,6 +25,20 @@ So, Distributor will, in the following order,
     5. close all connections in the end
     6. combine the results, called reduce, into the feature matrix
 
+So, how can you use such a Distributor? You will have to pass it into as the distributor argument to the
+:func:`tsfresh.feature_extraction.extract_features` method.
+
+.. code:: python
+
+    from tsfresh.feature_extraction import extract_features
+    from tsfresh.utilities.distribution import MultiprocessingDistributor
+
+    # here we construct a Distributor that will spawn the calculations over four threads on the local machine
+    Distributor = MultiprocessingDistributor(n_workers==4, disable_progressbar=False,
+                                             progressbar_title="Feature Extraction")
+    # we will just have to pass the Distributor object to the feature extraction, along the other parameters
+    X = extract_features(distributor=Distributor, ...)
+
 
 Using dask to distribute the calculations
 '''''''''''''''''''''''''''''''''''''''''
