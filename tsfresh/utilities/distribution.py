@@ -75,21 +75,11 @@ class Distributor:
 
             yield next_chunk
 
-    def __init__(self, n_workers=1, disable_progressbar=False, progressbar_title=None):
+    def __init__(self):
         """
-        Creates a new Distributor instance
-        
-        :param n_workers: How many workers should the distributor have. How this information is used
-            depends on the implementation of the given distributor.
-        :type n_workers: int
-        :param disable_progressbar: whether to show a progressbar or not.
-        :type disable_progressbar: bool
-        :param progressbar_title: the title of the progressbar
-        :type progressbar_title: basestring
+        Constructs the Distributor class
         """
-        self.n_workers = n_workers or 1
-        self.disable_progressbar = disable_progressbar
-        self.progressbar_title = progressbar_title
+        raise NotImplementedError
 
     def _calculate_best_chunksize(self, data_length):
         """
