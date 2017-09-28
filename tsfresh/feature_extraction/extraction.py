@@ -12,15 +12,13 @@ import warnings
 
 import numpy as np
 import pandas as pd
-import six
 
 from tsfresh import defaults
 from tsfresh.feature_extraction import feature_calculators
 from tsfresh.feature_extraction.settings import ComprehensiveFCParameters
 from tsfresh.utilities import dataframe_functions, profiling
-from tsfresh.utilities.distribution import MapDistributor, MultiprocessingDistributor, ClusterDaskDistributor, \
-    Distributor
-from tsfresh.utilities.string_manipulation import convert_to_output_format, is_valid_ip_and_port
+from tsfresh.utilities.distribution import MapDistributor, MultiprocessingDistributor, Distributor
+from tsfresh.utilities.string_manipulation import convert_to_output_format
 
 _logger = logging.getLogger(__name__)
 
