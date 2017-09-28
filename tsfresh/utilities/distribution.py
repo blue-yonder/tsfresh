@@ -209,6 +209,15 @@ class MapDistributor(Distributor):
         """
         return map(partial(func, **kwargs), partitioned_chunks)
 
+    def _calculate_best_chunk_size(self, data_length):
+        """
+        For the map command, which calculates the features sequentially, a the chunk_size of 1 will be used.
+
+        :param data_length: A length which defines how many calculations there need to be.
+        :type data_length: int
+        """
+        return 1
+
 
 class LocalDaskDistributor(Distributor):
     """
