@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 import mock
+import warnings
 
 from tsfresh.feature_selection.relevance import infer_ml_task, calculate_relevance_table, combine_relevance_tables, \
     get_feature_type
@@ -86,6 +87,17 @@ class TestCalculateRelevanceTable:
         significance_test_feature_binary_mock.assert_called_once_with(X['feature_binary'], y=y_real)
         significance_test_feature_real_mock.assert_called_once_with(X['feature_real'], y=y_real)
 
+    @mock.patch('tsfresh.feature_selection.relevance.target_real_feature_real_test')
+    @mock.patch('tsfresh.feature_selection.relevance.target_real_feature_binary_test')
+    def test_warning_for_no_relevant_feature(self, significance_test_feature_binary_mock,
+                                             significance_test_feature_real_mock, X, y_real):
+        significance_test_feature_binary_mock.return_value = 0.95
+        significance_test_feature_real_mock.return_value = 0.95
+
+        with mock.patch('logging.Logger.warning') as m:
+            relevance_table = calculate_relevance_table(X, y_real, n_jobs=0, ml_task="regression")
+            m.assert_called_with('No feature was found relevant for regression for fdr level = 0.05. '
+                                 'Consider using a lower fdr level or other features.')
 
 class TestCombineRelevanceTables:
     @pytest.fixture()
