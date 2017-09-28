@@ -4,7 +4,7 @@
 
 # todo: complement this docstring and reference to christ paper
 """
-Contains the methods from the following paper about FRESH [2]
+Contains the methods from the following paper about the FRESH algorithm [2]_
 
 Fresh is based on hypothesis tests that individually check the significance of every generated feature on the target.
 It makes sure that only features are kept, that are relevant for the regression or classification task at hand. FRESH
