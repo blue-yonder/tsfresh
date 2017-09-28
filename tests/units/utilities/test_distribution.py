@@ -4,14 +4,14 @@
 
 from unittest import TestCase
 import numpy as np
-from tsfresh.utilities.distribution import Distributor
+from tsfresh.utilities.distribution import MapDistributor
 
 
-class DistributorTestCase(TestCase):
+class MapDistributorTestCase(TestCase):
 
     def test_partion(self):
 
-        distributor = Distributor()
+        distributor = MapDistributor()
 
         data = [1, 3, 10, -10, 343.0]
         distro = distributor.partition(data, 3)
@@ -25,13 +25,13 @@ class DistributorTestCase(TestCase):
 
     def test__calculate_best_chunksize(self):
 
-        distributor = Distributor(n_workers=2)
+        distributor = MapDistributor(n_workers=2)
         self.assertEqual(distributor._calculate_best_chunksize(10), 1)
         self.assertEqual(distributor._calculate_best_chunksize(11), 2)
         self.assertEqual(distributor._calculate_best_chunksize(100), 10)
         self.assertEqual(distributor._calculate_best_chunksize(101), 11)
 
-        distributor = Distributor(n_workers=3)
+        distributor = MapDistributor(n_workers=3)
         self.assertEqual(distributor._calculate_best_chunksize(10), 1)
         self.assertEqual(distributor._calculate_best_chunksize(30), 2)
         self.assertEqual(distributor._calculate_best_chunksize(31), 3)
