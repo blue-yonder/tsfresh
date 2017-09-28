@@ -7,11 +7,11 @@ import numpy as np
 from tsfresh.utilities.distribution import MultiprocessingDistributor
 
 
-class MultiprocessingDistributor(TestCase):
+class MultiprocessingDistributorTestCase(TestCase):
 
     def test_partion(self):
 
-        distributor = MapDistributor()
+        distributor = MultiprocessingDistributor(n_workers=1)
 
         data = [1, 3, 10, -10, 343.0]
         distro = distributor.partition(data, 3)
@@ -23,15 +23,25 @@ class MultiprocessingDistributor(TestCase):
         self.assertEqual(next(distro), [0, 1])
         self.assertEqual(next(distro), [2, 3])
 
-    def test__calculate_best_chunksize(self):
+    def test__calculate_best_chunk_size(self):
 
-        distributor = MapDistributor(n_workers=2)
-        self.assertEqual(distributor._calculate_best_chunksize(10), 1)
-        self.assertEqual(distributor._calculate_best_chunksize(11), 2)
-        self.assertEqual(distributor._calculate_best_chunksize(100), 10)
-        self.assertEqual(distributor._calculate_best_chunksize(101), 11)
+        distributor = MultiprocessingDistributor(n_workers=2)
+        self.assertEqual(distributor._calculate_best_chunk_size(10), 1)
+        self.assertEqual(distributor._calculate_best_chunk_size(11), 2)
+        self.assertEqual(distributor._calculate_best_chunk_size(100), 10)
+        self.assertEqual(distributor._calculate_best_chunk_size(101), 11)
 
         distributor = MultiprocessingDistributor(n_workers=3)
-        self.assertEqual(distributor._calculate_best_chunksize(10), 1)
-        self.assertEqual(distributor._calculate_best_chunksize(30), 2)
-        self.assertEqual(distributor._calculate_best_chunksize(31), 3)
+        self.assertEqual(distributor._calculate_best_chunk_size(10), 1)
+        self.assertEqual(distributor._calculate_best_chunk_size(30), 2)
+        self.assertEqual(distributor._calculate_best_chunk_size(31), 3)
+
+
+    # todo: test distribute
+    # todo: test map
+    # todo: test close
+    # todo: test dask
+
+
+    # todo: error for test not valid distributor
+    # todo: test ipaddresses at clusterdaskdistributor
