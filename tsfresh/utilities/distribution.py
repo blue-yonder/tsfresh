@@ -260,7 +260,6 @@ class LocalDaskDistributor(Distributor):
     def close(self):
         """
         Closes the connection to the local Dask Scheduler
-        :return:
         """
         self.client.close()
 
@@ -318,8 +317,6 @@ class ClusterDaskDistributor(Distributor):
     def close(self):
         """
         Closes the connection to the Dask Scheduler
-
-        :return:
         """
         self.client.close()
 
@@ -365,8 +362,6 @@ class MultiprocessingDistributor(Distributor):
     def close(self):
         """
         Collects the result from the workers and closes the thread pool.
-
-        :return:
         """
         self.pool.close()
         self.pool.terminate()
