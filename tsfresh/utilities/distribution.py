@@ -154,12 +154,14 @@ class Distributor:
         """
         This abstract base function distributes the work among workers, which can be threads or nodes in a cluster.
         Must be implemented in the derived classes.
-        
+
         :param func: the function to send to each worker.
         :type func: callable
         :param partitioned_chunks: The list of data chunks - each element is again
             a list of chunks - and should be processed by one worker.
-        :type partitioned_chunks: iterable 
+        :type partitioned_chunks: iterable
+        :param kwargs: parameters for the map function
+        :type kwargs: dict of string to parameter
         
         :return: The result of the calculation as a list - each item should be the result of the application of func 
             to a single element.
@@ -199,6 +201,8 @@ class MapDistributor(Distributor):
         :param partitioned_chunks: The list of data chunks - each element is again
             a list of chunks - and should be processed by one worker.
         :type partitioned_chunks: iterable
+        :param kwargs: parameters for the map function
+        :type kwargs: dict of string to parameter
 
         :return: The result of the calculation as a list - each item should be the result of the application of func
             to a single element.
@@ -211,27 +215,21 @@ class LocalDaskDistributor(Distributor):
     Distributor using a local dask cluster and inproc communication.
     """
 
-    def __init__(self, n_workers, disable_progressbar, progressbar_title):
+    def __init__(self, n_workers):
         """
 
         Initiates a LocalDaskDistributor instance.
 
-        :param n_workers: How many workers should the distributor have. How this information is used
-            depends on the implementation of the given distributor.
+        :param n_workers: How many workers should the local dask cluster have?
         :type n_workers: int
-        :param disable_progressbar: whether to show a progressbar or not.
-        :type disable_progressbar: bool
-        :param progressbar_title: the title of the progressbar
-        :type progressbar_title: basestring
         """
-        Distributor.__init__(self, n_workers, disable_progressbar, progressbar_title)
 
         from distributed import LocalCluster, Client
 
-        cluster = LocalCluster(n_workers=self.n_workers, processes=True)
+        cluster = LocalCluster(n_workers=n_workers, processes=True)
         self.client = Client(cluster)
 
-    def distribute(self, func, partitioned_chunks):
+    def distribute(self, func, partitioned_chunks, kwargs):
         """
         Calculates the features in a parallel fashion by distributing the map command to the dask workers on a local
         machine
@@ -241,6 +239,8 @@ class LocalDaskDistributor(Distributor):
         :param partitioned_chunks: The list of data chunks - each element is again
             a list of chunks - and should be processed by one worker.
         :type partitioned_chunks: iterable
+        :param kwargs: parameters for the map function
+        :type kwargs: dict of string to parameter
 
         :return: The result of the calculation as a list - each item should be the result of the application of func
             to a single element.
@@ -302,6 +302,7 @@ class ClusterDaskDistributor(Distributor):
         :return: The result of the calculation as a list - each item should be the result of the application of func
             to a single element.
         """
+
         result = self.client.gather(self.client.map(func, partitioned_chunks))
         return result
 
@@ -324,17 +325,17 @@ class MultiprocessingDistributor(Distributor):
         """
         Creates a new MultiprocessingDistributor instance
 
-        :param n_workers: How many workers should the distributor have. How this information is used
-            depends on the implementation of the given distributor.
+        :param n_workers: How many workers should the multiprocessing pool have?
         :type n_workers: int
         :param disable_progressbar: whether to show a progressbar or not.
         :type disable_progressbar: bool
         :param progressbar_title: the title of the progressbar
         :type progressbar_title: basestring
         """
-        Distributor.__init__(self, n_workers, disable_progressbar, progressbar_title)
-
-        self.pool = Pool(processes=self.n_workers)
+        self.pool = Pool(processes=n_workers)
+        self.n_workers = n_workers
+        self.disable_progressbar = disable_progressbar
+        self.progressbar_title = progressbar_title
 
     def distribute(self, func, partitioned_chunks, kwargs):
         """
@@ -345,6 +346,8 @@ class MultiprocessingDistributor(Distributor):
         :param partitioned_chunks: The list of data chunks - each element is again
             a list of chunks - and should be processed by one worker.
         :type partitioned_chunks: iterable
+        :param kwargs: parameters for the map function
+        :type kwargs: dict of string to parameter
 
         :return: The result of the calculation as a list - each item should be the result of the application of func
             to a single element.
