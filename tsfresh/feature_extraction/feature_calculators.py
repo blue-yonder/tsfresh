@@ -394,14 +394,12 @@ def abs_energy(x):
 @set_property("fctype", "simple")
 def cid_ce(x, normalize):
     """
-    This function calculator is an estimate for a time series complexity (A more complex time series has more peaks,
+    This function calculator is an estimate for a time series complexity [1] (A more complex time series has more peaks,
     valleys etc.). It calculates the value of
 
     .. math::
 
         \\sqrt{ \\sum_{i=0}^{n-2lag} ( x_{i} - x_{i+1})^2 }
-
-    This measure was proposed in
 
     .. rubric:: References
 
