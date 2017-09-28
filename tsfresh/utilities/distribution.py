@@ -172,6 +172,24 @@ class MapDistributor(Distributor):
     """
     Distributor using the python build-in map, which calculates each job sequentially one after the other.
     """
+
+    def __init__(self, n_workers=1, disable_progressbar=False, progressbar_title=None):
+        """
+        Creates a new MapDistributor instance
+
+        :param n_workers: How many workers should the distributor have. How this information is used
+            depends on the implementation of the given distributor.
+        :type n_workers: int
+        :param disable_progressbar: whether to show a progressbar or not.
+        :type disable_progressbar: bool
+        :param progressbar_title: the title of the progressbar
+        :type progressbar_title: basestring
+        """
+
+        self.n_workers = n_workers or 1
+        self.disable_progressbar = disable_progressbar
+        self.progressbar_title = progressbar_title
+    
     def distribute(self, func, partitioned_chunks, kwargs):
         return map(partial(func, **kwargs), partitioned_chunks)
 
