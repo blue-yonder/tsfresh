@@ -112,10 +112,10 @@ def extract_features(timeseries_container, default_fc_parameters=None,
     :param profiling_filename: Where to save the profiling results.
     :type profiling_filename: basestring
 
-    :param distributor_class: Advanced parameter: set this to a class name that you want to use as a
+    :param distributor: Advanced parameter: set this to a class name that you want to use as a
              distributor. See the utilities/distribution.py for more information. Leave to None, if you want
              TSFresh to choose the best distributor.
-    :type distributor_class: class
+    :type distributor: class
 
     :return: The (maybe imputed) DataFrame containing extracted features.
     :rtype: pandas.DataFrame
