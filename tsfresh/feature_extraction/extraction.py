@@ -209,9 +209,8 @@ def _do_extraction(df, column_id, column_value, column_kind,
     :param disable_progressbar: Do not show a progressbar while doing the calculation.
     :type disable_progressbar: bool
 
-    :param distributor: Advanced parameter: set this to an instance name that you want to use as a
-             distributor. See the utilities/distribution.py for more information. Leave to None, if you want
-             TSFresh to choose the best distributor.
+    :param distributor: Advanced parameter:  See the utilities/distribution.py for more information.
+                         Leave to None, if you want TSFresh to choose the best distributor.
     :type distributor: Distributor
 
     :return: the extracted features
@@ -228,14 +227,6 @@ def _do_extraction(df, column_id, column_value, column_kind,
 
         distributor = distributor_class(n_workers=n_jobs, disable_progressbar=disable_progressbar,
                                         progressbar_title="Feature Extraction")
-
-    elif isinstance(distributor, six.string_types):
-
-        if is_valid_ip_and_port(distributor):
-            distributor = ClusterDaskDistributor(n_workers=n_jobs,  disable_progressbar=disable_progressbar,
-                                                 progressbar_title="Feature Extraction", address=distributor)
-        else:
-            raise ValueError(distributor + " is not a valid ip address")
 
     if not isinstance(distributor, Distributor):
         raise ValueError("the passed distributor is neither None nor an IP address or a Distributor object")
