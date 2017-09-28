@@ -4,10 +4,10 @@
 
 from unittest import TestCase
 import numpy as np
-from tsfresh.utilities.distribution import MapDistributor
+from tsfresh.utilities.distribution import MultiprocessingDistributor
 
 
-class MapDistributorTestCase(TestCase):
+class MultiprocessingDistributor(TestCase):
 
     def test_partion(self):
 
@@ -31,7 +31,7 @@ class MapDistributorTestCase(TestCase):
         self.assertEqual(distributor._calculate_best_chunksize(100), 10)
         self.assertEqual(distributor._calculate_best_chunksize(101), 11)
 
-        distributor = MapDistributor(n_workers=3)
+        distributor = MultiprocessingDistributor(n_workers=3)
         self.assertEqual(distributor._calculate_best_chunksize(10), 1)
         self.assertEqual(distributor._calculate_best_chunksize(30), 2)
         self.assertEqual(distributor._calculate_best_chunksize(31), 3)
