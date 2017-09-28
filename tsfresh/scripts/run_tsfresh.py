@@ -1,20 +1,23 @@
+# -*- coding: utf-8 -*-
+# This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
+# Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2017
 """
-Run the script with:
-```
-python run_tsfresh.py path_to_your_csv.csv
+This script can be run with:
+
+
+.. code-block:: bash
+
+   python run_tsfresh.py path_to_your_csv.csv
+
+A corresponding csv containing time series features will be
+saved as features_path_to_your_csv.csv
+
+There are a few limitations though
 
 - Currently this only samples to first 50 values.
 - Your csv must be space delimited.
 - Output is saved as path_to_your_csv.features.csv
 
-```
-e.g.:
-```
-python run_tsfresh.py data.txt
-```
-
-A corresponding csv containing time series features will be 
-saved as features_path_to_your_csv.csv
 """
 
 import pandas as pd
@@ -26,7 +29,7 @@ import os
 
 def _preprocess(df):
     """
-    given a dataframe where records are stored row-wise, rearrange it
+    given a DataFrame where records are stored row-wise, rearrange it
     such that records are stored column-wise.
     """
 

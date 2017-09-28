@@ -3,7 +3,8 @@
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
 """
-This module implements functions to download the Robot Execution Failures LP1 Data Set[1] and load it as as DataFrame.
+This module implements functions to download the Robot Execution Failures LP1 Data Set [1]_, [2]_, [3]_ and load it as
+as DataFrame.
 
 *Important:* You need to download the data set yourself, either manually or via the function
 :func:`~tsfresh.examples.robot_execution_failures.download_robot_execution_failures`
@@ -41,7 +42,9 @@ data_file_name = os.path.join(module_path, 'data', 'robotfailure-mld', 'lp1.data
 
 def download_robot_execution_failures():
     """
-    Download the Robot Execution Failures LP1 Data Set[1] from the UCI Machine Learning Repository[2] and store it locally.
+    Download the Robot Execution Failures LP1 Data Set[#1] from the UCI Machine Learning Repository [#2] and store it
+    locally.
+
     :return:
 
     Examples

@@ -35,10 +35,12 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
     >>> selector.fit(X_train, y_train)
 
     In this example the list of relevant features is empty:
+
     >>> selector.relevant_features
     >>> []
 
     The same holds for the feature importance:
+
     >>> selector.feature_importances_
     >>> array([], dtype=float64)
 

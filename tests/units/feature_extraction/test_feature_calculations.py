@@ -274,6 +274,15 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqualOnAllArrayTypes(abs_energy, [-1, 1.3], 2.69)
         self.assertEqualOnAllArrayTypes(abs_energy, [1], 1)
 
+    def test_cid_ce(self):
+        self.assertEqualOnAllArrayTypes(cid_ce, [1, 1, 1], 0, normalize=True)
+        self.assertEqualOnAllArrayTypes(cid_ce, [0, 4], 2, normalize=True)
+        self.assertEqualOnAllArrayTypes(cid_ce, [100, 104], 2, normalize=True)
+
+        self.assertEqualOnAllArrayTypes(cid_ce, [1, 1, 1], 0, normalize=False)
+        self.assertEqualOnAllArrayTypes(cid_ce, [0.5, 3.5, 7.5], 5, normalize=False)
+        self.assertEqualOnAllArrayTypes(cid_ce, [-4.33, -1.33, 2.67], 5, normalize=False)
+
     def test_ratio_beyond_r_sigma(self):
 
         x = [0, 1]*10 + [10, 20, -30] # std of x is 7.21, mean 3.04
@@ -472,6 +481,70 @@ class FeatureCalculationTestCase(TestCase):
         res = pd.Series(dict(fft_coefficient(x, param)))
         six.assertCountEqual(self, list(res.index), expected_index)
         self.assertIsNaN(res['coeff_10__attr_"real"'])
+
+    def test_fft_aggregated(self):
+        param = [
+            {"aggtype": "centroid"},
+            {"aggtype": "variance"},
+            {"aggtype": "skew"},
+            {"aggtype": "kurtosis"}
+        ]
+        expected_index = ['aggtype_"centroid"', 'aggtype_"variance"', 'aggtype_"skew"', 'aggtype_"kurtosis"']
+
+        x = np.arange(10)
+        res = pd.Series(dict(fft_aggregated(x, param)))
+        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertAlmostEqual(res['aggtype_"centroid"'], 1.135, places=3)
+        self.assertAlmostEqual(res['aggtype_"variance"'], 2.368, places=3)
+        self.assertAlmostEqual(res['aggtype_"skew"'], 1.249, places=3)
+        self.assertAlmostEqual(res['aggtype_"kurtosis"'], 3.643, places=3)
+
+        # Scalar multiplying the distribution should not change the results:
+        x = 10*x
+        res = pd.Series(dict(fft_aggregated(x, param)))
+        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertAlmostEqual(res['aggtype_"centroid"'], 1.135, places=3)
+        self.assertAlmostEqual(res['aggtype_"variance"'], 2.368, places=3)
+        self.assertAlmostEqual(res['aggtype_"skew"'], 1.249, places=3)
+        self.assertAlmostEqual(res['aggtype_"kurtosis"'], 3.643, places=3)
+
+        # The fft of a sign wave is a dirac delta, variance and skew should be near zero, kurtosis should be near 3:
+        # However, in the discrete limit, skew and kurtosis blow up in a manner that is noise dependent and are
+        # therefore bad features, therefore an nan should be returned for these values
+        x = np.sin(2 * np.pi / 10 * np.arange(30))
+        res = pd.Series(dict(fft_aggregated(x, param)))
+        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertAlmostEqual(res['aggtype_"centroid"'], 3., places=5)
+        self.assertAlmostEqual(res['aggtype_"variance"'], 0., places=5)
+        self.assertIsNaN(res['aggtype_"skew"'])
+        self.assertIsNaN(res['aggtype_"kurtosis"'])
+
+        # Gaussian test:
+        def normal(y, mean_, sigma_):
+            return 1/(2 * np.pi * sigma_ ** 2) * np.exp(-(y - mean_) ** 2 / (2 * sigma_ ** 2))
+        mean_ = 500.; sigma_ = 1.; range_ = int(2*mean_)
+        x = list(map(lambda x: normal(x, mean_, sigma_), range(range_)))
+
+        # The fourier transform of a Normal dist in the positive halfspace is a half normal,
+        # Hand calculated values of centroid and variance based for the half-normal dist:
+        # (Ref: https://en.wikipedia.org/wiki/Half-normal_distribution)
+        expected_fft_centroid = (range_/(2*np.pi*sigma_))*np.sqrt(2/np.pi)
+        expected_fft_var = (range_/(2*np.pi*sigma_))**2*(1-2/np.pi)
+
+        # Calculate values for unit test:
+        res = pd.Series(dict(fft_aggregated(x, param)))
+        six.assertCountEqual(self, list(res.index), expected_index)
+
+        # Compare against hand calculated values:
+        rel_diff_allowed = 0.02
+        self.assertAlmostEqual(
+            res['aggtype_"centroid"'], expected_fft_centroid,
+            delta=rel_diff_allowed*expected_fft_centroid
+        )
+        self.assertAlmostEqual(
+            res['aggtype_"variance"'], expected_fft_var,
+            delta=rel_diff_allowed*expected_fft_var
+        )
 
     def test_number_peaks(self):
         x = np.array([0, 1, 2, 1, 0, 1, 2, 3, 4, 5, 4, 3, 2, 1])

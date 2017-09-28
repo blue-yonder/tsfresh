@@ -392,6 +392,44 @@ def abs_energy(x):
 
 
 @set_property("fctype", "simple")
+def cid_ce(x, normalize):
+    """
+    This function calculator is an estimate for a time series complexity [1] (A more complex time series has more peaks,
+    valleys etc.). It calculates the value of
+
+    .. math::
+
+        \\sqrt{ \\sum_{i=0}^{n-2lag} ( x_{i} - x_{i+1})^2 }
+
+    .. rubric:: References
+
+    |  [1] Batista, Gustavo EAPA, et al (2014).
+    |  CID: an efficient complexity-invariant distance for time series.
+    |  Data Mining and Knowledge Difscovery 28.3 (2014): 634-669.
+
+    :param x: the time series to calculate the feature of
+    :type x: pandas.Series
+    :param normalize: should the time series be z-transformed?
+    :type normalize: bool
+
+    :return: the value of this feature
+    :return type: float
+    """
+
+    x = np.asarray(x)
+
+    if normalize:
+        s = np.std(x)
+        if s!=0:
+            x = (x - np.mean(x))/s
+        else:
+            return 0.0
+
+    x = np.diff(x)
+    return np.sqrt(np.sum((x * x)))
+
+
+@set_property("fctype", "simple")
 def mean_abs_change(x):
     """
     Returns the mean over the absolute differences between subsequent time series values which is
@@ -826,6 +864,113 @@ def fft_coefficient(x, param):
     return zip(index, res)
 
 
+@set_property("fctype", "combiner")
+def fft_aggregated(x, param):
+    """
+    Returns the spectral centroid (mean), variance, skew, and kurtosis of the absolute fourier transform spectrum.
+
+    :param x: the time series to calculate the feature of
+    :type x: pandas.Series
+    :param param: contains dictionaries {"aggtype": s} where s str and in ["centroid", "variance",
+        "skew", "kurtosis"]
+    :type param: list
+    :return: the different feature values
+    :return type: pandas.Series
+    """
+
+    assert set([config["aggtype"] for config in param]) <= set(["centroid", "variance", "skew", "kurtosis"]), \
+        'Attribute must be "centroid", "variance", "skew", "kurtosis"'
+
+
+    def get_moment(y, moment):
+        """
+        Returns the (non centered) moment of the distribution y:
+        E[y**moment] = \sum_i[index(y_i)^moment * y_i] / \sum_i[y_i]
+        
+        :param y: the discrete distribution from which one wants to calculate the moment 
+        :type y: pandas.Series or np.array
+        :param moment: the moment one wants to calcalate (choose 1,2,3, ... )
+        :type moment: int
+        :return: the moment requested
+        :return type: float
+        """
+        return y.dot(np.arange(len(y))**moment) / y.sum()
+
+    def get_centroid(y):
+        """
+        :param y: the discrete distribution from which one wants to calculate the centroid 
+        :type y: pandas.Series or np.array
+        :return: the centroid of distribution y (aka distribution mean, first moment)
+        :return type: float 
+        """
+        return get_moment(y, 1)
+
+    def get_variance(y):
+        """
+        :param y: the discrete distribution from which one wants to calculate the variance 
+        :type y: pandas.Series or np.array
+        :return: the variance of distribution y
+        :return type: float 
+        """
+        return get_moment(y, 2) - get_centroid(y) ** 2
+
+    def get_skew(y):
+        """
+        Calculates the skew as the third standardized moment.
+        Ref: https://en.wikipedia.org/wiki/Skewness#Definition
+        
+        :param y: the discrete distribution from which one wants to calculate the skew 
+        :type y: pandas.Series or np.array
+        :return: the skew of distribution y
+        :return type: float 
+        """
+
+        variance = get_variance(y)
+        # In the limit of a dirac delta, skew should be 0 and variance 0.  However, in the discrete limit,
+        # the skew blows up as variance --> 0, hence return nan when variance is smaller than a resolution of 0.5:
+        if variance < 0.5:
+            return np.nan
+        else:
+            return (
+                get_moment(y, 3) - 3*get_centroid(y)*variance - get_centroid(y)**3
+            ) / get_variance(y)**(1.5)
+
+    def get_kurtosis(y):
+        """
+        Calculates the kurtosis as the fourth standardized moment.
+        Ref: https://en.wikipedia.org/wiki/Kurtosis#Pearson_moments
+        
+        :param y: the discrete distribution from which one wants to calculate the kurtosis 
+        :type y: pandas.Series or np.array
+        :return: the kurtosis of distribution y
+        :return type: float 
+        """
+
+        variance = get_variance(y)
+        # In the limit of a dirac delta, kurtosis should be 3 and variance 0.  However, in the discrete limit,
+        # the kurtosis blows up as variance --> 0, hence return nan when variance is smaller than a resolution of 0.5:
+        if variance < 0.5:
+            return np.nan
+        else:
+            return (
+                get_moment(y, 4) - 4*get_centroid(y)*get_moment(y, 3)
+                + 6*get_moment(y, 2)*get_centroid(y)**2 - 3*get_centroid(y)
+            ) / get_variance(y)**2
+
+    calculation = dict(
+        centroid=get_centroid,
+        variance=get_variance,
+        skew=get_skew,
+        kurtosis=get_kurtosis
+    )
+
+    fft_abs = abs(np.fft.rfft(x))
+
+    res = [calculation[config["aggtype"]](fft_abs) for config in param]
+    index = ['aggtype_"{}"'.format(config["aggtype"]) for config in param]
+    return zip(index, res)
+
+
 @set_property("fctype", "simple")
 def number_peaks(x, n):
     """
@@ -1238,9 +1383,7 @@ def sample_entropy(x):
 
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
-    :param tolerance: normalization factor; equivalent to the common practice of expressing the tolerance as r times \
-    the standard deviation
-    :type tolerance: float
+
     :return: the value of this feature
     :return type: float
     """

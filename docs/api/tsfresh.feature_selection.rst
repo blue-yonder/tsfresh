@@ -7,7 +7,7 @@ feature_selection
     :show-inheritance:
 
 benjamini_hochberg_test
-----------------
+-----------------------
 
 .. automodule:: tsfresh.feature_selection.benjamini_hochberg_test
     :members:
@@ -15,7 +15,7 @@ benjamini_hochberg_test
     :show-inheritance:
 
 relevance
-----------------
+---------
 
 .. automodule:: tsfresh.feature_selection.relevance
     :members:
