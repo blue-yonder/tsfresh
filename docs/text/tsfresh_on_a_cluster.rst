@@ -1,36 +1,40 @@
+.. role:: python(code)
+    :language: python
+
 How to use tsfresh on a cluster
 ===============================
 
-Sometimes the amount of time series data is too much to be processed on a singular machine.
-Instead, it may be necessary to distribute the extraction of the features on a cluster.
-Indeed, it is possible to extract features with *tsfresh* on a network of computational units.
+Sometimes the volume of your time series data is too large to be processed on a singular machine.
+Instead, it may be necessary to distribute the extraction of the features to a cluster.
+Indeed, it is possible to extract features with *tsfresh* in a distributed fashion.
 
-This chapter will explain how you can distribute the feature extraction on a cluster.
-Also, we will explain how you can construct custom Distributors, to user other distributed python frameworks.
+This page will explain how to setup a distributed *tsfresh*.
 
 The distributor class
 '''''''''''''''''''''
 
-To distribute the calculation of features, we use a certain object, the distributor.
+To distribute the calculation of features, we use a certain object, the Distributor class (contained in
+:mod:`tsfresh.utilities.distribution` module).
 Essentially, a Distributor organizes the application of feature calculators to data chunks.
-It maps the feature calculators to the data chunks and then reduce them, meaning that it combines the results of the
+
+It maps the feature calculators to the data chunks and then reduces them, meaning that it combines the results of the
 individual mapping into one object, the feature matrix.
 
 So, Distributor will, in the following order,
 
-    1. calculate an optimal chunk_size based on the time series data
+    1. calculate an optimal `chunk_size` based on the time series data (by :func:~`tsfresh.utilities.distribution.DistributorBaseClass.\_calculate_best_chunk_size`)
     2. split the time series data into chunks
     3. distribute the applying of the feature calculators on the data chunks, called map
-    4. collect the results
-    5. close all connections in the end
-    6. combine the results, called reduce, into the feature matrix
+    4. combine the results, called reduce, into the feature matrix
+    5. close all connections, clean the network (by :func:`tsfresh.utilities.distribution.DistributorBaseClass.close`)
 
-So, how can you use such a Distributor? You will have to pass it into as the distributor argument to the
-:func:`tsfresh.feature_extraction.extract_features` method.
+So, how can you use such a Distributor to extract features?
+You will have to pass it into as the :python:`distributor` argument to the :func:~`tsfresh.feature_extraction.extract_features`
+method.~
 
 
 The following example shows how to define the MultiprocessingDistributor, which will distribute the calculations to a
-local pool of threads:
+local pool of threads:~
 
 .. code:: python
 
@@ -80,17 +84,15 @@ jobs, without the need to construct the Distributor:
 Using dask to distribute the calculations
 '''''''''''''''''''''''''''''''''''''''''
 
-We provide distributor for the `dask framework. <https://dask.pydata.org/en/latest/>`_, where
+We provide distributor for the `dask framework <https://dask.pydata.org/en/latest/>`_, where
+*"Dask is a flexible parallel computing library for analytic computing."*
 
-*Dask is a flexible parallel computing library for analytic computing.*
-
-Dask is a great framework to distribute analytic calculations in python to a cluster.
+Dask is a great framework to distribute analytic calculations to a cluster.
 You can also use it on a singular machine.
-The only thing that you will need to run *tsfresh* on a Dask cluster is the ip address and port numbers of the
+The only thing that you will need to run *tsfresh* on a Dask cluster is the ip address and port number of the
 `dask-scheduler <http://distributed.readthedocs.io/en/latest/setup.html>`_.
 
-Lets say that your dask scheduler is running at ``192.168.0.1:8786``, then
-
+Lets say that your dask scheduler is running at ``192.168.0.1:8786``, then in the
 
 .. code:: python
 
@@ -111,18 +113,17 @@ Lets say that your dask scheduler is running at ``192.168.0.1:8786``, then
                          column_id='id', column_sort='time',
                          distributor=Distributor)
 
-If you compare this example to the MultiprocessingDistributor above, then you can see that we only changed one line.
-It is as easy as that. You can just change the distributor and your application will run on a Dask cluster instead of a
-singular machine.
+Compare to the :mod:`tsfresh.utilities.distribution.MultiprocessingDistributor` example from above, we only had to
+change one line.
+It is as easy as that.
+By changing the Distributor you can easily deploy your application to run on a cluster instead of your workstation.
 
 
 Writing your own distributor
 ''''''''''''''''''''''''''''
 
-At the moment, we provide a Dask distributor, meaning that if you have a Dask cluster at hand, you can deploy *tsfresh*
-on it.
-
 To construct your custom Distributor, you will have to define an object that inherits from the abstract base class
 :class:`tsfresh.utilities.distribution.DistributorBaseClass`.
+The :mod:`tsfresh.utilities.distribution` contains more information about what you will need to implement.
 
 
