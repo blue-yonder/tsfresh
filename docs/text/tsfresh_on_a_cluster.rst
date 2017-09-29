@@ -28,6 +28,10 @@ So, Distributor will, in the following order,
 So, how can you use such a Distributor? You will have to pass it into as the distributor argument to the
 :func:`tsfresh.feature_extraction.extract_features` method.
 
+
+The following example shows how to define the MultiprocessingDistributor, which will distribute the calculations to a
+local pool of threads:
+
 .. code:: python
 
     from tsfresh.examples.robot_execution_failures import \
@@ -52,11 +56,64 @@ So, how can you use such a Distributor? You will have to pass it into as the dis
                          column_id='id', column_sort='time',
                          distributor=Distributor)
 
+This example actually corresponds to the existing multiprocessing *tsfresh* version, where you just specify the number of
+jobs, without the need to construct the Distributor:
+
+.. code:: python
+
+    from tsfresh.examples.robot_execution_failures import \
+        download_robot_execution_failures, \
+        load_robot_execution_failures
+    from tsfresh.feature_extraction import extract_features
+    from tsfresh.utilities.distribution import MultiprocessingDistributor
+
+    # download and load some time series data
+    download_robot_execution_failures()
+    df, y = load_robot_execution_failures()
+
+    # we will just have to pass the Distributor object to
+    # the feature extraction, along the other parameters
+    X = extract_features(timeseries_container=df,
+                         column_id='id', column_sort='time',
+                         n_jobs=4)
 
 Using dask to distribute the calculations
 '''''''''''''''''''''''''''''''''''''''''
 
-We provide a
+We provide distributor for the `dask framework. <https://dask.pydata.org/en/latest/>`_, where
+
+*Dask is a flexible parallel computing library for analytic computing.*
+
+Dask is a great framework to distribute analytic calculations in python to a cluster.
+You can also use it on a singular machine.
+The only thing that you will need to run *tsfresh* on a Dask cluster is the ip address and port numbers of the
+`dask-scheduler <http://distributed.readthedocs.io/en/latest/setup.html>`_.
+
+Lets say that your dask scheduler is running at ``192.168.0.1:8786``, then
+
+
+.. code:: python
+
+    from tsfresh.examples.robot_execution_failures import \
+        download_robot_execution_failures, \
+        load_robot_execution_failures
+    from tsfresh.feature_extraction import extract_features
+    from tsfresh.utilities.distribution import ClusterDaskDistributor
+
+    download_robot_execution_failures()
+    df, y = load_robot_execution_failures()
+
+    # We construct a Distributor that will distribute the calculations on a
+    # Dask Cluster
+    Distributor = MultiprocessingDistributor(address="192.168.0.1:8786")
+
+    X = extract_features(timeseries_container=df,
+                         column_id='id', column_sort='time',
+                         distributor=Distributor)
+
+If you compare this example to the MultiprocessingDistributor above, then you can see that we only changed one line.
+It is as easy as that. You can just change the distributor and your application will run on a Dask cluster instead of a
+singular machine.
 
 
 Writing your own distributor
