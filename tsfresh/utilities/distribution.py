@@ -237,6 +237,7 @@ class LocalDaskDistributor(DistributorBaseClass):
 
         cluster = LocalCluster(n_workers=n_workers, processes=True)
         self.client = Client(cluster)
+        self.n_workers = n_workers
 
     def distribute(self, func, partitioned_chunks, kwargs):
         """
