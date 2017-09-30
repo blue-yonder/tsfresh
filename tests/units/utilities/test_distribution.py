@@ -36,12 +36,6 @@ class MultiprocessingDistributorTestCase(TestCase):
         self.assertEqual(distributor.calculate_best_chunk_size(30), 2)
         self.assertEqual(distributor.calculate_best_chunk_size(31), 3)
 
-
-    # todo: test distribute
-    # todo: test map
-    # todo: test close
-    # todo: test dask
-
-
+    # todo: test the local dask cluster
     # todo: error for test not valid distributor
     # todo: test ipaddresses at clusterdaskdistributor
