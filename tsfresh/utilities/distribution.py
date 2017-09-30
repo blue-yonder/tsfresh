@@ -314,7 +314,7 @@ class ClusterDaskDistributor(DistributorBaseClass):
             to a single element.
         """
 
-        result = self.client.gather(self.client.map(func, partitioned_chunks))
+        result = self.client.gather(self.client.map(partial(func, **kwargs), partitioned_chunks))
         return result
 
     def close(self):

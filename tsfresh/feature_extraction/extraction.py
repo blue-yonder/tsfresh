@@ -231,6 +231,7 @@ def _do_extraction(df, column_id, column_value, column_kind,
     kwargs = dict(default_fc_parameters=default_fc_parameters, kind_to_fc_parameters=kind_to_fc_parameters)
     result = distributor.map_reduce(_do_extraction_on_chunk, data=data_in_chunks, chunk_size=chunk_size,
                                     function_kwargs=kwargs)
+    distributor.close()
 
     # Return a dataframe in the typical form (id as index and feature names as columns)
     result = pd.DataFrame(result, dtype=np.float)
@@ -239,7 +240,6 @@ def _do_extraction(df, column_id, column_value, column_kind,
         result = result.pivot("id", "variable", "value")
         result.index = result.index.astype(df[column_id].dtype)
 
-    distributor.close()
     return result
 
 
