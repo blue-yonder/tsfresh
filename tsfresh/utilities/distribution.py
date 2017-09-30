@@ -82,7 +82,7 @@ class DistributorBaseClass:
         """
         raise NotImplementedError
 
-    def _calculate_best_chunk_size(self, data_length):
+    def calculate_best_chunk_size(self, data_length):
         """
         Calculates the best chunk size for a list of length data_length. The current implemented formula is more or 
         less an empirical result for multiprocessing case on one machine.
@@ -132,7 +132,7 @@ class DistributorBaseClass:
             data_length = len(data)
 
         if not chunk_size:
-            chunk_size = self._calculate_best_chunk_size(data_length)
+            chunk_size = self.calculate_best_chunk_size(data_length)
 
         chunk_generator = self.partition(data, chunk_size=chunk_size)
 
@@ -209,7 +209,7 @@ class MapDistributor(DistributorBaseClass):
         """
         return map(partial(func, **kwargs), partitioned_chunks)
 
-    def _calculate_best_chunk_size(self, data_length):
+    def calculate_best_chunk_size(self, data_length):
         """
         For the map command, which calculates the features sequentially, a the chunk_size of 1 will be used.
 
@@ -283,7 +283,7 @@ class ClusterDaskDistributor(DistributorBaseClass):
         assert is_valid_ip_and_port(address)
         self.client = Client(address=address)
 
-    def _calculate_best_chunk_size(self, data_length):
+    def calculate_best_chunk_size(self, data_length):
         """
         Uses the number of dask workers in the cluster (during execution time, meaning when you start the extraction)
         to find the optimal chunk_size.

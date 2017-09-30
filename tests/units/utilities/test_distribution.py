@@ -26,15 +26,15 @@ class MultiprocessingDistributorTestCase(TestCase):
     def test__calculate_best_chunk_size(self):
 
         distributor = MultiprocessingDistributor(n_workers=2)
-        self.assertEqual(distributor._calculate_best_chunk_size(10), 1)
-        self.assertEqual(distributor._calculate_best_chunk_size(11), 2)
-        self.assertEqual(distributor._calculate_best_chunk_size(100), 10)
-        self.assertEqual(distributor._calculate_best_chunk_size(101), 11)
+        self.assertEqual(distributor.calculate_best_chunk_size(10), 1)
+        self.assertEqual(distributor.calculate_best_chunk_size(11), 2)
+        self.assertEqual(distributor.calculate_best_chunk_size(100), 10)
+        self.assertEqual(distributor.calculate_best_chunk_size(101), 11)
 
         distributor = MultiprocessingDistributor(n_workers=3)
-        self.assertEqual(distributor._calculate_best_chunk_size(10), 1)
-        self.assertEqual(distributor._calculate_best_chunk_size(30), 2)
-        self.assertEqual(distributor._calculate_best_chunk_size(31), 3)
+        self.assertEqual(distributor.calculate_best_chunk_size(10), 1)
+        self.assertEqual(distributor.calculate_best_chunk_size(30), 2)
+        self.assertEqual(distributor.calculate_best_chunk_size(31), 3)
 
 
     # todo: test distribute
