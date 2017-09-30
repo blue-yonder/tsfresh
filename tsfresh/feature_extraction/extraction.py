@@ -226,7 +226,7 @@ def _do_extraction(df, column_id, column_value, column_kind,
                                                      progressbar_title="Feature Extraction")
 
     if not isinstance(distributor, DistributorBaseClass):
-        raise ValueError("the passed distributor is neither None nor an IP address or a DistributorBaseClass object")
+        raise ValueError("the passed distributor is not an DistributorBaseClass object")
 
     kwargs = dict(default_fc_parameters=default_fc_parameters, kind_to_fc_parameters=kind_to_fc_parameters)
     result = distributor.map_reduce(_do_extraction_on_chunk, data=data_in_chunks, chunk_size=chunk_size,
