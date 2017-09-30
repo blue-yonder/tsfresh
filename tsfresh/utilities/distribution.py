@@ -255,7 +255,7 @@ class LocalDaskDistributor(DistributorBaseClass):
         :return: The result of the calculation as a list - each item should be the result of the application of func
             to a single element.
         """
-        result = self.client.gather(self.client.map(func, partitioned_chunks))
+        result = self.client.gather(self.client.map(partial(func, **kwargs), partitioned_chunks))
         return result
 
     def close(self):
@@ -298,7 +298,7 @@ class ClusterDaskDistributor(DistributorBaseClass):
             chunk_size += 1
         return chunk_size
 
-    def distribute(self, func, partitioned_chunks):
+    def distribute(self, func, partitioned_chunks, kwargs):
         """
         Calculates the features in a parallel fashion by distributing the map command to the dask workers on a cluster
 
@@ -307,6 +307,8 @@ class ClusterDaskDistributor(DistributorBaseClass):
         :param partitioned_chunks: The list of data chunks - each element is again
             a list of chunks - and should be processed by one worker.
         :type partitioned_chunks: iterable
+        :param kwargs: parameters for the map function
+        :type kwargs: dict of string to parameter
 
         :return: The result of the calculation as a list - each item should be the result of the application of func
             to a single element.
