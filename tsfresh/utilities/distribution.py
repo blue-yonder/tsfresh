@@ -235,7 +235,7 @@ class LocalDaskDistributor(DistributorBaseClass):
 
         from distributed import LocalCluster, Client
 
-        cluster = LocalCluster(n_workers=n_workers, processes=True)
+        cluster = LocalCluster(n_workers=n_workers, processes=False)
         self.client = Client(cluster)
         self.n_workers = n_workers
 
