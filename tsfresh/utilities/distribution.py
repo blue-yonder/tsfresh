@@ -256,7 +256,7 @@ class LocalDaskDistributor(DistributorBaseClass):
             to a single element.
         """
         result = self.client.gather(self.client.map(partial(func, **kwargs), partitioned_chunks))
-        return result
+        return [item for sublist in result for item in sublist]
 
     def close(self):
         """
@@ -315,7 +315,7 @@ class ClusterDaskDistributor(DistributorBaseClass):
         """
 
         result = self.client.gather(self.client.map(partial(func, **kwargs), partitioned_chunks))
-        return result
+        return [item for sublist in result for item in sublist]
 
     def close(self):
         """
