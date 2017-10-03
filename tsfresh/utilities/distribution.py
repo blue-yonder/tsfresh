@@ -279,9 +279,7 @@ class ClusterDaskDistributor(DistributorBaseClass):
         """
 
         from distributed import Client
-        from tsfresh.utilities.string_manipulation import is_valid_ip_and_port
 
-        assert is_valid_ip_and_port(address)
         self.client = Client(address=address)
 
     def calculate_best_chunk_size(self, data_length):

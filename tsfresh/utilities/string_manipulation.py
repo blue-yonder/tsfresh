@@ -8,6 +8,7 @@ from six import string_types
 import ipaddress
 import six
 
+
 def get_config_from_string(parts):
     """
     Helper function to extract the configuration of a certain function from the column name.
@@ -71,30 +72,3 @@ def convert_to_output_format(param):
 
     return "__".join(str(key) + "_" + add_parenthesis_if_string_value(param[key]) for key in sorted(param))
 
-
-def is_valid_ip_and_port(s):
-    """
-    Checks if the string s contains an valid IPv4 ip address with port number. 
-    For example 192.168.0.1:8786 would be an valid address
-    
-    :param s: the input
-    :type s: string
-    
-    :return: true if s is an ip address
-    :rtype: bool
-    """
-    s = s.strip()
-
-    if s.count(":") == 1:
-        s = s.split(":")[0]
-    else:
-        return False
-
-    if six.PY2 and not isinstance(s, unicode):
-        s = unicode(s)
-
-    try:
-        ipaddress.ip_address(s)
-        return True
-    except ValueError:
-        return False
