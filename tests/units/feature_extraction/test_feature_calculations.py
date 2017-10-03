@@ -300,9 +300,9 @@ class FeatureCalculationTestCase(TestCase):
         self.assertEqualOnAllArrayTypes(mean_change, [1, 2, -1], -1)
 
     def test_mean_second_derivate_central(self):
-        self.assertEqualOnAllArrayTypes(mean_second_derivate_central, list(range(10)), 0)
-        self.assertEqualOnAllArrayTypes(mean_second_derivate_central, [1, 3, 5], 0)
-        self.assertEqualOnAllArrayTypes(mean_second_derivate_central, [1, 3, 7, -3], -3)
+        self.assertEqualOnAllArrayTypes(mean_second_derivative_central, list(range(10)), 0)
+        self.assertEqualOnAllArrayTypes(mean_second_derivative_central, [1, 3, 5], 0)
+        self.assertEqualOnAllArrayTypes(mean_second_derivative_central, [1, 3, 7, -3], -3)
 
     def test_median(self):
         self.assertEqualOnAllArrayTypes(median, [1, 1, 2, 2], 1.5)

@@ -465,7 +465,7 @@ def mean_change(x):
 
 
 @set_property("fctype", "simple")
-def mean_second_derivate_central(x):
+def mean_second_derivative_central(x):
     """
     Returns the mean value of a central approximation of the second derivative
 
