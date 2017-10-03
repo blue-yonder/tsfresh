@@ -5,8 +5,6 @@
 import ast
 import numpy as np
 from six import string_types
-import ipaddress
-import six
 
 
 def get_config_from_string(parts):
