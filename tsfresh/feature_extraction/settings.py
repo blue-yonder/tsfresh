@@ -20,7 +20,7 @@ from tsfresh.feature_extraction import feature_calculators
 from tsfresh.utilities.string_manipulation import get_config_from_string
 
 
-def from_columns(columns):
+def from_columns(columns, columns_to_ignore=[]):
     """
     Creates a mapping from kind names to fc_parameters objects
     (which are itself mappings from feature calculators to settings)
@@ -34,6 +34,8 @@ def from_columns(columns):
 
     :param columns: containing the feature names
     :type columns: list of str
+    :param columns_to_ignore: columns which do not contain tsfresh feature names
+    :type columns_to_ignore: list of str
 
     :return: The kind_to_fc_parameters object ready to be used in the extract_features function.
     :rtype: dict
@@ -42,6 +44,8 @@ def from_columns(columns):
     kind_to_fc_parameters = {}
 
     for col in columns:
+        if col in columns_to_ignore:
+            continue
 
         if not isinstance(col, basestring):
             raise TypeError("Column name {} should be a string or unicode".format(col))

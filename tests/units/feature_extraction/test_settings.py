@@ -70,7 +70,17 @@ class TestSettingsObject(TestCase):
 
         assert_frame_equal(X_org.sort_index(), X_new.sort_index())
 
+    def test_from_columns_ignores_columns(self):
 
+        tsn = "TEST_TIME_SERIES"
+        feature_names = [tsn + '__sum_values', tsn + "__median", tsn + "__length", tsn + "__sample_entropy"]
+        feature_names += ["THIS_COL_SHOULD_BE_IGNORED"]
+
+        kind_to_fc_parameters = from_columns(feature_names, columns_to_ignore=["THIS_COL_SHOULD_BE_IGNORED",
+                                                                               "THIS_AS_WELL"])
+
+        six.assertCountEqual(self, list(kind_to_fc_parameters[tsn].keys()),
+                             ["sum_values", "median", "length", "sample_entropy"])
 
     def test_default_calculates_all_features(self):
         """
