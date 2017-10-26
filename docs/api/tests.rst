@@ -12,14 +12,6 @@ tests.fixtures module
     :undoc-members:
     :show-inheritance:
 
-tests.test_feature_significance module
---------------------------------------
-
-.. automodule:: tests.test_feature_significance
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 
 Module contents
 ---------------

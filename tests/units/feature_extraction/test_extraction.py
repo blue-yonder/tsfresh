@@ -9,12 +9,16 @@ import os
 import numpy as np
 import pandas as pd
 import six
+from mock import Mock
 
 from tests.fixtures import DataTestCase
 from tsfresh.feature_extraction.extraction import extract_features
 from tsfresh.feature_extraction.settings import ComprehensiveFCParameters
 
 import tempfile
+
+from tsfresh.utilities.distribution import DistributorBaseClass
+
 
 class ExtractionTestCase(DataTestCase):
     """The unit tests in this module make sure if the time series features are created properly"""
@@ -170,3 +174,36 @@ class ParallelExtractionTestCase(DataTestCase):
         self.assertTrue(np.all(extracted_features.b__abs_energy == np.array([36619, 35483])))
         self.assertTrue(np.all(extracted_features.b__mean == np.array([37.85, 34.75])))
         self.assertTrue(np.all(extracted_features.b__median == np.array([39.5, 28.0])))
+
+
+class DistributorUsageTestCase(DataTestCase):
+    def setUp(self):
+        # only calculate some features to reduce load on travis ci
+        self.name_to_param = {"maximum": None}
+
+    def test_assert_is_distributor(self):
+        df = self.create_test_data_sample()
+
+        self.assertRaises(ValueError, extract_features,
+                          timeseries_container=df, column_id="id", column_sort="sort", column_kind="kind",
+                          column_value="val", default_fc_parameters=self.name_to_param,
+                          distributor=object())
+
+        self.assertRaises(ValueError, extract_features,
+                          timeseries_container=df, column_id="id", column_sort="sort", column_kind="kind",
+                          column_value="val", default_fc_parameters=self.name_to_param,
+                          distributor=13)
+
+    def test_distributor_map_reduce_and_close_are_called(self):
+        df = self.create_test_data_sample()
+
+        mock = Mock(spec=DistributorBaseClass)
+        mock.close.return_value = None
+        mock.map_reduce.return_value = []
+
+        X = extract_features(timeseries_container=df, column_id="id", column_sort="sort", column_kind="kind",
+                             column_value="val", default_fc_parameters=self.name_to_param,
+                             distributor=mock)
+
+        self.assertTrue(mock.close.called)
+        self.assertTrue(mock.map_reduce.called)

@@ -39,7 +39,7 @@ if on_rtd:
 # -- General configuration -----------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
-needs_sphinx = '1.4.3'
+needs_sphinx = '1.6.4'
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
@@ -61,8 +61,10 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
+import datetime
+now = datetime.datetime.today()
 project = u'tsfresh'
-copyright = u'2016, Maximilian Christ / Blue Yonder GmbH'
+copyright = u'2016-{}, Maximilian Christ et al./ Blue Yonder GmbH'.format(now.year)
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
