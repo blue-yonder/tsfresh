@@ -267,6 +267,9 @@ def sum_values(x):
     :return: the value of this feature
     :return type: bool
     """
+    if len(x) == 0:
+        return 0
+
     return np.sum(x)
 
 
