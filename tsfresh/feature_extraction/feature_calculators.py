@@ -751,8 +751,14 @@ def percentage_of_reoccurring_datapoints_to_all_datapoints(x):
     :return: the value of this feature
     :return type: float
     """
+    if len(x) == 0:
+        return np.nan
 
     unique, counts = np.unique(x, return_counts=True)
+
+    if counts.shape[0] == 0:
+        return 0
+
     return np.sum(counts > 1) / float(counts.shape[0])
 
 
