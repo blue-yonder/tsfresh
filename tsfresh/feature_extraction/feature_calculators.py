@@ -780,11 +780,17 @@ def percentage_of_reoccurring_values_to_all_values(x):
     """
     if not isinstance(x, pd.Series):
         x = pd.Series(x)
+
     if x.size == 0:
         return np.nan
 
     value_counts = x.value_counts()
-    return value_counts[value_counts > 1].sum() / x.size
+    reoccuring_values = value_counts[value_counts > 1].sum()
+
+    if np.isnan(reoccuring_values):
+        return 0
+
+    return reoccuring_values / x.size
 
 
 @set_property("fctype", "simple")
