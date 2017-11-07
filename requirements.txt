@@ -8,6 +8,6 @@ scikit-learn>=0.17.1
 future>=0.16.0
 six>=1.10.0
 tqdm>=4.10.0
-dask==0.15.2
-distributed==1.18.3
 ipaddress>=1.0.18; python_version <= '2.7'
+dask>=0.15.2
+distributed>=1.18.3
