@@ -267,6 +267,9 @@ def sum_values(x):
     :return: the value of this feature
     :return type: bool
     """
+    if len(x) == 0:
+        return 0
+
     return np.sum(x)
 
 
@@ -748,8 +751,14 @@ def percentage_of_reoccurring_datapoints_to_all_datapoints(x):
     :return: the value of this feature
     :return type: float
     """
+    if len(x) == 0:
+        return np.nan
 
     unique, counts = np.unique(x, return_counts=True)
+
+    if counts.shape[0] == 0:
+        return 0
+
     return np.sum(counts > 1) / float(counts.shape[0])
 
 
@@ -771,11 +780,17 @@ def percentage_of_reoccurring_values_to_all_values(x):
     """
     if not isinstance(x, pd.Series):
         x = pd.Series(x)
+
     if x.size == 0:
         return np.nan
 
     value_counts = x.value_counts()
-    return value_counts[value_counts > 1].sum() / x.size
+    reoccuring_values = value_counts[value_counts > 1].sum()
+
+    if np.isnan(reoccuring_values):
+        return 0
+
+    return reoccuring_values / x.size
 
 
 @set_property("fctype", "simple")

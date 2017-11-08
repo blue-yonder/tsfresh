@@ -22,6 +22,11 @@ class TestSelectFeatures:
         with pytest.raises(ValueError):
             select_features(X, y)
 
+    def test_assert_one_label_y(self):
+        X = pd.DataFrame([10, 10], index=[1, 2])
+        y = pd.Series([1, 1], index=[1, 2])
+        with pytest.raises(ValueError):
+            select_features(X, y)
 
     def test_assert_different_index(self):
         X = pd.DataFrame(list(range(3)), index=[1, 2, 3])

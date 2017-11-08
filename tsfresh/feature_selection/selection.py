@@ -128,6 +128,8 @@ def select_features(X, y, test_for_binary_target_binary_feature=defaults.TEST_FO
 
     if len(X) < 2:
         raise ValueError("X must contain at least two samples.")
+    elif len(set(y)) == 1:
+        raise ValueError("y contains only one kind of label, no feature selection possible.")
     elif isinstance(y, pd.Series) and not X.index.isin(y.index).all():
         raise ValueError("Index of X must be a subset of y's index")
     elif isinstance(y, np.ndarray):

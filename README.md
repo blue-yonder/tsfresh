@@ -61,7 +61,7 @@ The algorithm is described in the following paper
 4. it has a comprehensive documentation
 5. it is compatible with sklearn, pandas and numpy
 6. it allows anyone to easily add their favorite features
-7. it both runs on your local machine or on even on a cluster
+7. it both runs on your local machine or even on a cluster
 
 ## Next steps
 
