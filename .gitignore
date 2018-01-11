@@ -38,6 +38,7 @@ sdist/*
 docs/_build/*
 cover/*
 MANIFEST
+docs/text/_generated/
 
 # Virtual environment
 venv*
