@@ -15,17 +15,17 @@ seen by tsfresh as a feature calculator. Others will not be calculated.
 """
 
 from __future__ import absolute_import, division
-from builtins import range
-import itertools
-import numpy as np
-from numpy.linalg import LinAlgError
 
+import itertools
+from builtins import range
+
+import numpy as np
 import pandas as pd
-from scipy.signal import welch, cwt, ricker, find_peaks_cwt
-from statsmodels.tsa.ar_model import AR
-from statsmodels.tsa.stattools import adfuller
-from statsmodels.tsa.stattools import acf, pacf
+from numpy.linalg import LinAlgError
+from scipy.signal import cwt, find_peaks_cwt, ricker, welch
 from scipy.stats import linregress
+from statsmodels.tsa.ar_model import AR
+from statsmodels.tsa.stattools import acf, adfuller, pacf
 
 # todo: make sure '_' works in parameter names in all cases, add a warning if not
 
@@ -143,7 +143,8 @@ def variance_larger_than_standard_deviation(x):
     :return: the value of this feature
     :return type: bool
     """
-    return np.var(x) > np.std(x)
+    y = np.var(x)
+    return y > np.sqrt(y)
 
 
 @set_property("fctype", "simple")
@@ -154,10 +155,11 @@ def ratio_beyond_r_sigma(x, r):
     :param x: the time series to calculate the feature of
     :type x: iterable
     :return: the value of this feature
-    :return type: bool
+    :return type: float
     """
-    x = np.asarray(x)
-    return sum(abs(x - np.mean(x)) > r * np.std(x))/len(x)
+    if not isinstance(x, (np.ndarray, pd.Series)):
+        x = np.asarray(x)
+    return np.sum(np.abs(x - np.mean(x)) > r * np.std(x))/x.size
 
 
 @set_property("fctype", "simple")
@@ -180,8 +182,9 @@ def large_standard_deviation(x, r):
     :return: the value of this feature
     :return type: bool
     """
-    x = np.asarray(x)
-    return np.std(x) > (r * (max(x) - min(x)))
+    if not isinstance(x, (np.ndarray, pd.Series)):
+        x = np.asarray(x)
+    return np.std(x) > (r * (np.max(x) - np.min(x)))
 
 
 @set_property("fctype", "combiner")
@@ -200,9 +203,10 @@ def symmetry_looking(x, param):
     :return: the value of this feature
     :return type: bool
     """
-    x = np.asarray(x)
-    mean_median_difference = abs(np.mean(x) - np.median(x))
-    max_min_difference = max(x) - min(x)
+    if not isinstance(x, (np.ndarray, pd.Series)):
+        x = np.asarray(x)
+    mean_median_difference = np.abs(np.mean(x) - np.median(x))
+    max_min_difference = np.max(x) - np.min(x)
     return [("r_{}".format(r["r"]), mean_median_difference < (r["r"] * max_min_difference))
             for r in param]
 
@@ -217,7 +221,9 @@ def has_duplicate_max(x):
     :return: the value of this feature
     :return type: bool
     """
-    return sum(np.asarray(x) == max(x)) >= 2
+    if not isinstance(x, (np.ndarray, pd.Series)):
+        x = np.asarray(x)
+    return np.sum(x == np.max(x)) >= 2
 
 
 @set_property("fctype", "simple")
@@ -230,7 +236,9 @@ def has_duplicate_min(x):
     :return: the value of this feature
     :return type: bool
     """
-    return sum(np.asarray(x) == min(x)) >= 2
+    if not isinstance(x, (np.ndarray, pd.Series)):
+        x = np.asarray(x)
+    return np.sum(x == np.min(x)) >= 2
 
 
 @set_property("fctype", "simple")
@@ -243,7 +251,9 @@ def has_duplicate(x):
     :return: the value of this feature
     :return type: bool
     """
-    return len(x) != len(set(x))
+    if not isinstance(x, (np.ndarray, pd.Series)):
+        x = np.asarray(x)
+    return x.size != np.unique(x).size
 
 
 @set_property("fctype", "simple")
@@ -257,6 +267,9 @@ def sum_values(x):
     :return: the value of this feature
     :return type: bool
     """
+    if len(x) == 0:
+        return 0
+
     return np.sum(x)
 
 
@@ -284,7 +297,7 @@ def agg_autocorrelation(x, param):
     """
     var = np.var(x)
     n = len(x)
-    if abs(var) < 10**-10 or n == 1:
+    if np.abs(var) < 10**-10 or n == 1:
         a = 0
     else:
         a = acf(x, unbiased=True, fft=n > 1250)[1:]
@@ -387,8 +400,46 @@ def abs_energy(x):
     :return: the value of this feature
     :return type: float
     """
-    x = np.asarray(x)
-    return sum(x * x)
+    if not isinstance(x, (np.ndarray, pd.Series)):
+        x = np.asarray(x)
+    return np.dot(x, x)
+
+
+@set_property("fctype", "simple")
+def cid_ce(x, normalize):
+    """
+    This function calculator is an estimate for a time series complexity [1] (A more complex time series has more peaks,
+    valleys etc.). It calculates the value of
+
+    .. math::
+
+        \\sqrt{ \\sum_{i=0}^{n-2lag} ( x_{i} - x_{i+1})^2 }
+
+    .. rubric:: References
+
+    |  [1] Batista, Gustavo EAPA, et al (2014).
+    |  CID: an efficient complexity-invariant distance for time series.
+    |  Data Mining and Knowledge Difscovery 28.3 (2014): 634-669.
+
+    :param x: the time series to calculate the feature of
+    :type x: pandas.Series
+    :param normalize: should the time series be z-transformed?
+    :type normalize: bool
+
+    :return: the value of this feature
+    :return type: float
+    """
+    if not isinstance(x, (np.ndarray, pd.Series)):
+        x = np.asarray(x)
+    if normalize:
+        s = np.std(x)
+        if s!=0:
+            x = (x - np.mean(x))/s
+        else:
+            return 0.0
+
+    x = np.diff(x)
+    return np.sqrt(np.dot(x, x))
 
 
 @set_property("fctype", "simple")
@@ -406,7 +457,7 @@ def mean_abs_change(x):
     :return: the value of this feature
     :return type: float
     """
-    return np.mean(abs(np.diff(x)))
+    return np.mean(np.abs(np.diff(x)))
 
 
 @set_property("fctype", "simple")
@@ -427,7 +478,7 @@ def mean_change(x):
 
 
 @set_property("fctype", "simple")
-def mean_second_derivate_central(x):
+def mean_second_derivative_central(x):
     """
     Returns the mean value of a central approximation of the second derivative
 
@@ -526,7 +577,8 @@ def skewness(x):
     :return: the value of this feature
     :return type: float
     """
-    x = pd.Series(x)
+    if not isinstance(x, pd.Series):
+        x = pd.Series(x)
     return pd.Series.skew(x)
 
 
@@ -541,7 +593,8 @@ def kurtosis(x):
     :return: the value of this feature
     :return type: float
     """
-    x = pd.Series(x)
+    if not isinstance(x, pd.Series):
+        x = pd.Series(x)
     return pd.Series.kurtosis(x)
 
 
@@ -559,7 +612,7 @@ def absolute_sum_of_changes(x):
     :return: the value of this feature
     :return type: float
     """
-    return np.sum(abs(np.diff(x)))
+    return np.sum(np.abs(np.diff(x)))
 
 
 @set_property("fctype", "simple")
@@ -572,8 +625,9 @@ def longest_strike_below_mean(x):
     :return: the value of this feature
     :return type: float
     """
-
-    return max(_get_length_sequences_where(x <= np.mean(x))) if len(x) > 0 else 0
+    if not isinstance(x, (np.ndarray, pd.Series)):
+        x = np.asarray(x)
+    return np.max(_get_length_sequences_where(x <= np.mean(x))) if x.size > 0 else 0
 
 
 @set_property("fctype", "simple")
@@ -586,8 +640,9 @@ def longest_strike_above_mean(x):
     :return: the value of this feature
     :return type: float
     """
-
-    return max(_get_length_sequences_where(x >= np.mean(x))) if len(x) > 0 else 0
+    if not isinstance(x, (np.ndarray, pd.Series)):
+        x = np.asarray(x)
+    return np.max(_get_length_sequences_where(x >= np.mean(x))) if x.size > 0 else 0
 
 
 @set_property("fctype", "simple")
@@ -600,10 +655,8 @@ def count_above_mean(x):
     :return: the value of this feature
     :return type: float
     """
-
-    x = np.asarray(x)
     m = np.mean(x)
-    return np.where(x > m)[0].shape[0]
+    return np.where(x > m)[0].size
 
 
 @set_property("fctype", "simple")
@@ -616,10 +669,8 @@ def count_below_mean(x):
     :return: the value of this feature
     :return type: float
     """
-
-    x = np.asarray(x)
     m = np.mean(x)
-    return np.where(x < m)[0].shape[0]
+    return np.where(x < m)[0].size
 
 
 @set_property("fctype", "simple")
@@ -648,7 +699,8 @@ def first_location_of_maximum(x):
     :return: the value of this feature
     :return type: float
     """
-    x = np.asarray(x)
+    if not isinstance(x, (np.ndarray, pd.Series)):
+        x = np.asarray(x)
     return np.argmax(x) / len(x) if len(x) > 0 else np.NaN
 
 
@@ -678,7 +730,8 @@ def first_location_of_minimum(x):
     :return: the value of this feature
     :return type: float
     """
-    x = np.asarray(x)
+    if not isinstance(x, (np.ndarray, pd.Series)):
+        x = np.asarray(x)
     return np.argmin(x) / len(x) if len(x) > 0 else np.NaN
 
 
@@ -698,8 +751,14 @@ def percentage_of_reoccurring_datapoints_to_all_datapoints(x):
     :return: the value of this feature
     :return type: float
     """
+    if len(x) == 0:
+        return np.nan
 
     unique, counts = np.unique(x, return_counts=True)
+
+    if counts.shape[0] == 0:
+        return 0
+
     return np.sum(counts > 1) / float(counts.shape[0])
 
 
@@ -719,13 +778,19 @@ def percentage_of_reoccurring_values_to_all_values(x):
     :return: the value of this feature
     :return type: float
     """
-    x = pd.Series(x)
+    if not isinstance(x, pd.Series):
+        x = pd.Series(x)
 
-    if len(x) == 0:
+    if x.size == 0:
         return np.nan
 
     value_counts = x.value_counts()
-    return value_counts[value_counts > 1].sum() / len(x)
+    reoccuring_values = value_counts[value_counts > 1].sum()
+
+    if np.isnan(reoccuring_values):
+        return 0
+
+    return reoccuring_values / x.size
 
 
 @set_property("fctype", "simple")
@@ -775,11 +840,12 @@ def ratio_value_number_to_time_series_length(x):
     :return: the value of this feature
     :return type: float
     """
-
-    if len(x) == 0:
+    if not isinstance(x, (np.ndarray, pd.Series)):
+        x = np.asarray(x)
+    if x.size == 0:
         return np.nan
 
-    return len(set(x))/len(x)
+    return np.unique(x).size / x.size
 
 
 @set_property("fctype", "combiner")
@@ -826,6 +892,113 @@ def fft_coefficient(x, param):
     return zip(index, res)
 
 
+@set_property("fctype", "combiner")
+def fft_aggregated(x, param):
+    """
+    Returns the spectral centroid (mean), variance, skew, and kurtosis of the absolute fourier transform spectrum.
+
+    :param x: the time series to calculate the feature of
+    :type x: pandas.Series
+    :param param: contains dictionaries {"aggtype": s} where s str and in ["centroid", "variance",
+        "skew", "kurtosis"]
+    :type param: list
+    :return: the different feature values
+    :return type: pandas.Series
+    """
+
+    assert set([config["aggtype"] for config in param]) <= set(["centroid", "variance", "skew", "kurtosis"]), \
+        'Attribute must be "centroid", "variance", "skew", "kurtosis"'
+
+
+    def get_moment(y, moment):
+        """
+        Returns the (non centered) moment of the distribution y:
+        E[y**moment] = \sum_i[index(y_i)^moment * y_i] / \sum_i[y_i]
+        
+        :param y: the discrete distribution from which one wants to calculate the moment 
+        :type y: pandas.Series or np.array
+        :param moment: the moment one wants to calcalate (choose 1,2,3, ... )
+        :type moment: int
+        :return: the moment requested
+        :return type: float
+        """
+        return y.dot(np.arange(len(y))**moment) / y.sum()
+
+    def get_centroid(y):
+        """
+        :param y: the discrete distribution from which one wants to calculate the centroid 
+        :type y: pandas.Series or np.array
+        :return: the centroid of distribution y (aka distribution mean, first moment)
+        :return type: float 
+        """
+        return get_moment(y, 1)
+
+    def get_variance(y):
+        """
+        :param y: the discrete distribution from which one wants to calculate the variance 
+        :type y: pandas.Series or np.array
+        :return: the variance of distribution y
+        :return type: float 
+        """
+        return get_moment(y, 2) - get_centroid(y) ** 2
+
+    def get_skew(y):
+        """
+        Calculates the skew as the third standardized moment.
+        Ref: https://en.wikipedia.org/wiki/Skewness#Definition
+        
+        :param y: the discrete distribution from which one wants to calculate the skew 
+        :type y: pandas.Series or np.array
+        :return: the skew of distribution y
+        :return type: float 
+        """
+
+        variance = get_variance(y)
+        # In the limit of a dirac delta, skew should be 0 and variance 0.  However, in the discrete limit,
+        # the skew blows up as variance --> 0, hence return nan when variance is smaller than a resolution of 0.5:
+        if variance < 0.5:
+            return np.nan
+        else:
+            return (
+                get_moment(y, 3) - 3*get_centroid(y)*variance - get_centroid(y)**3
+            ) / get_variance(y)**(1.5)
+
+    def get_kurtosis(y):
+        """
+        Calculates the kurtosis as the fourth standardized moment.
+        Ref: https://en.wikipedia.org/wiki/Kurtosis#Pearson_moments
+        
+        :param y: the discrete distribution from which one wants to calculate the kurtosis 
+        :type y: pandas.Series or np.array
+        :return: the kurtosis of distribution y
+        :return type: float 
+        """
+
+        variance = get_variance(y)
+        # In the limit of a dirac delta, kurtosis should be 3 and variance 0.  However, in the discrete limit,
+        # the kurtosis blows up as variance --> 0, hence return nan when variance is smaller than a resolution of 0.5:
+        if variance < 0.5:
+            return np.nan
+        else:
+            return (
+                get_moment(y, 4) - 4*get_centroid(y)*get_moment(y, 3)
+                + 6*get_moment(y, 2)*get_centroid(y)**2 - 3*get_centroid(y)
+            ) / get_variance(y)**2
+
+    calculation = dict(
+        centroid=get_centroid,
+        variance=get_variance,
+        skew=get_skew,
+        kurtosis=get_kurtosis
+    )
+
+    fft_abs = np.abs(np.fft.rfft(x))
+
+    res = [calculation[config["aggtype"]](fft_abs) for config in param]
+    index = ['aggtype_"{}"'.format(config["aggtype"]) for config in param]
+    return zip(index, res)
+
+
 @set_property("fctype", "simple")
 def number_peaks(x, n):
     """
@@ -851,7 +1024,6 @@ def number_peaks(x, n):
     :return: the value of this feature
     :return type: float
     """
-    x = np.asarray(x)
     x_reduced = x[n:-n]
 
     res = None
@@ -864,7 +1036,7 @@ def number_peaks(x, n):
             res &= result_first
 
         res &= (x_reduced > np.roll(x, -i)[n:-n])
-    return sum(res)
+    return np.sum(res)
 
 
 @set_property("fctype", "combiner")
@@ -1006,7 +1178,7 @@ def spkt_welch_density(x, param):
     coeff = [config["coeff"] for config in param]
     indices = ["coeff_{}".format(i) for i in coeff]
 
-    if len(pxx) <= max(coeff):  # There are fewer data points in the time series than requested coefficients
+    if len(pxx) <= np.max(coeff):  # There are fewer data points in the time series than requested coefficients
 
         # filter coefficients that are not contained in pxx
         reduced_coeff = [coefficient for coefficient in coeff if len(pxx) > coefficient]
@@ -1095,8 +1267,6 @@ def change_quantiles(x, ql, qh, isabs, f_agg):
     :return: the value of this feature
     :return type: float
     """
-    x = np.asarray(x)
-
     if ql >= qh:
         ValueError("ql={} should be lower than qh={}".format(ql, qh))
 
@@ -1192,8 +1362,9 @@ def c3(x, lag):
     :return: the value of this feature
     :return type: float
     """
-    n = len(x)
-    x = np.asarray(x)
+    if not isinstance(x, (np.ndarray, pd.Series)):
+        x = np.asarray(x)
+    n = x.size
     if 2 * lag >= n:
         return 0
     else:
@@ -1219,8 +1390,10 @@ def binned_entropy(x, max_bins):
     :return: the value of this feature
     :return type: float
     """
+    if not isinstance(x, (np.ndarray, pd.Series)):
+        x = np.asarray(x)
     hist, bin_edges = np.histogram(x, bins=max_bins)
-    probs = hist / len(x)
+    probs = hist / x.size
     return - np.sum(p * np.math.log(p) for p in probs if p != 0)
 
 # todo - include latex formula
@@ -1238,9 +1411,7 @@ def sample_entropy(x):
 
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
-    :param tolerance: normalization factor; equivalent to the common practice of expressing the tolerance as r times \
-    the standard deviation
-    :type tolerance: float
+
     :return: the value of this feature
     :return type: float
     """
@@ -1350,11 +1521,13 @@ def number_crossing_m(x, m):
     :param m: the threshold for the crossing
     :type m: float
     :return: the value of this feature
-    :return type: float
+    :return type: int
     """
-    x = np.asarray(x)
-    x = x[x != m]
-    return sum(np.abs(np.diff(np.sign(x - m))))/2
+    if not isinstance(x, (np.ndarray, pd.Series)):
+        x = np.asarray(x)
+    # From https://stackoverflow.com/questions/3843017/efficiently-detect-sign-changes-in-python
+    positive = x > m
+    return np.where(np.bitwise_xor(positive[1:], positive[:-1]))[0].size
 
 
 @set_property("fctype", "simple")
@@ -1368,7 +1541,7 @@ def maximum(x):
     :return: the value of this feature
     :return type: float
     """
-    return max(x)
+    return np.max(x)
 
 
 @set_property("fctype", "simple")
@@ -1382,7 +1555,7 @@ def minimum(x):
     :return: the value of this feature
     :return type: float
     """
-    return min(x)
+    return np.min(x)
 
 
 @set_property("fctype", "simple")
@@ -1397,10 +1570,13 @@ def value_count(x, value):
     :return: the count
     :rtype: int
     """
+    if not isinstance(x, (np.ndarray, pd.Series)):
+        x = np.asarray(x)
+
     if np.isnan(value):
         return np.isnan(x).sum()
     else:
-        return x[x == value].shape[0]
+        return x[x == value].size
 
 
 @set_property("fctype", "simple")
@@ -1450,8 +1626,10 @@ def approximate_entropy(x, m, r):
     :return: Approximate entropy
     :return type: float
     """
-    x = np.asarray(x)
-    N = len(x)
+    if not isinstance(x, (np.ndarray, pd.Series)):
+        x = np.asarray(x)
+
+    N = x.size
     r *= np.std(x)
     if r < 0:
         raise ValueError("Parameter r must be positive.")

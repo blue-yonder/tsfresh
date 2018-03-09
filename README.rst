@@ -17,7 +17,7 @@ Spend less time on feature engineering
 
 Data Scientists often spend most of their time either cleaning data or
 building features. While we cannot change the first thing, the second
-can be automated. *TSFRESH* frees your time spend on building features
+can be automated. *TSFRESH* frees your time spent on building features
 by extracting them automatically. Hence, you have more time to study the
 newest deep learning paper, read hacker news or build better models.
 

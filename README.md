@@ -5,6 +5,7 @@
 [![Gitter chat](https://badges.gitter.im/tsfresh/Lobby.svg)](https://gitter.im/tsfresh/Lobby?utm_source=share-link&utm_medium=link&utm_campaign=share-link)
 ![py27 status](https://img.shields.io/badge/python2.7-supported-green.svg)
 [![py352 status](https://img.shields.io/badge/python3.5.2-supported-green.svg)](https://github.com/blue-yonder/tsfresh/issues/8)
+[![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/blue-yonder/tsfresh/master?filepath=notebooks)
 
 
 
@@ -20,7 +21,7 @@ The package contains many feature extraction methods and a robust feature select
 
 Data Scientists often spend most of their time either cleaning data or building features.
 While we cannot change the first thing, the second can be automated.
-*TSFRESH* frees your time spend on building features by extracting them automatically.
+*TSFRESH* frees your time spent on building features by extracting them automatically.
 Hence, you have more time to study the newest deep learning paper, read hacker news or build better models.
 
 
@@ -61,6 +62,7 @@ The algorithm is described in the following paper
 4. it has a comprehensive documentation
 5. it is compatible with sklearn, pandas and numpy
 6. it allows anyone to easily add their favorite features
+7. it both runs on your local machine or even on a cluster
 
 ## Next steps
 

@@ -20,7 +20,7 @@ from tsfresh.feature_extraction import feature_calculators
 from tsfresh.utilities.string_manipulation import get_config_from_string
 
 
-def from_columns(columns):
+def from_columns(columns, columns_to_ignore=[]):
     """
     Creates a mapping from kind names to fc_parameters objects
     (which are itself mappings from feature calculators to settings)
@@ -34,6 +34,8 @@ def from_columns(columns):
 
     :param columns: containing the feature names
     :type columns: list of str
+    :param columns_to_ignore: columns which do not contain tsfresh feature names
+    :type columns_to_ignore: list of str
 
     :return: The kind_to_fc_parameters object ready to be used in the extract_features function.
     :rtype: dict
@@ -42,6 +44,8 @@ def from_columns(columns):
     kind_to_fc_parameters = {}
 
     for col in columns:
+        if col in columns_to_ignore:
+            continue
 
         if not isinstance(col, basestring):
             raise TypeError("Column name {} should be a string or unicode".format(col))
@@ -105,6 +109,7 @@ class ComprehensiveFCParameters(dict):
         name_to_param.update({
             "time_reversal_asymmetry_statistic": [{"lag": lag} for lag in range(1, 4)],
             "c3": [{"lag": lag} for lag in range(1, 4)],
+            "cid_ce": [{"normalize": True}, {"normalize": False}],
             "symmetry_looking": [{"r": r * 0.05} for r in range(20)],
             "large_standard_deviation": [{"r": r * 0.05} for r in range(1, 20)],
             "quantile": [{"q": q} for q in [.1, .2, .3, .4, .6, .7, .8, .9]],
@@ -123,6 +128,7 @@ class ComprehensiveFCParameters(dict):
                                           for ql in [0., .2, .4, .6, .8] for qh in [.2, .4, .6, .8, 1.]
                                           for b in [False, True] for f in ["mean", "var"]],
             "fft_coefficient": [{"coeff": k, "attr": a} for a, k in product(["real", "imag", "abs", "angle"], range(100))],
+            "fft_aggregated": [{"aggtype": s} for s in ["centroid", "variance", "skew", "kurtosis"]],
             "value_count": [{"value": value} for value in [0, 1, np.NaN, np.PINF, np.NINF]],
             "range_count": [{"min": -1, "max": 1}],
             "approximate_entropy": [{"m": 2, "r": r} for r in [.1, .3, .5, .7, .9]],

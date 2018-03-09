@@ -9,10 +9,15 @@ import os
 import numpy as np
 import pandas as pd
 import six
+from mock import Mock
 
 from tests.fixtures import DataTestCase
 from tsfresh.feature_extraction.extraction import extract_features
 from tsfresh.feature_extraction.settings import ComprehensiveFCParameters
+
+import tempfile
+
+from tsfresh.utilities.distribution import DistributorBaseClass
 
 
 class ExtractionTestCase(DataTestCase):
@@ -20,6 +25,7 @@ class ExtractionTestCase(DataTestCase):
 
     def setUp(self):
         self.n_jobs = 1
+        self.directory = tempfile.gettempdir()
 
     def test_extract_features(self):
         # todo: implement more methods and test more aspects
@@ -95,7 +101,7 @@ class ExtractionTestCase(DataTestCase):
     def test_profiling_file_written_out(self):
 
         df = pd.DataFrame(data={"id": np.repeat([1, 2], 10), "val": np.random.normal(0, 1, 20)})
-        profiling_filename = "test_profiling.txt"
+        profiling_filename = os.path.join(self.directory, "test_profiling.txt")
         X = extract_features(df, column_id="id",
                              column_value="val", n_jobs=self.n_jobs,
                              profile=True, profiling_filename=profiling_filename)
@@ -104,7 +110,8 @@ class ExtractionTestCase(DataTestCase):
         os.remove(profiling_filename)
 
     def test_profiling_cumulative_file_written_out(self):
-        PROFILING_FILENAME = "test_profiling_cumulative.txt"
+
+        PROFILING_FILENAME = os.path.join(self.directory, "test_profiling_cumulative.txt")
         PROFILING_SORTING = "cumulative"
 
         df = pd.DataFrame(data={"id": np.repeat([1, 2], 10), "val": np.random.normal(0, 1, 20)})
@@ -167,3 +174,36 @@ class ParallelExtractionTestCase(DataTestCase):
         self.assertTrue(np.all(extracted_features.b__abs_energy == np.array([36619, 35483])))
         self.assertTrue(np.all(extracted_features.b__mean == np.array([37.85, 34.75])))
         self.assertTrue(np.all(extracted_features.b__median == np.array([39.5, 28.0])))
+
+
+class DistributorUsageTestCase(DataTestCase):
+    def setUp(self):
+        # only calculate some features to reduce load on travis ci
+        self.name_to_param = {"maximum": None}
+
+    def test_assert_is_distributor(self):
+        df = self.create_test_data_sample()
+
+        self.assertRaises(ValueError, extract_features,
+                          timeseries_container=df, column_id="id", column_sort="sort", column_kind="kind",
+                          column_value="val", default_fc_parameters=self.name_to_param,
+                          distributor=object())
+
+        self.assertRaises(ValueError, extract_features,
+                          timeseries_container=df, column_id="id", column_sort="sort", column_kind="kind",
+                          column_value="val", default_fc_parameters=self.name_to_param,
+                          distributor=13)
+
+    def test_distributor_map_reduce_and_close_are_called(self):
+        df = self.create_test_data_sample()
+
+        mock = Mock(spec=DistributorBaseClass)
+        mock.close.return_value = None
+        mock.map_reduce.return_value = []
+
+        X = extract_features(timeseries_container=df, column_id="id", column_sort="sort", column_kind="kind",
+                             column_value="val", default_fc_parameters=self.name_to_param,
+                             distributor=mock)
+
+        self.assertTrue(mock.close.called)
+        self.assertTrue(mock.map_reduce.called)

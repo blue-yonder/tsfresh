@@ -1,6 +1,11 @@
+# -*- coding: utf-8 -*-
+# This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
+# Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
+
 import ast
 import numpy as np
 from six import string_types
+
 
 def get_config_from_string(parts):
     """
@@ -64,3 +69,4 @@ def convert_to_output_format(param):
             return str(x)
 
     return "__".join(str(key) + "_" + add_parenthesis_if_string_value(param[key]) for key in sorted(param))
+
