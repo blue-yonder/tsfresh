@@ -235,7 +235,11 @@ class LocalDaskDistributor(DistributorBaseClass):
 
         from distributed import LocalCluster, Client
 
-        cluster = LocalCluster(n_workers=n_workers, processes=False)
+        import tempfile
+        self.test_dir = tempfile.mkdtemp()
+        worker_kwargs = {'n_workers': n_workers, 'processes': False, 'local_dir': self.test_dir}
+        cluster = LocalCluster(**worker_kwargs)
+
         self.client = Client(cluster)
         self.n_workers = n_workers
 
