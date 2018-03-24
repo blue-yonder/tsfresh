@@ -23,6 +23,10 @@ def _notebook_run(path, timeout=default_timeout):
     dirname, _ = os.path.split(path)
     execproc_timeout = '--ExecutePreprocessor.timeout=%d' % timeout
 
+    # Do not run notebook tests on Travis
+    if os.environ['TRAVIS']:
+        return [], []
+
     with tempfile.NamedTemporaryFile(mode='w+t', suffix=".ipynb") as fout:
         args = ["jupyter", "nbconvert",
                 "--to", "notebook", "--execute", execproc_timeout]
