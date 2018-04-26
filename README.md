@@ -52,7 +52,7 @@ The algorithm is described in the following papers
     _Distributed and parallel time series feature extraction for industrial big data applications._  
     ArXiv e-print 1610.07717,  [https://arxiv.org/abs/1610.07717](https://arxiv.org/abs/1610.07717). 
     
-* Christ, M, Braun, N., Neuffer, J. and Kempa-Liehr A.W. (2018).
+* Christ, M., Braun, N., Neuffer, J. and Kempa-Liehr A.W. (2018).
    _Time Series FeatuRe Extraction on basis of Scalable Hypothesis tests (tsfresh -- A Python package)._
    Accepted for publication in Neurocomputing
    
