@@ -12,7 +12,7 @@ from tsfresh.utilities.dataframe_functions import restrict_input_to_index
 class FeatureAugmenter(BaseEstimator, TransformerMixin):
     """
     Sklearn-compatible estimator, for calculating and adding many features calculated from a given time series
-    to the data. Is is basically a wrapper around :func:`~tsfresh.feature_extraction.extract_features`.
+    to the data. It is basically a wrapper around :func:`~tsfresh.feature_extraction.extract_features`.
 
     The features include basic ones like min, max or median, and advanced features like fourier
     transformations or statistical tests. For a list of all possible features, see the module
