@@ -128,6 +128,10 @@ You can also use a local DaskCluster on your local machine to emulate a Dask net
 The following example shows how to setup a :class:`~tsfresh.utilities.distribution.LocalDaskDistributor` on a local cluster
 of 3 workers:
 
+.. note:: FYI - if you already have dask/distributed set up, note that :class:`~tsfresh.utilities.distribution.LocalDaskDistributor`
+  uses a Python tempfile directory for the distributed ``LocalCluster`` ``local_dir``
+  argument.
+
 .. code:: python
 
     from tsfresh.examples.robot_execution_failures import \

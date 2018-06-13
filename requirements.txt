@@ -2,7 +2,7 @@ requests>=2.9.1
 numpy>=1.10.4
 pandas>=0.20.3
 scipy>=0.17.0
-statsmodels>=0.6.1
+statsmodels==0.8.0
 patsy>=0.4.1
 scikit-learn>=0.17.1
 future>=0.16.0
