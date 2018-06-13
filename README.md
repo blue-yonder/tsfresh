@@ -56,7 +56,7 @@ The FRESH algorithm has been introduced at the /Worshop on Learning on Big Data/
 
 * Christ, M., Kempa-Liehr, A.W. and Feindt, M. (2016).  
     _Distributed and parallel time series feature extraction for industrial big data applications._  
-    ArXiv e-print 1610.07717,  [https://arxiv.org/abs/1610.07717v1](https://arxiv.org/abs/1610.07717v1). 
+    ArXiv e-print 1610.07717v1,  [https://arxiv.org/abs/1610.07717v1](https://arxiv.org/abs/1610.07717v1). 
     
    
 ## Advantages of tsfresh
