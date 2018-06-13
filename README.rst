@@ -54,11 +54,11 @@ It is based on the well developed theory of hypothesis testing and uses
 a multiple test procedure. As a result the filtering process
 mathematically controls the percentage of irrelevant extracted features.
 
-The *TSFRESH* package is described in the following paper
+The *TSFRESH* package is described in the following open access paper
 
 - Christ, M., Braun, N., Neuffer, J. and Kempa-Liehr A.W. (2018).
    *Time Series FeatuRe Extraction on basis of Scalable Hypothesis tests (tsfresh -- A Python package).*
-   Neurocomputing 307 (2018) 72-77, https://doi.org/10.1016/j.neucom.2018.03.067. Open Access
+   Neurocomputing 307 (2018) 72-77, https://doi.org/10.1016/j.neucom.2018.03.067.
 
 The FRESH algorithm has been introduced at the *Worshop on Learning on Big Data* (WLBD)* at the *Asian Conference on Machine Learning* (ACML) 2016 in Hamilton, New Zealdnd:
 
