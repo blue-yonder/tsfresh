@@ -60,12 +60,12 @@ The *TSFRESH* package is described in the following open access paper
    *Time Series FeatuRe Extraction on basis of Scalable Hypothesis tests (tsfresh -- A Python package).*
    Neurocomputing 307 (2018) 72-77, https://doi.org/10.1016/j.neucom.2018.03.067.
 
-The FRESH algorithm had been presented at the *Worshop on Learning on Big Data* (WLBD) at the *Asian Conference on Machine Learning* (ACML) 2016 in Hamilton, New Zealand:
+The FRESH algorithm is described in the following whitepaper
 
--  Christ, M., Kempa-Liehr, A.W. and Feindt, M. (2016).
+-  Christ, M., Kempa-Liehr, A.W. and Feindt, M. (2017).
    *Distributed and parallel time series feature extraction for
    industrial big data applications.*
-   ArXiv e-print 1610.07717v1, https://arxiv.org/abs/1610.07717v1.
+   ArXiv e-print 1610.07717, https://arxiv.org/abs/1610.07717.
 
 
 Advantages of tsfresh
