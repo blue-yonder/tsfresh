@@ -46,7 +46,7 @@ This filtering procedure evaluates the explaining power and importance of each c
 It is based on the well developed theory of hypothesis testing and uses a multiple test procedure.
 As a result the filtering process mathematically controls the percentage of irrelevant extracted features.
 
-The library is described in the following paper
+The  *TSFRESH* package is described in the following paper
 
 * Christ, M., Braun, N., Neuffer, J. and Kempa-Liehr A.W. (2018).
    _Time Series FeatuRe Extraction on basis of Scalable Hypothesis tests (tsfresh -- A Python package)._
