@@ -30,7 +30,7 @@ def extract_relevant_features(timeseries_container, y, X=None,
                               ml_task='auto'):
     """
     High level convenience function to extract time series features from `timeseries_container`. Then return feature
-    matrix `X` possibly augmented with relevent features with respect to target vector `y`.
+    matrix `X` possibly augmented with relevant features with respect to target vector `y`.
 
     For more details see the documentation of :func:`~tsfresh.feature_extraction.extraction.extract_features` and
     :func:`~tsfresh.feature_selection.selection.select_features`.
