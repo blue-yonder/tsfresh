@@ -61,6 +61,11 @@ The algorithm is described in the following paper
    industrial big data applications.*
    ArXiv e-print 1610.07717, https://arxiv.org/abs/1610.07717.
 
+- Christ, M., Braun, N., Neuffer, J. and Kempa-Liehr A.W. (2018).
+   *Time Series FeatuRe Extraction on basis of Scalable Hypothesis tests (tsfresh -- A Python package).*
+   Neurocomputing 307 (2018) 72-77, https://doi.org/10.1016/j.neucom.2018.03.067. Open Access
+
+
 Advantages of tsfresh
 ---------------------
 
