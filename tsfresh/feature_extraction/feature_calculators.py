@@ -24,6 +24,7 @@ import pandas as pd
 from numpy.linalg import LinAlgError
 from scipy.signal import cwt, find_peaks_cwt, ricker, welch
 from scipy.stats import linregress
+from statsmodels.tools.sm_exceptions import MissingDataError
 from statsmodels.tsa.ar_model import AR
 from statsmodels.tsa.stattools import acf, adfuller, pacf
 
@@ -376,7 +377,9 @@ def augmented_dickey_fuller(x, param):
         res = adfuller(x)
     except LinAlgError:
         res = np.NaN, np.NaN, np.NaN
-    except ValueError:  # occurs if sample size is too small
+    except ValueError: # occurs if sample size is too small
+        res = np.NaN, np.NaN, np.NaN
+    except MissingDataError: # is thrown for e.g. inf or nan in the data
         res = np.NaN, np.NaN, np.NaN
 
     return [('attr_"{}"'.format(config["attr"]),
