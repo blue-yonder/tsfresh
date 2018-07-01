@@ -234,8 +234,12 @@ class LocalDaskDistributor(DistributorBaseClass):
         """
 
         from distributed import LocalCluster, Client
+        import tempfile
 
-        cluster = LocalCluster(n_workers=n_workers, processes=False)
+        # attribute .local_dir_ is the path where the local dask workers store temporary files
+        self.local_dir_ = tempfile.mkdtemp()
+        cluster = LocalCluster(n_workers=n_workers, processes=False, local_dir=self.local_dir_)
+
         self.client = Client(cluster)
         self.n_workers = n_workers
 
