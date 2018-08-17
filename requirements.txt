@@ -11,6 +11,3 @@ tqdm>=4.10.0
 ipaddress>=1.0.18; python_version <= '2.7'
 dask>=0.15.2
 distributed>=1.18.3
-mock>=2.0.0
-nbformat>=4.4.0
-pytest>=3.7.1
