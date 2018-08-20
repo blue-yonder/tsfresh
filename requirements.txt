@@ -1,5 +1,5 @@
 requests==2.18.4
-numpy==1.12.1
+numpy==1.14.2
 pandas==0.22.0
 scipy==1.1.0
 statsmodels==0.8.0
