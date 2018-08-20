@@ -9,5 +9,5 @@ future==0.16.0
 six==1.10.0
 tqdm==4.23.3
 ipaddress==1.0.22; python_version <= '2.7'
-dask==0.17.4
-distributed==1.21.8
+dask==0.18.2
+distributed==1.22.1
