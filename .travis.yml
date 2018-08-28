@@ -6,10 +6,16 @@ sudo: false
 cache:
   directories:
     - $HOME/.cache/pip
+# Split the pip install from -r requirements.txt -r test-requirements.txt to
+# to two seperate installs to allow for the update the bundled numpy versions
+# in the Travis Python bundles:
+# Python 2.7.11 bundled with numpy==1.11.1
+# Python 3.5.2 bundled with numpy==1.14.5
 install:
   - pip install --upgrade pip wheel setuptools
   - pip install numpy scipy coveralls
-  - pip install -r requirements.txt -r test-requirements.txt
+  - pip install -r requirements.txt
+  - pip install -r test-requirements.txt
   - pip install -U .
   - pip freeze
 jobs:
