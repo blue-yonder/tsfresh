@@ -11,6 +11,8 @@ cache:
 # in the Travis Python bundles:
 # Python 2.7.11 bundled with numpy==1.11.1
 # Python 3.5.2 bundled with numpy==1.14.5
+# As per https://github.com/blue-yonder/tsfresh/issues/412 and
+# and tested with test PR https://github.com/blue-yonder/tsfresh/pull/419
 install:
   - pip install --upgrade pip wheel setuptools
   - pip install numpy scipy coveralls
