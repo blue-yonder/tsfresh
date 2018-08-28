@@ -3,9 +3,11 @@ language: python
 # We do not use sudo here, so we can use docker containers, which have better caching
 sudo: false
 # We want the pip folder to be cached, to speed up installation
-cache:
-  directories:
-    - $HOME/.cache/pip
+# If we want to test tsfresh with the latest versions of things, we do not want
+# the pip folder to be cached
+#cache:
+#  directories:
+#    - $HOME/.cache/pip
 install:
   - pip install --upgrade pip wheel setuptools
   - pip install numpy scipy coveralls

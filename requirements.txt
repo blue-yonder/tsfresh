@@ -1,13 +1,13 @@
-requests==2.18.4
-numpy==1.14.2
-pandas==0.22.0
-scipy==1.1.0
-statsmodels==0.8.0
-patsy==0.5.0
-scikit-learn==0.19.1
-future==0.16.0
-six==1.10.0
-tqdm==4.23.3
-ipaddress==1.0.22; python_version <= '2.7'
-dask==0.18.2
-distributed==1.22.1
+requests>=2.9.1
+numpy>=1.10.4
+pandas>=0.20.3
+scipy>=0.17.0
+statsmodels>=0.8.0
+patsy>=0.4.1
+scikit-learn>=0.17.1
+future>=0.16.0
+six>=1.10.0
+tqdm>=4.10.0
+ipaddress>=1.0.18; python_version <= '2.7'
+dask>=0.15.2
+distributed>=1.18.3
