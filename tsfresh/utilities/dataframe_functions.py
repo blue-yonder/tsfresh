@@ -370,9 +370,9 @@ def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_di
         raise ValueError("You have to set the column_id which contains the ids of the different time series")
 
     if column_kind is not None:
-        grouper = (column_kind, column_id)
+        grouper = [column_kind, column_id]
     else:
-        grouper = (column_id,)
+        grouper = [column_id,]
 
     if column_sort is not None and df[column_sort].dtype != np.object:
 
@@ -487,6 +487,3 @@ def make_forecasting_frame(x, kind, max_timeshift, rolling_direction):
     df_shift = df_shift[mask]
 
     return df_shift, df["value"][1:]
-
-
-
