@@ -20,15 +20,16 @@ class TestSettingsObject(TestCase):
     This tests the base class ComprehensiveFCParameters
     """
 
-    def test_from_columns(self):
-        tsn = "TEST_TIME_SERIES"
+    def test_from_column_raises_on_wrong_column_format(self):
 
-        fset = ComprehensiveFCParameters()
         self.assertRaises(TypeError, from_columns, 42)
         self.assertRaises(TypeError, from_columns, 42)
         self.assertRaises(ValueError, from_columns, ["This is not a column name"])
         self.assertRaises(ValueError, from_columns, ["This__neither"])
         self.assertRaises(ValueError, from_columns, ["This__also__not"])
+
+    def test_from_column_correct_for_selected_columns(self):
+        tsn = "TEST_TIME_SERIES"
 
         # Aggregate functions
         feature_names = [tsn + '__sum_values', tsn + "__median", tsn + "__length", tsn + "__sample_entropy"]
@@ -42,7 +43,6 @@ class TestSettingsObject(TestCase):
         feature_names += [tsn + '__ar_coefficient__k_20__coeff_4', tsn + '__ar_coefficient__coeff_10__k_-1']
 
         kind_to_fc_parameters = from_columns(feature_names)
-
         six.assertCountEqual(self, list(kind_to_fc_parameters[tsn].keys()),
                              ["sum_values", "median", "length", "sample_entropy", "quantile", "number_peaks",
                               "ar_coefficient", "value_count"])
@@ -54,20 +54,17 @@ class TestSettingsObject(TestCase):
         self.assertEqual(kind_to_fc_parameters[tsn]["value_count"],
                          [{"value": np.PINF}, {"value": np.NINF}, {"value": np.NaN}])
 
-        # test that it passes for all functions
+    def test_from_column_correct_for_comprehensive_fc_parameters(self):
         fset = ComprehensiveFCParameters()
         X_org = extract_features(pd.DataFrame({"value": [1, 2, 3], "id": [1, 1, 1]}),
                                  default_fc_parameters=fset,
                                  column_id="id", column_value="value",
                                  n_jobs=0)
-
         inferred_fset = from_columns(X_org)
-
         X_new = extract_features(pd.DataFrame({"value": [1, 2, 3], "id": [1, 1, 1]}),
                                  kind_to_fc_parameters=inferred_fset,
                                  column_id="id", column_value="value",
                                  n_jobs=0)
-
         assert_frame_equal(X_org.sort_index(), X_new.sort_index())
 
     def test_from_columns_ignores_columns(self):
