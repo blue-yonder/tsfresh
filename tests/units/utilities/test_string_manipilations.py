@@ -23,3 +23,12 @@ class StringUtilities(TestCase):
         out = convert_to_output_format({"list": ["a", "b", "c"]})
         expected_out = "list_['a', 'b', 'c']"
         self.assertEqual(out, expected_out)
+
+    def test_convert_to_output_format_wrong_order(self):
+        out = convert_to_output_format({"width": 1, "coeff": "a"})
+        expected_out = 'coeff_"a"__width_1'
+        self.assertEqual(out, expected_out)
+
+        out = convert_to_output_format({"c": 1, "b": 2, "a": 3})
+        expected_out = 'a_3__b_2__c_1'
+        self.assertEqual(out, expected_out)
