@@ -106,8 +106,15 @@ def select_features(X, y, test_for_binary_target_binary_feature=defaults.TEST_FO
     :param n_jobs: Number of processes to use during the p-value calculation
     :type n_jobs: int
 
-    :param chunksize: Size of the chunks submitted to the worker processes
-    :type chunksize: int
+    :param chunksize: The size of one chunk that is submitted to the worker
+        process for the parallelisation.  Where one chunk is defined as a
+        singular time series for one id and one kind. If you set the chunksize
+        to 10, then it means that one task is to calculate all features for 10
+        time series.  If it is set it to None, depending on distributor,
+        heuristics are used to find the optimal chunksize. If you get out of
+        memory exceptions, you can try it with the dask distributor and a
+        smaller chunksize.
+    :type chunksize: None or int
 
     :param ml_task: The intended machine learning task. Either `'classification'`, `'regression'` or `'auto'`.
                     Defaults to `'auto'`, meaning the intended task is inferred from `y`.

@@ -22,7 +22,14 @@ otherwise idle) processors.
 
 The chunksize of the Pool's map function is another important parameter to consider. It can be set via the
 `chunksize` field. By default it is up to
-:class:`multiprocessing.Pool` to decide on the chunksize.
+:class:`multiprocessing.Pool` to decide on the chunksize.  The chunksize is the
+size of one chunk that is submitted to the worker process for the
+parallelisation.  Where one chunk is defined as a singular time series for one
+id and one kind. If you set the chunksize to 10, then it means that one task is
+to calculate all features for 10 time series.  If it is set it to None,
+depending on distributor, heuristics are used to find the optimal chunksize. If
+you get out of memory exceptions, you can try it with the dask distributor and a
+smaller chunksize.
 
 Parallelization of Feature Extraction
 -------------------------------------
