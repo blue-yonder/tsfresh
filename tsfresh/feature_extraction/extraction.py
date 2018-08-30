@@ -149,6 +149,7 @@ def extract_features(timeseries_container, default_fc_parameters=None,
             warnings.simplefilter("ignore")
         else:
             warnings.simplefilter("default")
+
         result = _do_extraction(df=df_melt,
                                 column_id=column_id, column_value=column_value, column_kind=column_kind,
                                 n_jobs=n_jobs, chunk_size=chunksize,
