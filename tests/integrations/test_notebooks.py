@@ -26,8 +26,11 @@ def _notebook_run(path, timeout=default_timeout):
     # Do not run notebook tests on Travis.  notebooks tests should only be
     # run in the local developer testing context and notebook tests often
     # cause time out failures on Travis builds see (github #409, #410)
-    if os.environ['TRAVIS']:
-         return [], []
+    try:
+        if os.environ['TRAVIS']:
+            return [], []
+    except:
+        pass
 
     with tempfile.NamedTemporaryFile(mode='w+t', suffix=".ipynb") as fout:
         args = ["jupyter", "nbconvert",
