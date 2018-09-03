@@ -88,7 +88,14 @@ def extract_features(timeseries_container, default_fc_parameters=None,
     :param n_jobs: The number of processes to use for parallelization. If zero, no parallelization is used.
     :type n_jobs: int
 
-    :param chunksize: The size of one chunk for the parallelisation
+    :param chunksize: The size of one chunk that is submitted to the worker
+        process for the parallelisation.  Where one chunk is defined as a
+        singular time series for one id and one kind. If you set the chunksize
+        to 10, then it means that one task is to calculate all features for 10
+        time series.  If it is set it to None, depending on distributor,
+        heuristics are used to find the optimal chunksize. If you get out of
+        memory exceptions, you can try it with the dask distributor and a
+        smaller chunksize.
     :type chunksize: None or int
 
     :param: show_warnings: Show warnings during the feature extraction (needed for debugging of calculators).
