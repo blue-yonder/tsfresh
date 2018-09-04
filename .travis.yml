@@ -30,14 +30,14 @@ jobs:
         - sed -i 's/\-n auto/\-n 2/g' setup.cfg
         - "if [ $TRAVIS_PULL_REQUEST == false ] && ! [ $TRAVIS_BRANCH == 'master' ]; then py.test tests/units -n2; else python setup.py test; fi"
       python: 3.5.2
-    - stage: Run unit tests Python 2.7.11 and numpy 1.10.4
+    - stage: Run unit tests and deploy
       before_script:
         - pip install numpy==1.10.4
       script:
         - sed -i 's/\-n auto/\-n 2/g' setup.cfg
         - "if [ $TRAVIS_PULL_REQUEST == false ] && ! [ $TRAVIS_BRANCH == 'master' ]; then py.test tests/units -n2; else python setup.py test; fi"
       python: 2.7.11
-    - stage: Run unit tests Python 3.5.2 and numpy 1.10.4
+    - stage: Run unit tests and deploy
       before_script:
         - pip install numpy==1.10.4
       script:
