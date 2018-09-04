@@ -15,6 +15,7 @@ install:
 jobs:
   include:
     - stage: Run unit tests and deploy
+      env: NUMPY_VERSION="latest"
       before_script:
         - pip install --upgrade numpy
       script:
@@ -24,6 +25,7 @@ jobs:
       after_success:
         - coveralls
     - stage: Run unit tests and deploy
+      env: NUMPY_VERSION="latest"
       before_script:
         - pip install --upgrade numpy
       script:
@@ -31,6 +33,7 @@ jobs:
         - "if [ $TRAVIS_PULL_REQUEST == false ] && ! [ $TRAVIS_BRANCH == 'master' ]; then py.test tests/units -n2; else python setup.py test; fi"
       python: 3.5.2
     - stage: Run unit tests and deploy
+      env: NUMPY_VERSION="1.10.4"
       before_script:
         - pip install numpy==1.10.4
       script:
@@ -38,6 +41,7 @@ jobs:
         - "if [ $TRAVIS_PULL_REQUEST == false ] && ! [ $TRAVIS_BRANCH == 'master' ]; then py.test tests/units -n2; else python setup.py test; fi"
       python: 2.7.11
     - stage: Run unit tests and deploy
+      env: NUMPY_VERSION="1.10.4"
       before_script:
         - pip install numpy==1.10.4
       script:
