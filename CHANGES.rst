@@ -4,10 +4,17 @@ Changelog
 
 tsfresh uses `Semantic Versioning <http://semver.org/>`_
 
+Version 0.11.1
+==============
+- general performance improvements
+- removed hard pinning of dependencies
+- fixed
+    - the stock price forecasting notebook
+    - the multi classification notebook
+
 
 Version 0.11.0
 ==============
-
 - new feature calculators:
     - fft_aggregated
     - cid_ce
