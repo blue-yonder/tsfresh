@@ -1783,7 +1783,7 @@ def agg_linear_trend(x, param):
 def energy_ratio_by_chunks(x, param):
     """
     Calculates the sum of squares of chunk i out of N chunks expressed as a ratio with the sum of squares over the whole
-    series
+    series.
 
     Takes as input parameters the number num_segments of segments to divide the series into and segment_focus
     which is the segment number (starting at zero) to return a feature on.
@@ -1807,10 +1807,11 @@ def energy_ratio_by_chunks(x, param):
         num_segments = parameter_combination["num_segments"]
         segment_focus = parameter_combination["segment_focus"]
         assert segment_focus < num_segments
+        assert num_segments > 0
 
-        segment_length = len(x)//num_segments
+        segment_length = len(x) // num_segments
         start = segment_focus * segment_length
-        end = min((segment_focus+1) * segment_length, len(x))
+        end = min((segment_focus + 1) * segment_length, len(x))
         res_data.append(np.sum(x[start:end] ** 2.0)/full_series_energy)
         res_index.append("num_segments_{}__segment_focus_{}".format(num_segments, segment_focus))
 
