@@ -1027,4 +1027,16 @@ class FeatureCalculationTestCase(TestCase):
             sum = sum + dat
         self.assertAlmostEqual(sum, 1.0)
 
-        
+        x = pd.Series(1, index=range(10))
+        param = [{"num_segments": 3, "segment_focus": i} for i in range(3)]
+        output = energy_ratio_by_chunks(x=x, param=param)
+
+        self.assertAlmostEqual(output[0][1], 0.3, places=3)
+        self.assertAlmostEqual(output[1][1], 0.3, places=3)
+        self.assertAlmostEqual(output[2][1], 0.3, places=3)
+
+        # Sum of the ratios should be 1.0
+        sum = 0.0
+        for name, dat in output:
+            sum = sum + dat
+        self.assertAlmostEqual(sum, 1.0)
