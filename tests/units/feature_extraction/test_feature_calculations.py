@@ -643,8 +643,6 @@ class FeatureCalculationTestCase(TestCase):
                           "widths_(1, 3)__coeff_5__w_3"]
 
         res = cwt_coefficients(x, param)
-
-
         res = pd.Series(dict(res))
 
         # todo: add unit test for the values
@@ -664,7 +662,6 @@ class FeatureCalculationTestCase(TestCase):
         res = ar_coefficient(x, param)
         expected_index = ["k_1__coeff_0", "k_1__coeff_1"]
 
-
         res = pd.Series(dict(res))
         six.assertCountEqual(self, list(res.index), expected_index)
         self.assertAlmostEqual(res["k_1__coeff_0"], 1, places=2)
@@ -683,7 +680,6 @@ class FeatureCalculationTestCase(TestCase):
         expected_index = ["k_1__coeff_0", "k_1__coeff_1",
                           "k_2__coeff_0", "k_2__coeff_1",
                           "k_2__coeff_2", "k_2__coeff_3"]
-
 
         res = pd.Series(dict(res))
 
@@ -919,7 +915,6 @@ class FeatureCalculationTestCase(TestCase):
         param = [{"attr": "rvalue"}]
         res = linear_trend(x, param)
 
-
         res = pd.Series(dict(res))
 
         self.assertLess(abs(res["attr_\"rvalue\""]), 0.1)
@@ -928,7 +923,6 @@ class FeatureCalculationTestCase(TestCase):
         x = [42 - 2 * x for x in range(10)]
         param = [{"attr": "intercept"}, {"attr": "slope"}]
         res = linear_trend(x, param)
-
 
         res = pd.Series(dict(res))
 
@@ -990,7 +984,6 @@ class FeatureCalculationTestCase(TestCase):
         x = pd.Series([np.NaN, np.NaN, np.NaN, -3, -3, -3])
         res = agg_linear_trend(x=x, param=param)
 
-
         res = pd.Series(dict(res))
 
         self.assertIsNaN(res['f_agg_"max"__chunk_len_3__attr_"intercept"'])
@@ -1005,7 +998,6 @@ class FeatureCalculationTestCase(TestCase):
         x = pd.Series([np.NaN, np.NaN, -3, -3, -3, -3])
         res = agg_linear_trend(x=x, param=param)
 
-
         res = pd.Series(dict(res))
 
         self.assertAlmostEquals(res['f_agg_"max"__chunk_len_3__attr_"intercept"'], -3)
@@ -1019,7 +1011,7 @@ class FeatureCalculationTestCase(TestCase):
 
     def test_energy_ratio_by_chunks(self):
         x = pd.Series(range(90), index=range(90))
-        param = [{"num_segments" : 6, "segment_focus": i} for i in range(6)]
+        param = [{"num_segments": 6, "segment_focus": i} for i in range(6)]
         output = energy_ratio_by_chunks(x=x, param=param)
 
         self.assertAlmostEqual(output[0][1], 0.0043, places=3)
@@ -1031,13 +1023,8 @@ class FeatureCalculationTestCase(TestCase):
 
         # Sum of the ratios should be 1.0
         sum = 0.0
-        for name,dat in output:
+        for name, dat in output:
             sum = sum + dat
         self.assertAlmostEqual(sum, 1.0)
 
-
-
-    def test_ComprehensiveFCParameters(self):
-        import pprint
-        pp = pprint.PrettyPrinter(indent=4)
-        pp.pprint(ComprehensiveFCParameters())
+        
