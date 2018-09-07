@@ -1792,7 +1792,7 @@ def energy_ratio_by_chunks(x, param):
     distributed on the bins starting from the first. For example, if your time series consists of 8 datapoints, the
     first two bins will contain 3 and the last two values, e.g. `[ 0.,  1.,  2.], [ 3.,  4.,  5.]` and `[ 6.,  7.]`.
 
-    Note that the answer for num_segments=1 is a trivial "1" but we handle this scenario
+    Note that the answer for `num_segments = 1` is a trivial "1" but we handle this scenario
     in case somebody calls it. Sum of the ratios should be 1.0.
 
     Returns an AssertionError for N <= 0
