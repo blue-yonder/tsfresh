@@ -1788,10 +1788,14 @@ def energy_ratio_by_chunks(x, param):
     Takes as input parameters the number num_segments of segments to divide the series into and segment_focus
     which is the segment number (starting at zero) to return a feature on.
 
+    If the length of the time series is not a multiple of the number of segments, the remaining data points are
+    distributed on the bins starting from the first. For example, if your time series consists of 8 datapoints, the
+    first two bins will contain 3 and the last two values, e.g. `[ 0.,  1.,  2.], [ 3.,  4.,  5.]` and `[ 6.,  7.]`.
+
     Note that the answer for num_segments=1 is a trivial "1" but we handle this scenario
     in case somebody calls it. Sum of the ratios should be 1.0.
 
-    Returns an error for N <= 0
+    Returns an AssertionError for N <= 0
 
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
