@@ -16,12 +16,14 @@ class FeatureAugmenterTestCase(DataTestCase):
 
         fc_parameters = {"length": None}
         self.kind_to_fc_parameters = {"a": fc_parameters.copy(),
-                                                     "b": fc_parameters.copy()}
+                                      "b": fc_parameters.copy()}
 
     def test_fit_and_transform(self):
         augmenter = FeatureAugmenter(column_value="val", column_id="id", column_sort="sort",
                                      column_kind="kind",
-                                     kind_to_fc_parameters=self.kind_to_fc_parameters)
+                                     kind_to_fc_parameters=self.kind_to_fc_parameters,
+                                     n_jobs=0,
+                                     disable_progressbar = True)
 
         # Fit should do nothing
         returned_df = augmenter.fit()
@@ -55,7 +57,9 @@ class FeatureAugmenterTestCase(DataTestCase):
     def test_add_features_to_only_a_part(self):
         augmenter = FeatureAugmenter(column_value="val", column_id="id", column_sort="sort",
                                      column_kind="kind",
-                                     kind_to_fc_parameters=self.kind_to_fc_parameters)
+                                     kind_to_fc_parameters=self.kind_to_fc_parameters,
+                                     n_jobs=0,
+                                     disable_progressbar = True)
 
         augmenter.set_timeseries_container(self.test_df)
 
