@@ -4,6 +4,12 @@ Changelog
 
 tsfresh uses `Semantic Versioning <http://semver.org/>`_
 
+
+Unreleased
+==========
+- change chunking in energy_ratio_by_chunks to use all data points
+- fix warning for spkt_welch_density
+
 Version 0.11.1
 ==============
 - general performance improvements
@@ -11,7 +17,6 @@ Version 0.11.1
 - fixed
     - the stock price forecasting notebook
     - the multi classification notebook
-
 
 Version 0.11.0
 ==============

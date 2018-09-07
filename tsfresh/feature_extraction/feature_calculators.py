@@ -1177,7 +1177,7 @@ def spkt_welch_density(x, param):
     :return type: pandas.Series
     """
 
-    freq, pxx = welch(x)
+    freq, pxx = welch(x, nperseg=min(len(x), 256))
     coeff = [config["coeff"] for config in param]
     indices = ["coeff_{}".format(i) for i in coeff]
 
@@ -1284,7 +1284,7 @@ def change_quantiles(x, ql, qh, isabs, f_agg):
     except ValueError:  # Occurs when ql are qh effectively equal, e.g. x is not long enough or is too categorical
         return 0
     # We only count changes that start and end inside the corridor
-    ind = (bin_cat_0 * np.roll(bin_cat_0, 1))[1:]
+    ind = (bin_cat_0 & np.roll(bin_cat_0, 1))[1:]
     if sum(ind) == 0:
         return 0
     else:
@@ -1783,15 +1783,19 @@ def agg_linear_trend(x, param):
 def energy_ratio_by_chunks(x, param):
     """
     Calculates the sum of squares of chunk i out of N chunks expressed as a ratio with the sum of squares over the whole
-    series
+    series.
 
     Takes as input parameters the number num_segments of segments to divide the series into and segment_focus
     which is the segment number (starting at zero) to return a feature on.
 
-    Note that the answer for num_segments=1 is a trivial "1" but we handle this scenario
+    If the length of the time series is not a multiple of the number of segments, the remaining data points are
+    distributed on the bins starting from the first. For example, if your time series consists of 8 datapoints, the
+    first two bins will contain 3 and the last two values, e.g. `[ 0.,  1.,  2.], [ 3.,  4.,  5.]` and `[ 6.,  7.]`.
+
+    Note that the answer for `num_segments = 1` is a trivial "1" but we handle this scenario
     in case somebody calls it. Sum of the ratios should be 1.0.
 
-    Returns an error for N <= 0
+    Returns an AssertionError for N <= 0
 
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
@@ -1799,7 +1803,6 @@ def energy_ratio_by_chunks(x, param):
     :return: the feature values
     :return type: list of tuples (index, data)
     """
-
     res_data = []
     res_index = []
     full_series_energy = np.sum(x ** 2)
@@ -1808,11 +1811,9 @@ def energy_ratio_by_chunks(x, param):
         num_segments = parameter_combination["num_segments"]
         segment_focus = parameter_combination["segment_focus"]
         assert segment_focus < num_segments
+        assert num_segments > 0
 
-        segment_length = len(x)//num_segments
-        start = segment_focus*segment_length
-        end = min((segment_focus+1)*segment_length, len(x))
-        res_data.append(np.sum(x[start:end]**2.0)/full_series_energy)
+        res_data.append(np.sum(np.array_split(x, num_segments)[segment_focus] ** 2.0)/full_series_energy)
         res_index.append("num_segments_{}__segment_focus_{}".format(num_segments, segment_focus))
 
     return list(zip(res_index, res_data)) # Materialize as list for Python 3 compatibility with name handling
