@@ -1177,7 +1177,7 @@ def spkt_welch_density(x, param):
     :return type: pandas.Series
     """
 
-    freq, pxx = welch(x)
+    freq, pxx = welch(x, nperseg=min(len(x), 256))
     coeff = [config["coeff"] for config in param]
     indices = ["coeff_{}".format(i) for i in coeff]
 
