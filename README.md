@@ -6,7 +6,7 @@
 ![py27 status](https://img.shields.io/badge/python2.7-supported-green.svg)
 [![py352 status](https://img.shields.io/badge/python3.5.2-supported-green.svg)](https://github.com/blue-yonder/tsfresh/issues/8)
 [![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/blue-yonder/tsfresh/master?filepath=notebooks)
-
+[![Downloads](https://pepy.tech/badge/tsfresh)](https://pepy.tech/project/tsfresh)
 
 
 # tsfresh
@@ -56,9 +56,9 @@ The FRESH algorithm is described in the following whitepaper
 
 * Christ, M., Kempa-Liehr, A.W. and Feindt, M. (2017).  
     _Distributed and parallel time series feature extraction for industrial big data applications._  
-    ArXiv e-print 1610.07717,  [https://arxiv.org/abs/1610.07717](https://arxiv.org/abs/1610.07717). 
-    
-   
+    ArXiv e-print 1610.07717,  [https://arxiv.org/abs/1610.07717](https://arxiv.org/abs/1610.07717).
+
+
 ## Advantages of tsfresh
 
 *TSFRESH* has several selling points, for example

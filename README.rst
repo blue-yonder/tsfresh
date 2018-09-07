@@ -1,5 +1,5 @@
 |Documentation Status| |Build Status| |Coverage Status| |license|
-|Gitter chat| |py27 status| |py352 status|
+|Gitter chat| |py27 status| |py352 status| |Binder| |Downloads|
 
 tsfresh
 =======
@@ -112,4 +112,7 @@ instructions.
    :target: https://gitter.im/tsfresh/Lobby?utm_source=share-link&utm_medium=link&utm_campaign=share-link
 .. |py27 status| image:: https://img.shields.io/badge/python2.7-supported-green.svg
 .. |py352 status| image:: https://img.shields.io/badge/python3.5.2-supported-green.svg
-   :target: https://github.com/blue-yonder/tsfresh/issues/8
+.. |Binder| image:: https://mybinder.org/badge.sv
+   :target: https://mybinder.org/v2/gh/blue-yonder/tsfresh/master?filepath=notebooks
+.. |Downloads| image:: https://pepy.tech/badge/tsfresh
+   :target: https://pepy.tech/project/tsfresh
