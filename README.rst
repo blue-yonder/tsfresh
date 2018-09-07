@@ -4,8 +4,7 @@
 tsfresh
 =======
 
-This repository contains the *TSFRESH* python package. The abbreviation
-stands for
+This repository contains the *TSFRESH* python package. The abbreviation stands for
 
 *"Time Series Feature extraction based on scalable hypothesis tests"*.
 
