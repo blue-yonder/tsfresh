@@ -1031,7 +1031,7 @@ class FeatureCalculationTestCase(TestCase):
         param = [{"num_segments": 3, "segment_focus": i} for i in range(3)]
         output = energy_ratio_by_chunks(x=x, param=param)
 
-        self.assertAlmostEqual(output[0][1], 0.3, places=3)
+        self.assertAlmostEqual(output[0][1], 0.4, places=3)
         self.assertAlmostEqual(output[1][1], 0.3, places=3)
         self.assertAlmostEqual(output[2][1], 0.3, places=3)
 
