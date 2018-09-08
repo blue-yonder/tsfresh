@@ -16,12 +16,13 @@ install:
 jobs:
   include:
     - stage: Run unit tests and deploy
-      env: NUMPY_VERSION="latest", PANDAS_VERSION="latest", SCIKIT-LEARN="latest", DASK="latest"
+      env: NUMPY_VERSION="latest", PANDAS_VERSION="latest", SCIKIT-LEARN="latest", DASK="latest", DISTRIBUTED="latest"
       before_script:
         - pip install --upgrade numpy
         - pip install --upgrade pandas
         - pip install --upgrade scikit-learn
         - pip install --upgrade dask
+        - pip install --upgrade distributed
       script:
         - sed -i 's/\-n auto/\-n 2/g' setup.cfg
         - "if [ $TRAVIS_PULL_REQUEST == false ] && ! [ $TRAVIS_BRANCH == 'master' ]; then py.test tests/units -n2; else python setup.py test; fi"
@@ -30,36 +31,39 @@ jobs:
         - coveralls
 
     - stage: Run unit tests and deploy
-      env: NUMPY_VERSION="latest", PANDAS_VERSION="latest", SCIKIT-LEARN="latest", DASK="latest"
+      env: NUMPY_VERSION="latest", PANDAS_VERSION="latest", SCIKIT-LEARN="latest", DASK="latest", DISTRIBUTED="latest"
       before_script:
         - pip install --upgrade numpy
         - pip install --upgrade pandas
         - pip install --upgrade scikit-learn
         - pip install --upgrade dask
+        - pip install --upgrade distributed
       script:
         - sed -i 's/\-n auto/\-n 2/g' setup.cfg
         - "if [ $TRAVIS_PULL_REQUEST == false ] && ! [ $TRAVIS_BRANCH == 'master' ]; then py.test tests/units -n2; else python setup.py test; fi"
       python: 3.5.2
 
     - stage: Run unit tests and deploy
-      env: NUMPY_VERSION="1.10.4", PANDAS_VERSION="0.20.3", SCIKIT-LEARN="0.17.1", DASK="0.15.2"
+      env: NUMPY_VERSION="1.10.4", PANDAS_VERSION="0.20.3", SCIKIT-LEARN="0.17.1", DASK="0.15.2", DISTRIBUTED="1.18.3"
       before_script:
         - pip install numpy==1.10.4
         - pip install pandas==0.20.3
         - pip install scikit-learn==0.17.1
         - pip install dask==0.15.2
+        - pip install distributed==1.18.3
       script:
         - sed -i 's/\-n auto/\-n 2/g' setup.cfg
         - "if [ $TRAVIS_PULL_REQUEST == false ] && ! [ $TRAVIS_BRANCH == 'master' ]; then py.test tests/units -n2; else python setup.py test; fi"
       python: 2.7.11
 
     - stage: Run unit tests and deploy
-      env: NUMPY_VERSION="1.10.4", PANDAS_VERSION="0.20.3", SCIKIT-LEARN="0.17.1", DASK="0.15.2"
+      env: NUMPY_VERSION="1.10.4", PANDAS_VERSION="0.20.3", SCIKIT-LEARN="0.17.1", DASK="0.15.2", DISTRIBUTED="1.18.3"
       before_script:
         - pip install numpy==1.10.4
         - pip install pandas==0.20.3
         - pip install scikit-learn==0.17.1
         - pip install dask==0.15.2
+        - pip install distributed==1.18.3
       script:
         - sed -i 's/\-n auto/\-n 2/g' setup.cfg
         - "if [ $TRAVIS_PULL_REQUEST == false ] && ! [ $TRAVIS_BRANCH == 'master' ]; then py.test tests/units -n2; else python setup.py test; fi"
