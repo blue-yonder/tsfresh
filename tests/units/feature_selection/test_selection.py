@@ -39,6 +39,12 @@ class TestSelectFeatures:
         with pytest.raises(AssertionError):
             select_features(X, y)
 
+    def test_assert_X_is_DataFrame(self):
+        X = np.array([[1, 2], [1, 2]])
+        y = np.array([1])
+        with pytest.raises(AssertionError):
+            select_features(X, y)
+
     def test_selects_for_each_class(self):
         df = pd.DataFrame()
         df['f1'] = [10] * 10 + lrange(10) + lrange(10)
