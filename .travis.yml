@@ -8,7 +8,6 @@ cache:
     - $HOME/.cache/pip
 install:
   - pip install --upgrade pip wheel setuptools
-  - pip install numpy scipy coveralls
   - pip install -r requirements.txt -r test-requirements.txt
   - pip install -U .
   - pip freeze
