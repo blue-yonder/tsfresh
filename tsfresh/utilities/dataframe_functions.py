@@ -209,6 +209,28 @@ def restrict_input_to_index(df_or_dict, column_id, index):
     return df_or_dict_restricted
 
 
+def get_ids(df_or_dict, column_id):
+    """
+    Aggregates all ids in column_id from the time series container `
+
+    :param df_or_dict: a pandas DataFrame or a dictionary.
+    :type df_or_dict: pandas.DataFrame or dict
+    :param column_id: it must be present in the pandas DataFrame or in all DataFrames in the dictionary.
+        It is not allowed to have NaN values in this column.
+    :type column_id: basestring
+
+    :return: as set with all existing ids in energy_ratio_by_chunks
+    :rtype: Set
+    :raise: ``TypeError`` if df_or_dict is not of type dict or pandas.DataFrame
+    """
+    if isinstance(df_or_dict, pd.DataFrame):
+        return set(df_or_dict[column_id])
+    elif isinstance(df_or_dict, dict):
+        return set.union(*[set(df[column_id]) for _, df in df_or_dict.items()])
+    else:
+        raise TypeError("df_or_dict should be of type dict or pandas.DataFrame")
+
+
 # todo: add more testcases
 # todo: rewrite in a more straightforward way
 def _normalize_input_to_internal_representation(timeseries_container, column_id, column_sort, column_kind, column_value):
