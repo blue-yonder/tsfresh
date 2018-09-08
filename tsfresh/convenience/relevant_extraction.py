@@ -7,7 +7,7 @@ import pandas as pd
 from tsfresh.feature_extraction import extract_features
 from tsfresh import defaults
 from tsfresh.feature_selection import select_features
-from tsfresh.utilities.dataframe_functions import restrict_input_to_index, impute
+from tsfresh.utilities.dataframe_functions import restrict_input_to_index, impute, get_ids
 
 
 def extract_relevant_features(timeseries_container, y, X=None,
@@ -133,8 +133,22 @@ def extract_relevant_features(timeseries_container, y, X=None,
 
     :return: Feature matrix X, possibly extended with relevant time series features.
     """
+
+    assert isinstance(y, pd.Series)
+    assert len(set(y)) > 1, "Feature selection is only possible if more than 1 label/class is provided"
+
     if X is not None:
         timeseries_container = restrict_input_to_index(timeseries_container, column_id, X.index)
+
+    ids_container = get_ids(df_or_dict=timeseries_container, column_id=column_id)
+    ids_y = set(y.index)
+    if ids_container != ids_y:
+        if len(ids_container - ids_y) > 0:
+            raise ValueError("The following ids are in the time series container but are missing in y: "
+                             "{}".format(ids_container - ids_y))
+        if len(ids_y - ids_container) > 0:
+            raise ValueError("The following ids are in y but are missing inside the time series container: "
+                             "{}".format(ids_y - ids_container))
 
     X_ext = extract_features(timeseries_container,
                              default_fc_parameters=default_fc_parameters,
