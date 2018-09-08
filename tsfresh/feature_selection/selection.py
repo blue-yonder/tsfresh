@@ -128,9 +128,8 @@ def select_features(X, y, test_for_binary_target_binary_feature=defaults.TEST_FO
     :raises: ``ValueError`` when the target vector does not fit to the feature matrix
              or `ml_task` is not one of `'auto'`, `'classification'` or `'regression'`.
     """
-    check_for_nans_in_columns(X)
-
     assert isinstance(X, pd.DataFrame), "Please pass features in X as pandas.DataFrame."
+    check_for_nans_in_columns(X)
     assert isinstance(y, (pd.Series, np.ndarray)), "The type of target vector y must be one of: " \
                                                    "pandas.Series, numpy.ndarray"
     assert len(y) > 1, "y must contain at least two samples."
