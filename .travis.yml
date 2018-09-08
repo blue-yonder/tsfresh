@@ -42,10 +42,10 @@ jobs:
       python: 3.5.2
 
     - stage: Run unit tests and deploy
-      env: NUMPY_VERSION="1.10.4", PANDAS_VERSION="0.20.4", SCIKIT-LEARN="0.17.1", DASK="0.15.2"
+      env: NUMPY_VERSION="1.10.4", PANDAS_VERSION="0.20.3", SCIKIT-LEARN="0.17.1", DASK="0.15.2"
       before_script:
         - pip install numpy==1.10.4
-        - pip install pandas==0.20.4
+        - pip install pandas==0.20.3
         - pip install scikit-learn==0.17.1
         - pip install dask==0.15.2
       script:
@@ -54,10 +54,10 @@ jobs:
       python: 2.7.11
 
     - stage: Run unit tests and deploy
-      env: NUMPY_VERSION="1.10.4", PANDAS_VERSION="0.20.4", SCIKIT-LEARN="0.17.1", DASK="0.15.2"
+      env: NUMPY_VERSION="1.10.4", PANDAS_VERSION="0.20.3", SCIKIT-LEARN="0.17.1", DASK="0.15.2"
       before_script:
         - pip install numpy==1.10.4
-        - pip install pandas==0.20.4
+        - pip install pandas==0.20.3
         - pip install scikit-learn==0.17.1
         - pip install dask==0.15.2
       script:
