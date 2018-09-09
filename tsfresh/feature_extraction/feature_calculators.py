@@ -1491,9 +1491,13 @@ def autocorrelation(x, lag):
     # Subtract the mean of the whole series x
     x_mean = np.mean(x)
     # The result is sometimes referred to as "covariation"
-    sum_product = np.sum((y1-x_mean)*(y2-x_mean))
+    sum_product = np.sum((y1 - x_mean) * (y2 - x_mean))
     # Return the normalized unbiased covariance
-    return sum_product / ((len(x) - lag) * np.var(x))
+    v = np.var(x)
+    if np.isclose(v, 0):
+        return np.NaN
+    else:
+        return sum_product / ((len(x) - lag) * v)
 
 
 @set_property("fctype", "simple")

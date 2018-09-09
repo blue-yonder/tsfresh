@@ -87,7 +87,7 @@ class FeatureSelectorTestCase(TestCase):
         X["rel1"] = y
 
         y_numpy = y.values
-        X_numpy = X.as_matrix()
+        X_numpy = X.values
 
         selector.fit(X, y)
         selected_X = selector.transform(X)
