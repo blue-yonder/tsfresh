@@ -128,21 +128,18 @@ def select_features(X, y, test_for_binary_target_binary_feature=defaults.TEST_FO
     :raises: ``ValueError`` when the target vector does not fit to the feature matrix
              or `ml_task` is not one of `'auto'`, `'classification'` or `'regression'`.
     """
+    assert isinstance(X, pd.DataFrame), "Please pass features in X as pandas.DataFrame."
     check_for_nans_in_columns(X)
+    assert isinstance(y, (pd.Series, np.ndarray)), "The type of target vector y must be one of: " \
+                                                   "pandas.Series, numpy.ndarray"
+    assert len(y) > 1, "y must contain at least two samples."
+    assert len(X) == len(y), "X and y must contain the same number of samples."
+    assert len(set(y)) > 1, "Feature selection is only possible if more than 1 label/class is provided"
 
-    if not isinstance(y, (pd.Series, np.ndarray)):
-        raise TypeError("The type of target vector y must be one of: pandas.Series, numpy.ndarray")
+    if isinstance(y, pd.Series) and set(X.index) != set(y.index):
+        raise ValueError("Index of X and y must be identical if provided")
 
-    if len(X) < 2:
-        raise ValueError("X must contain at least two samples.")
-    elif len(set(y)) == 1:
-        raise ValueError("y contains only one kind of label, no feature selection possible.")
-    elif isinstance(y, pd.Series) and not X.index.isin(y.index).all():
-        raise ValueError("Index of X must be a subset of y's index")
-    elif isinstance(y, np.ndarray):
-        if not len(y) >= len(X):
-            raise ValueError("Target vector y is shorter than feature matrix X")
-
+    if isinstance(y, np.ndarray):
         y = pd.Series(y, index=X.index)
 
     relevance_table = calculate_relevance_table(

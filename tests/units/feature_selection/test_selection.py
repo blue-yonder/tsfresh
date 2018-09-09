@@ -12,20 +12,19 @@ from tsfresh.feature_selection.selection import select_features
 
 class TestSelectFeatures:
     def test_assert_list(self):
-        with pytest.raises(TypeError):
+        with pytest.raises(AssertionError):
             select_features(pd.DataFrame(index=range(2)),[1,2,3])
-
 
     def test_assert_one_row_X(self):
         X = pd.DataFrame([1], index=[1])
         y = pd.Series([1], index=[1])
-        with pytest.raises(ValueError):
+        with pytest.raises(AssertionError):
             select_features(X, y)
 
     def test_assert_one_label_y(self):
         X = pd.DataFrame([10, 10], index=[1, 2])
         y = pd.Series([1, 1], index=[1, 2])
-        with pytest.raises(ValueError):
+        with pytest.raises(AssertionError):
             select_features(X, y)
 
     def test_assert_different_index(self):
@@ -34,13 +33,17 @@ class TestSelectFeatures:
         with pytest.raises(ValueError):
             select_features(X, y)
 
-
     def test_assert_shorter_y(self):
         X = pd.DataFrame([1, 2], index=[1, 2])
         y = np.array([1])
-        with pytest.raises(ValueError):
+        with pytest.raises(AssertionError):
             select_features(X, y)
 
+    def test_assert_X_is_DataFrame(self):
+        X = np.array([[1, 2], [1, 2]])
+        y = np.array([1])
+        with pytest.raises(AssertionError):
+            select_features(X, y)
 
     def test_selects_for_each_class(self):
         df = pd.DataFrame()

@@ -10,6 +10,8 @@ import numpy as np
 import six
 from pandas.testing import assert_frame_equal, assert_series_equal
 
+from tsfresh.utilities.dataframe_functions import get_ids
+
 
 class NormalizeTestCase(TestCase):
     def test_with_dictionaries_one_row(self):
@@ -648,3 +650,15 @@ class MakeForecastingFrameTestCase(TestCase):
                                     })
         assert_frame_equal(df.sort_index(axis=1), expected_df.sort_index(axis=1))
         assert_series_equal(y, expected_y)
+
+
+class GetIDsTestCase(TestCase):
+
+    def test_get_id__correct_DataFrame(self):
+        df = pd.DataFrame({"_value": [1, 2, 3, 4, 10, 11], "id": [1, 1, 1, 1, 2, 2]})
+        self.assertEqual(get_ids(df, "id"), set([1, 2]))
+
+    def test_get_id__correct_dict(self):
+        df_dict = {"a": pd.DataFrame({"_value": [1, 2, 3, 4, 10, 11], "id": [1, 1, 1, 1, 2, 2]}),
+                   "b": pd.DataFrame({"_value": [5, 6, 7, 8, 12, 13], "id": [4, 4, 3, 3, 2, 2]})}
+        self.assertEqual(get_ids(df_dict, "id"), set([1, 2, 3, 4]))
