@@ -88,14 +88,16 @@ class RelevantFeatureExtractionTestCase(TestCase):
         X3 = extract_features(df3, column_id=2, column_sort=1)
         self.assertEqual(len(X3), 2)
 
-    def test_raises_mismatch_index_df_and_y(self):
+    def test_raises_mismatch_index_df_and_y_df_more(self):
         y = pd.Series(range(3), index=[1, 2, 3])
         df_dict = {"a": pd.DataFrame({"val": [1, 2, 3, 4, 10, 11], "id": [1, 1, 1, 1, 2, 2]}),
                    "b": pd.DataFrame({"val": [5, 6, 7, 8, 12, 13], "id": [4, 4, 3, 3, 2, 2]})}
         self.assertRaises(ValueError, extract_relevant_features, df_dict, y, None, None, None, "id", None, "val")
 
+    def test_raises_mismatch_index_df_and_y_y_more(self):
         y = pd.Series(range(4), index=[1, 2, 3, 4])
-        self.assertRaises(ValueError, extract_relevant_features, df_dict, y, None, None, None, "id", None, "val")
+        df = pd.DataFrame({"val": [1, 2, 3, 4, 10, 11], "id": [1, 1, 1, 1, 2, 2]})
+        self.assertRaises(ValueError, extract_relevant_features, df, y, None, None, None, "id", None, "val")
 
     def test_raises_y_not_series(self):
         y = np.arange(10)
