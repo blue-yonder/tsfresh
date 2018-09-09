@@ -50,17 +50,16 @@ class RelevantFeatureExtractionTestCase(TestCase):
 
     def setUp(self):
         np.random.seed(42)
-
-        y = pd.Series(np.random.binomial(1, 0.5, 10), index=range(10))
+        y = pd.Series(np.random.binomial(1, 0.5, 20), index=range(20))
         df = pd.DataFrame(index=range(100))
 
         df["a"] = np.random.normal(0, 1, 100)
         df["b"] = np.random.normal(0, 1, 100)
-        df["id"] = np.repeat(range(10), 10)
+        df["id"] = np.repeat(range(20), 5)
 
-        X = pd.DataFrame(index=range(10))
-        X["f1"] = np.random.normal(0, 1, 10)
-        X["f2"] = np.random.normal(0, 1, 10)
+        X = pd.DataFrame(index=range(20))
+        X["f1"] = np.random.normal(0, 1, 20)
+        X["f2"] = np.random.normal(0, 1, 20)
 
         self.df = df
         self.X = X
@@ -95,7 +94,7 @@ class RelevantFeatureExtractionTestCase(TestCase):
                    "b": pd.DataFrame({"val": [5, 6, 7, 8, 12, 13], "id": [4, 4, 3, 3, 2, 2]})}
         self.assertRaises(ValueError, extract_relevant_features, df_dict, y, None, None, None, "id", None, "val")
 
-        y = pd.Series(1, index=[1, 2, 3, 4])
+        y = pd.Series(range(4), index=[1, 2, 3, 4])
         self.assertRaises(ValueError, extract_relevant_features, df_dict, y, None, None, None, "id", None, "val")
 
     def test_raises_y_not_series(self):
