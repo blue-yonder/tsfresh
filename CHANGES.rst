@@ -9,6 +9,7 @@ Unreleased
 ==========
 - change chunking in energy_ratio_by_chunks to use all data points
 - fix warning for spkt_welch_density
+- adapt default settings for "value_count" and "range_count"
 
 Version 0.11.1
 ==============
