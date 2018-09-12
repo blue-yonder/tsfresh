@@ -170,6 +170,24 @@ def extract_features(timeseries_container, default_fc_parameters=None,
     return result
 
 
+def _generate_data_chunk_format(df, column_id, column_kind, column_value):
+
+    # todo: to make this work, we need to sort the data inside the normalization to our standard format
+    # go over the sorting and make sure that its done in the right place
+    # we shuffle a lot of objects around, lets try to delete dataframes manually
+    x = df[column_id].astype(str) + "_" + df[column_kind].astype(str)
+    x = x.astype('category')
+    ind = x.cat.codes.diff() != 0
+    ind = np.where(ind)[0][1:]
+    # todo: later we will use only the values, maybe we can split directly on the values here?
+    val = np.split(df[column_value], ind)
+    id_kind_list = map(tuple, df.iloc[ind].loc[:, [column_id, column_kind]].values)
+    data_in_chunks = [x + (y,) for x, y in zip(id_kind_list, val)]
+
+    data_in_chunks = [x + (y,) for x, y in df.groupby([column_id, column_kind])[column_value]]
+    return data_in_chunks
+
+
 def _do_extraction(df, column_id, column_value, column_kind,
                    default_fc_parameters, kind_to_fc_parameters,
                    n_jobs, chunk_size, disable_progressbar, distributor):
@@ -221,10 +239,10 @@ def _do_extraction(df, column_id, column_value, column_kind,
     :return: the extracted features
     :rtype: pd.DataFrame
     """
-    data_in_chunks = [x + (y,) for x, y in df.groupby([column_id, column_kind])[column_value]]
+
+    data_in_chunks = _generate_data_chunk_format(df, column_id, column_kind, column_value)
 
     if distributor is None:
-
         if n_jobs == 0:
             distributor = MapDistributor(disable_progressbar=disable_progressbar,
                                          progressbar_title="Feature Extraction")

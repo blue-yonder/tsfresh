@@ -296,7 +296,8 @@ def _normalize_input_to_internal_representation(timeseries_container, column_id,
     if column_sort is not None:
         if timeseries_container[column_sort].isnull().any():
             raise ValueError("You have NaN values in your sort column.")
-        timeseries_container = timeseries_container.sort_values(column_sort).drop(column_sort, axis=1)
+        # todo: document this sort
+        timeseries_container = timeseries_container.sort_values([column_id, column_kind, column_sort]).drop(column_sort, axis=1)
 
     # Check that either kind and value is None or both not None.
     if column_kind is None and column_value is not None:
