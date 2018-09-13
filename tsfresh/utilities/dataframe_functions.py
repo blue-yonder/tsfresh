@@ -5,6 +5,7 @@
 Utility functions for handling the DataFrame conversions to the internal normalized format
 (see ``normalize_input_to_internal_representation``) or on how to handle ``NaN`` and ``inf`` in the DataFrames.
 """
+import gc
 import warnings
 
 import numpy as np
@@ -281,6 +282,7 @@ def _normalize_input_to_internal_representation(timeseries_container, column_id,
             df[column_kind] = kind
 
         timeseries_container = pd.concat(timeseries_container.values())
+        gc.collect()
 
     # Check ID column
     if column_id is None:
@@ -296,8 +298,6 @@ def _normalize_input_to_internal_representation(timeseries_container, column_id,
     if column_sort is not None:
         if timeseries_container[column_sort].isnull().any():
             raise ValueError("You have NaN values in your sort column.")
-        # todo: document this sort
-        timeseries_container = timeseries_container.sort_values([column_id, column_kind, column_sort]).drop(column_sort, axis=1)
 
     # Check that either kind and value is None or both not None.
     if column_kind is None and column_value is not None:
@@ -308,10 +308,22 @@ def _normalize_input_to_internal_representation(timeseries_container, column_id,
         raise ValueError("If passing the kind, you also have to pass the value.")
 
     if column_kind is None and column_value is None:
-        column_kind = "_variables"
-        column_value = "_values"
-        timeseries_container = pd.melt(timeseries_container, id_vars=[column_id],
-                                       value_name=column_value, var_name=column_kind)
+        if column_sort is not None:
+            column_kind = "_variables"
+            column_value = "_values"
+            sort = timeseries_container[column_sort].values
+            timeseries_container = pd.melt(timeseries_container.drop(column_sort, axis=1),
+                                           id_vars=[column_id],
+                                           value_name=column_value, var_name=column_kind)
+            timeseries_container[column_sort] = np.repeat(sort, (len(timeseries_container) // len(sort)))
+        else:
+            column_kind = "_variables"
+            column_value = "_values"
+            column_sort = "_sort"
+            sort = range(len(timeseries_container))
+            timeseries_container = pd.melt(timeseries_container, id_vars=[column_id],
+                                           value_name=column_value, var_name=column_kind)
+            timeseries_container[column_sort] = np.repeat(sort, (len(timeseries_container) // len(sort)))
 
     # Check kind column
     if column_kind not in timeseries_container.columns:
@@ -326,6 +338,12 @@ def _normalize_input_to_internal_representation(timeseries_container, column_id,
 
     if timeseries_container[column_value].isnull().any():
         raise ValueError("You have NaN values in your value column.")
+
+    if column_sort:
+        timeseries_container = timeseries_container.sort_values([column_id, column_kind, column_sort])
+        timeseries_container = timeseries_container.drop(column_sort, axis=1)
+    else:
+        timeseries_container = timeseries_container.sort_values([column_id, column_kind])
 
     return timeseries_container, column_id, column_kind, column_value
 
