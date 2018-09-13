@@ -178,13 +178,13 @@ def _generate_data_chunk_format(df, column_id, column_kind, column_value):
     x = df[column_id].astype(str) + "_" + df[column_kind].astype(str)
     x = x.astype('category')
     ind = x.cat.codes.diff() != 0
-    ind = np.where(ind)[0][1:]
+    ind = np.where(ind)[0]
     # todo: later we will use only the values, maybe we can split directly on the values here?
-    val = np.split(df[column_value], ind)
+    val = np.split(df[column_value], ind)[1:]
     id_kind_list = map(tuple, df.iloc[ind].loc[:, [column_id, column_kind]].values)
     data_in_chunks = [x + (y,) for x, y in zip(id_kind_list, val)]
 
-    data_in_chunks = [x + (y,) for x, y in df.groupby([column_id, column_kind])[column_value]]
+    #data_in_chunks = [x + (y,) for x, y in df.groupby([column_id, column_kind])[column_value]]
     return data_in_chunks
 
 
