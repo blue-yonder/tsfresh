@@ -136,6 +136,7 @@ class ExtractionTestCase(DataTestCase):
         features_parallel = extract_features(df, column_id="id", column_sort="sort", column_kind="kind",
                                              column_value="val",
                                              n_jobs=self.n_jobs)
+
         features_serial = extract_features(df, column_id="id", column_sort="sort", column_kind="kind",
                                            column_value="val", n_jobs=0)
 
@@ -221,11 +222,22 @@ class GenerateDataChunkTestCase(DataTestCase):
 
     def assert_data_chunk_object_equal(self, result, expected):
         dic_result = {str(x[0]) + "_" + str(x[1]): x[2] for x in result}
-        dic_expected = {str(x[0])  + "_" + str(x[1]) : x[2] for x in expected}
+        dic_expected = {str(x[0]) + "_" + str(x[1]): x[2] for x in expected}
         for k in dic_result.keys():
+            print(k)
             pd.testing.assert_series_equal(dic_result[k], dic_expected[k])
 
-    def test_simple_data_frame(self):
+    def test_simple_data_sample_two_timeseries(self):
+        df = pd.DataFrame({"id": [10] * 4 , "kind": ["a"] * 2 + ["b"] * 2, "val": [36, 71, 78, 37]})
+        df.set_index("id", drop=False, inplace=True)
+        df.index.name = None
+
+        result = _generate_data_chunk_format(df, "id", "kind", "val")
+        expected = [(10, 'a', pd.Series([36, 71], index=[10]*2, name="val")),
+                    (10, 'b', pd.Series([78, 37], index=[10]*2, name="val"))]
+        self.assert_data_chunk_object_equal(result, expected)
+
+    def test_simple_data_sample_four_timeseres(self):
         df = self.create_test_data_sample()
         # todo: investigate the names that are given
         df.index.name = None
