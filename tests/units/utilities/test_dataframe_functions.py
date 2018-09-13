@@ -58,7 +58,7 @@ class NormalizeTestCase(TestCase):
 
         self.assertEqual(result_df[result_df[column_kind] == "a"].iloc[0].to_dict(), {"_variables": "a", "value": 2, "id": "id_1"})
 
-    def test_with_df(self):
+    def test_with_df_1(self):
         # give everyting
         test_df = pd.DataFrame([{"id": 0, "kind": "a", "value": 3, "sort": 1}])
         result_df, column_id, column_kind, column_value = \
@@ -72,6 +72,7 @@ class NormalizeTestCase(TestCase):
         self.assertEqual(list(result_df[result_df[column_kind] == "a"]["value"]), [3])
         self.assertEqual(list(result_df[result_df[column_kind] == "a"]["id"]), [0])
 
+    def test_with_df_2(self):
         # give no kind
         test_df = pd.DataFrame([{"id": 0, "value": 3, "sort": 1}])
         result_df, column_id, column_kind, column_value = \
@@ -85,6 +86,7 @@ class NormalizeTestCase(TestCase):
         self.assertEqual(list(result_df[result_df[column_kind] == "value"]["value"]), [3])
         self.assertEqual(list(result_df[result_df[column_kind] == "value"]["id"]), [0])
 
+    def test_with_df_3(self):
         # Let the function find the values
         test_df = pd.DataFrame([{"id": 0, "a": 3, "b": 5, "sort": 1}])
         result_df, column_id, column_kind, column_value = \
