@@ -276,33 +276,48 @@ def sum_values(x):
 
 @set_property("fctype", "combiner")
 def agg_autocorrelation(x, param):
-    """
-    Calculates the value of an aggregation function f_agg (e.g. var or mean) of the autocorrelation
-    (Compare to http://en.wikipedia.org/wiki/Autocorrelation#Estimation), taken over different all possible lags
-    (1 to length of x)
+    r"""
+    Calculates the value of an aggregation function :math:`f_{agg}` (e.g. the variance or the mean) over the
+    autocorrelation :math:`R(l)` for different lags. The autocorrelation :math:`R(l)` for lag :math:`l` is defined as
 
     .. math::
 
-        \\frac{1}{n-1} \\sum_{l=1,\ldots, n} \\frac{1}{(n-l)\sigma^{2}} \\sum_{t=1}^{n-l}(X_{t}-\\mu )(X_{t+l}-\\mu)
+        R(l) = \frac{1}{(n-l)\sigma^{2}} \sum_{t=1}^{n-l}(X_{t}-\mu )(X_{t+l}-\mu)
 
-    where :math:`n` is the length of the time series :math:`X_i`, :math:`\sigma^2` its variance and :math:`\mu` its
-    mean.
+    where :math:`X_i` are the values of the time series, :math:`n` its length. Finally, :math:`\sigma^2` and
+    :math:`\mu` are estimators for its variance and mean
+    (See `Estimation of the Autocorrelation function <http://en.wikipedia.org/wiki/Autocorrelation#Estimation>`_).
+
+    The :math:`R(l)` for different lags :math:`l` form a vector. This feature calculator applies the aggregation
+    function :math:`f_{agg}` to this vector and returns
+
+    .. math::
+
+        f_{agg} \left( R(1), \ldots, R(m)\right) \quad \text{for} \quad m = max(n, maxlag).
+
+    Here :math:`maxlag` is the second parameter passed to this function.
 
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
-    :param param: contains dictionaries {"attr": x} with x str, name of a numpy function (e.g. mean, var, std, median),
-                   the name of the aggregator function that is applied to the autocorrelations
+    :param param: contains dictionaries {"attr": x, "maxlag", n} with x str, the name of a numpy function
+                  (e.g. mean, var, std, median), its the name of the aggregator function that is applied to the
+                  autocorrelations. Further, n is an int and the maximal number of lags to consider.
     :type param: list
     :return: the value of this feature
     :return type: float
     """
+    # if the time series is longer than the following threshold, we use fft to calculate the acf
+    THRESHOLD_TO_USE_FFT = 1250
     var = np.var(x)
     n = len(x)
+    max_maxlag = max([config["maxlag"] for config in param])
+
     if np.abs(var) < 10**-10 or n == 1:
-        a = 0
+        a = [0] * len(x)
     else:
-        a = acf(x, unbiased=True, fft=n > 1250)[1:]
-    return [("f_agg_\"{}\"".format(config["f_agg"]), getattr(np, config["f_agg"])(a)) for config in param]
+        a = acf(x, unbiased=True, fft=n > THRESHOLD_TO_USE_FFT, nlags=max_maxlag)[1:]
+    return [("f_agg_\"{}\"__maxlag_{}".format(config["f_agg"], config["maxlag"]),
+             getattr(np, config["f_agg"])(a[:int(config["maxlag"])])) for config in param]
 
 
 @set_property("fctype", "combiner")
