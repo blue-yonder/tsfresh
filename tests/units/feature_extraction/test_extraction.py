@@ -12,7 +12,7 @@ import six
 from mock import Mock
 
 from tests.fixtures import DataTestCase
-from tsfresh.feature_extraction.extraction import extract_features, _generate_data_chunk_format
+from tsfresh.feature_extraction.extraction import extract_features, generate_data_chunk_format
 from tsfresh.feature_extraction.settings import ComprehensiveFCParameters
 
 import tempfile
@@ -224,7 +224,6 @@ class GenerateDataChunkTestCase(DataTestCase):
         dic_result = {str(x[0]) + "_" + str(x[1]): x[2] for x in result}
         dic_expected = {str(x[0]) + "_" + str(x[1]): x[2] for x in expected}
         for k in dic_result.keys():
-            print(k)
             pd.testing.assert_series_equal(dic_result[k], dic_expected[k])
 
     def test_simple_data_sample_two_timeseries(self):
@@ -232,7 +231,7 @@ class GenerateDataChunkTestCase(DataTestCase):
         df.set_index("id", drop=False, inplace=True)
         df.index.name = None
 
-        result = _generate_data_chunk_format(df, "id", "kind", "val")
+        result = generate_data_chunk_format(df, "id", "kind", "val")
         expected = [(10, 'a', pd.Series([36, 71], index=[10]*2, name="val")),
                     (10, 'b', pd.Series([78, 37], index=[10]*2, name="val"))]
         self.assert_data_chunk_object_equal(result, expected)
@@ -243,7 +242,7 @@ class GenerateDataChunkTestCase(DataTestCase):
         df.index.name = None
         df.sort_values(by=["id", "kind", "sort"], inplace=True)
 
-        result = _generate_data_chunk_format(df, "id", "kind", "val")
+        result = generate_data_chunk_format(df, "id", "kind", "val")
         expected = [(10, 'a', pd.Series([36, 71, 27, 62, 56, 58, 67, 11, 2, 24, 45, 30, 0, 9, 41, 28, 33, 19, 29, 43], index=[10]*20, name="val")),
                     (10, 'b', pd.Series([78, 37, 23, 44, 6, 3, 21, 61, 39, 31, 53, 16, 66, 50, 40, 47, 7, 42, 38, 55], index=[10] *20, name="val")),
                     (500, 'a', pd.Series([76, 72, 74, 75, 32, 64, 46, 35, 15, 70, 57, 65, 51, 26, 5, 25, 10, 69, 73, 77], index=[500]*20, name="val")),
