@@ -129,35 +129,50 @@ class FeatureCalculationTestCase(TestCase):
         self.assertEqualOnAllArrayTypes(sum_values, [-1.2, -2, -3, -4], -10.2)
         self.assertEqualOnAllArrayTypes(sum_values, [], 0)
 
-    def test_agg_autocorrelation(self):
+    def test_agg_autocorrelation_returns_correct_values(self):
 
-        param = [{"f_agg": "mean"}]
+        param = [{"f_agg": "mean", "maxlag": 10}]
         x = [1, 1, 1, 1, 1, 1, 1]
         expected_res = 0
-        res = dict(agg_autocorrelation(x, param=param))["f_agg_\"mean\""]
+        res = dict(agg_autocorrelation(x, param=param))["f_agg_\"mean\"__maxlag_10"]
         self.assertAlmostEqual(res, expected_res, places=4)
 
         x = [1, 2, -3]
         expected_res = 1 / np.var(x) * (((1 * 2 + 2 * (-3)) / 2 + (1 * -3)) / 2)
-        res = dict(agg_autocorrelation(x, param=param))["f_agg_\"mean\""]
+        res = dict(agg_autocorrelation(x, param=param))["f_agg_\"mean\"__maxlag_10"]
         self.assertAlmostEqual(res, expected_res, places=4)
 
         np.random.seed(42)
         x = np.random.normal(size=3000)
         expected_res = 0
-        res = dict(agg_autocorrelation(x, param=param))["f_agg_\"mean\""]
+        res = dict(agg_autocorrelation(x, param=param))["f_agg_\"mean\"__maxlag_10"]
         self.assertAlmostEqual(res, expected_res, places=2)
 
-        param=[{"f_agg": "median"}]
+        param = [{"f_agg": "median", "maxlag": 10}]
         x = [1, 1, 1, 1, 1, 1, 1]
         expected_res = 0
-        res = dict(agg_autocorrelation(x, param=param))["f_agg_\"median\""]
+        res = dict(agg_autocorrelation(x, param=param))["f_agg_\"median\"__maxlag_10"]
         self.assertAlmostEqual(res, expected_res, places=4)
 
         x = [1, 2, -3]
         expected_res = 1 / np.var(x) * (((1 * 2 + 2 * (-3)) / 2 + (1 * -3)) / 2)
-        res = dict(agg_autocorrelation(x, param=param))["f_agg_\"median\""]
+        res = dict(agg_autocorrelation(x, param=param))["f_agg_\"median\"__maxlag_10"]
         self.assertAlmostEqual(res, expected_res, places=4)
+
+    def test_agg_autocorrelation_returns_max_lag_does_not_affect_other_results(self):
+
+        param = [{"f_agg": "mean", "maxlag": 1},
+                 {"f_agg": "mean", "maxlag": 10}]
+        x = range(10)
+        res1 = dict(agg_autocorrelation(x, param=param))["f_agg_\"mean\"__maxlag_1"]
+        res10 = dict(agg_autocorrelation(x, param=param))["f_agg_\"mean\"__maxlag_10"]
+        self.assertAlmostEqual(res1, 0.77777777, places=4)
+        self.assertAlmostEqual(res10, -0.64983164983165, places=4)
+
+        param = [{"f_agg": "mean", "maxlag": 1}]
+        x = range(10)
+        res1 = dict(agg_autocorrelation(x, param=param))["f_agg_\"mean\"__maxlag_1"]
+        self.assertAlmostEqual(res1, 0.77777777, places=4)
 
     def test_partial_autocorrelation(self):
 

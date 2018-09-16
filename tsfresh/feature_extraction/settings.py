@@ -114,7 +114,7 @@ class ComprehensiveFCParameters(dict):
             "large_standard_deviation": [{"r": r * 0.05} for r in range(1, 20)],
             "quantile": [{"q": q} for q in [.1, .2, .3, .4, .6, .7, .8, .9]],
             "autocorrelation": [{"lag": lag} for lag in range(10)],
-            "agg_autocorrelation": [{"f_agg": s} for s in ["mean", "median", "var"]],
+            "agg_autocorrelation": [{"f_agg": s, "maxlag": 40} for s in ["mean", "median", "var"]],
             "partial_autocorrelation": [{"lag": lag} for lag in range(10)],
             "number_cwt_peaks": [{"n": n} for n in [1, 5]],
             "number_peaks": [{"n": n} for n in [1, 3, 5, 10, 50]],
