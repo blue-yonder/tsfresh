@@ -100,7 +100,7 @@ python, just head over to our
 instructions.
 
 .. |Documentation Status| image:: https://readthedocs.org/projects/tsfresh/badge/?version=latest
-   :target: http://tsfresh.readthedocs.io/en/latest/?badge=latest
+   :target: https://tsfresh.readthedocs.io/en/latest/?badge=latest
 .. |Build Status| image:: https://travis-ci.org/blue-yonder/tsfresh.svg?branch=master
    :target: https://travis-ci.org/blue-yonder/tsfresh
 .. |Coverage Status| image:: https://coveralls.io/repos/github/blue-yonder/tsfresh/badge.svg?branch=master

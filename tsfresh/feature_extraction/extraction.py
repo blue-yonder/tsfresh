@@ -170,6 +170,52 @@ def extract_features(timeseries_container, default_fc_parameters=None,
     return result
 
 
+def generate_data_chunk_format(df, column_id, column_kind, column_value):
+    """Converts the dataframe df in into a list of individual time seriess.
+
+    E.g. the DataFrame
+
+        ====  ======  =========
+          id  kind          val
+        ====  ======  =========
+           1  a       -0.21761
+           1  a       -0.613667
+           1  a       -2.07339
+           2  b       -0.576254
+           2  b       -1.21924
+        ====  ======  =========
+
+    into
+
+        [(1, 'a', pd.Series([-0.217610, -0.613667, -2.073386]),
+         (2, 'b', pd.Series([-0.576254, -1.219238])]
+
+
+    The data is separated out into those single time series and the _do_extraction_on_chunk is
+    called on each of them. The results are then combined into a single pandas DataFrame.
+
+    The call is either happening in parallel or not and is showing a progress bar or not depending
+    on the given flags.
+
+    :param df: The dataframe in the normalized format which is used for extraction.
+    :type df: pd.DataFrame
+
+    :param column_id: The name of the id column to group by.
+    :type column_id: str
+
+    :param column_kind: The name of the column keeping record on the kind of the value.
+    :type column_kind: str
+
+    :param column_value: The name for the column keeping the value itself.
+    :type column_value: str
+
+    :return: the data in chunks
+    :rtype: list
+    """
+    data_in_chunks = [x + (y,) for x, y in df.groupby([column_id, column_kind])[column_value]]
+    return data_in_chunks
+
+
 def _do_extraction(df, column_id, column_value, column_kind,
                    default_fc_parameters, kind_to_fc_parameters,
                    n_jobs, chunk_size, disable_progressbar, distributor):
@@ -221,10 +267,10 @@ def _do_extraction(df, column_id, column_value, column_kind,
     :return: the extracted features
     :rtype: pd.DataFrame
     """
-    data_in_chunks = [x + (y,) for x, y in df.groupby([column_id, column_kind])[column_value]]
+
+    data_in_chunks = generate_data_chunk_format(df, column_id, column_kind, column_value)
 
     if distributor is None:
-
         if n_jobs == 0:
             distributor = MapDistributor(disable_progressbar=disable_progressbar,
                                          progressbar_title="Feature Extraction")
