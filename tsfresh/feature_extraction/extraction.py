@@ -212,6 +212,16 @@ def generate_data_chunk_format(df, column_id, column_kind, column_value):
     :return: the data in chunks
     :rtype: list
     """
+    MAX_VALUES_GROUPBY = 2147483647
+
+    if df[[column_id, column_kind]].nunique().prod() >= MAX_VALUES_GROUPBY:
+        _logger.error(
+            "The time series container has {} different ids and {} different kind of time series, in total {} possible combinations. "
+            "Due to a limitation in pandas we can only process a maximum of {} id/kind combinations. Please reduce your time series container and restart "
+            "the calculation".format(
+                df[column_id].nunique(), df[column_kind].nunique(), df[[column_id, column_kind]].nunique().prod(), MAX_VALUES_GROUPBY)
+        )
+        raise ValueError("Number of ids/kinds are too high. Please reduce your data size and run feature extraction again.")
     data_in_chunks = [x + (y,) for x, y in df.groupby([column_id, column_kind])[column_value]]
     return data_in_chunks
 
