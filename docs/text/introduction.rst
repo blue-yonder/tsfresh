@@ -44,8 +44,7 @@ What not to do with tsfresh?
 Currently, tsfresh is not suitable
 
     * for usage with streaming data
-    * for batch processing over a distributed architecture, where different time series are fragmented over different
-      computational units
+    * for batch processing over a distributed architecture when different time series are fragmented over different computational units
     * to train models on the features (we do not want to reinvent the wheel, check out the python package
       `scikit-learn <http://scikit-learn.org/stable/>`_ for example)
 
