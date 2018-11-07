@@ -32,7 +32,12 @@ def _notebook_run(path, timeout=default_timeout):
     except:
         pass
 
-    with tempfile.NamedTemporaryFile(mode='w+t', suffix=".ipynb") as fout:
+    # Ensure temporary files are not auto-deleted as processes have limited 
+    # permissions to re-use file handles under WinNT-based operating systems.
+    fname = ''
+    with tempfile.NamedTemporaryFile(mode='w+t', suffix=".ipynb", delete=False) as fout:
+        fname = fout.name
+        
         args = ["jupyter", "nbconvert",
                 "--to", "notebook", "--execute", execproc_timeout]
         if six.PY2:
@@ -44,6 +49,7 @@ def _notebook_run(path, timeout=default_timeout):
 
         fout.seek(0)
         nb = nbformat.read(fout, nbformat.current_nbformat)
+    os.remove(fname)
 
     errors = [output for cell in nb.cells if "outputs" in cell
               for output in cell["outputs"] \
