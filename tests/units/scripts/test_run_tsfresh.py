@@ -18,6 +18,7 @@ class RunTSFreshTestCase(TestCase):
         # Create a temporary directory
         self.test_dir = tempfile.mkdtemp()
         # Change into the tmp dir
+        self.curr_dir = os.getcwd()
         os.chdir(self.test_dir)
 
         def extract_features_mock(df, **kwargs):
@@ -31,6 +32,7 @@ class RunTSFreshTestCase(TestCase):
 
     def tearDown(self):
         # Remove the directory after the test
+        os.chdir(self.curr_dir)
         shutil.rmtree(self.test_dir)
         # Disable the mocking
         self.patcher.stop()
