@@ -134,7 +134,7 @@ def extract_relevant_features(timeseries_container, y, X=None,
     :return: Feature matrix X, possibly extended with relevant time series features.
     """
 
-    assert isinstance(y, pd.Series)
+    assert isinstance(y, pd.Series), "y needs to be a pandas.Series, received type: {}.".format(type(y))
     assert len(set(y)) > 1, "Feature selection is only possible if more than 1 label/class is provided"
 
     if X is not None:
