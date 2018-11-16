@@ -2,6 +2,8 @@
 # This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
+import numpy as np
+
 def benjamini_hochberg_test(df_pvalues, hypotheses_independent, fdr_level):
     """
     This is an implementation of the benjamini hochberg procedure [1]_ that determines if the null hypothesis
@@ -42,18 +44,18 @@ def benjamini_hochberg_test(df_pvalues, hypotheses_independent, fdr_level):
     # Get auxiliary variables and vectors
     df_pvalues = df_pvalues.sort_values(by="p_value")
     m = len(df_pvalues)
-    K = list(range(1, m + 1))
+    K = np.arange(1, m + 1)
 
     # Calculate the weight vector C
     if hypotheses_independent:
         # c(k) = 1
-        C = [1] * m
+        C = np.ones(m)
     else:
         # c(k) = \sum_{i=1}^m 1/i
-        C = [sum([1.0 / i for i in range(1, k + 1)]) for k in K]
+        C = np.cumsum(1.0 / K)
 
     # Calculate the vector T to compare to the p_value
-    T = [fdr_level * k / m * 1.0 / c for k, c in zip(K, C)]
+    T = (fdr_level * K) / (m * C)
 
     # Get the last p_value for which H0 has been rejected
     try:
