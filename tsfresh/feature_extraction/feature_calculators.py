@@ -481,7 +481,7 @@ def mean_abs_change(x):
 @set_property("fctype", "simple")
 def mean_change(x):
     """
-    Returns the mean over the absolute differences between subsequent time series values which is
+    Returns the mean over the differences between subsequent time series values which is
 
     .. math::
 
