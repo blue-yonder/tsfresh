@@ -31,6 +31,22 @@ from statsmodels.tsa.stattools import acf, adfuller, pacf
 # todo: make sure '_' works in parameter names in all cases, add a warning if not
 
 
+def _roll(a, shift):
+    """
+    Roll one-dimensional array elements.
+    
+    :param a: the input array
+    :type a: array_like
+    :param shift: the number of places by which elements are shifted
+    :type shift: int
+
+    :return: shifted array with the same shape as a
+    :return type: ndarray
+    """
+    idx = shift % len(a)
+    return np.concatenate([a[-idx:], a[:-idx]])
+
+
 def _get_length_sequences_where(x):
     """
     This method calculates the length of all sub-sequences where the array x is either True or 1.
@@ -510,7 +526,7 @@ def mean_second_derivative_central(x):
     :return type: float
     """
 
-    diff = (np.roll(x, 1) - 2 * np.array(x) + np.roll(x, -1)) / 2.0
+    diff = (_roll(x, 1) - 2 * np.array(x) + _roll(x, -1)) / 2.0
     return np.mean(diff[1:-1])
 
 
@@ -1046,14 +1062,14 @@ def number_peaks(x, n):
 
     res = None
     for i in range(1, n + 1):
-        result_first = (x_reduced > np.roll(x, i)[n:-n])
+        result_first = (x_reduced > _roll(x, i)[n:-n])
 
         if res is None:
             res = result_first
         else:
             res &= result_first
 
-        res &= (x_reduced > np.roll(x, -i)[n:-n])
+        res &= (x_reduced > _roll(x, -i)[n:-n])
     return np.sum(res)
 
 
@@ -1299,7 +1315,7 @@ def change_quantiles(x, ql, qh, isabs, f_agg):
     except ValueError:  # Occurs when ql are qh effectively equal, e.g. x is not long enough or is too categorical
         return 0
     # We only count changes that start and end inside the corridor
-    ind = (bin_cat_0 & np.roll(bin_cat_0, 1))[1:]
+    ind = (bin_cat_0 & _roll(bin_cat_0, 1))[1:]
     if sum(ind) == 0:
         return 0
     else:
@@ -1345,8 +1361,9 @@ def time_reversal_asymmetry_statistic(x, lag):
     if 2 * lag >= n:
         return 0
     else:
-        return np.mean((np.roll(x, 2 * -lag) * np.roll(x, 2 * -lag) * np.roll(x, -lag) -
-                        np.roll(x, -lag) * x * x)[0:(n - 2 * lag)])
+        one_lag = _roll(x, -lag)
+        two_lag = _roll(x, 2 * -lag)
+        return np.mean((two_lag * two_lag * one_lag - one_lag * x * x)[0:(n - 2 * lag)])
 
 
 @set_property("fctype", "simple")
@@ -1386,7 +1403,7 @@ def c3(x, lag):
     if 2 * lag >= n:
         return 0
     else:
-        return np.mean((np.roll(x, 2 * -lag) * np.roll(x, -lag) * x)[0:(n - 2 * lag)])
+        return np.mean((_roll(x, 2 * -lag) * _roll(x, -lag) * x)[0:(n - 2 * lag)])
 
 
 @set_property("fctype", "simple")
