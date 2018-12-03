@@ -65,14 +65,14 @@ def target_binary_feature_binary_test(x, y):
 
 
     # Extract the unique values
-    x0, x1 = x.unique()
-    y0, y1 = y.unique()
+    x0, x1 = np.unique(x.values)
+    y0, y1 = np.unique(y.values)
 
     # Calculate contingency table
-    n_y1_x0 = sum(y[x == x0] == y1)
-    n_y0_x0 = len(y[x == x0]) - n_y1_x0
-    n_y1_x1 = sum(y[x == x1] == y1)
-    n_y0_x1 = len(y[x == x1]) - n_y1_x1
+    n_y1_x0 = np.sum(y.values[x.values == x0] == y1)
+    n_y0_x0 = len(y.values[x.values == x0]) - n_y1_x0
+    n_y1_x1 = np.sum(y.values[x.values == x1] == y1)
+    n_y0_x1 = len(y.values[x.values == x1]) - n_y1_x1
 
     table = np.array([[n_y1_x1, n_y1_x0],
                       [n_y0_x1, n_y0_x0]])
@@ -111,11 +111,11 @@ def target_binary_feature_real_test(x, y, test):
     __check_for_binary_target(y)
 
     # Extract the unique values
-    y0, y1 = y.unique()
+    y0, y1 = np.unique(y.values)
 
     # Divide feature according to target
-    x_y1 = x[y == y1]
-    x_y0 = x[y == y0]
+    x_y1 = x.values[y.values == y1]
+    x_y0 = x.values[y.values == y0]
 
     if test == 'mann':
         # Perform Mann-Whitney-U test
@@ -153,11 +153,11 @@ def target_real_feature_binary_test(x, y):
     __check_for_binary_feature(x)
 
     # Extract the unique values
-    x0, x1 = x.unique()
+    x0, x1 = np.unique(x.values)
 
     # Divide target according to feature
-    y_x1 = y[x == x1]
-    y_x0 = y[x == x0]
+    y_x1 = y.values[x.values == x1]
+    y_x0 = y.values[x.values == x0]
 
     # Perform Kolmogorov-Smirnov test
     KS, p_value = stats.ks_2samp(y_x1, y_x0)
@@ -256,7 +256,7 @@ def _check_for_nans(x, y):
     :type y: pandas.Series
     :raises: `ValueError` if target or feature contains NaNs.
     """
-    if x.isnull().any():
+    if np.isnan(x.values).any():
         raise ValueError('Feature {} contains NaN values'.format(x.name))
-    elif y.isnull().any():
+    elif np.isnan(y.values).any():
         raise ValueError('Target contains NaN values')
