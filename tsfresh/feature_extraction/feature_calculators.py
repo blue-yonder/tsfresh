@@ -71,6 +71,8 @@ def _roll(a, shift):
     :return: shifted array with the same shape as a
     :return type: ndarray
     """
+    if not isinstance(a, np.ndarray):
+        a = np.asarray(a)
     idx = shift % len(a)
     return np.concatenate([a[-idx:], a[:-idx]])
 
