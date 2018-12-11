@@ -74,9 +74,8 @@ class FeatureCalculationTestCase(TestCase):
                              f(pd.Series(input_to_f), *args, **kwargs), result))
 
     def test__roll(self):
-        np.random.seed(42)
         x = np.random.normal(size=30)
-        for shift in [1, 10, 30, 50, 150]:
+        for shift in [0, 1, 10, 11, 30, 31, 50, 51, 150, 151]:
             np.testing.assert_array_equal(_roll(x,  shift), np.roll(x,  shift))
             np.testing.assert_array_equal(_roll(x, -shift), np.roll(x, -shift))
 
