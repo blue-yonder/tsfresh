@@ -8,6 +8,7 @@ from builtins import range
 from random import shuffle
 from unittest import TestCase
 from tsfresh.feature_extraction.feature_calculators import *
+from tsfresh.feature_extraction.feature_calculators import _roll
 from tsfresh.feature_extraction.feature_calculators import _get_length_sequences_where
 from tsfresh.feature_extraction.feature_calculators import _estimate_friedrich_coefficients
 from tsfresh.feature_extraction.feature_calculators import _aggregate_on_chunks
@@ -71,6 +72,12 @@ class FeatureCalculationTestCase(TestCase):
         self.assertEqual(f(pd.Series(input_to_f), *args, **kwargs), result,
                          msg="Not equal for pandas.Series: %s != %s" % (
                              f(pd.Series(input_to_f), *args, **kwargs), result))
+
+    def test__roll(self):
+        x = np.random.normal(size=30)
+        for shift in [0, 1, 10, 11, 30, 31, 50, 51, 150, 151]:
+            np.testing.assert_array_equal(_roll(x,  shift), np.roll(x,  shift))
+            np.testing.assert_array_equal(_roll(x, -shift), np.roll(x, -shift))
 
     def test___get_length_sequences_where(self):
         self.assertEqualOnAllArrayTypes(_get_length_sequences_where, [0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1],
