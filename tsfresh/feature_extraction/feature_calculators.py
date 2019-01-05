@@ -1881,3 +1881,15 @@ def energy_ratio_by_chunks(x, param):
         res_index.append("num_segments_{}__segment_focus_{}".format(num_segments, segment_focus))
 
     return list(zip(res_index, res_data)) # Materialize as list for Python 3 compatibility with name handling
+
+
+@set_property("fctype", "simple")
+def root_mean_square(x):
+    """
+    Calculates the root mean square (rms) of a time series
+    :param x: the time series to calculate the feature of
+    :type x: pandas.Series
+    :return: the value of this feature
+    :return type: float
+    """
+    return np.sqrt(np.mean(x**2))
