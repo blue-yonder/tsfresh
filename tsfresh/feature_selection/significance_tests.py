@@ -182,7 +182,7 @@ def target_real_feature_real_test(x, y):
     __check_if_pandas_series(x, y)
     _check_for_nans(x, y)
 
-    tau, p_value = stats.kendalltau(x, y)
+    tau, p_value = stats.kendalltau(x, y, method="asymptotic")
     return p_value
 
 
