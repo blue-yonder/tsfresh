@@ -345,8 +345,8 @@ def agg_autocorrelation(x, param):
 
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
-    :param param: contains dictionaries {"attr": x, "maxlag", n} with x str, the name of a numpy function
-                  (e.g. mean, var, std, median), its the name of the aggregator function that is applied to the
+    :param param: contains dictionaries {"f_agg": x, "maxlag", n} with x str, the name of a numpy function
+                  (e.g. "mean", "var", "std", "median"), its the name of the aggregator function that is applied to the
                   autocorrelations. Further, n is an int and the maximal number of lags to consider.
     :type param: list
     :return: the value of this feature
