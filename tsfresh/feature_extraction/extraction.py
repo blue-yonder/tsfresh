@@ -128,6 +128,12 @@ def extract_features(timeseries_container, default_fc_parameters=None,
     import logging
     logging.basicConfig()
 
+    # Verify that all kinds in `default_fc_parameters` are actually contained in the kind column of df
+    if not(kind_to_fc_parameters is None) and not (column_kind is None):
+        found_kinds = timeseries_container[column_kind].unique()
+        for k in kind_to_fc_parameters.keys():
+            assert k in found_kinds, "The kind {} could not be found in the column {} of the time series container.".format(k, column_kind)
+
     # Always use the standardized way of storing the data.
     # See the function normalize_input_to_internal_representation for more information.
     df_melt, column_id, column_kind, column_value = \
