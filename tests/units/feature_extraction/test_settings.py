@@ -93,6 +93,24 @@ class TestSettingsObject(TestCase):
                           msg='Default ComprehensiveFCParameters object does not setup calculation of {}'
                           .format(calculator))
 
+    def test_from_cols_returns_right_dtype(self):
+        """See issue 452: currently, we do not save information about the kind column. in this unit test, the kind column is saved as integer. Subsequently,
+        the from_column method saves it as str which is then later casted to a float instead of integer.
+        """
+        mock_ts = pd.DataFrame({'id': [1, 1, 1, 1, ],
+                                'time': [1, 1, 2, 2],
+                                'kind': [1, 2, 1, 2],   # note that 'kind' is int type
+                                'value': [1, 2, 3, 4]})
+
+        features = extract_features(mock_ts, column_id='id', column_sort='time', column_kind='kind', column_value='value',
+                                    default_fc_parameters=MinimalFCParameters(), n_jobs=1)
+        selected_features = list(features.columns[:5]) + list(features.columns[-5:])
+        # the from_columns method infers the kind as str
+        sample_settings = from_columns(selected_features)
+        features_small = extract_features(mock_ts, column_id='id', column_sort='time', column_kind='kind', column_value='value',
+                                          kind_to_fc_parameters=sample_settings)
+        assert features_small.shape[1] == 10
+
 
 class TestEfficientFCParameters(TestCase):
     """
