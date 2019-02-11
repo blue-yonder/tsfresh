@@ -40,7 +40,7 @@ jobs:
         - pip list
       script:
         - sed -i 's/\-n auto/\-n 2/g' setup.cfg
-        - "if [ $TRAVIS_PULL_REQUEST == false ] && ! [ $TRAVIS_BRANCH == 'master' ]; then py.test tests/units -n2; else python setup.py test; fi"
+        - "if [ $TRAVIS_PULL_REQUEST == false ] && ! [ $TRAVIS_BRANCH == 'master' ]; then pytest tests/units -n2; else pytest tests; fi"
       python: 3.5.2
 
     - stage: Run unit tests and deploy
@@ -56,7 +56,7 @@ jobs:
         - pip list
       script:
         - sed -i 's/\-n auto/\-n 2/g' setup.cfg
-        - "if [ $TRAVIS_PULL_REQUEST == false ] && ! [ $TRAVIS_BRANCH == 'master' ]; then py.test tests/units -n2; else python setup.py test; fi"
+        - "if [ $TRAVIS_PULL_REQUEST == false ] && ! [ $TRAVIS_BRANCH == 'master' ]; then pytest tests/units -n2; else pytest tests; fi"
       python: 2.7.11
 
     - stage: Run unit tests and deploy
@@ -72,7 +72,7 @@ jobs:
         - pip list
       script:
         - sed -i 's/\-n auto/\-n 2/g' setup.cfg
-        - "if [ $TRAVIS_PULL_REQUEST == false ] && ! [ $TRAVIS_BRANCH == 'master' ]; then py.test tests/units -n2; else python setup.py test; fi"
+        - "if [ $TRAVIS_PULL_REQUEST == false ] && ! [ $TRAVIS_BRANCH == 'master' ]; then pytest tests/units -n2; else pytest tests; fi"
       python: 3.5.2
 
       deploy:

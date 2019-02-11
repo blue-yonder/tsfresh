@@ -63,7 +63,7 @@ Then, if you have everything installed, you can run the tests with
 
 .. code::
 
-    python setup.py test
+    pytest tests/
 
 
 or build the documentation with
