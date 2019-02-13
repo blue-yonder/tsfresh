@@ -236,7 +236,7 @@ class GenerateDataChunkTestCase(DataTestCase):
                     (10, 'b', pd.Series([78, 37], index=[10]*2, name="val"))]
         self.assert_data_chunk_object_equal(result, expected)
 
-    def test_simple_data_sample_four_timeseres(self):
+    def test_simple_data_sample_four_timeseries(self):
         df = self.create_test_data_sample()
         # todo: investigate the names that are given
         df.index.name = None
