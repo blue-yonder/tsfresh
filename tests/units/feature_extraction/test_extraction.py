@@ -148,11 +148,10 @@ class ExtractionTestCase(DataTestCase):
     def test_extract_index_preservation(self):
         df = self.create_test_data_nearly_numerical_indices()
         extracted_features = extract_features(df, column_id="id", column_sort="sort", column_kind="kind",
-                                              column_value="val",
-                                              n_jobs=self.n_jobs)
+                                              column_value="val", n_jobs=self.n_jobs)
 
         self.assertIsInstance(extracted_features, pd.DataFrame)
-        self.assertTrue(set(df.index) == set(extracted_features.index))
+        self.assertTrue(set(df["id"]) == set(extracted_features.index))
 
 
 class ParallelExtractionTestCase(DataTestCase):
@@ -236,7 +235,7 @@ class GenerateDataChunkTestCase(DataTestCase):
                     (10, 'b', pd.Series([78, 37], index=[10]*2, name="val"))]
         self.assert_data_chunk_object_equal(result, expected)
 
-    def test_simple_data_sample_four_timeseres(self):
+    def test_simple_data_sample_four_timeseries(self):
         df = self.create_test_data_sample()
         # todo: investigate the names that are given
         df.index.name = None

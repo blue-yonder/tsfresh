@@ -26,7 +26,9 @@ class DataTestCase(TestCase):
                 77, 26, 73, 76, 75, 72, 74, 10, 57, 4, 14, 68, 22, 18, 52, 54, 60,
                 79, 12, 49, 63, 8, 59, 1, 13, 20, 17, 48, 34]
         df = pd.DataFrame({"id": cid, "kind": ckind, "sort": csort, "val": cval})
-        return df.set_index("id", drop=False)
+        df.set_index("id", drop=False)
+        df.index.name = None
+        return df
 
     def create_test_data_nearly_numerical_indices(self):
         cid = "99999_9999_" + pd.Series(np.repeat([10, 500], 40)).astype(str)
@@ -42,7 +44,9 @@ class DataTestCase(TestCase):
                 77, 26, 73, 76, 75, 72, 74, 10, 57, 4, 14, 68, 22, 18, 52, 54, 60,
                 79, 12, 49, 63, 8, 59, 1, 13, 20, 17, 48, 34]
         df = pd.DataFrame({"id": cid, "kind": ckind, "sort": csort, "val": cval})
-        return df.set_index("id", drop=False)
+        df.set_index("id", drop=False)
+        df.index.name = None
+        return df
 
     def create_one_valued_time_series(self):
         cid = [1, 2, 2]
