@@ -14,10 +14,10 @@ install:
 jobs:
   include:
     - stage: Run unit tests and deploy
-      env: NUMPY="latest", PANDAS="latest", SCIKITLEARN="latest", DASK="latest", DISTRIBUTED="latest"
+      env: NUMPY="latest", PANDAS="0.23.4", SCIKITLEARN="latest", DASK="latest", DISTRIBUTED="latest"
       before_script:
         - pip install --upgrade numpy
-        - pip install --upgrade pandas
+        - pip install pandas===0.23.4
         - pip install --upgrade scikit-learn
         - pip install --upgrade dask
         - pip install --upgrade distributed
@@ -30,10 +30,10 @@ jobs:
         - coveralls
 
     - stage: Run unit tests and deploy
-      env: NUMPY="latest", PANDAS="latest", SCIKITLEARN="latest", DASK="latest", DISTRIBUTED="latest"
+      env: NUMPY="latest", PANDAS="0.23.4", SCIKITLEARN="latest", DASK="latest", DISTRIBUTED="latest"
       before_script:
         - pip install --upgrade numpy
-        - pip install --upgrade pandas
+        - pip install pandas===0.23.4
         - pip install --upgrade scikit-learn
         - pip install --upgrade dask
         - pip install --upgrade distributed
