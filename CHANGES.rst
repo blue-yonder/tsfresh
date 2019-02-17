@@ -20,6 +20,7 @@ Version 0.11.1
 - fixed
     - the stock price forecasting notebook
     - the multi classification notebook
+- now, the kind column of the input dataframe is formated as str, old derived FC_Settings can become invalid
 
 Version 0.11.0
 ==============
