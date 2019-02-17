@@ -137,7 +137,7 @@ def extract_features(timeseries_container, default_fc_parameters=None,
                                                                         column_value=column_value)
 
     # Use the standard setting if the user did not supply ones himself.
-    if default_fc_parameters is None:
+    if default_fc_parameters is None and kind_to_fc_parameters is None:
         default_fc_parameters = ComprehensiveFCParameters()
 
     # If requested, do profiling (advanced feature)

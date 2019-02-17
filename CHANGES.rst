@@ -12,6 +12,8 @@ Unreleased
 - adapt default settings for "value_count" and "range_count"
 - added
     - maxlag parameter to agg_autocorrelation function
+- now, the kind column of the input dataframe is formated as str, old derived FC_Settings can become invalid
+- only set default_fc_parameters to ComprehensiveFCParameters() if also kind_to_fc_parameters is set None in `extract_features`
 
 Version 0.11.1
 ==============
@@ -20,7 +22,6 @@ Version 0.11.1
 - fixed
     - the stock price forecasting notebook
     - the multi classification notebook
-- now, the kind column of the input dataframe is formated as str, old derived FC_Settings can become invalid
 
 Version 0.11.0
 ==============
