@@ -53,6 +53,13 @@ class ExtractionTestCase(DataTestCase):
         self.assertTrue(np.all(extracted_features_sts.a__sum_values == np.array([1.0, 11.0])))
         self.assertTrue(np.all(extracted_features_sts.a__count_above_mean == np.array([0, 1])))
 
+    def test_extract_features_uses_only_kind_to_fc_settings(self):
+        df = self.create_test_data_sample()
+        extracted_features = extract_features(df, column_id="id", column_sort="sort", column_kind="kind",
+                                              column_value="val", n_jobs=self.n_jobs,
+                                              kind_to_fc_parameters={"a": {"max": None, "min": None}})
+        assert len(extracted_features) == 2
+
     def test_extract_features_for_one_time_series(self):
         # todo: implement more methods and test more aspects
         df = self.create_test_data_sample()
