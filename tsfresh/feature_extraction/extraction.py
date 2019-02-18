@@ -70,7 +70,8 @@ def extract_features(timeseries_container, default_fc_parameters=None,
 
     :param kind_to_fc_parameters: mapping from kind names to objects of the same type as the ones for
             default_fc_parameters. If you put a kind as a key here, the fc_parameters
-            object (which is the value), will be used instead of the default_fc_parameters.
+            object (which is the value), will be used instead of the default_fc_parameters. This means that kinds, for
+            which kind_of_fc_parameters doe not have any entries, will be ignored by the feature selection.
     :type kind_to_fc_parameters: dict
 
     :param column_id: The name of the id column to group by.
@@ -137,8 +138,10 @@ def extract_features(timeseries_container, default_fc_parameters=None,
                                                                         column_value=column_value)
 
     # Use the standard setting if the user did not supply ones himself.
-    if default_fc_parameters is None:
+    if default_fc_parameters is None and kind_to_fc_parameters is None:
         default_fc_parameters = ComprehensiveFCParameters()
+    elif default_fc_parameters is None and kind_to_fc_parameters is not None:
+        default_fc_parameters = {}
 
     # If requested, do profiling (advanced feature)
     if profile:

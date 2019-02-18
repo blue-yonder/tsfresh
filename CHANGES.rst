@@ -7,11 +7,21 @@ tsfresh uses `Semantic Versioning <http://semver.org/>`_
 
 Unreleased
 ==========
+
+
+
+Version 0.11.2
+==============
 - change chunking in energy_ratio_by_chunks to use all data points
 - fix warning for spkt_welch_density
 - adapt default settings for "value_count" and "range_count"
 - added
     - maxlag parameter to agg_autocorrelation function
+- now, the kind column of the input DataFrame is cast as str, old derived FC_Settings can become invalid
+- only set default_fc_parameters to ComprehensiveFCParameters() if also kind_to_fc_parameters is set None in `extract_features`
+- removed pyscaffold
+- use asymptotic algorithm to derive kendal tau
+
 
 Version 0.11.1
 ==============
