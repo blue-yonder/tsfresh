@@ -57,7 +57,7 @@ class ExtractionTestCase(DataTestCase):
         df = self.create_test_data_sample()
         extracted_features = extract_features(df, column_id="id", column_sort="sort", column_kind="kind",
                                               column_value="val", n_jobs=self.n_jobs,
-                                              kind_to_fc_parameters={"a": {"max": None, "min": None}})
+                                              kind_to_fc_parameters={"a": {"maximum": None, "minimum": None}})
         assert len(extracted_features) == 2
 
     def test_extract_features_for_one_time_series(self):
