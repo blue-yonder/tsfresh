@@ -46,7 +46,7 @@ jobs:
       python: 3.5.2
 
     - stage: Run unit tests and deploy
-      env: NUMPY="1.10.4", PANDAS="0.20.3", SCIKITLEARN="0.18.0", DASK="0.15.2", DISTRIBUTED="1.18.3", SCIPY="0.17.0"
+      env: NUMPY="1.10.4", PANDAS="0.20.3", SCIKITLEARN="0.18.0", DASK="0.15.2", DISTRIBUTED="1.18.3", SCIPY="0.18.0"
       before_script:
         - pip install numpy==1.10.4
         - pip install pandas==0.20.3
@@ -55,7 +55,7 @@ jobs:
         - pip install distributed==1.18.3
         # need to downgrade tornado manually
         - pip install tornado==4.5.3
-        - pip install scipy==0.17.0
+        - pip install scipy==0.18.0
         - pip list
       script:
         - sed -i 's/\-n auto/\-n 2/g' setup.cfg
@@ -63,7 +63,7 @@ jobs:
       python: 2.7.11
 
     - stage: Run unit tests and deploy
-      env: NUMPY="1.10.4", PANDAS="0.20.3", SCIKITLEARN="0.18.0", DASK="0.15.2", DISTRIBUTED="1.18.3", SCIPY="0.17.0"
+      env: NUMPY="1.10.4", PANDAS="0.20.3", SCIKITLEARN="0.18.0", DASK="0.15.2", DISTRIBUTED="1.18.3", SCIPY="0.18.0"
       before_script:
         - pip install numpy==1.10.4
         - pip install pandas==0.20.3
@@ -72,7 +72,7 @@ jobs:
         - pip install distributed==1.18.3
         # need to downgrade tornado manually
         - pip install tornado==4.5.3
-        - pip install scipy==0.17.0
+        - pip install scipy==0.18.0
         - pip list
       script:
         - sed -i 's/\-n auto/\-n 2/g' setup.cfg
