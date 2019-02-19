@@ -7,7 +7,7 @@ tsfresh uses `Semantic Versioning <http://semver.org/>`_
 
 Unreleased
 ==========
-- increased scipy dependency to 0.18.0
+- increased scipy dependency to 1.0.0
 
 
 Version 0.11.2
