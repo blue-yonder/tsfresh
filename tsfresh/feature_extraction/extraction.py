@@ -135,7 +135,6 @@ def extract_features(timeseries_container, default_fc_parameters=None,
                                                                         column_id=column_id, column_kind=column_kind,
                                                                         column_sort=column_sort,
                                                                         column_value=column_value)
-
     # Use the standard setting if the user did not supply ones himself.
     if default_fc_parameters is None:
         default_fc_parameters = ComprehensiveFCParameters()
@@ -330,8 +329,6 @@ def _do_extraction_on_chunk(chunk, default_fc_parameters, kind_to_fc_parameters)
     :return: A list of calculated features.
     """
     sample_id, kind, data = chunk
-    data = data.values
-
     if kind_to_fc_parameters and kind in kind_to_fc_parameters:
         fc_parameters = kind_to_fc_parameters[kind]
     else:
@@ -341,13 +338,21 @@ def _do_extraction_on_chunk(chunk, default_fc_parameters, kind_to_fc_parameters)
         for function_name, parameter_list in fc_parameters.items():
             func = getattr(feature_calculators, function_name)
 
+            # If the function uses the index, pass is at as a pandas Series.
+            # Otherwise, convert to numpy array
+            if getattr(func, 'input', None) == 'pd.Series':
+                x = data
+            else:
+                x = data.values
+
             if func.fctype == "combiner":
-                result = func(data, param=parameter_list)
+                result = func(x, param=parameter_list)
             else:
                 if parameter_list:
-                    result = ((convert_to_output_format(param), func(data, **param)) for param in parameter_list)
+                    result = ((convert_to_output_format(param), func(x, **param)) for param in
+                              parameter_list)
                 else:
-                    result = [("", func(data))]
+                    result = [("", func(x))]
 
             for key, item in result:
                 feature_name = str(kind) + "__" + func.__name__

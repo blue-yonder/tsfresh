@@ -79,6 +79,26 @@ class ExtractionTestCase(DataTestCase):
         self.assertTrue(np.all(extracted_features_sts.a__sum_values == np.array([1.0, 11.0])))
         self.assertTrue(np.all(extracted_features_sts.a__count_above_mean == np.array([0, 1])))
 
+    def test_extract_features_for_index_based_functions(self):
+        df = self.create_test_data_sample_with_time_index()
+
+        settings = {
+            'linear_trend_timewise': {"attr": "slope"},
+            'linear_trend': {"attr": "slope"}
+        }
+
+        extracted_features = extract_features(df, default_fc_parameters=settings,
+                                              column_value="val", column_id="id", column_kind="kind",
+                                              column_sort="sort")
+
+        self.assertIsInstance(extracted_features, pd.DataFrame)
+        print(extracted_features)
+        # self.assertTrue(np.all(extracted_features.b__sum_values == np.array([757, 695])))
+        # self.assertTrue(np.all(extracted_features.b__minimum == np.array([3, 1])))
+        # self.assertTrue(np.all(extracted_features.b__abs_energy == np.array([36619, 35483])))
+        # self.assertTrue(np.all(extracted_features.b__mean == np.array([37.85, 34.75])))
+        # self.assertTrue(np.all(extracted_features.b__median == np.array([39.5, 28.0])))
+
     def test_extract_features_after_randomisation(self):
         df = self.create_test_data_sample()
         df_random = df.copy().sample(frac=1)

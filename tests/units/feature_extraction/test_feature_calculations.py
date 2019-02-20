@@ -1062,3 +1062,49 @@ class FeatureCalculationTestCase(TestCase):
         for name, dat in output:
             sum = sum + dat
         self.assertAlmostEqual(sum, 1.0)
+
+    def test_linear_trend_timewise(self):
+        """Test linear_trend_timewise function."""
+        x = pd.Series(
+            [0, 1, 3, 6],
+            index=pd.DatetimeIndex([
+                '2018-01-01 04:00:00', '2018-01-01 05:00:00',
+                '2018-01-01 07:00:00', '2018-01-01 10:00:00'
+            ]),
+        )
+
+        param = [{"attr": "pvalue"}, {"attr": "rvalue"}, {"attr": "intercept"}, {"attr": "slope"}, {"attr": "stderr"}]
+        res = linear_trend_timewise(x, param)
+
+        res = pd.Series(dict(res))
+
+        expected_index = ["attr_\"pvalue\"", "attr_\"intercept\"",
+                          "attr_\"rvalue\"", "attr_\"slope\"",
+                          "attr_\"stderr\""]
+
+        self.assertEqual(len(res), 5)
+        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertAlmostEquals(res["attr_\"pvalue\""], 0)
+        self.assertAlmostEquals(res["attr_\"stderr\""], 0)
+        self.assertAlmostEquals(res["attr_\"intercept\""], 0)
+        self.assertAlmostEquals(res["attr_\"slope\""], 1.0)
+
+        # Try with different days
+        x = pd.Series(
+            [0, 24, 48, 72],
+            index=pd.DatetimeIndex([
+                '2018-01-01 04:00:00', '2018-01-02 04:00:00',
+                '2018-01-03 04:00:00', '2018-01-04 04:00:00'
+            ]),
+        )
+
+        param = [{"attr": "pvalue"}, {"attr": "rvalue"}, {"attr": "intercept"}, {"attr": "slope"}, {"attr": "stderr"}]
+        res = linear_trend_timewise(x, param)
+
+        res = pd.Series(dict(res))
+
+        self.assertAlmostEqual(res["attr_\"pvalue\""], 0)
+        self.assertAlmostEqual(res["attr_\"stderr\""], 0)
+        self.assertAlmostEqual(res["attr_\"intercept\""], 0)
+        self.assertAlmostEqual(res["attr_\"slope\""], 1.0)
+

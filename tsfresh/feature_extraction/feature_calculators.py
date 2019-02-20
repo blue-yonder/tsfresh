@@ -27,6 +27,7 @@ from scipy.stats import linregress
 from statsmodels.tools.sm_exceptions import MissingDataError
 from statsmodels.tsa.ar_model import AR
 from statsmodels.tsa.stattools import acf, adfuller, pacf
+from tsfresh.utilities.dataframe_functions import assert_index_is_datetime
 
 # todo: make sure '_' works in parameter names in all cases, add a warning if not
 
@@ -1167,7 +1168,6 @@ def linear_trend(x, param):
     :return type: pandas.Series
     """
     # todo: we could use the index of the DataFrame here
-
     linReg = linregress(range(len(x)), x)
 
     return [("attr_\"{}\"".format(config["attr"]), getattr(linReg, config["attr"]))
@@ -1881,3 +1881,38 @@ def energy_ratio_by_chunks(x, param):
         res_index.append("num_segments_{}__segment_focus_{}".format(num_segments, segment_focus))
 
     return list(zip(res_index, res_data)) # Materialize as list for Python 3 compatibility with name handling
+
+
+@set_property("fctype", "combiner")
+@set_property("input", "pd.Series")
+def linear_trend_timewise(x, param):
+    """
+    Calculate a linear least-squares regression for the values of the time series versus the sequence from 0 to
+    length of the time series minus one.
+    This feature uses the index of the time series to fit the model, which must be of a datetime
+    dtype.
+    The parameters control which of the characteristics are returned.
+
+    Possible extracted attributes are "pvalue", "rvalue", "intercept", "slope", "stderr", see the documentation of
+    linregress for more information.
+
+    :param x: the time series to calculate the feature of. The index must be datetime.
+    :type x: pandas.Series
+    :param param: contains dictionaries {"attr": x} with x an string, the attribute name of the regression model
+    :type param: list
+    :return: the different feature values
+    :return type: pandas.Series
+    """
+    # Make sure that the index is of the right dtype
+    assert_index_is_datetime(x)
+    ix = x.index
+
+    # Get differences between each timestamp and the first timestamp in seconds.
+    # Then convert to hours and reshape for linear regression
+    times_seconds = (ix - ix[0]).total_seconds()
+    times_hours = np.asarray(times_seconds / 3600)
+
+    linReg = linregress(times_hours, x.values)
+
+    return [("attr_\"{}\"".format(config["attr"]), getattr(linReg, config["attr"]))
+            for config in param]

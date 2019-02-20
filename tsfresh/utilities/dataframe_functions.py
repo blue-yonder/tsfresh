@@ -528,3 +528,13 @@ def make_forecasting_frame(x, kind, max_timeshift, rolling_direction):
     df_shift = df_shift[mask]
 
     return df_shift, df["value"][1:]
+
+
+def assert_index_is_datetime(x):
+    """Assert that the index of a pandas Series is a datetime dtype.
+
+    :param x: the time series to calculate the aggregation of
+    :type x: pandas.Series
+    """
+    dtype_date = pd.to_datetime(['2013']).dtype
+    assert x.index.dtype == dtype_date, 'The index of the dataframe needs to be of type datetime'
