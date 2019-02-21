@@ -93,6 +93,24 @@ class TestSettingsObject(TestCase):
                           msg='Default ComprehensiveFCParameters object does not setup calculation of {}'
                           .format(calculator))
 
+    def test_from_columns_correct_for_different_kind_datatypes(self):
+        """The `settings.from_columns()` function is supposed to save the feature extraction / selection results so it
+        can be reused later. It works by parsing the column names of the extracted dataframes. An unfortunate side
+        effect of this is that when used with the 'long' format time series input, the typing information about the
+        'kind' column is lost. For example, even if the 'kind' values are in int32, in the resulting settings dict, the
+        type of the top level keys (representing different kind values) will be str
+        """
+        df = pd.DataFrame({'id': [1, 1, 1, 1],
+                           'time': [1, 1, 2, 2],
+                           'kind': [1, 2, 1, 2],
+                           'value': [1, 2, 3, 4]})
+
+        features = extract_features(df, column_id='id', column_sort='time', column_kind='kind', column_value='value',
+                                    default_fc_parameters=MinimalFCParameters())
+        sample_settings = from_columns(features)
+        X = extract_features(df, column_id='id', column_sort='time', column_kind='kind', column_value='value',
+                               kind_to_fc_parameters=sample_settings)
+        assert X.shape == (1, 2 * len(MinimalFCParameters()))
 
 class TestEfficientFCParameters(TestCase):
     """
