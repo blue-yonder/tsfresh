@@ -281,7 +281,7 @@ def _normalize_input_to_internal_representation(timeseries_container, column_id,
         for kind, df in timeseries_container.items():
             df[column_kind] = kind
 
-        timeseries_container = pd.concat(timeseries_container.values())
+        timeseries_container = pd.concat(timeseries_container.values(), sort=False)
         gc.collect()
 
     # Check ID column
