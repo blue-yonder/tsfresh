@@ -1459,7 +1459,8 @@ def binned_entropy(x, max_bins):
         x = np.asarray(x)
     hist, bin_edges = np.histogram(x, bins=max_bins)
     probs = hist / x.size
-    return - np.sum(p * np.math.log(p) for p in probs if p != 0)
+    probs_positive = probs[probs != 0]
+    return - np.sum(probs_positive * np.log(probs_positive))
 
 # todo - include latex formula
 # todo - check if vectorizable
