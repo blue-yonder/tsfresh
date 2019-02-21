@@ -122,7 +122,7 @@ def _estimate_friedrich_coefficients(x, m, r):
     For short time-series this method is highly dependent on the parameters.
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :param m: order of polynom to fit for estimating fixed points of dynamics
     :type m: int
     :param r: number of quantils to use for averaging
@@ -157,7 +157,7 @@ def _aggregate_on_chunks(x, f_agg, chunk_len):
     consecutive chunks of length chunk_len
 
     :param x: the time series to calculate the aggregation of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :param f_agg: The name of the aggregation function that should be an attribute of the pandas.Series
     :type f_agg: str
     :param chunk_len: The size of the chunks where to aggregate the time series
@@ -187,7 +187,7 @@ def variance_larger_than_standard_deviation(x):
     being larger than 1
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :return: the value of this feature
     :return type: bool
     """
@@ -224,7 +224,7 @@ def large_standard_deviation(x, r):
     According to a rule of the thumb, the standard deviation should be a forth of the range of the values.
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :param r: the percentage of the range to compare with
     :type r: float
     :return: the value of this feature
@@ -245,7 +245,7 @@ def symmetry_looking(x, param):
         | mean(X)-median(X)| < r * (max(X)-min(X))
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :param r: the percentage of the range to compare with
     :type r: float
     :return: the value of this feature
@@ -265,7 +265,7 @@ def has_duplicate_max(x):
     Checks if the maximum value of x is observed more than once
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :return: the value of this feature
     :return type: bool
     """
@@ -280,7 +280,7 @@ def has_duplicate_min(x):
     Checks if the minimal value of x is observed more than once
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :return: the value of this feature
     :return type: bool
     """
@@ -295,7 +295,7 @@ def has_duplicate(x):
     Checks if any value in x occurs more than once
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :return: the value of this feature
     :return type: bool
     """
@@ -311,7 +311,7 @@ def sum_values(x):
     Calculates the sum over the time series values
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :return: the value of this feature
     :return type: bool
     """
@@ -345,7 +345,7 @@ def agg_autocorrelation(x, param):
     Here :math:`maxlag` is the second parameter passed to this function.
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :param param: contains dictionaries {"f_agg": x, "maxlag", n} with x str, the name of a numpy function
                   (e.g. "mean", "var", "std", "median"), its the name of the aggregator function that is applied to the
                   autocorrelations. Further, n is an int and the maximal number of lags to consider.
@@ -395,7 +395,7 @@ def partial_autocorrelation(x, param):
     |  [2] https://onlinecourses.science.psu.edu/stat510/node/62
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :param param: contains dictionaries {"lag": val} with int val indicating the lag to be returned
     :type param: list
     :return: the value of this feature
@@ -428,7 +428,7 @@ def augmented_dickey_fuller(x, param):
     See the statsmodels implementation for references and more details.
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :param param: contains dictionaries {"attr": x} with x str, either "teststat", "pvalue" or "usedlag"
     :type param: list
     :return: the value of this feature
@@ -461,7 +461,7 @@ def abs_energy(x):
         E = \\sum_{i=1,\ldots, n} x_i^2
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :return: the value of this feature
     :return type: float
     """
@@ -487,7 +487,7 @@ def cid_ce(x, normalize):
     |  Data Mining and Knowledge Difscovery 28.3 (2014): 634-669.
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :param normalize: should the time series be z-transformed?
     :type normalize: bool
 
@@ -518,7 +518,7 @@ def mean_abs_change(x):
 
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :return: the value of this feature
     :return type: float
     """
@@ -535,7 +535,7 @@ def mean_change(x):
         \\frac{1}{n} \\sum_{i=1,\ldots, n-1}  x_{i+1} - x_{i}
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :return: the value of this feature
     :return type: float
     """
@@ -552,7 +552,7 @@ def mean_second_derivative_central(x):
         \\frac{1}{n} \\sum_{i=1,\ldots, n-1}  \\frac{1}{2} (x_{i+2} - 2 \\cdot x_{i+1} + x_i)
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :return: the value of this feature
     :return type: float
     """
@@ -568,7 +568,7 @@ def median(x):
     Returns the median of x
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :return: the value of this feature
     :return type: float
     """
@@ -582,7 +582,7 @@ def mean(x):
     Returns the mean of x
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :return: the value of this feature
     :return type: float
     """
@@ -596,7 +596,7 @@ def length(x):
     Returns the length of x
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :return: the value of this feature
     :return type: int
     """
@@ -610,7 +610,7 @@ def standard_deviation(x):
     Returns the standard deviation of x
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :return: the value of this feature
     :return type: float
     """
@@ -624,7 +624,7 @@ def variance(x):
     Returns the variance of x
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :return: the value of this feature
     :return type: float
     """
@@ -638,7 +638,7 @@ def skewness(x):
     moment coefficient G1).
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :return: the value of this feature
     :return type: float
     """
@@ -654,7 +654,7 @@ def kurtosis(x):
     moment coefficient G2).
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :return: the value of this feature
     :return type: float
     """
@@ -673,7 +673,7 @@ def absolute_sum_of_changes(x):
         \\sum_{i=1, \ldots, n-1} \\mid x_{i+1}- x_i \\mid
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :return: the value of this feature
     :return type: float
     """
@@ -686,7 +686,7 @@ def longest_strike_below_mean(x):
     Returns the length of the longest consecutive subsequence in x that is smaller than the mean of x
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :return: the value of this feature
     :return type: float
     """
@@ -701,7 +701,7 @@ def longest_strike_above_mean(x):
     Returns the length of the longest consecutive subsequence in x that is bigger than the mean of x
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :return: the value of this feature
     :return type: float
     """
@@ -716,7 +716,7 @@ def count_above_mean(x):
     Returns the number of values in x that are higher than the mean of x
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :return: the value of this feature
     :return type: float
     """
@@ -730,7 +730,7 @@ def count_below_mean(x):
     Returns the number of values in x that are lower than the mean of x
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :return: the value of this feature
     :return type: float
     """
@@ -745,7 +745,7 @@ def last_location_of_maximum(x):
     The position is calculated relatively to the length of x.
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :return: the value of this feature
     :return type: float
     """
@@ -760,7 +760,7 @@ def first_location_of_maximum(x):
     The position is calculated relatively to the length of x.
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :return: the value of this feature
     :return type: float
     """
@@ -776,7 +776,7 @@ def last_location_of_minimum(x):
     The position is calculated relatively to the length of x.
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :return: the value of this feature
     :return type: float
     """
@@ -791,7 +791,7 @@ def first_location_of_minimum(x):
     The position is calculated relatively to the length of x.
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :return: the value of this feature
     :return type: float
     """
@@ -812,7 +812,7 @@ def percentage_of_reoccurring_datapoints_to_all_datapoints(x):
     in contrast to the percentage_of_reoccurring_values_to_all_values.
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :return: the value of this feature
     :return type: float
     """
@@ -839,7 +839,7 @@ def percentage_of_reoccurring_values_to_all_values(x):
     in contrast to the percentage_of_reoccurring_datapoints_to_all_datapoints.
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :return: the value of this feature
     :return type: float
     """
@@ -865,7 +865,7 @@ def sum_of_reoccurring_values(x):
     more than once.
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :return: the value of this feature
     :return type: float
     """
@@ -882,7 +882,7 @@ def sum_of_reoccurring_data_points(x):
     more than once.
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :return: the value of this feature
     :return type: float
     """
@@ -901,7 +901,7 @@ def ratio_value_number_to_time_series_length(x):
         # unique values / # values
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :return: the value of this feature
     :return type: float
     """
@@ -927,7 +927,7 @@ def fft_coefficient(x, param):
     the imaginary part (attr=="imag), the absolute value (attr=""abs) and the angle in degrees (attr=="angle).
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :param param: contains dictionaries {"coeff": x, "attr": s} with x int and x >= 0, s str and in ["real", "imag",
         "abs", "angle"]
     :type param: list
@@ -963,7 +963,7 @@ def fft_aggregated(x, param):
     Returns the spectral centroid (mean), variance, skew, and kurtosis of the absolute fourier transform spectrum.
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :param param: contains dictionaries {"aggtype": s} where s str and in ["centroid", "variance",
         "skew", "kurtosis"]
     :type param: list
@@ -1083,7 +1083,7 @@ def number_peaks(x, n):
     and its bigger than 4.
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :param n: the support of the peak
     :type n: int
     :return: the value of this feature
@@ -1111,7 +1111,7 @@ def index_mass_quantile(x, param):
     For example for q = 50% this feature calculator will return the mass center of the time series
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :param param: contains dictionaries {"q": x} with x float
     :type param: list
     :return: the different feature values
@@ -1140,7 +1140,7 @@ def number_cwt_peaks(x, n):
     and with sufficiently high Signal-to-Noise-Ratio (SNR)
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :param n: maximum width to consider
     :type n: int
     :return: the value of this feature
@@ -1161,7 +1161,7 @@ def linear_trend(x, param):
     linregress for more information.
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :param param: contains dictionaries {"attr": x} with x an string, the attribute name of the regression model
     :type param: list
     :return: the different feature values
@@ -1190,7 +1190,7 @@ def cwt_coefficients(x, param):
     different coefficient for coeff and width w are returned. (For each dic in param one feature is returned)
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :param param: contains dictionaries {"widths":x, "coeff": y, "w": z} with x array of int and y,z int
     :type param: list
     :return: the different feature values
@@ -1231,7 +1231,7 @@ def spkt_welch_density(x, param):
     The feature calculators returns the power spectrum of the different frequencies.
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :param param: contains dictionaries {"coeff": x} with x int
     :type param: list
     :return: the different feature values
@@ -1270,7 +1270,7 @@ def ar_coefficient(x, param):
     the coefficients :math:`\\varphi_{i}` whose index :math:`i` contained from "coeff" are returned.
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :param param: contains dictionaries {"coeff": x, "k": y} with x,y int
     :type param: list
     :return x: the different feature values
@@ -1318,7 +1318,7 @@ def change_quantiles(x, ql, qh, isabs, f_agg):
     y-Axis and only calculating the mean of the absolute change of the time series inside this corridor.
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :param ql: the lower quantile of the corridor
     :type ql: float
     :param qh: the higher quantile of the corridor
@@ -1380,7 +1380,7 @@ def time_reversal_asymmetry_statistic(x, lag):
     |  Knowledge and Data Engineering, IEEE Transactions on 26, 3026–3037.
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :param lag: the lag that should be used in the calculation of the feature
     :type lag: int
     :return: the value of this feature
@@ -1421,7 +1421,7 @@ def c3(x, lag):
     |  PHYSICAL REVIEW E, VOLUME 55, NUMBER 5
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :param lag: the lag that should be used in the calculation of the feature
     :type lag: int
     :return: the value of this feature
@@ -1449,7 +1449,7 @@ def binned_entropy(x, max_bins):
     where :math:`p_k` is the percentage of samples in bin :math:`k`.
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :param max_bins: the maximal number of bins
     :type max_bins: int
     :return: the value of this feature
@@ -1475,7 +1475,7 @@ def sample_entropy(x):
     |  [2] https://www.ncbi.nlm.nih.gov/pubmed/10843903?dopt=Abstract
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
 
     :return: the value of this feature
     :return type: float
@@ -1535,7 +1535,7 @@ def autocorrelation(x, lag):
     [1] https://en.wikipedia.org/wiki/Autocorrelation#Estimation
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :param lag: the lag
     :type lag: int
     :return: the value of this feature
@@ -1568,7 +1568,7 @@ def quantile(x, q):
     Calculates the q quantile of x. This is the value of x greater than q% of the ordered values from x.
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :param q: the quantile to calculate
     :type q: float
     :return: the value of this feature
@@ -1586,7 +1586,7 @@ def number_crossing_m(x, m):
     crossings.
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :param m: the threshold for the crossing
     :type m: float
     :return: the value of this feature
@@ -1606,7 +1606,7 @@ def maximum(x):
     Calculates the highest value of the time series x.
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :return: the value of this feature
     :return type: float
     """
@@ -1620,7 +1620,7 @@ def minimum(x):
     Calculates the lowest value of the time series x.
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :return: the value of this feature
     :return type: float
     """
@@ -1633,7 +1633,7 @@ def value_count(x, value):
     Count occurrences of `value` in time series x.
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :param value: the value to be counted
     :type value: int or float
     :return: the count
@@ -1654,7 +1654,7 @@ def range_count(x, min, max):
     Count observed values within the interval [min, max).
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :param min: the inclusive lower bound of the range
     :type min: int or float
     :param max: the exclusive upper bound of the range
@@ -1686,7 +1686,7 @@ def approximate_entropy(x, m, r):
         *Physiological time-series analysis using approximate entropy and sample entropy*
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :param m: Length of compared run of data
     :type m: int
     :param r: Filtering level, must be positive
@@ -1733,7 +1733,7 @@ def friedrich_coefficients(x, param):
     |  *Extracting model equations from experimental data*
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :param c: the time series name
     :type c: str
     :param param: contains dictionaries {"coeff": x} with x int and x >= 0
@@ -1772,7 +1772,7 @@ def max_langevin_fixed_point(x, r, m):
     For short time-series this method is highly dependent on the parameters.
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :param m: order of polynom to fit for estimating fixed points of dynamics
     :type m: int
     :param r: number of quantils to use for averaging
@@ -1808,7 +1808,7 @@ def agg_linear_trend(x, param):
     Further, the aggregation function is controlled by "f_agg", which can use "max", "min" or , "mean", "median"
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :param param: contains dictionaries {"attr": x, "chunk_len": l, "f_agg": f} with x, f an string and l an int
     :type param: list
     :return: the different feature values
@@ -1862,7 +1862,7 @@ def energy_ratio_by_chunks(x, param):
     in case somebody calls it. Sum of the ratios should be 1.0.
 
     :param x: the time series to calculate the feature of
-    :type x: pandas.Series
+    :type x: numpy.ndarray
     :param param: contains dictionaries {"num_segments": N, "segment_focus": i} with N, i both ints
     :return: the feature values
     :return type: list of tuples (index, data)
@@ -1901,7 +1901,7 @@ def linear_trend_timewise(x, param):
     :param param: contains dictionaries {"attr": x} with x an string, the attribute name of the regression model
     :type param: list
     :return: the different feature values
-    :return type: pandas.Series
+    :return type: list
     """
     # Make sure that the index is of the right dtype
     assert_index_is_datetime(x)

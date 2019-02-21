@@ -29,8 +29,7 @@ class ExtractionTestCase(DataTestCase):
         # todo: implement more methods and test more aspects
         df = self.create_test_data_sample()
         extracted_features = extract_features(df, column_id="id", column_sort="sort",
-                                              column_kind="kind",
-                                              column_value="val",
+                                              column_kind="kind", column_value="val",
                                               n_jobs=self.n_jobs)
         self.assertIsInstance(extracted_features, pd.DataFrame)
         self.assertTrue(np.all(extracted_features.a__maximum == np.array([71, 77])))
@@ -44,8 +43,7 @@ class ExtractionTestCase(DataTestCase):
 
         df_sts = self.create_one_valued_time_series()
         extracted_features_sts = extract_features(df_sts, column_id="id", column_sort="sort",
-                                                  column_kind="kind",
-                                                  column_value="val",
+                                                  column_kind="kind", column_value="val",
                                                   n_jobs=self.n_jobs)
 
         self.assertIsInstance(extracted_features_sts, pd.DataFrame)
@@ -60,8 +58,7 @@ class ExtractionTestCase(DataTestCase):
 
         extracted_features = extract_features(df, default_fc_parameters=settings,
                                               column_value="val", column_id="id",
-                                              column_kind="kind",
-                                              column_sort="sort")
+                                              column_kind="kind", column_sort="sort")
 
         self.assertIsInstance(extracted_features, pd.DataFrame)
         self.assertTrue(np.all(extracted_features.b__sum_values == np.array([757, 695])))
@@ -73,8 +70,7 @@ class ExtractionTestCase(DataTestCase):
         df_sts = self.create_one_valued_time_series()
         extracted_features_sts = extract_features(df_sts, default_fc_parameters=settings,
                                                   column_value="val", column_id="id",
-                                                  column_kind="kind",
-                                                  column_sort="sort")
+                                                  column_kind="kind", column_sort="sort")
 
         self.assertIsInstance(extracted_features_sts, pd.DataFrame)
         self.assertTrue(np.all(extracted_features_sts.a__maximum == np.array([1.0, 6.0])))
@@ -137,8 +133,7 @@ class ExtractionTestCase(DataTestCase):
 
         df = pd.DataFrame(data={"id": np.repeat([1, 2], 10), "val": np.random.normal(0, 1, 20)})
         profiling_filename = os.path.join(self.directory, "test_profiling.txt")
-        X = extract_features(df, column_id="id",
-                             column_value="val", n_jobs=self.n_jobs,
+        X = extract_features(df, column_id="id", column_value="val", n_jobs=self.n_jobs,
                              profile=True, profiling_filename=profiling_filename)
 
         self.assertTrue(os.path.isfile(profiling_filename))
@@ -150,8 +145,7 @@ class ExtractionTestCase(DataTestCase):
         PROFILING_SORTING = "cumulative"
 
         df = pd.DataFrame(data={"id": np.repeat([1, 2], 10), "val": np.random.normal(0, 1, 20)})
-        extract_features(df, column_id="id",
-                         column_value="val", n_jobs=self.n_jobs,
+        extract_features(df, column_id="id", column_value="val", n_jobs=self.n_jobs,
                          profile=True, profiling_filename=PROFILING_FILENAME,
                          profiling_sorting=PROFILING_SORTING)
 
@@ -171,13 +165,12 @@ class ExtractionTestCase(DataTestCase):
         df = self.create_test_data_sample()
 
         features_parallel = extract_features(df, column_id="id", column_sort="sort",
-                                             column_kind="kind",
-                                             column_value="val",
+                                             column_kind="kind", column_value="val",
                                              n_jobs=self.n_jobs)
 
         features_serial = extract_features(df, column_id="id", column_sort="sort",
-                                           column_kind="kind",
-                                           column_value="val", n_jobs=0)
+                                           column_kind="kind", column_value="val",
+                                           n_jobs=0)
 
         six.assertCountEqual(self, features_parallel.columns, features_serial.columns)
 
@@ -187,8 +180,8 @@ class ExtractionTestCase(DataTestCase):
     def test_extract_index_preservation(self):
         df = self.create_test_data_nearly_numerical_indices()
         extracted_features = extract_features(df, column_id="id", column_sort="sort",
-                                              column_kind="kind",
-                                              column_value="val", n_jobs=self.n_jobs)
+                                              column_kind="kind", column_value="val",
+                                              n_jobs=self.n_jobs)
 
         self.assertIsInstance(extracted_features, pd.DataFrame)
         self.assertTrue(set(df["id"]) == set(extracted_features.index))
@@ -235,15 +228,13 @@ class DistributorUsageTestCase(DataTestCase):
 
         self.assertRaises(ValueError, extract_features,
                           timeseries_container=df, column_id="id", column_sort="sort",
-                          column_kind="kind",
-                          column_value="val", default_fc_parameters=self.name_to_param,
-                          distributor=object())
+                          column_kind="kind", column_value="val",
+                          default_fc_parameters=self.name_to_param, distributor=object())
 
         self.assertRaises(ValueError, extract_features,
                           timeseries_container=df, column_id="id", column_sort="sort",
-                          column_kind="kind",
-                          column_value="val", default_fc_parameters=self.name_to_param,
-                          distributor=13)
+                          column_kind="kind", column_value="val",
+                          default_fc_parameters=self.name_to_param, distributor=13)
 
     def test_distributor_map_reduce_and_close_are_called(self):
         df = self.create_test_data_sample()
@@ -253,9 +244,8 @@ class DistributorUsageTestCase(DataTestCase):
         mock.map_reduce.return_value = []
 
         X = extract_features(timeseries_container=df, column_id="id", column_sort="sort",
-                             column_kind="kind",
-                             column_value="val", default_fc_parameters=self.name_to_param,
-                             distributor=mock)
+                             column_kind="kind", column_value="val",
+                             default_fc_parameters=self.name_to_param, distributor=mock)
 
         self.assertTrue(mock.close.called)
         self.assertTrue(mock.map_reduce.called)
@@ -286,17 +276,19 @@ class GenerateDataChunkTestCase(DataTestCase):
         df.sort_values(by=["id", "kind", "sort"], inplace=True)
 
         result = generate_data_chunk_format(df, "id", "kind", "val")
-        expected = [(10, 'a', pd.Series(
-            [36, 71, 27, 62, 56, 58, 67, 11, 2, 24, 45, 30, 0, 9, 41, 28, 33, 19, 29, 43],
-            index=[10] * 20, name="val")),
-                    (10, 'b', pd.Series(
-                        [78, 37, 23, 44, 6, 3, 21, 61, 39, 31, 53, 16, 66, 50, 40, 47, 7, 42, 38,
-                         55], index=[10] * 20, name="val")),
-                    (500, 'a', pd.Series(
-                        [76, 72, 74, 75, 32, 64, 46, 35, 15, 70, 57, 65, 51, 26, 5, 25, 10, 69, 73,
-                         77], index=[500] * 20, name="val")),
-                    (500, 'b', pd.Series(
-                        [8, 60, 12, 68, 22, 17, 18, 63, 49, 34, 20, 52, 48, 14, 79, 4, 1, 59, 54,
-                         13], index=[500] * 20, name="val"))]
+        expected = [
+            (10, 'a', pd.Series(
+                [36, 71, 27, 62, 56, 58, 67, 11, 2, 24, 45, 30, 0, 9, 41, 28, 33, 19, 29, 43],
+                index=[10] * 20, name="val")),
+            (10, 'b', pd.Series(
+                [78, 37, 23, 44, 6, 3, 21, 61, 39, 31, 53, 16, 66, 50, 40, 47, 7, 42, 38,
+                 55], index=[10] * 20, name="val")),
+            (500, 'a', pd.Series(
+                [76, 72, 74, 75, 32, 64, 46, 35, 15, 70, 57, 65, 51, 26, 5, 25, 10, 69, 73, 77],
+                index=[500] * 20, name="val")),
+            (500, 'b', pd.Series(
+                [8, 60, 12, 68, 22, 17, 18, 63, 49, 34, 20, 52, 48, 14, 79, 4, 1, 59, 54, 13],
+                index=[500] * 20, name="val"))
+        ]
 
         self.assert_data_chunk_object_equal(result, expected)
