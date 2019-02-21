@@ -221,7 +221,7 @@ def generate_data_chunk_format(df, column_id, column_kind, column_value):
                 df[column_id].nunique(), df[column_kind].nunique(), df[[column_id, column_kind]].nunique().prod(), MAX_VALUES_GROUPBY)
         )
         raise ValueError("Number of ids/kinds are too high. Please reduce your data size and run feature extraction again.")
-    data_in_chunks = [x + (y,) for x, y in df.set_index(column_id, drop=False).rename_axis(None).groupby([column_id, column_kind], as_index=True)[column_value]]
+    data_in_chunks = [x + (y,) for x, y in df.groupby([column_id, column_kind], as_index=True)[column_value]]
     return data_in_chunks
 
 
