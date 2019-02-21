@@ -105,11 +105,11 @@ class ExtractionTestCase(DataTestCase):
         self.assertAlmostEqual(slope_b[1], -0.012312)
 
         # Test that the index of the returned df is the ID and not the timestamp
-        self.assertTrue(extracted_features.index.dtype == df.index.dtype)
+        self.assertTrue(extracted_features.index.dtype != df.index.dtype)
+        self.assertTrue(extracted_features.index.dtype == df['id'].dtype)
         self.assertEqual(
-            sorted(extracted_features.index.unique().tolist()), sorted(df.index.unique().tolist())
+            sorted(extracted_features.index.unique().tolist()), sorted(df['id'].unique().tolist())
         )
-
 
     def test_extract_features_after_randomisation(self):
         df = self.create_test_data_sample()
