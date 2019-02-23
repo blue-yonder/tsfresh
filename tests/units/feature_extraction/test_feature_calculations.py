@@ -865,13 +865,13 @@ class FeatureCalculationTestCase(TestCase):
         ds = velocity(tau=3.8, delta_t=0.05, R=3e-4, seed=0)
         v = ds.simulate(100000, v0=np.zeros(1))
         v0 = max_langevin_fixed_point(v[:, 0], **default_params)
-        self.assertTrue(abs(ds.deterministic - v0) < 0.001)
+        self.assertLess(abs(ds.deterministic - v0), 0.001)
 
         # Brownian motion
         ds = velocity(tau=2.0 / 0.3 - 3.8, delta_t=0.05, R=3e-4, seed=0)
         v = ds.simulate(10000, v0=np.zeros(1))
         v0 = max_langevin_fixed_point(v[:, 0], **default_params)
-        self.assertTrue(v0 < 0.001)
+        self.assertLess(v0, 0.001)
 
     def test_linear_trend(self):
         # check linear up trend
@@ -1127,13 +1127,13 @@ class FriedrichTestCase(TestCase):
         ds = velocity(tau=3.8, delta_t=0.05, R=3e-4, seed=0)
         v = ds.simulate(10000, v0=np.zeros(1))
         coeff = _estimate_friedrich_coefficients(v[:, 0], **default_params)
-        self.assertTrue(abs(coeff[-1]) < 0.0001)
+        self.assertLess(abs(coeff[-1]), 0.0001)
 
         # Brownian motion
         ds = velocity(tau=2.0 / 0.3 - 3.8, delta_t=0.05, R=3e-4, seed=0)
         v = ds.simulate(10000, v0=np.zeros(1))
         coeff = _estimate_friedrich_coefficients(v[:, 0], **default_params)
-        self.assertTrue(abs(coeff[-1]) < 0.0001)
+        self.assertLess(abs(coeff[-1]), 0.0001)
 
     def test_friedrich_coefficients(self):
         # Test binning error returns vector of NaNs

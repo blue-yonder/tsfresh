@@ -44,7 +44,7 @@ class TestSettingsObject(TestCase):
                              ["sum_values", "median", "length", "sample_entropy", "quantile", "number_peaks",
                               "ar_coefficient", "value_count"])
 
-        self.assertEqual(kind_to_fc_parameters[tsn]["sum_values"], None)
+        self.assertIsNone(kind_to_fc_parameters[tsn]["sum_values"])
         self.assertEqual(kind_to_fc_parameters[tsn]["ar_coefficient"],
                          [{"k": 20, "coeff": 4}, {"k": -1, "coeff": 10}])
 

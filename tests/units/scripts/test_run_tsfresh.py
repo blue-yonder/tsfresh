@@ -85,7 +85,7 @@ class RunTSFreshTestCase(TestCase):
 
         self.assertEqual(called_kwargs["column_id"], "id")
         self.assertEqual(called_kwargs["column_value"], "value")
-        self.assertEqual(called_kwargs["column_kind"], None)
+        self.assertIsNone(called_kwargs["column_kind"])
         self.assertEqual(called_kwargs["column_sort"], "time")
 
     def test_csv_with_header(self):
