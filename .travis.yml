@@ -1,7 +1,5 @@
 # Travis Build file for tsfresh
 language: python
-# We do not use sudo here, so we can use docker containers, which have better caching
-sudo: false
 # We want the pip folder to be cached, to speed up installation
 cache:
   directories:
