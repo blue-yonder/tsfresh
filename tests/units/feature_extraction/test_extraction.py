@@ -9,7 +9,6 @@ import tempfile
 
 import numpy as np
 import pandas as pd
-import six
 from mock import Mock
 
 from tests.fixtures import DataTestCase

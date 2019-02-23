@@ -24,7 +24,7 @@ setup(
     use_scm_version=True,
     long_description=long_description,
     long_description_content_type="text/markdown",
-    setup_requires=["six", "setuptools_scm"] + sphinx,
+    setup_requires=["setuptools_scm"] + sphinx,
     packages=find_packages(),
     install_requires=requirements,
 )

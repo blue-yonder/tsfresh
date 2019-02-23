@@ -7,7 +7,6 @@ from unittest import TestCase
 from tsfresh import extract_features
 from tsfresh.examples.robot_execution_failures import load_robot_execution_failures, download_robot_execution_failures
 from pandas import DataFrame, Series
-import six
 import numpy as np
 
 

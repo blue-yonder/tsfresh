@@ -7,7 +7,6 @@ import pandas as pd
 from tests.fixtures import DataTestCase
 from tsfresh.feature_extraction.settings import ComprehensiveFCParameters
 from tsfresh.transformers import FeatureAugmenter
-import six
 import numpy as np
 
 class FeatureAugmenterTestCase(DataTestCase):

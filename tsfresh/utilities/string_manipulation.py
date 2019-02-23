@@ -4,7 +4,6 @@
 
 import ast
 import numpy as np
-from six import string_types
 
 
 def get_config_from_string(parts):

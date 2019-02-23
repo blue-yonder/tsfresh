@@ -12,7 +12,6 @@ from tsfresh.feature_extraction.feature_calculators import _get_length_sequences
 from tsfresh.feature_extraction.feature_calculators import _estimate_friedrich_coefficients
 from tsfresh.feature_extraction.feature_calculators import _aggregate_on_chunks
 from tsfresh.examples.driftbif_simulation import velocity
-import six
 import math
 
 

@@ -9,7 +9,6 @@ from future import standard_library
 standard_library.install_aliases()
 import cProfile, pstats, io
 import logging
-import six
 
 
 _logger = logging.getLogger(__name__)
@@ -58,7 +57,7 @@ def end_profiling(profiler, filename, sorting=None):
     >>> end_profiling(profiler, "out.txt", "cumulative")
     """
     profiler.disable()
-    s = six.StringIO()
+    s = io.StringIO()
     ps = pstats.Stats(profiler, stream=s).sort_stats(sorting)
     ps.print_stats()
 

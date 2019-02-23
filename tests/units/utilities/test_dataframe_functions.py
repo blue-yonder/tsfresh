@@ -7,7 +7,6 @@ from unittest import TestCase
 import pandas as pd
 from tsfresh.utilities import dataframe_functions
 import numpy as np
-import six
 from pandas.testing import assert_frame_equal, assert_series_equal
 
 from tsfresh.utilities.dataframe_functions import get_ids

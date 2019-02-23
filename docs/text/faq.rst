@@ -29,7 +29,7 @@ FAQ
        .. code:: Bash
 
            conda create -n ENV_NAME python=VERSION
-           conda install -n ENV_NAME pip requests numpy pandas scipy statsmodels patsy scikit-learn future six tqdm
+           conda install -n ENV_NAME pip requests numpy pandas scipy statsmodels patsy scikit-learn future tqdm
            activate ENV_NAME
            pip install tsfresh
 

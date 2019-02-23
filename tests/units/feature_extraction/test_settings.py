@@ -10,7 +10,6 @@ import pandas as pd
 from tsfresh.feature_extraction.extraction import extract_features
 from tsfresh.feature_extraction.settings import ComprehensiveFCParameters, MinimalFCParameters, \
     EfficientFCParameters, from_columns, TimeBasedFCParameters, IndexBasedFCParameters
-import six
 from tsfresh.feature_extraction import feature_calculators
 from pandas.testing import assert_frame_equal
 

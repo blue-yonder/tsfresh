@@ -6,7 +6,6 @@ import os
 import subprocess
 import tempfile
 import nbformat
-import six
 
 from unittest import TestCase
 
@@ -40,10 +39,7 @@ def _notebook_run(path, timeout=default_timeout):
         
         args = ["jupyter", "nbconvert",
                 "--to", "notebook", "--execute", execproc_timeout]
-        if six.PY2:
-            args += ["--ExecutePreprocessor.kernel_name=python2"]
-        elif six.PY3:
-            args += ["--ExecutePreprocessor.kernel_name=python3"]
+        args += ["--ExecutePreprocessor.kernel_name=python3"]
         args += ["--output", fout.name, path]
         subprocess.check_call(args)
 
