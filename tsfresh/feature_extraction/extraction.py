@@ -5,8 +5,6 @@
 This module contains the main function to interact with tsfresh: extract features
 """
 
-from __future__ import absolute_import, division
-
 import logging
 import sys
 import warnings

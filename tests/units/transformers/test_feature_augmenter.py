@@ -2,7 +2,6 @@
 # This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
-from __future__ import print_function
 import pandas as pd
 from tests.fixtures import DataTestCase
 from tsfresh.feature_extraction.settings import ComprehensiveFCParameters

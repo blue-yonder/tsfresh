@@ -2,8 +2,6 @@
 # This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
-from __future__ import absolute_import, division
-from __future__ import print_function
 from random import shuffle
 from unittest import TestCase
 from tsfresh.feature_extraction.feature_calculators import *

@@ -6,8 +6,6 @@ This file contains methods/objects for controlling which features will be extrac
 For the naming of the features, see :ref:`feature-naming-label`.
 """
 
-from __future__ import absolute_import, division
-
 from inspect import getargspec
 
 import pandas as pd

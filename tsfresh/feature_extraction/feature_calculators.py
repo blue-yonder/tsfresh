@@ -14,8 +14,6 @@ set_property function. Only functions in this python module, which have a parame
 seen by tsfresh as a feature calculator. Others will not be calculated.
 """
 
-from __future__ import absolute_import, division
-
 import itertools
 import warnings
 from builtins import range
