@@ -11,12 +11,12 @@ import logging
 _logger = logging.getLogger(__name__)
 
 
-class velocity(object):
+class velocity:
     """
     Simulates the velocity of a dissipative soliton (kind of self organized particle) [6]_.
     The equilibrium velocity without noise R=0 for
-    $\tau>1.0/\kappa_3$ is $\kappa_3 \sqrt{(tau - 1.0/\kappa_3)/Q}.
-    Before the drift-bifurcation $\tau \le 1.0/\kappa_3$ the velocity is zero.
+    $\tau>1.0/\\kappa_3$ is $\\kappa_3 \\sqrt{(tau - 1.0/\\kappa_3)/Q}.
+    Before the drift-bifurcation $\tau \\le 1.0/\\kappa_3$ the velocity is zero.
 
     References
     ----------

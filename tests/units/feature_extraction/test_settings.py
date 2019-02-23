@@ -43,7 +43,7 @@ class TestSettingsObject(TestCase):
         feature_names += [tsn + '__ar_coefficient__k_20__coeff_4', tsn + '__ar_coefficient__coeff_10__k_-1']
 
         kind_to_fc_parameters = from_columns(feature_names)
-        six.assertCountEqual(self, list(kind_to_fc_parameters[tsn].keys()),
+        self.assertCountEqual(list(kind_to_fc_parameters[tsn].keys()),
                              ["sum_values", "median", "length", "sample_entropy", "quantile", "number_peaks",
                               "ar_coefficient", "value_count"])
 
@@ -76,7 +76,7 @@ class TestSettingsObject(TestCase):
         kind_to_fc_parameters = from_columns(feature_names, columns_to_ignore=["THIS_COL_SHOULD_BE_IGNORED",
                                                                                "THIS_AS_WELL"])
 
-        six.assertCountEqual(self, list(kind_to_fc_parameters[tsn].keys()),
+        self.assertCountEqual(list(kind_to_fc_parameters[tsn].keys()),
                              ["sum_values", "median", "length", "sample_entropy"])
 
     def test_default_calculates_all_features(self):
@@ -127,7 +127,7 @@ class TestEfficientFCParameters(TestCase):
                                               column_kind="kind", column_value="value",
                                               column_sort="time", column_id="id")
 
-        six.assertCountEqual(self, extracted_features.index, [0, 1])
+        self.assertCountEqual(extracted_features.index, [0, 1])
 
     def test_contains_all_non_high_comp_cost_features(self):
         """
@@ -197,7 +197,7 @@ class TestMinimalSettingsObject(TestCase):
                                               column_kind="kind", column_value="value",
                                               column_sort="time", column_id="id")
 
-        six.assertCountEqual(self, extracted_features.columns, ["0__median", "0__standard_deviation", "0__sum_values",
+        self.assertCountEqual(extracted_features.columns, ["0__median", "0__standard_deviation", "0__sum_values",
                                                                 "0__maximum", "0__variance", "0__minimum", "0__mean",
                                                                 "0__length"])
-        six.assertCountEqual(self, extracted_features.index, [0, 1])
+        self.assertCountEqual(extracted_features.index, [0, 1])

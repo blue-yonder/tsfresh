@@ -152,7 +152,7 @@ class ComprehensiveFCParameters(dict):
                              {"attr": "slope"}, {"attr": "stderr"}]
         })
 
-        super(ComprehensiveFCParameters, self).__init__(name_to_param)
+        super().__init__(name_to_param)
 
 
 class MinimalFCParameters(ComprehensiveFCParameters):

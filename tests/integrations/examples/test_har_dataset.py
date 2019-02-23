@@ -21,4 +21,4 @@ class HumanActivityTestCase(TestCase):
         self.assertIsInstance(self.classes, Series)
 
     def test_index(self):
-        six.assertCountEqual(self, self.data.index, self.classes.index)
+        self.assertCountEqual(self.data.index, self.classes.index)

@@ -27,7 +27,7 @@ class FeatureAugmenterTestCase(DataTestCase):
 
         # Fit should do nothing
         returned_df = augmenter.fit()
-        six.assertCountEqual(self, returned_df.__dict__, augmenter.__dict__)
+        self.assertCountEqual(returned_df.__dict__, augmenter.__dict__)
         self.assertRaises(RuntimeError, augmenter.transform, None)
 
         augmenter.set_timeseries_container(self.test_df)
@@ -46,7 +46,7 @@ class FeatureAugmenterTestCase(DataTestCase):
         self.assertEqual(X_transformed.shape, (2, 3))
 
         # Preserve old features
-        six.assertCountEqual(self, list(X_transformed.columns), ["feature_1", "a__length", "b__length"])
+        self.assertCountEqual(list(X_transformed.columns), ["feature_1", "a__length", "b__length"])
 
         # Features are not allowed to be NaN
         for index, row in X_transformed.iterrows():

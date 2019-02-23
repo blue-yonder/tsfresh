@@ -108,7 +108,7 @@ def _get_length_sequences_where(x):
 
 
 def _estimate_friedrich_coefficients(x, m, r):
-    """
+    r"""
     Coefficients of polynomial :math:`h(x)`, which has been fitted to
     the deterministic dynamics of Langevin model
     .. math::
@@ -457,7 +457,7 @@ def abs_energy(x):
 
     .. math::
 
-        E = \\sum_{i=1,\ldots, n} x_i^2
+        E = \\sum_{i=1,\\ldots, n} x_i^2
 
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
@@ -513,7 +513,7 @@ def mean_abs_change(x):
 
     .. math::
 
-        \\frac{1}{n} \\sum_{i=1,\ldots, n-1} | x_{i+1} - x_{i}|
+        \\frac{1}{n} \\sum_{i=1,\\ldots, n-1} | x_{i+1} - x_{i}|
 
 
     :param x: the time series to calculate the feature of
@@ -531,7 +531,7 @@ def mean_change(x):
 
     .. math::
 
-        \\frac{1}{n} \\sum_{i=1,\ldots, n-1}  x_{i+1} - x_{i}
+        \\frac{1}{n} \\sum_{i=1,\\ldots, n-1}  x_{i+1} - x_{i}
 
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
@@ -548,7 +548,7 @@ def mean_second_derivative_central(x):
 
     .. math::
 
-        \\frac{1}{n} \\sum_{i=1,\ldots, n-1}  \\frac{1}{2} (x_{i+2} - 2 \\cdot x_{i+1} + x_i)
+        \\frac{1}{n} \\sum_{i=1,\\ldots, n-1}  \\frac{1}{2} (x_{i+2} - 2 \\cdot x_{i+1} + x_i)
 
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
@@ -669,7 +669,7 @@ def absolute_sum_of_changes(x):
 
     .. math::
 
-        \\sum_{i=1, \ldots, n-1} \\mid x_{i+1}- x_i \\mid
+        \\sum_{i=1, \\ldots, n-1} \\mid x_{i+1}- x_i \\mid
 
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
@@ -935,7 +935,7 @@ def fft_coefficient(x, param):
     """
 
     assert min([config["coeff"] for config in param]) >= 0, "Coefficients must be positive or zero."
-    assert set([config["attr"] for config in param]) <= set(["imag", "real", "abs", "angle"]), \
+    assert {config["attr"] for config in param} <= {"imag", "real", "abs", "angle"}, \
         'Attribute must be "real", "imag", "angle" or "abs"'
 
     fft = np.fft.rfft(x)
@@ -970,12 +970,12 @@ def fft_aggregated(x, param):
     :return type: pandas.Series
     """
 
-    assert set([config["aggtype"] for config in param]) <= set(["centroid", "variance", "skew", "kurtosis"]), \
+    assert {config["aggtype"] for config in param} <= {"centroid", "variance", "skew", "kurtosis"}, \
         'Attribute must be "centroid", "variance", "skew", "kurtosis"'
 
 
     def get_moment(y, moment):
-        """
+        r"""
         Returns the (non centered) moment of the distribution y:
         E[y**moment] = \sum_i[index(y_i)^moment * y_i] / \sum_i[y_i]
         
@@ -1361,13 +1361,13 @@ def time_reversal_asymmetry_statistic(x, lag):
 
     .. math::
 
-        \\frac{1}{n-2lag} \sum_{i=0}^{n-2lag} x_{i + 2 \cdot lag}^2 \cdot x_{i + lag} - x_{i + lag} \cdot  x_{i}^2
+        \\frac{1}{n-2lag} \\sum_{i=0}^{n-2lag} x_{i + 2 \\cdot lag}^2 \\cdot x_{i + lag} - x_{i + lag} \\cdot  x_{i}^2
 
     which is
 
     .. math::
 
-        \\mathbb{E}[L^2(X)^2 \cdot L(X) - L(X) \cdot X^2]
+        \\mathbb{E}[L^2(X)^2 \\cdot L(X) - L(X) \\cdot X^2]
 
     where :math:`\\mathbb{E}` is the mean and :math:`L` is the lag operator. It was proposed in [1] as a
     promising feature to extract from time series.
@@ -1402,13 +1402,13 @@ def c3(x, lag):
 
     .. math::
 
-        \\frac{1}{n-2lag} \sum_{i=0}^{n-2lag} x_{i + 2 \cdot lag}^2 \cdot x_{i + lag} \cdot x_{i}
+        \\frac{1}{n-2lag} \\sum_{i=0}^{n-2lag} x_{i + 2 \\cdot lag}^2 \\cdot x_{i + lag} \\cdot x_{i}
 
     which is
 
     .. math::
 
-        \\mathbb{E}[L^2(X)^2 \cdot L(X) \cdot X]
+        \\mathbb{E}[L^2(X)^2 \\cdot L(X) \\cdot X]
 
     where :math:`\\mathbb{E}` is the mean and :math:`L` is the lag operator. It was proposed in [1] as a measure of
     non linearity in the time series.
@@ -1524,9 +1524,9 @@ def autocorrelation(x, lag):
 
     .. math::
 
-        \\frac{1}{(n-l)\sigma^{2}} \\sum_{t=1}^{n-l}(X_{t}-\\mu )(X_{t+l}-\\mu)
+        \\frac{1}{(n-l)\\sigma^{2}} \\sum_{t=1}^{n-l}(X_{t}-\\mu )(X_{t+l}-\\mu)
 
-    where :math:`n` is the length of the time series :math:`X_i`, :math:`\sigma^2` its variance and :math:`\mu` its
+    where :math:`n` is the length of the time series :math:`X_i`, :math:`\\sigma^2` its variance and :math:`\\mu` its
     mean. `l` denotes the lag.
 
     .. rubric:: References
@@ -1715,7 +1715,7 @@ def approximate_entropy(x, m, r):
 
 @set_property("fctype", "combiner")
 def friedrich_coefficients(x, param):
-    """
+    r"""
     Coefficients of polynomial :math:`h(x)`, which has been fitted to
     the deterministic dynamics of Langevin model
 
@@ -1766,7 +1766,7 @@ def friedrich_coefficients(x, param):
 
 @set_property("fctype", "simple")
 def max_langevin_fixed_point(x, r, m):
-    """
+    r"""
     Largest fixed point of dynamics  :math:argmax_x {h(x)=0}` estimated from polynomial :math:`h(x)`,
     which has been fitted to the deterministic dynamics of Langevin model
 

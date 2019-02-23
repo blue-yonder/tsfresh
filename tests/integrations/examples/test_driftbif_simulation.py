@@ -79,7 +79,7 @@ class SampleTauTestCase(unittest.TestCase):
 class LoadDriftBifTestCase(unittest.TestCase):
     def test_classification_labels(self):
         X, y = load_driftbif(10, 100)
-        self.assertEqual(set(y), set([0, 1]))
+        self.assertEqual(set(y), {0, 1})
 
     def test_regression_labels(self):
         Nsamples = 10
