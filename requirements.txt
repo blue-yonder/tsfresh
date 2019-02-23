@@ -4,11 +4,7 @@ pandas>=0.20.3,<=0.23.4 # pandas dropna is buggy in 0.24.0, see https://github.c
 scipy>=1.2.0
 statsmodels>=0.8.0
 patsy>=0.4.1
-scikit-learn>=0.19.0,<0.21.0; python_version <= '2.7'
-scikit-learn>=0.19.0; python_version > '3'
-future>=0.16.0
-six>=1.10.0
+scikit-learn>=0.19.0
 tqdm>=4.10.0
-ipaddress>=1.0.18; python_version <= '2.7'
 dask>=0.15.2
 distributed>=1.18.3
