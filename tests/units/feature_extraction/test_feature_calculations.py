@@ -1061,10 +1061,10 @@ class FriedrichTestCase(TestCase):
 
     def test_friedrich_number_of_returned_features_is_equal_to_number_of_parameters(self):
         """ unit test for issue 501 """
-        param = [{'m': 3, 'r': 5, 'coeff': 2}, {'m': 3, 'r': 5, 'coeff': 3}]
+        param = [{'m': 3, 'r': 5, 'coeff': 2}, {'m': 3, 'r': 5, 'coeff': 3}, {'m': 3, 'r': 2, 'coeff': 3}]
         x = np.zeros(100)
         res = pd.Series(dict(friedrich_coefficients(x, param)))
 
-        expected_index = ["m_3__r_5__coeff_0", "m_3__r_5__coeff_1", "m_3__r_5__coeff_2"]
+        expected_index = ["m_3__r_5__coeff_2", "m_3__r_5__coeff_3", "m_3__r_2__coeff_3"]
         six.assertCountEqual(self, list(res.index), expected_index)
         self.assertTrue(np.sum(np.isnan(res)), 3)
