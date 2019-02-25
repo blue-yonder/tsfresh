@@ -858,39 +858,6 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqualOnAllArrayTypes(approximate_entropy, [12, 13, 15, 16, 17] * 10, 0.282456191, m=2, r=0.9)
         self.assertRaises(ValueError, approximate_entropy, x=[12, 13, 15, 16, 17] * 10, m=2, r=-0.5)
 
-    def test_estimate_friedrich_coefficients(self):
-        """
-        Estimate friedrich coefficients
-        """
-        default_params = {"m": 3, "r": 30}
-
-        # active Brownian motion
-        ds = velocity(tau=3.8, delta_t=0.05, R=3e-4, seed=0)
-        v = ds.simulate(10000, v0=np.zeros(1))
-        coeff = _estimate_friedrich_coefficients(v[:, 0], **default_params)
-        self.assertTrue(abs(coeff[-1]) < 0.0001)
-
-        # Brownian motion
-        ds = velocity(tau=2.0 / 0.3 - 3.8, delta_t=0.05, R=3e-4, seed=0)
-        v = ds.simulate(10000, v0=np.zeros(1))
-        coeff = _estimate_friedrich_coefficients(v[:, 0], **default_params)
-        self.assertTrue(abs(coeff[-1]) < 0.0001)
-
-    def test_friedrich_coefficients(self):
-        # Test binning error returns vector of NaNs
-        param = [{"coeff": coeff, "m": 2, "r": 30} for coeff in range(4)]
-        x = np.zeros(1000)
-
-        res = friedrich_coefficients(x, param)
-
-        res = pd.Series(dict(res))
-
-        expected_index = ["m_2__r_30__coeff_0",
-                          "m_2__r_30__coeff_1",
-                          "m_2__r_30__coeff_2"]
-        six.assertCountEqual(self, list(res.index), expected_index)
-        self.assertTrue(np.sum(np.isnan(res)), 3)
-
     def test_max_langevin_fixed_point(self):
         """
         Estimating the intrinsic velocity of a dissipative soliton
@@ -1060,3 +1027,44 @@ class FeatureCalculationTestCase(TestCase):
         for name, dat in output:
             sum = sum + dat
         self.assertAlmostEqual(sum, 1.0)
+
+
+class FriedrichTestCase(TestCase):
+
+    def test_estimate_friedrich_coefficients(self):
+        """
+        Estimate friedrich coefficients
+        """
+        default_params = {"m": 3, "r": 30}
+
+        # active Brownian motion
+        ds = velocity(tau=3.8, delta_t=0.05, R=3e-4, seed=0)
+        v = ds.simulate(10000, v0=np.zeros(1))
+        coeff = _estimate_friedrich_coefficients(v[:, 0], **default_params)
+        self.assertTrue(abs(coeff[-1]) < 0.0001)
+
+        # Brownian motion
+        ds = velocity(tau=2.0 / 0.3 - 3.8, delta_t=0.05, R=3e-4, seed=0)
+        v = ds.simulate(10000, v0=np.zeros(1))
+        coeff = _estimate_friedrich_coefficients(v[:, 0], **default_params)
+        self.assertTrue(abs(coeff[-1]) < 0.0001)
+
+    def test_friedrich_coefficients(self):
+        # Test binning error returns vector of NaNs
+        param = [{"coeff": coeff, "m": 2, "r": 30} for coeff in range(4)]
+        x = np.zeros(100)
+        res = pd.Series(dict(friedrich_coefficients(x, param)))
+
+        expected_index = ["m_2__r_30__coeff_0", "m_2__r_30__coeff_1", "m_2__r_30__coeff_2"]
+        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertTrue(np.sum(np.isnan(res)), 3)
+
+    def test_friedrich_number_of_returned_features_is_equal_to_number_of_parameters(self):
+        """ unit test for issue 501 """
+        param = [{'m': 3, 'r': 5, 'coeff': 2}, {'m': 3, 'r': 5, 'coeff': 3}]
+        x = np.zeros(100)
+        res = pd.Series(dict(friedrich_coefficients(x, param)))
+
+        expected_index = ["m_3__r_5__coeff_0", "m_3__r_5__coeff_1", "m_3__r_5__coeff_2"]
+        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertTrue(np.sum(np.isnan(res)), 3)
