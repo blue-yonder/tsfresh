@@ -130,6 +130,8 @@ def _estimate_friedrich_coefficients(x, m, r):
     :return: coefficients of polynomial of deterministic dynamics
     :return type: ndarray
     """
+    assert m > 0, "Order of polynomial need to be positive integer, found {}".format(m)
+
     df = pd.DataFrame({'signal': x[:-1], 'delta': np.diff(x)})
     try:
         df['quantiles'] = pd.qcut(df.signal, r)
@@ -138,10 +140,7 @@ def _estimate_friedrich_coefficients(x, m, r):
 
     quantiles = df.groupby('quantiles')
 
-    result = pd.DataFrame({'x_mean': quantiles.signal.mean(),
-                           'y_mean': quantiles.delta.mean()
-                           })
-
+    result = pd.DataFrame({'x_mean': quantiles.signal.mean(), 'y_mean': quantiles.delta.mean()})
     result.dropna(inplace=True)
 
     try:
@@ -1734,25 +1733,31 @@ def friedrich_coefficients(x, param):
 
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
-    :param c: the time series name
-    :type c: str
-    :param param: contains dictionaries {"coeff": x} with x int and x >= 0
+    :param param: contains dictionaries {"m": x, "r": y, "coeff": z} with x being positive integer, the order of polynom to fit for estimating fixed points of
+                    dynamics, y positive float, the number of quantils to use for averaging and finally z, a positive integer corresponding to the returned
+                    coefficient
     :type param: list
     :return: the different feature values
     :return type: pandas.Series
     """
-    coefficients = set([config["coeff"] for config in param])
-    for coeff in coefficients:
-        if coeff < 0:
-            raise ValueError("Coefficients must be positive or zero.")
+    calculated = {}  # calculated is dictionary storing the calculated coefficients {m: {r: friedrich_coefficients}}
+    res = {} # res is a dictionary containg the results {"m_10__r_2__coeff_3": 15.43}
 
-    m = param[0]['m']
-    r = param[0]['r']
+    for parameter_combination in param:
+        m = parameter_combination['m']
+        r = parameter_combination['r']
+        coeff = parameter_combination["coeff"]
 
-    coeff = _estimate_friedrich_coefficients(x, m, r)
-    indices = ["m_{}__r_{}__coeff_{}".format(m, r, q) for q in range(m, -1, -1)]
+        assert coeff >= 0, "Coefficients must be positive or zero. Found {}".format(coeff)
 
-    return zip(indices, coeff)
+        # calculate the current friedrich coefficients if they do not exist yet
+        if m not in calculated:
+            if r not in calculated[m]:
+                calculated[m] = {r: _estimate_friedrich_coefficients(x, m, r)}
+
+        res["m_{}__r_{}__coeff_{}".format(m, r, coeff)] = calculated[m][r][coeff]
+
+    return [(key, value) for key, value in res.items()]
 
 
 @set_property("fctype", "simple")
