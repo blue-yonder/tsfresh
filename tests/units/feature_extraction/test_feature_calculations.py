@@ -1068,3 +1068,16 @@ class FriedrichTestCase(TestCase):
         expected_index = ["m_3__r_5__coeff_2", "m_3__r_5__coeff_3", "m_3__r_2__coeff_3"]
         six.assertCountEqual(self, list(res.index), expected_index)
         self.assertTrue(np.sum(np.isnan(res)), 3)
+
+    def test_friedrich_equal_to_snapshot(self):
+        param = [{"coeff": coeff, "m": 2, "r": 30} for coeff in range(4)]
+        x = np.array([-0.53, -0.61, -1.26, -0.88, -0.34,  0.58,  2.86, -0.47,  0.78,
+                      -0.45, -0.27,  0.43,  1.72,  0.26,  1.02, -0.09,  0.65,  1.49,
+                      -0.95, -1.02, -0.64, -1.63, -0.71, -0.43, -1.69,  0.05,  1.58,
+                      1.1,  0.55, -1.02])
+
+        res = pd.Series(dict(friedrich_coefficients(x, param)))
+
+        self.assertAlmostEquals(res['m_2__r_30__coeff_0'], -0.24536975738843042)
+        self.assertAlmostEquals(res['m_2__r_30__coeff_1'], -0.533309548662685)
+        self.assertAlmostEquals(res['m_2__r_30__coeff_2'], 0.2759399238199404)
