@@ -1759,7 +1759,7 @@ def friedrich_coefficients(x, param):
 
         try:
             res["m_{}__r_{}__coeff_{}".format(m, r, coeff)] = calculated[m][r][coeff]
-        except KeyError:
+        except IndexError:
             res["m_{}__r_{}__coeff_{}".format(m, r, coeff)] = np.NaN
     return [(key, value) for key, value in res.items()]
 
