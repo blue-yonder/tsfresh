@@ -1055,7 +1055,7 @@ class FriedrichTestCase(TestCase):
         x = np.zeros(100)
         res = pd.Series(dict(friedrich_coefficients(x, param)))
 
-        expected_index = ["m_2__r_30__coeff_0", "m_2__r_30__coeff_1", "m_2__r_30__coeff_2"]
+        expected_index = ["m_2__r_30__coeff_0", "m_2__r_30__coeff_1", "m_2__r_30__coeff_2", "m_2__r_30__coeff_3"]
         six.assertCountEqual(self, list(res.index), expected_index)
         self.assertTrue(np.sum(np.isnan(res)), 3)
 
