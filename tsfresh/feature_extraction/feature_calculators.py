@@ -1752,6 +1752,8 @@ def friedrich_coefficients(x, param):
 
         # calculate the current friedrich coefficients if they do not exist yet
         if m not in calculated:
+            calculated[m] = {r: _estimate_friedrich_coefficients(x, m, r)}
+        else:
             if r not in calculated[m]:
                 calculated[m] = {r: _estimate_friedrich_coefficients(x, m, r)}
 
