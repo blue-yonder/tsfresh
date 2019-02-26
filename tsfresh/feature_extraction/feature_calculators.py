@@ -1741,7 +1741,7 @@ def friedrich_coefficients(x, param):
     :return type: pandas.Series
     """
     calculated = {}  # calculated is dictionary storing the calculated coefficients {m: {r: friedrich_coefficients}}
-    res = {} # res is a dictionary containg the results {"m_10__r_2__coeff_3": 15.43}
+    res = {}  # res is a dictionary containg the results {"m_10__r_2__coeff_3": 15.43}
 
     for parameter_combination in param:
         m = parameter_combination['m']
@@ -1755,8 +1755,10 @@ def friedrich_coefficients(x, param):
             if r not in calculated[m]:
                 calculated[m] = {r: _estimate_friedrich_coefficients(x, m, r)}
 
-        res["m_{}__r_{}__coeff_{}".format(m, r, coeff)] = calculated[m][r][coeff]
-
+        try:
+            res["m_{}__r_{}__coeff_{}".format(m, r, coeff)] = calculated[m][r][coeff]
+        except KeyError:
+            res["m_{}__r_{}__coeff_{}".format(m, r, coeff)] = np.NaN
     return [(key, value) for key, value in res.items()]
 
 
