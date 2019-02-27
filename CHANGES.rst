@@ -8,6 +8,7 @@ tsfresh uses `Semantic Versioning <http://semver.org/>`_
 Unreleased
 ==========
 - increased scipy dependency to 1.2.0
+- fixed bug in friedrich coefficient where the parameter were ignored and wrong features were returned
 
 
 Version 0.11.2
