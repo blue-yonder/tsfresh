@@ -226,7 +226,7 @@ def generate_data_chunk_format(df, column_id, column_kind, column_value):
         raise ValueError(
             "Number of ids/kinds are too high. Please reduce your data size and run feature extraction again.")
     data_in_chunks = [x + (y,) for x, y in
-                      df.groupby([column_id, column_kind], as_index=True)[column_value]]
+                      df.groupby([column_id, column_kind], as_index=False)[column_value]]
     return data_in_chunks
 
 
@@ -348,7 +348,18 @@ def _do_extraction_on_chunk(chunk, default_fc_parameters, kind_to_fc_parameters)
 
             # If the function uses the index, pass is at as a pandas Series.
             # Otherwise, convert to numpy array
-            if getattr(func, 'input', None) == 'pd.Series':
+            if getattr(func, 'input', False) == 'pd.Series':
+                # If it has a required index type, check that the data has the right index type.
+                index_type = getattr(func, 'index_type', None)
+                if index_type is not None:
+                    try:
+                        assert isinstance(data.index, index_type)
+                    except AssertionError:
+                        warnings.warn(
+                            f"{function_name} requires the data to have a {str} . NaNs "
+                            f"will be "
+                            f"returned."
+                        )
                 x = data
             else:
                 x = data.values

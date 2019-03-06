@@ -10,6 +10,7 @@ from __future__ import absolute_import, division
 
 from inspect import getargspec
 
+import pandas as pd
 import numpy as np
 from builtins import range
 from past.builtins import basestring
@@ -143,7 +144,9 @@ class ComprehensiveFCParameters(dict):
             "augmented_dickey_fuller": [{"attr": "teststat"}, {"attr": "pvalue"}, {"attr": "usedlag"}],
             "number_crossing_m": [{"m": 0}, {"m": -1}, {"m": 1}],
             "energy_ratio_by_chunks": [{"num_segments" : 10, "segment_focus": i} for i in range(10)],
-            "ratio_beyond_r_sigma": [{"r": x} for x in [0.5, 1, 1.5, 2, 2.5, 3, 5, 6, 7, 10]]
+            "ratio_beyond_r_sigma": [{"r": x} for x in [0.5, 1, 1.5, 2, 2.5, 3, 5, 6, 7, 10]],
+            "linear_trend_timewise": [{"attr": "pvalue"}, {"attr": "rvalue"}, {"attr": "intercept"},
+                             {"attr": "slope"}, {"attr": "stderr"}],
         })
 
         super(ComprehensiveFCParameters, self).__init__(name_to_param)
@@ -193,4 +196,49 @@ class EfficientFCParameters(ComprehensiveFCParameters):
         # drop all features with high computational costs
         for fname, f in feature_calculators.__dict__.items():
             if hasattr(f, "high_comp_cost"):
+                del self[fname]
+
+
+class IndexBasedFCParameters(ComprehensiveFCParameters):
+    """
+    This class is a child class of the ComprehensiveFCParameters class
+    and has the same functionality as its base class.
+
+    The only difference is that only the features that require a pd.Series as an input are
+    included. Those have an attribute "input" with value "pd.Series".
+
+
+    You should use this object when calling the extract function, like so:
+
+    >>> from tsfresh.feature_extraction import extract_features, IndexBasedFCParameters
+    >>> extract_features(df, default_fc_parameters=IndexBasedFCParameters())
+    """
+
+    def __init__(self):
+        ComprehensiveFCParameters.__init__(self)
+        # drop all features with high computational costs
+        for fname, f in feature_calculators.__dict__.items():
+            if not hasattr(f, "input"):
+                del self[fname]
+
+
+class TimeBasedFCParameters(ComprehensiveFCParameters):
+    """
+    This class is a child class of the ComprehensiveFCParameters class
+    and has the same functionality as its base class.
+
+    The only difference is, that only the features that require a DatetimeIndex are included. Those
+    have an attribute "index_type" with value pd.DatetimeIndex.
+
+    You should use this object when calling the extract function, like so:
+
+    >>> from tsfresh.feature_extraction import extract_features, TimeBasedFCParameters
+    >>> extract_features(df, default_fc_parameters=TimeBasedFCParameters())
+    """
+
+    def __init__(self):
+        ComprehensiveFCParameters.__init__(self)
+        # drop all features with high computational costs
+        for fname, f in feature_calculators.__dict__.items():
+            if getattr(f, "index_type", False) != pd.DatetimeIndex:
                 del self[fname]

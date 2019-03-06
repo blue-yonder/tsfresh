@@ -17,6 +17,7 @@ seen by tsfresh as a feature calculator. Others will not be calculated.
 from __future__ import absolute_import, division
 
 import itertools
+import warnings
 from builtins import range
 
 import numpy as np
@@ -27,7 +28,6 @@ from scipy.stats import linregress
 from statsmodels.tools.sm_exceptions import MissingDataError
 from statsmodels.tsa.ar_model import AR
 from statsmodels.tsa.stattools import acf, adfuller, pacf
-from tsfresh.utilities.dataframe_functions import assert_index_is_datetime
 
 # todo: make sure '_' works in parameter names in all cases, add a warning if not
 
@@ -1885,6 +1885,8 @@ def energy_ratio_by_chunks(x, param):
 
 @set_property("fctype", "combiner")
 @set_property("input", "pd.Series")
+@set_property("index_type", pd.DatetimeIndex)
+@set_property("high_comp_cost", True)
 def linear_trend_timewise(x, param):
     """
     Calculate a linear least-squares regression for the values of the time series versus the sequence from 0 to
@@ -1904,13 +1906,16 @@ def linear_trend_timewise(x, param):
     :return type: list
     """
     # Make sure that the index is of the right dtype
-    assert_index_is_datetime(x)
+    if not isinstance(x.index, pd.DatetimeIndex):
+        warnings.warn("Function 'linear_trend_timewise' requires a DatetimeIndex.")
+        return np.nan
+
     ix = x.index
 
     # Get differences between each timestamp and the first timestamp in seconds.
     # Then convert to hours and reshape for linear regression
     times_seconds = (ix - ix[0]).total_seconds()
-    times_hours = np.asarray(times_seconds / 3600)
+    times_hours = np.asarray(times_seconds / float(3600))
 
     linReg = linregress(times_hours, x.values)
 

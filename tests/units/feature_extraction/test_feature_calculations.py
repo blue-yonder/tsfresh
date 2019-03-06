@@ -1063,8 +1063,8 @@ class FeatureCalculationTestCase(TestCase):
             sum = sum + dat
         self.assertAlmostEqual(sum, 1.0)
 
-    def test_linear_trend_timewise(self):
-        """Test linear_trend_timewise function."""
+    def test_linear_trend_timewise_hours(self):
+        """Test linear_trend_timewise function with hour intervals."""
         x = pd.Series(
             [0, 1, 3, 6],
             index=pd.DatetimeIndex([
@@ -1084,11 +1084,13 @@ class FeatureCalculationTestCase(TestCase):
 
         self.assertEqual(len(res), 5)
         six.assertCountEqual(self, list(res.index), expected_index)
-        self.assertAlmostEquals(res["attr_\"pvalue\""], 0)
-        self.assertAlmostEquals(res["attr_\"stderr\""], 0)
-        self.assertAlmostEquals(res["attr_\"intercept\""], 0)
-        self.assertAlmostEquals(res["attr_\"slope\""], 1.0)
+        self.assertAlmostEquals(res["attr_\"pvalue\""], 0, places=3)
+        self.assertAlmostEquals(res["attr_\"stderr\""], 0, places=3)
+        self.assertAlmostEquals(res["attr_\"intercept\""], 0, places=3)
+        self.assertAlmostEquals(res["attr_\"slope\""], 1.0, places=3)
 
+    def test_linear_trend_timewise_days(self):
+        """Test linear_trend_timewise function with day intervals."""
         # Try with different days
         x = pd.Series(
             [0, 24, 48, 72],
@@ -1103,8 +1105,49 @@ class FeatureCalculationTestCase(TestCase):
 
         res = pd.Series(dict(res))
 
-        self.assertAlmostEqual(res["attr_\"pvalue\""], 0)
-        self.assertAlmostEqual(res["attr_\"stderr\""], 0)
-        self.assertAlmostEqual(res["attr_\"intercept\""], 0)
-        self.assertAlmostEqual(res["attr_\"slope\""], 1.0)
+        self.assertAlmostEqual(res["attr_\"pvalue\""], 0, places=3)
+        self.assertAlmostEqual(res["attr_\"stderr\""], 0, places=3)
+        self.assertAlmostEqual(res["attr_\"intercept\""], 0, places=3)
+        self.assertAlmostEqual(res["attr_\"slope\""], 1.0, places=3)
 
+    def test_linear_trend_timewise_seconds(self):
+        """Test linear_trend_timewise function with second intervals."""
+        # Try with different days
+        x = pd.Series(
+            [0, 1/float(3600), 2/float(3600), 3/float(3600)],
+            index=pd.DatetimeIndex([
+                '2018-01-01 04:00:01', '2018-01-01 04:00:02',
+                '2018-01-01 04:00:03', '2018-01-01 04:00:04'
+            ]),
+        )
+
+        param = [{"attr": "pvalue"}, {"attr": "rvalue"}, {"attr": "intercept"}, {"attr": "slope"}, {"attr": "stderr"}]
+        res = linear_trend_timewise(x, param)
+
+        res = pd.Series(dict(res))
+
+        self.assertAlmostEqual(res["attr_\"pvalue\""], 0, places=3)
+        self.assertAlmostEqual(res["attr_\"stderr\""], 0, places=3)
+        self.assertAlmostEqual(res["attr_\"intercept\""], 0, places=3)
+        self.assertAlmostEqual(res["attr_\"slope\""], 1.0, places=3)
+
+    def test_linear_trend_timewise_years(self):
+        """Test linear_trend_timewise function with year intervals."""
+        # Try with different days
+        x = pd.Series(
+            [0, 365*24, 365*48, 365*72+24],  # Add 24 to the last one since it's a leap year
+            index=pd.DatetimeIndex([
+                '2018-01-01 04:00:00', '2019-01-01 04:00:00',
+                '2020-01-01 04:00:00', '2021-01-01 04:00:00'
+            ]),
+        )
+
+        param = [{"attr": "pvalue"}, {"attr": "rvalue"}, {"attr": "intercept"}, {"attr": "slope"}, {"attr": "stderr"}]
+        res = linear_trend_timewise(x, param)
+
+        res = pd.Series(dict(res))
+
+        self.assertAlmostEqual(res["attr_\"pvalue\""], 0, places=3)
+        self.assertAlmostEqual(res["attr_\"stderr\""], 0, places=3)
+        self.assertAlmostEqual(res["attr_\"intercept\""], 0, places=3)
+        self.assertAlmostEqual(res["attr_\"slope\""], 1.0, places=3)
