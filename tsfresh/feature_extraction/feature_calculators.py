@@ -1905,11 +1905,6 @@ def linear_trend_timewise(x, param):
     :return: the different feature values
     :return type: list
     """
-    # Make sure that the index is of the right dtype
-    if not isinstance(x.index, pd.DatetimeIndex):
-        warnings.warn("Function 'linear_trend_timewise' requires a DatetimeIndex.")
-        return np.nan
-
     ix = x.index
 
     # Get differences between each timestamp and the first timestamp in seconds.

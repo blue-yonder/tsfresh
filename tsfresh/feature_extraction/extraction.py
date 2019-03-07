@@ -226,7 +226,8 @@ def generate_data_chunk_format(df, column_id, column_kind, column_value):
         raise ValueError(
             "Number of ids/kinds are too high. Please reduce your data size and run feature extraction again.")
     data_in_chunks = [x + (y,) for x, y in
-                      df.groupby([column_id, column_kind], as_index=False)[column_value]]
+                      df.groupby([column_id, column_kind], as_index=True)[column_value]]
+
     return data_in_chunks
 
 
@@ -298,6 +299,7 @@ def _do_extraction(df, column_id, column_value, column_kind,
 
     kwargs = dict(default_fc_parameters=default_fc_parameters,
                   kind_to_fc_parameters=kind_to_fc_parameters)
+
     result = distributor.map_reduce(_do_extraction_on_chunk, data=data_in_chunks,
                                     chunk_size=chunk_size,
                                     function_kwargs=kwargs)
@@ -356,10 +358,10 @@ def _do_extraction_on_chunk(chunk, default_fc_parameters, kind_to_fc_parameters)
                         assert isinstance(data.index, index_type)
                     except AssertionError:
                         warnings.warn(
-                            f"{function_name} requires the data to have a {str} . NaNs "
-                            f"will be "
-                            f"returned."
+                            f"{function_name} requires the data to have a {str} . Results will "
+                            f"not be calculated"
                         )
+                        continue
                 x = data
             else:
                 x = data.values

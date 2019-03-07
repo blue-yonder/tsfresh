@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 from tsfresh.feature_extraction.extraction import extract_features
 from tsfresh.feature_extraction.settings import ComprehensiveFCParameters, MinimalFCParameters, \
-    EfficientFCParameters, from_columns
+    EfficientFCParameters, from_columns, TimeBasedFCParameters, IndexBasedFCParameters
 import six
 from tsfresh.feature_extraction import feature_calculators
 from pandas.testing import assert_frame_equal
@@ -86,7 +86,8 @@ class TestSettingsObject(TestCase):
         """
         settings = ComprehensiveFCParameters()
         all_feature_calculators = [name for name, func in feature_calculators.__dict__.items()
-                                   if hasattr(func, "fctype")]
+                                   if hasattr(func, "fctype")
+                                   and not hasattr(func, 'input_type')]
 
         for calculator in all_feature_calculators:
             self.assertIn(calculator, settings,
@@ -122,6 +123,36 @@ class TestEfficientFCParameters(TestCase):
             self.assertIn(calculator, rfs,
                           msg='Default EfficientFCParameters object does not setup calculation of {}'
                           .format(calculator))
+
+    def test_contains_all_time_based_features(self):
+        """
+        Test that by default a TimeBasedFCParameters object should be set up to calculate all
+        features defined in tsfresh.feature_extraction.feature_calculators that have the
+        attribute "index_type" == pd.DatetimeIndex
+        """
+        rfs = TimeBasedFCParameters()
+        all_feature_calculators = [name for name, func in feature_calculators.__dict__.items()
+                                   if not getattr(func, "index_type", False) != pd.DatetimeIndex]
+
+        for calculator in all_feature_calculators:
+            self.assertIn(calculator, rfs,
+                          msg='Default TimeBasedFCParameters object does not setup calculation of {}'
+                          .format(calculator))
+
+    def test_contains_all_index_based_features(self):
+        """
+        Test that by default a IndexBasedFCParameters object should be set up to calculate all
+        features defined in tsfresh.feature_extraction.feature_calculators that have the
+        attribute "input" == "pd.Series"
+        """
+        rfs = IndexBasedFCParameters()
+        all_feature_calculators = [name for name, func in feature_calculators.__dict__.items()
+                                   if getattr(func, "input", None) == "pd.Series"]
+
+        for calculator in all_feature_calculators:
+            self.assertIn(calculator, rfs,
+                          msg='Default IndexBasedFCParameters object does not setup calculation '
+                              'of {}'.format(calculator))
 
 
 class TestMinimalSettingsObject(TestCase):
