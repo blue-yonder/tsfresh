@@ -62,7 +62,7 @@ class velocity(object):
 
         if not seed is None:
             np.random.seed(seed)
-            
+
         if tau <= 1.0 / kappa_3:
             self.deterministic = 0.0
         else:
@@ -91,9 +91,9 @@ class velocity(object):
         :rtype: ndarray
         """
 
-        v = [v0]                        # first value is initial condition
-        n = N - 1                       # Because we are returning the initial condition,
-                                        # only (N-1) time steps are computed
+        v = [v0]  # first value is initial condition
+        n = N - 1  # Because we are returning the initial condition,
+        # only (N-1) time steps are computed
         gamma = np.random.randn(n, v0.size)
         for i in range(n):
             next_v = self.__call__(v[i]) + self.c * gamma[i]
@@ -120,11 +120,12 @@ def sample_tau(n=10, kappa_3=0.3, ratio=0.5, rel_increase=0.15):
     assert ratio > 0 and ratio <= 1
     assert kappa_3 > 0
     assert rel_increase > 0 and rel_increase <= 1
-    tau_c = 1.0/kappa_3
-    
+    tau_c = 1.0 / kappa_3
+
     tau_max = tau_c * (1.0 + rel_increase)
-    tau = tau_c + (tau_max - tau_c) * (np.random.rand(n)-ratio)
+    tau = tau_c + (tau_max - tau_c) * (np.random.rand(n) - ratio)
     return tau.tolist()
+
 
 def load_driftbif(n, l, m=2, classification=True, kappa_3=0.3, seed=False):
     """
@@ -180,5 +181,5 @@ def load_driftbif(n, l, m=2, classification=True, kappa_3=0.3, seed=False):
     df = pd.DataFrame({'id': id, "time": time, "value": np.stack(values).flatten(), "dimension": dimensions})
     y = pd.Series(labels)
     y.index = range(n)
-    
+
     return df, y

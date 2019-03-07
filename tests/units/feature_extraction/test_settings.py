@@ -110,8 +110,9 @@ class TestSettingsObject(TestCase):
                                     default_fc_parameters=MinimalFCParameters())
         sample_settings = from_columns(features)
         X = extract_features(df, column_id='id', column_sort='time', column_kind='kind', column_value='value',
-                               kind_to_fc_parameters=sample_settings)
+                             kind_to_fc_parameters=sample_settings)
         assert X.shape == (1, 2 * len(MinimalFCParameters()))
+
 
 class TestEfficientFCParameters(TestCase):
     """
