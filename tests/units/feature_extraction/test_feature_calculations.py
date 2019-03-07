@@ -4,7 +4,6 @@
 
 from __future__ import absolute_import, division
 from __future__ import print_function
-from builtins import range
 from random import shuffle
 from unittest import TestCase
 from tsfresh.feature_extraction.feature_calculators import *
@@ -15,7 +14,6 @@ from tsfresh.feature_extraction.feature_calculators import _aggregate_on_chunks
 from tsfresh.examples.driftbif_simulation import velocity
 import six
 import math
-from tsfresh.feature_extraction.settings import ComprehensiveFCParameters
 
 
 class FeatureCalculationTestCase(TestCase):

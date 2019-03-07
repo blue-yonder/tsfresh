@@ -345,6 +345,9 @@ def _normalize_input_to_internal_representation(timeseries_container, column_id,
     else:
         timeseries_container = timeseries_container.sort_values([column_id, column_kind])
 
+    # The kind columns should always be of type "str" to make the inference of feature settings later in `from_columns`
+    # work
+    timeseries_container[column_kind] = timeseries_container[column_kind].astype(str)
     return timeseries_container, column_id, column_kind, column_value
 
 
