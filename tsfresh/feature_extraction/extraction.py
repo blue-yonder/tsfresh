@@ -361,8 +361,8 @@ def _do_extraction_on_chunk(chunk, default_fc_parameters, kind_to_fc_parameters)
                         assert isinstance(data.index, index_type)
                     except AssertionError:
                         warnings.warn(
-                            f"{function_name} requires the data to have a {str} . Results will "
-                            f"not be calculated"
+                            "{} requires the data to have a index of type {}. Results will "
+                            "not be calculated".format(function_name, index_type)
                         )
                         continue
                 x = data
