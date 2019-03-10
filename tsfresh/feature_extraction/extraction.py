@@ -8,10 +8,11 @@ This module contains the main function to interact with tsfresh: extract feature
 from __future__ import absolute_import, division
 
 import logging
+import sys
 import warnings
 
-import numpy as np
 import pandas as pd
+import six
 
 from tsfresh import defaults
 from tsfresh.feature_extraction import feature_calculators
@@ -20,7 +21,22 @@ from tsfresh.utilities import dataframe_functions, profiling
 from tsfresh.utilities.distribution import MapDistributor, MultiprocessingDistributor, DistributorBaseClass
 from tsfresh.utilities.string_manipulation import convert_to_output_format
 
+# todo: remove this call after we drop python 2.7 support
+# From the description of https://docs.python.org/3/library/logging.html
+# This function should be called from the main thread before other threads are started. In versions of Python prior
+# to 2.7.1 and 3.2, if this function is called from multiple threads, it is possible (in rare circumstances) that a
+# handler will be added to the root logger more than once, leading to unexpected results such as messages being
+# duplicated in the log.
+logging.basicConfig()
+
+
 _logger = logging.getLogger(__name__)
+
+if six.PY2:
+    msg = "tsfresh versions 0.11.* will be the last ones to support python 2.7.*. From tsfresh versions 0.12.* on, " \
+          "we will only support python 3.*. You are running python {}.{}.{}, please update.".format(
+        sys.version_info.major, sys.version_info.minor, sys.version_info.micro)
+    _logger.warning(msg)
 
 
 def extract_features(timeseries_container, default_fc_parameters=None,
@@ -126,8 +142,6 @@ def extract_features(timeseries_container, default_fc_parameters=None,
     :return: The (maybe imputed) DataFrame containing extracted features.
     :rtype: pandas.DataFrame
     """
-    import logging
-    logging.basicConfig()
 
     # Always use the standardized way of storing the data.
     # See the function normalize_input_to_internal_representation for more information.
