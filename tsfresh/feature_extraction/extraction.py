@@ -319,7 +319,7 @@ def _do_extraction(df, column_id, column_value, column_kind,
         result["value"] = result["value"].astype(float)
 
     if len(result) != 0:
-        result = result.pivot("id", "variable", "value")
+        result = pd.pivot_table(result, index="id", columns="variable", values="value")
         result.index = result.index.astype(df[column_id].dtype)
 
     return result
