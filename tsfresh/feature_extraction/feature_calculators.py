@@ -482,7 +482,7 @@ def cid_ce(x, normalize):
 
     |  [1] Batista, Gustavo EAPA, et al (2014).
     |  CID: an efficient complexity-invariant distance for time series.
-    |  Data Mining and Knowledge Difscovery 28.3 (2014): 634-669.
+    |  Data Mining and Knowledge Discovery 28.3 (2014): 634-669.
 
     :param x: the time series to calculate the feature of
     :type x: pandas.Series
