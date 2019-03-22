@@ -1,2 +1,3 @@
--e .
--r ../test-requirements.txt
+-e .  # relative to pwd
+-r ../requirements.txt  # relative to here
+-r ../test-requirements.txt  # relative to here
