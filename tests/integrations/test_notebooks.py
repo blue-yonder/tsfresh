@@ -102,3 +102,7 @@ class NotebooksTestCase(TestCase):
     def test_visualize_benjamini_yekutieli_procedure(self):
         nb, errors = _notebook_run('notebooks/visualize-benjamini-yekutieli-procedure.ipynb', default_timeout)
         self.assertEqual(errors, [])
+
+    def test_feature_extraction_with_datetime_index(self):
+        nb, errors = _notebook_run('notebooks/feature_extraction_with_datetime_index.ipynb', default_timeout)
+        self.assertEqual(errors, [])
