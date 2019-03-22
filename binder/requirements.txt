@@ -1,2 +1,2 @@
 -e .
--r test-requirements.txt
+-r ../test-requirements.txt
