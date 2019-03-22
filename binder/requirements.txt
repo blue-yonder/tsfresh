@@ -1,2 +1,1 @@
--r requirements.txt
--r test-requirements.txt
+-e .
