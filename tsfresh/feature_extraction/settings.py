@@ -10,6 +10,7 @@ from __future__ import absolute_import, division
 
 from inspect import getargspec
 
+import pandas as pd
 import numpy as np
 from builtins import range
 from past.builtins import basestring
@@ -20,7 +21,7 @@ from tsfresh.feature_extraction import feature_calculators
 from tsfresh.utilities.string_manipulation import get_config_from_string
 
 
-def from_columns(columns, columns_to_ignore=[]):
+def from_columns(columns, columns_to_ignore=None):
     """
     Creates a mapping from kind names to fc_parameters objects
     (which are itself mappings from feature calculators to settings)
@@ -42,6 +43,9 @@ def from_columns(columns, columns_to_ignore=[]):
     """
 
     kind_to_fc_parameters = {}
+
+    if columns_to_ignore is None:
+        columns_to_ignore = []
 
     for col in columns:
         if col in columns_to_ignore:
@@ -143,7 +147,9 @@ class ComprehensiveFCParameters(dict):
             "augmented_dickey_fuller": [{"attr": "teststat"}, {"attr": "pvalue"}, {"attr": "usedlag"}],
             "number_crossing_m": [{"m": 0}, {"m": -1}, {"m": 1}],
             "energy_ratio_by_chunks": [{"num_segments" : 10, "segment_focus": i} for i in range(10)],
-            "ratio_beyond_r_sigma": [{"r": x} for x in [0.5, 1, 1.5, 2, 2.5, 3, 5, 6, 7, 10]]
+            "ratio_beyond_r_sigma": [{"r": x} for x in [0.5, 1, 1.5, 2, 2.5, 3, 5, 6, 7, 10]],
+            "linear_trend_timewise": [{"attr": "pvalue"}, {"attr": "rvalue"}, {"attr": "intercept"},
+                             {"attr": "slope"}, {"attr": "stderr"}]
         })
 
         super(ComprehensiveFCParameters, self).__init__(name_to_param)
@@ -192,5 +198,39 @@ class EfficientFCParameters(ComprehensiveFCParameters):
 
         # drop all features with high computational costs
         for fname, f in feature_calculators.__dict__.items():
-            if hasattr(f, "high_comp_cost"):
+            if fname in self and hasattr(f, "high_comp_cost"):
+                del self[fname]
+
+
+class IndexBasedFCParameters(ComprehensiveFCParameters):
+    """
+    This class is a child class of the ComprehensiveFCParameters class
+    and has the same functionality as its base class.
+
+    The only difference is that only the features that require a pd.Series as an input are
+    included. Those have an attribute "input" with value "pd.Series".
+    """
+
+    def __init__(self):
+        ComprehensiveFCParameters.__init__(self)
+        # drop all features with high computational costs
+        for fname, f in feature_calculators.__dict__.items():
+            if fname in self and getattr(f, "input", None) != "pd.Series":
+                del self[fname]
+
+
+class TimeBasedFCParameters(ComprehensiveFCParameters):
+    """
+    This class is a child class of the ComprehensiveFCParameters class
+    and has the same functionality as its base class.
+
+    The only difference is, that only the features that require a DatetimeIndex are included. Those
+    have an attribute "index_type" with value pd.DatetimeIndex.
+    """
+
+    def __init__(self):
+        ComprehensiveFCParameters.__init__(self)
+        # drop all features with high computational costs
+        for fname, f in feature_calculators.__dict__.items():
+            if fname in self and getattr(f, "index_type", False) != pd.DatetimeIndex:
                 del self[fname]

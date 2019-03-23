@@ -18,7 +18,8 @@ from tsfresh import defaults
 from tsfresh.feature_extraction import feature_calculators
 from tsfresh.feature_extraction.settings import ComprehensiveFCParameters
 from tsfresh.utilities import dataframe_functions, profiling
-from tsfresh.utilities.distribution import MapDistributor, MultiprocessingDistributor, DistributorBaseClass
+from tsfresh.utilities.distribution import MapDistributor, MultiprocessingDistributor, \
+    DistributorBaseClass
 from tsfresh.utilities.string_manipulation import convert_to_output_format
 
 # todo: remove this call after we drop python 2.7 support
@@ -146,11 +147,11 @@ def extract_features(timeseries_container, default_fc_parameters=None,
     # Always use the standardized way of storing the data.
     # See the function normalize_input_to_internal_representation for more information.
     df_melt, column_id, column_kind, column_value = \
-        dataframe_functions._normalize_input_to_internal_representation(timeseries_container=timeseries_container,
-                                                                        column_id=column_id, column_kind=column_kind,
-                                                                        column_sort=column_sort,
-                                                                        column_value=column_value)
-
+        dataframe_functions._normalize_input_to_internal_representation(
+            timeseries_container=timeseries_container,
+            column_id=column_id, column_kind=column_kind,
+            column_sort=column_sort,
+            column_value=column_value)
     # Use the standard setting if the user did not supply ones himself.
     if default_fc_parameters is None and kind_to_fc_parameters is None:
         default_fc_parameters = ComprehensiveFCParameters()
@@ -168,7 +169,8 @@ def extract_features(timeseries_container, default_fc_parameters=None,
             warnings.simplefilter("default")
 
         result = _do_extraction(df=df_melt,
-                                column_id=column_id, column_value=column_value, column_kind=column_kind,
+                                column_id=column_id, column_value=column_value,
+                                column_kind=column_kind,
                                 n_jobs=n_jobs, chunk_size=chunksize,
                                 disable_progressbar=disable_progressbar,
                                 default_fc_parameters=default_fc_parameters,
@@ -236,10 +238,14 @@ def generate_data_chunk_format(df, column_id, column_kind, column_value):
             "The time series container has {} different ids and {} different kind of time series, in total {} possible combinations. "
             "Due to a limitation in pandas we can only process a maximum of {} id/kind combinations. Please reduce your time series container and restart "
             "the calculation".format(
-                df[column_id].nunique(), df[column_kind].nunique(), df[[column_id, column_kind]].nunique().prod(), MAX_VALUES_GROUPBY)
+                df[column_id].nunique(), df[column_kind].nunique(),
+                df[[column_id, column_kind]].nunique().prod(), MAX_VALUES_GROUPBY)
         )
-        raise ValueError("Number of ids/kinds are too high. Please reduce your data size and run feature extraction again.")
-    data_in_chunks = [x + (y,) for x, y in df.set_index(column_id, drop=False).rename_axis(None).groupby([column_id, column_kind], as_index=True)[column_value]]
+        raise ValueError(
+            "Number of ids/kinds are too high. Please reduce your data size and run feature extraction again.")
+    data_in_chunks = [x + (y,) for x, y in
+                      df.groupby([column_id, column_kind], as_index=True)[column_value]]
+
     return data_in_chunks
 
 
@@ -302,14 +308,18 @@ def _do_extraction(df, column_id, column_value, column_kind,
             distributor = MapDistributor(disable_progressbar=disable_progressbar,
                                          progressbar_title="Feature Extraction")
         else:
-            distributor = MultiprocessingDistributor(n_workers=n_jobs, disable_progressbar=disable_progressbar,
+            distributor = MultiprocessingDistributor(n_workers=n_jobs,
+                                                     disable_progressbar=disable_progressbar,
                                                      progressbar_title="Feature Extraction")
 
     if not isinstance(distributor, DistributorBaseClass):
         raise ValueError("the passed distributor is not an DistributorBaseClass object")
 
-    kwargs = dict(default_fc_parameters=default_fc_parameters, kind_to_fc_parameters=kind_to_fc_parameters)
-    result = distributor.map_reduce(_do_extraction_on_chunk, data=data_in_chunks, chunk_size=chunk_size,
+    kwargs = dict(default_fc_parameters=default_fc_parameters,
+                  kind_to_fc_parameters=kind_to_fc_parameters)
+
+    result = distributor.map_reduce(_do_extraction_on_chunk, data=data_in_chunks,
+                                    chunk_size=chunk_size,
                                     function_kwargs=kwargs)
     distributor.close()
 
@@ -347,8 +357,6 @@ def _do_extraction_on_chunk(chunk, default_fc_parameters, kind_to_fc_parameters)
     :return: A list of calculated features.
     """
     sample_id, kind, data = chunk
-    data = data.values
-
     if kind_to_fc_parameters and kind in kind_to_fc_parameters:
         fc_parameters = kind_to_fc_parameters[kind]
     else:
@@ -358,13 +366,32 @@ def _do_extraction_on_chunk(chunk, default_fc_parameters, kind_to_fc_parameters)
         for function_name, parameter_list in fc_parameters.items():
             func = getattr(feature_calculators, function_name)
 
+            # If the function uses the index, pass is at as a pandas Series.
+            # Otherwise, convert to numpy array
+            if getattr(func, 'input', False) == 'pd.Series':
+                # If it has a required index type, check that the data has the right index type.
+                index_type = getattr(func, 'index_type', None)
+                if index_type is not None:
+                    try:
+                        assert isinstance(data.index, index_type)
+                    except AssertionError:
+                        warnings.warn(
+                            "{} requires the data to have a index of type {}. Results will "
+                            "not be calculated".format(function_name, index_type)
+                        )
+                        continue
+                x = data
+            else:
+                x = data.values
+
             if func.fctype == "combiner":
-                result = func(data, param=parameter_list)
+                result = func(x, param=parameter_list)
             else:
                 if parameter_list:
-                    result = ((convert_to_output_format(param), func(data, **param)) for param in parameter_list)
+                    result = ((convert_to_output_format(param), func(x, **param)) for param in
+                              parameter_list)
                 else:
-                    result = [("", func(data))]
+                    result = [("", func(x))]
 
             for key, item in result:
                 feature_name = str(kind) + "__" + func.__name__
