@@ -401,7 +401,8 @@ def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_di
                                       column_id=column_id,
                                       column_sort=column_sort,
                                       column_kind=column_kind,
-                                      rolling_direction=rolling_direction)
+                                      rolling_direction=rolling_direction,
+                                      max_timeshift=max_timeshift)
                 for key in df_or_dict}
 
     # Now we know that this is a pandas data frame
