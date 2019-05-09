@@ -312,7 +312,7 @@ def sum_values(x):
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
     :return: the value of this feature
-    :return type: bool
+    :return type: float
     """
     if len(x) == 0:
         return 0
