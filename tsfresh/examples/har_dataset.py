@@ -46,7 +46,7 @@ def download_har_dataset():
     >>> har_dataset.download_har_dataset()
     """
 
-    zipurl = 'https://github.com/MaxBenChrist/human-activity-dataset/blob/master/UCI%20HAR%20Dataset.zip?raw=true'
+    zipurl = 'https://github.com/MaxBenChrist/human-activity-dataset/blob/master/UCI%20HAR%20Dataset.zip?raw=True' 
 
     if os.path.exists(data_file_name_dataset) and os.path.exists(data_file_name_classes):
         _logger.warning("You have already downloaded the Human Activity Data Set.")
