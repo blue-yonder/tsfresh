@@ -34,8 +34,8 @@ logging.basicConfig()
 _logger = logging.getLogger(__name__)
 
 if six.PY2:
-    msg = "tsfresh versions 0.11.* will be the last ones to support python 2.7.*. From tsfresh versions 0.12.* on, " \
-          "we will only support python 3.*. You are running python {}.{}.{}, please update.".format(
+    msg = "tsfresh versions 0.11.* will be the last ones to support python 2. From tsfresh 0.12.0 on, " \
+          "we will only support python 3. You are running python {}.{}.{}".format(
         sys.version_info.major, sys.version_info.minor, sys.version_info.micro)
     _logger.warning(msg)
 

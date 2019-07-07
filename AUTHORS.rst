@@ -31,3 +31,23 @@ Contributions
 - Sergey Shepelev
 - Justin White
 - J. Kleint
+- Marx
+- Delyan
+- Justin
+- Ricardo Emanuel Vaz Vargas
+- Roman Yurchak
+- Sergey Shepelev
+- Will Koehrsen
+- Wojciech Indyk
+- cnzero
+- meer1992
+- supergitacc
+- Alex Loosley
+- CYHSM
+- Chris Holdgraf
+- Dan Mazur
+- Daniel Gomez
+- Daniel Naftalovich
+- Dimitris Spathis
+- Filip Malkowski
+- George Wambold
