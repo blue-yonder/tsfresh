@@ -891,10 +891,10 @@ class FeatureCalculationTestCase(TestCase):
 
         self.assertEqual(len(res), 5)
         six.assertCountEqual(self, list(res.index), expected_index)
-        self.assertAlmostEquals(res["attr_\"pvalue\""], 0)
-        self.assertAlmostEquals(res["attr_\"stderr\""], 0)
-        self.assertAlmostEquals(res["attr_\"intercept\""], 0)
-        self.assertAlmostEquals(res["attr_\"slope\""], 1.0)
+        self.assertAlmostEqual(res["attr_\"pvalue\""], 0)
+        self.assertAlmostEqual(res["attr_\"stderr\""], 0)
+        self.assertAlmostEqual(res["attr_\"intercept\""], 0)
+        self.assertAlmostEqual(res["attr_\"slope\""], 1.0)
 
         # check p value for random trend
         np.random.seed(42)
@@ -913,8 +913,8 @@ class FeatureCalculationTestCase(TestCase):
 
         res = pd.Series(dict(res))
 
-        self.assertAlmostEquals(res["attr_\"intercept\""], 42)
-        self.assertAlmostEquals(res["attr_\"slope\""], -2)
+        self.assertAlmostEqual(res["attr_\"intercept\""], 42)
+        self.assertAlmostEqual(res["attr_\"slope\""], -2)
 
     def test__aggregate_on_chunks(self):
         self.assertListEqual(_aggregate_on_chunks(x=pd.Series([0, 1, 2, 3]), f_agg="max", chunk_len=2), [1, 3])
@@ -959,14 +959,14 @@ class FeatureCalculationTestCase(TestCase):
         self.assertEqual(len(res), 8)
         self.maxDiff = 2000
         six.assertCountEqual(self, list(res.index), expected_index)
-        self.assertAlmostEquals(res['f_agg_"max"__chunk_len_3__attr_"intercept"'], 2)
-        self.assertAlmostEquals(res['f_agg_"max"__chunk_len_3__attr_"slope"'], 3)
-        self.assertAlmostEquals(res['f_agg_"min"__chunk_len_3__attr_"intercept"'], 0)
-        self.assertAlmostEquals(res['f_agg_"min"__chunk_len_3__attr_"slope"'], 3)
-        self.assertAlmostEquals(res['f_agg_"mean"__chunk_len_3__attr_"intercept"'], 1)
-        self.assertAlmostEquals(res['f_agg_"mean"__chunk_len_3__attr_"slope"'], 3)
-        self.assertAlmostEquals(res['f_agg_"median"__chunk_len_3__attr_"intercept"'], 1)
-        self.assertAlmostEquals(res['f_agg_"median"__chunk_len_3__attr_"slope"'], 3)
+        self.assertAlmostEqual(res['f_agg_"max"__chunk_len_3__attr_"intercept"'], 2)
+        self.assertAlmostEqual(res['f_agg_"max"__chunk_len_3__attr_"slope"'], 3)
+        self.assertAlmostEqual(res['f_agg_"min"__chunk_len_3__attr_"intercept"'], 0)
+        self.assertAlmostEqual(res['f_agg_"min"__chunk_len_3__attr_"slope"'], 3)
+        self.assertAlmostEqual(res['f_agg_"mean"__chunk_len_3__attr_"intercept"'], 1)
+        self.assertAlmostEqual(res['f_agg_"mean"__chunk_len_3__attr_"slope"'], 3)
+        self.assertAlmostEqual(res['f_agg_"median"__chunk_len_3__attr_"intercept"'], 1)
+        self.assertAlmostEqual(res['f_agg_"median"__chunk_len_3__attr_"slope"'], 3)
 
         x = pd.Series([np.NaN, np.NaN, np.NaN, -3, -3, -3])
         res = agg_linear_trend(x=x, param=param)
@@ -987,14 +987,14 @@ class FeatureCalculationTestCase(TestCase):
 
         res = pd.Series(dict(res))
 
-        self.assertAlmostEquals(res['f_agg_"max"__chunk_len_3__attr_"intercept"'], -3)
-        self.assertAlmostEquals(res['f_agg_"max"__chunk_len_3__attr_"slope"'], 0)
-        self.assertAlmostEquals(res['f_agg_"min"__chunk_len_3__attr_"intercept"'], -3)
-        self.assertAlmostEquals(res['f_agg_"min"__chunk_len_3__attr_"slope"'], 0)
-        self.assertAlmostEquals(res['f_agg_"mean"__chunk_len_3__attr_"intercept"'], -3)
-        self.assertAlmostEquals(res['f_agg_"mean"__chunk_len_3__attr_"slope"'], 0)
-        self.assertAlmostEquals(res['f_agg_"median"__chunk_len_3__attr_"intercept"'], -3)
-        self.assertAlmostEquals(res['f_agg_"median"__chunk_len_3__attr_"slope"'], 0)
+        self.assertAlmostEqual(res['f_agg_"max"__chunk_len_3__attr_"intercept"'], -3)
+        self.assertAlmostEqual(res['f_agg_"max"__chunk_len_3__attr_"slope"'], 0)
+        self.assertAlmostEqual(res['f_agg_"min"__chunk_len_3__attr_"intercept"'], -3)
+        self.assertAlmostEqual(res['f_agg_"min"__chunk_len_3__attr_"slope"'], 0)
+        self.assertAlmostEqual(res['f_agg_"mean"__chunk_len_3__attr_"intercept"'], -3)
+        self.assertAlmostEqual(res['f_agg_"mean"__chunk_len_3__attr_"slope"'], 0)
+        self.assertAlmostEqual(res['f_agg_"median"__chunk_len_3__attr_"intercept"'], -3)
+        self.assertAlmostEqual(res['f_agg_"median"__chunk_len_3__attr_"slope"'], 0)
 
     def test_energy_ratio_by_chunks(self):
         x = pd.Series(range(90), index=range(90))
@@ -1049,10 +1049,10 @@ class FeatureCalculationTestCase(TestCase):
 
         self.assertEqual(len(res), 5)
         six.assertCountEqual(self, list(res.index), expected_index)
-        self.assertAlmostEquals(res["attr_\"pvalue\""], 0, places=3)
-        self.assertAlmostEquals(res["attr_\"stderr\""], 0, places=3)
-        self.assertAlmostEquals(res["attr_\"intercept\""], 0, places=3)
-        self.assertAlmostEquals(res["attr_\"slope\""], 1.0, places=3)
+        self.assertAlmostEqual(res["attr_\"pvalue\""], 0, places=3)
+        self.assertAlmostEqual(res["attr_\"stderr\""], 0, places=3)
+        self.assertAlmostEqual(res["attr_\"intercept\""], 0, places=3)
+        self.assertAlmostEqual(res["attr_\"slope\""], 1.0, places=3)
 
     def test_linear_trend_timewise_days(self):
         """Test linear_trend_timewise function with day intervals."""
@@ -1167,6 +1167,6 @@ class FriedrichTestCase(TestCase):
 
         res = pd.Series(dict(friedrich_coefficients(x, param)))
 
-        self.assertAlmostEquals(res['m_2__r_30__coeff_0'], -0.24536975738843042)
-        self.assertAlmostEquals(res['m_2__r_30__coeff_1'], -0.533309548662685)
-        self.assertAlmostEquals(res['m_2__r_30__coeff_2'], 0.2759399238199404)
+        self.assertAlmostEqual(res['m_2__r_30__coeff_0'], -0.24536975738843042)
+        self.assertAlmostEqual(res['m_2__r_30__coeff_1'], -0.533309548662685)
+        self.assertAlmostEqual(res['m_2__r_30__coeff_2'], 0.2759399238199404)
