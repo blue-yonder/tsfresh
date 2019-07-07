@@ -10,7 +10,7 @@ Design of this module by Nils Braun
 
 import math
 import itertools
-
+from collections import Iterable
 from functools import partial
 from multiprocessing import Pool
 from tqdm import tqdm
@@ -259,6 +259,10 @@ class LocalDaskDistributor(DistributorBaseClass):
         :return: The result of the calculation as a list - each item should be the result of the application of func
             to a single element.
         """
+
+        if isinstance(partitioned_chunks, Iterable):
+            # since dask 2.0.0 client map no longer accepts iteratables
+            partitioned_chunks = list(partitioned_chunks)
         result = self.client.gather(self.client.map(partial(func, **kwargs), partitioned_chunks))
         return [item for sublist in result for item in sublist]
 
