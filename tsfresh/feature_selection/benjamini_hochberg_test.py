@@ -52,7 +52,7 @@ def benjamini_hochberg_test(df_pvalues, hypotheses_independent, fdr_level):
         C = np.ones(m)
     else:
         # c(k) = \sum_{i=1}^m 1/i
-        C = np.cumsum(1.0 / K)
+        C = np.sum(1.0 / K)
 
     # Calculate the vector T to compare to the p_value
     T = (fdr_level * K) / (m * C)
