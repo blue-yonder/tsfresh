@@ -351,9 +351,8 @@ class RollingTestCase(TestCase):
             "a": pd.DataFrame({"_value": [1, 2, 3, 4, 10, 11], "id": [1, 1, 1, 1, 2, 2]}),
             "b": pd.DataFrame({"_value": [5, 6, 7, 8, 12, 13], "id": [1, 1, 1, 1, 2, 2]})
         }
-
-        df = dataframe_functions.roll_time_series(df_dict, column_id="id", column_sort=None,
-                                                  column_kind=None, rolling_direction=-1)
+        df = dataframe_functions.roll_time_series(df_dict, column_id="id", column_sort=None, column_kind=None,
+                                                  rolling_direction=-1)
         """ df is 
         {a: _value  sort id
          7      1.0   0.0  0
@@ -395,6 +394,47 @@ class RollingTestCase(TestCase):
                              [1.0, 2.0, 3.0, 4.0, 2.0, 3.0, 4.0, 3.0, 4.0, 4.0, 10.0, 11.0, 11.0])
         self.assertListEqual(list(df["b"]["_value"].values),
                              [5.0, 6.0, 7.0, 8.0, 6.0, 7.0, 8.0, 7.0, 8.0, 8.0, 12.0, 13.0, 13.0])
+
+    def test_dict_rolling_maxshift_1(self):
+        df_dict = {
+            "a": pd.DataFrame({"_value": [1, 2, 3, 4, 10, 11], "id": [1, 1, 1, 1, 2, 2]}),
+            "b": pd.DataFrame({"_value": [5, 6, 7, 8, 12, 13], "id": [1, 1, 1, 1, 2, 2]})
+        }
+        df = dataframe_functions.roll_time_series(df_dict, column_id="id", column_sort=None, column_kind=None,
+                                                  rolling_direction=-1, max_timeshift=1)
+        """ df is 
+        {a: _value  sort id
+         7      1.0   0.0  0
+         3      2.0   1.0  0
+         8      2.0   1.0  1
+         4      3.0   2.0  1
+         9      3.0   2.0  2
+         5      4.0   3.0  2
+         10     4.0   3.0  3
+         11    10.0   4.0  4
+         6     11.0   5.0  4
+         12    11.0   5.0  5, 
+
+         b: _value  sort id
+         7      5.0   0.0  0
+         3      6.0   1.0  0
+         8      6.0   1.0  1
+         4      7.0   2.0  1
+         9      7.0   2.0  2
+         5      8.0   3.0  2
+         10     8.0   3.0  3
+         11    12.0   4.0  4
+         6     13.0   5.0  4
+         12    13.0   5.0  5}
+        """
+
+        correct_indices = [0, 0, 1, 1, 2, 2, 3, 4, 4, 5]
+
+        self.assertListEqual(list(df["a"]["id"].values), correct_indices)
+        self.assertListEqual(list(df["b"]["id"].values), correct_indices)
+
+        self.assertListEqual(list(df["a"]["_value"].values), [1.0, 2.0, 2.0, 3.0, 3.0, 4.0, 4.0, 10.0, 11.0, 11.0])
+        self.assertListEqual(list(df["b"]["_value"].values), [5.0, 6.0, 6.0, 7.0, 7.0, 8.0, 8.0, 12.0, 13.0, 13.0])
 
     def test_warning_on_non_uniform_time_steps(self):
         with warnings.catch_warnings(record=True) as w:
