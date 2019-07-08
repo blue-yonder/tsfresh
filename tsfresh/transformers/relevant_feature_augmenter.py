@@ -184,30 +184,28 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
                     else regression.
         :type ml_task: str
         """
-
-        self.feature_extractor = FeatureAugmenter(column_id=column_id, column_sort=column_sort, column_kind=column_kind,
-                                                  column_value=column_value,
-                                                  default_fc_parameters=default_fc_parameters,
-                                                  kind_to_fc_parameters=kind_to_fc_parameters,
-                                                  chunksize=chunksize,
-                                                  n_jobs=n_jobs, show_warnings=show_warnings,
-                                                  disable_progressbar=disable_progressbar,
-                                                  profile=profile,
-                                                  profiling_filename=profiling_filename,
-                                                  profiling_sorting=profiling_sorting
-                                                  )
-
-        self.feature_selector = FeatureSelector(
-            test_for_binary_target_binary_feature=test_for_binary_target_binary_feature,
-            test_for_binary_target_real_feature=test_for_binary_target_real_feature,
-            test_for_real_target_binary_feature=test_for_real_target_binary_feature,
-            test_for_real_target_real_feature=test_for_real_target_real_feature,
-            fdr_level=fdr_level, hypotheses_independent=hypotheses_independent,
-            n_jobs=n_jobs, chunksize=chunksize, ml_task=ml_task
-        )
-
         self.filter_only_tsfresh_features = filter_only_tsfresh_features
+        self.default_fc_parameters = default_fc_parameters
+        self.kind_to_fc_parameters = kind_to_fc_parameters
+        self.column_id = column_id
+        self.column_sort = column_sort
+        self.column_kind = column_kind
+        self.column_value = column_value
         self.timeseries_container = timeseries_container
+        self.chunksize = chunksize
+        self.n_jobs = n_jobs
+        self.show_warnings = show_warnings
+        self.disable_progressbar = disable_progressbar
+        self.profile = profile
+        self.profiling_filename = profiling_filename
+        self.profiling_sorting = profiling_sorting
+        self.test_for_binary_target_binary_feature = test_for_binary_target_binary_feature
+        self.test_for_binary_target_real_feature = test_for_binary_target_real_feature
+        self.test_for_real_target_binary_feature = test_for_real_target_binary_feature
+        self.test_for_real_target_real_feature = test_for_real_target_real_feature
+        self.fdr_level = fdr_level
+        self.hypotheses_independent = hypotheses_independent
+        self.ml_task = ml_task
 
     def set_timeseries_container(self, timeseries_container):
         """
@@ -249,7 +247,34 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
         if self.timeseries_container is None:
             raise RuntimeError("You have to provide a time series using the set_timeseries_container function before.")
 
-        self.feature_extractor.set_timeseries_container(self.timeseries_container)
+        self.feature_extractor = FeatureAugmenter(
+            default_fc_parameters=self.default_fc_parameters,
+            kind_to_fc_parameters=self.kind_to_fc_parameters,
+            column_id=self.column_id,
+            column_sort=self.column_sort,
+            column_kind=self.column_kind,
+            column_value=self.column_value,
+            timeseries_container=self.timeseries_container,
+            chunksize=self.chunksize,
+            n_jobs=self.n_jobs,
+            show_warnings=self.show_warnings,
+            disable_progressbar=self.disable_progressbar,
+            profile=self.profile,
+            profiling_filename=self.profiling_filename,
+            profiling_sorting=self.profiling_sorting
+        )
+
+        self.feature_selector = FeatureSelector(
+            test_for_binary_target_binary_feature=self.test_for_binary_target_binary_feature,
+            test_for_binary_target_real_feature=self.test_for_binary_target_real_feature,
+            test_for_real_target_binary_feature=self.test_for_real_target_binary_feature,
+            test_for_real_target_real_feature=self.test_for_real_target_real_feature,
+            fdr_level=self.fdr_level,
+            hypotheses_independent=self.hypotheses_independent,
+            n_jobs=self.n_jobs,
+            chunksize=self.chunksize,
+            ml_task=self.ml_task
+        )
 
         if self.filter_only_tsfresh_features:
             # Do not merge the time series features to the old features
