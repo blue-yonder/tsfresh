@@ -161,7 +161,7 @@ def calculate_relevance_table(X, y, ml_task='auto', n_jobs=defaults.N_PROCESSES,
         tables = []
         for label in y.unique():
             _test_real_feature = partial(target_binary_feature_real_test, y=(y == label),
-                                              test=test_for_binary_target_real_feature)
+                                         test=test_for_binary_target_real_feature)
             _test_binary_feature = partial(target_binary_feature_binary_test, y=(y == label))
             tmp = _calculate_relevance_table_for_implicit_target(
                 table_real, table_binary, X, _test_real_feature, _test_binary_feature, hypotheses_independent,
@@ -185,8 +185,9 @@ def calculate_relevance_table(X, y, ml_task='auto', n_jobs=defaults.N_PROCESSES,
         pool.join()
 
     if sum(relevance_table['relevant']) == 0:
-        _logger.warning("No feature was found relevant for {} for fdr level = {}. "
-                        "Consider using a lower fdr level or other features.".format(ml_task, fdr_level))
+        _logger.warning(
+            "No feature was found relevant for {} for fdr level = {} (which corresponds to the maximal percentage of "
+            "irrelevant features, consider using an higher fdr level or add other features.".format(ml_task, fdr_level))
 
     return relevance_table
 
