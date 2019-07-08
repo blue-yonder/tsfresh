@@ -212,6 +212,10 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
         self.hypotheses_independent = hypotheses_independent
         self.ml_task = ml_task
 
+        # attributes
+        self.feature_extractor = None
+        self.feature_selector = None
+
     def set_timeseries_container(self, timeseries_container):
         """
         Set the timeseries, with which the features will be calculated. For a format of the time series container,
@@ -311,11 +315,15 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
             deleted irrelevant information (only if filter_only_tsfresh_features is False).
         :rtype: pandas.DataFrame
         """
-        if self.feature_selector.relevant_features is None:
-            raise RuntimeError("You have to call fit before.")
 
         if self.timeseries_container is None:
             raise RuntimeError("You have to provide a time series using the set_timeseries_container function before.")
+
+        if self.feature_selector is None:
+            raise RuntimeError("You have to call fit before calling transform.")
+
+        if self.feature_selector.relevant_features is None:
+            raise RuntimeError("You have to call fit before calling transform.")
 
         self.feature_extractor.set_timeseries_container(self.timeseries_container)
 
