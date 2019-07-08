@@ -4,8 +4,14 @@
 
 import pandas as pd
 import numpy as np
+from sklearn import model_selection
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.pipeline import Pipeline
+
 from tests.fixtures import DataTestCase
 import mock
+
+from tsfresh.feature_extraction import MinimalFCParameters
 from tsfresh.transformers.relevant_feature_augmenter import RelevantFeatureAugmenter
 
 
@@ -89,7 +95,6 @@ class RelevantFeatureAugmenterTestCase(DataTestCase):
         self.assertEqual(sum(["pre_keep" == column for column in transformed_X.columns]), 1)
         self.assertEqual(sum(["pre_drop" == column for column in transformed_X.columns]), 0)
 
-
     @mock.patch('tsfresh.transformers.feature_selector.calculate_relevance_table')
     def test_does_impute(self, calculate_relevance_table_mock):
         df = pd.DataFrame([[1, 1, 1], [2, 1, 1]], columns=['id', 'time', 'value'])
@@ -104,3 +109,23 @@ class RelevantFeatureAugmenterTestCase(DataTestCase):
 
         assert calculate_relevance_table_mock.call_count == 1
         assert not calculate_relevance_table_mock.call_args[0][0].isnull().any().any()
+
+
+def test_relevant_augmentor_cross_validated():
+    """Validates that the RelevantFeatureAugmenter can cloned in pipelines, see issue 537
+    """
+    n = 16  # number of samples, needs to be divisable by 4
+    index = range(n)
+    df_ts = pd.DataFrame({"time": [10, 11] * n, "id": np.repeat(index, 2),
+                          "value": [0, 1] * (n // 4) + [1, 2] * (n // 4) +  # class 0
+                                   [10, 11] * (n // 4) + [12, 14] * (n // 4)})
+    y = pd.Series(data=[0] * (n // 2) + [1] * (n // 2), index=index)
+    X = pd.DataFrame(index=index)
+    augmenter = RelevantFeatureAugmenter(column_id='id', column_sort='time', timeseries_container=df_ts,
+                                         default_fc_parameters=MinimalFCParameters(),
+                                         disable_progressbar=True, show_warnings=False, fdr_level=0.90)
+    pipeline = Pipeline([('augmenter', augmenter),
+                         ('classifier', RandomForestClassifier(random_state=1))])
+
+    scores = model_selection.cross_val_score(pipeline, X, y, cv=2)
+    assert (scores == np.array([1, 1])).all()
