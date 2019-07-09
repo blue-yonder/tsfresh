@@ -5,10 +5,19 @@ Changelog
 tsfresh uses `Semantic Versioning <http://semver.org/>`_
 
 
-Unreleased
-==========
+Version 0.12.0
+==============
+
+- fixed bugs
+    - wrong calculation of friedrich coefficients
+    - feature selection selected too many features
+    - an ignored max_timeshift parameter in roll_time_series
+- add deprecation warning for python 2
+- added support for index based features
+- new feature calculator
+    - linear_trend_timewise
+- enable the RelevantFeatureAugmenter to be used in cross validated pipelines
 - increased scipy dependency to 1.2.0
-- fixed bug in friedrich coefficient where the parameter were ignored and wrong features were returned
 
 
 Version 0.11.2
@@ -28,7 +37,7 @@ Version 0.11.1
 ==============
 - general performance improvements
 - removed hard pinning of dependencies
-- fixed
+- fixed bugs
     - the stock price forecasting notebook
     - the multi classification notebook
 
