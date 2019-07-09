@@ -68,9 +68,16 @@ class FeatureAugmenter(BaseEstimator, TransformerMixin):
                  ):
         """
         Create a new FeatureAugmenter instance.
+        :param default_fc_parameters: mapping from feature calculator names to parameters. Only those names
+               which are keys in this dict will be calculated. See the class:`ComprehensiveFCParameters` for
+               more information.
+        :type default_fc_parameters: dict
 
-        :param settings: The extraction settings to use. Leave empty to use the default ones.
-        :type settings: tsfresh.feature_extraction.settings.ComprehensiveFCParameters
+        :param kind_to_fc_parameters: mapping from kind names to objects of the same type as the ones for
+                default_fc_parameters. If you put a kind as a key here, the fc_parameters
+                object (which is the value), will be used instead of the default_fc_parameters. This means that kinds, for
+                which kind_of_fc_parameters doe not have any entries, will be ignored by the feature selection.
+        :type kind_to_fc_parameters: dict
 
         :param column_id: The column with the id. See :mod:`~tsfresh.feature_extraction.extraction`.
         :type column_id: basestring

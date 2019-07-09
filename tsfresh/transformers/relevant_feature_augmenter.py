@@ -109,16 +109,21 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
         """
         Create a new RelevantFeatureAugmenter instance.
 
-        :param settings: The extraction settings to use. Leave empty to use the default ones.
-        :type settings: tsfresh.feature_extraction.settings.ExtendedFCParameters
 
         :param filter_only_tsfresh_features: Whether to touch the manually-created features during feature selection or
                                              not.
         :type filter_only_tsfresh_features: bool
-        :param feature_selection_settings: The feature selection settings.
-        :type feature_selection_settings: tsfresh.feature_selection.settings.FeatureSelectionSettings
-        :param feature_extraction_settings: The feature extraction settings.
-        :type feature_selection_settings: tsfresh.feature_extraction.settings.ComprehensiveFCParameters
+
+        :param default_fc_parameters: mapping from feature calculator names to parameters. Only those names
+               which are keys in this dict will be calculated. See the class:`ComprehensiveFCParameters` for
+               more information.
+        :type default_fc_parameters: dict
+
+        :param kind_to_fc_parameters: mapping from kind names to objects of the same type as the ones for
+                default_fc_parameters. If you put a kind as a key here, the fc_parameters
+                object (which is the value), will be used instead of the default_fc_parameters. This means that kinds, for
+                which kind_of_fc_parameters doe not have any entries, will be ignored by the feature selection.
+        :type kind_to_fc_parameters: dict
         :param column_id: The column with the id. See :mod:`~tsfresh.feature_extraction.extraction`.
         :type column_id: basestring
         :param column_sort: The column with the sort data. See :mod:`~tsfresh.feature_extraction.extraction`.
@@ -206,6 +211,10 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
         self.fdr_level = fdr_level
         self.hypotheses_independent = hypotheses_independent
         self.ml_task = ml_task
+
+        # attributes
+        self.feature_extractor = None
+        self.feature_selector = None
 
     def set_timeseries_container(self, timeseries_container):
         """
@@ -306,11 +315,15 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
             deleted irrelevant information (only if filter_only_tsfresh_features is False).
         :rtype: pandas.DataFrame
         """
-        if self.feature_selector.relevant_features is None:
-            raise RuntimeError("You have to call fit before.")
 
         if self.timeseries_container is None:
             raise RuntimeError("You have to provide a time series using the set_timeseries_container function before.")
+
+        if self.feature_selector is None:
+            raise RuntimeError("You have to call fit before calling transform.")
+
+        if self.feature_selector.relevant_features is None:
+            raise RuntimeError("You have to call fit before calling transform.")
 
         self.feature_extractor.set_timeseries_container(self.timeseries_container)
 
