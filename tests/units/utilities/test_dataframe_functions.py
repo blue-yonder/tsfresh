@@ -103,6 +103,36 @@ class NormalizeTestCase(TestCase):
         self.assertEqual(list(result_df[result_df[column_kind] == "b"]["_values"]), [5])
         self.assertEqual(list(result_df[result_df[column_kind] == "b"]["id"]), [0])
 
+    def test_with_df_4(self):
+        test_df0 = pd.DataFrame({"a": [1, 2], "b": [0, 1]})
+        test_df0["sort"] = test_df0.index
+        test_df0["id"] = 0
+
+        test_df1 = pd.DataFrame({"a": [1], "b": [1]})
+        test_df1["sort"] = test_df1.index
+        test_df1["id"] = 1
+
+        test_dfs = [test_df0, test_df1]
+        test_df = pd.concat(test_dfs, ignore_index=True)
+        melt_df, _, _, _ = \
+            dataframe_functions._normalize_input_to_internal_representation(test_df,
+                                                                            column_id="id",
+                                                                            column_sort="sort",
+                                                                            column_kind=None,
+                                                                            column_value=None)
+
+        # Verify that the order of values is correct after normalization
+        for idDf in [0, 1]:
+            self.assertEqual(
+                test_dfs[idDf]["a"].values.tolist(),
+                melt_df[(melt_df["id"] == idDf) & (melt_df["_variables"] == "a")]["_values"].values.tolist()
+            )
+
+            self.assertEqual(
+                test_dfs[idDf]["b"].values.tolist(),
+                melt_df[(melt_df["id"] == idDf) & (melt_df["_variables"] == "b")]["_values"].values.tolist()
+            )
+
     def test_with_wrong_input(self):
         test_df = pd.DataFrame([{"id": 0, "kind": "a", "value": 3, "sort": np.NaN}])
         self.assertRaises(ValueError, dataframe_functions._normalize_input_to_internal_representation, test_df,
