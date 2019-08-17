@@ -59,12 +59,12 @@ jobs:
       python: 3.6
 
     - stage: Run unit tests and deploy
-      env: NUMPY="1.15.1", PANDAS="0.23.2", SCIKITLEARN="0.19.2", DASK="0.15.2", DISTRIBUTED="1.18.3", SCIPY="1.2.0"
+      env: NUMPY="1.15.1", PANDAS="0.23.2", SCIKITLEARN="0.19.2", DASK="0.16.1", DISTRIBUTED="1.18.3", SCIPY="1.2.0"
       before_script:
         - pip install numpy==1.15.1 # First version with official python 3.7 support.
         - pip install pandas==0.23.2 # First version with official python 3.7 support.
         - pip install scikit-learn==0.19.2 # First version with python 3.7 support.
-        - pip install dask==0.15.2
+        - pip install dask==0.16.1
         - pip install distributed==1.18.3
         # need to downgrade tornado manually
         - pip install tornado==4.5.3
