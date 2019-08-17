@@ -63,7 +63,7 @@ jobs:
       before_script:
         - pip install numpy==1.15.1 # First version with official python 3.7 support.
         - pip install pandas==0.23.2 # First version with official python 3.7 support.
-        - pip install scikit-learn==0.18.0
+        - pip install scikit-learn==0.19.2 # First version with python 3.7 support.
         - pip install dask==0.15.2
         - pip install distributed==1.18.3
         # need to downgrade tornado manually
