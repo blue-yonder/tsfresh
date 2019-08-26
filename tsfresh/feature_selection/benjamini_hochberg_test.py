@@ -53,16 +53,16 @@ def benjamini_hochberg_test(df_pvalues, hypotheses_independent, fdr_level):
         C = np.ones(m)
     else:
         # c(k) = \sum_{i=1}^m 1/i
-        C = np.sum(1.0 / K)
+        C = K / m
 
     # Calculate the vector T to compare to the p_value
-    T = (fdr_level * K) / (m * C)
+    T = fdr_level * C
 
     # Get the last p_value for which H0 has been rejected
     try:
-        k_max = list(df_pvalues.p_value <= T).index(False)
-    except ValueError:
-        k_max = m
+        k_max = df_pvalues.index.get_loc(df_pvalues[df_pvalues.p_value <= T].index[-1]) + 1
+    except IndexError:
+        k_max = 0
 
     # Add the column denoting if null hypothesis has been rejected
     df_pvalues["relevant"] = [True] * k_max + [False] * (m - k_max)
