@@ -531,14 +531,15 @@ def mean_change(x):
 
     .. math::
 
-        \\frac{1}{n} \\sum_{i=1,\ldots, n-1}  x_{i+1} - x_{i}
+        \\frac{1}{n-1} \\sum_{i=1,\ldots, n-1}  x_{i+1} - x_{i} = \\frac{1}{n-1} (x_{n} - x_{1})
 
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
     :return: the value of this feature
     :return type: float
     """
-    return np.mean(np.diff(x))
+    x = np.asarray(x)
+    return (x[-1] - x[0]) / (len(x) - 1) if len(x) > 1 else np.NaN
 
 
 @set_property("fctype", "simple")
