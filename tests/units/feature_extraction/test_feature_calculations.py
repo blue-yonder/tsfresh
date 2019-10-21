@@ -372,11 +372,15 @@ class FeatureCalculationTestCase(TestCase):
 
     def test_longest_strike_below_mean(self):
         self.assertEqualOnAllArrayTypes(longest_strike_below_mean, [1, 2, 1, 1, 1, 2, 2, 2], 3)
+        self.assertEqualOnAllArrayTypes(longest_strike_below_mean, [1, 2, 3, 4, 5, 6], 3)
+        self.assertEqualOnAllArrayTypes(longest_strike_below_mean, [1, 2, 3, 4, 5], 2)
         self.assertEqualOnAllArrayTypes(longest_strike_below_mean, [1, 2, 1], 1)
         self.assertEqualOnAllArrayTypes(longest_strike_below_mean, [], 0)
 
     def test_longest_strike_above_mean(self):
         self.assertEqualOnAllArrayTypes(longest_strike_above_mean, [1, 2, 1, 2, 1, 2, 2, 1], 2)
+        self.assertEqualOnAllArrayTypes(longest_strike_above_mean, [1, 2, 3, 4, 5, 6], 3)
+        self.assertEqualOnAllArrayTypes(longest_strike_above_mean, [1, 2, 3, 4, 5], 2)
         self.assertEqualOnAllArrayTypes(longest_strike_above_mean, [1, 2, 1], 1)
         self.assertEqualOnAllArrayTypes(longest_strike_above_mean, [], 0)
 
