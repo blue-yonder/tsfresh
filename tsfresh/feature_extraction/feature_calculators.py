@@ -691,7 +691,7 @@ def longest_strike_below_mean(x):
     """
     if not isinstance(x, (np.ndarray, pd.Series)):
         x = np.asarray(x)
-    return np.max(_get_length_sequences_where(x <= np.mean(x))) if x.size > 0 else 0
+    return np.max(_get_length_sequences_where(x < np.mean(x))) if x.size > 0 else 0
 
 
 @set_property("fctype", "simple")
@@ -706,7 +706,7 @@ def longest_strike_above_mean(x):
     """
     if not isinstance(x, (np.ndarray, pd.Series)):
         x = np.asarray(x)
-    return np.max(_get_length_sequences_where(x >= np.mean(x))) if x.size > 0 else 0
+    return np.max(_get_length_sequences_where(x > np.mean(x))) if x.size > 0 else 0
 
 
 @set_property("fctype", "simple")
