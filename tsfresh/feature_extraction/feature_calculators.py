@@ -112,7 +112,7 @@ def _estimate_friedrich_coefficients(x, m, r):
     Coefficients of polynomial :math:`h(x)`, which has been fitted to
     the deterministic dynamics of Langevin model
     .. math::
-        \dot{x}(t) = h(x(t)) + \mathcal{N}(0,R)
+        \\dot{x}(t) = h(x(t)) + \\mathcal{N}(0,R)
 
     As described by
 
@@ -328,10 +328,10 @@ def agg_autocorrelation(x, param):
 
     .. math::
 
-        R(l) = \frac{1}{(n-l)\sigma^{2}} \sum_{t=1}^{n-l}(X_{t}-\mu )(X_{t+l}-\mu)
+        R(l) = \\frac{1}{(n-l)\\sigma^{2}} \\sum_{t=1}^{n-l}(X_{t}-\\mu )(X_{t+l}-\\mu)
 
-    where :math:`X_i` are the values of the time series, :math:`n` its length. Finally, :math:`\sigma^2` and
-    :math:`\mu` are estimators for its variance and mean
+    where :math:`X_i` are the values of the time series, :math:`n` its length. Finally, :math:`\\sigma^2` and
+    :math:`\\mu` are estimators for its variance and mean
     (See `Estimation of the Autocorrelation function <http://en.wikipedia.org/wiki/Autocorrelation#Estimation>`_).
 
     The :math:`R(l)` for different lags :math:`l` form a vector. This feature calculator applies the aggregation
@@ -339,7 +339,7 @@ def agg_autocorrelation(x, param):
 
     .. math::
 
-        f_{agg} \left( R(1), \ldots, R(m)\right) \quad \text{for} \quad m = max(n, maxlag).
+        f_{agg} \\left( R(1), \\ldots, R(m)\\right) \\quad \\text{for} \\quad m = max(n, maxlag).
 
     Here :math:`maxlag` is the second parameter passed to this function.
 
@@ -457,7 +457,7 @@ def abs_energy(x):
 
     .. math::
 
-        E = \\sum_{i=1,\ldots, n} x_i^2
+        E = \\sum_{i=1,\\ldots, n} x_i^2
 
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
@@ -513,7 +513,7 @@ def mean_abs_change(x):
 
     .. math::
 
-        \\frac{1}{n} \\sum_{i=1,\ldots, n-1} | x_{i+1} - x_{i}|
+        \\frac{1}{n} \\sum_{i=1,\\ldots, n-1} | x_{i+1} - x_{i}|
 
 
     :param x: the time series to calculate the feature of
@@ -531,7 +531,7 @@ def mean_change(x):
 
     .. math::
 
-        \\frac{1}{n} \\sum_{i=1,\ldots, n-1}  x_{i+1} - x_{i}
+        \\frac{1}{n} \\sum_{i=1,\\ldots, n-1}  x_{i+1} - x_{i}
 
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
@@ -548,7 +548,7 @@ def mean_second_derivative_central(x):
 
     .. math::
 
-        \\frac{1}{n} \\sum_{i=1,\ldots, n-1}  \\frac{1}{2} (x_{i+2} - 2 \\cdot x_{i+1} + x_i)
+        \\frac{1}{n} \\sum_{i=1,\\ldots, n-1}  \\frac{1}{2} (x_{i+2} - 2 \\cdot x_{i+1} + x_i)
 
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
@@ -669,7 +669,7 @@ def absolute_sum_of_changes(x):
 
     .. math::
 
-        \\sum_{i=1, \ldots, n-1} \\mid x_{i+1}- x_i \\mid
+        \\sum_{i=1, \\ldots, n-1} \\mid x_{i+1}- x_i \\mid
 
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
@@ -977,7 +977,7 @@ def fft_aggregated(x, param):
     def get_moment(y, moment):
         """
         Returns the (non centered) moment of the distribution y:
-        E[y**moment] = \sum_i[index(y_i)^moment * y_i] / \sum_i[y_i]
+        E[y**moment] = \\sum_i[index(y_i)^moment * y_i] / \\sum_i[y_i]
         
         :param y: the discrete distribution from which one wants to calculate the moment 
         :type y: pandas.Series or np.array
@@ -1361,13 +1361,13 @@ def time_reversal_asymmetry_statistic(x, lag):
 
     .. math::
 
-        \\frac{1}{n-2lag} \sum_{i=0}^{n-2lag} x_{i + 2 \cdot lag}^2 \cdot x_{i + lag} - x_{i + lag} \cdot  x_{i}^2
+        \\frac{1}{n-2lag} \\sum_{i=0}^{n-2lag} x_{i + 2 \\cdot lag}^2 \\cdot x_{i + lag} - x_{i + lag} \\cdot  x_{i}^2
 
     which is
 
     .. math::
 
-        \\mathbb{E}[L^2(X)^2 \cdot L(X) - L(X) \cdot X^2]
+        \\mathbb{E}[L^2(X)^2 \\cdot L(X) - L(X) \\cdot X^2]
 
     where :math:`\\mathbb{E}` is the mean and :math:`L` is the lag operator. It was proposed in [1] as a
     promising feature to extract from time series.
@@ -1402,13 +1402,13 @@ def c3(x, lag):
 
     .. math::
 
-        \\frac{1}{n-2lag} \sum_{i=0}^{n-2lag} x_{i + 2 \cdot lag}^2 \cdot x_{i + lag} \cdot x_{i}
+        \\frac{1}{n-2lag} \\sum_{i=0}^{n-2lag} x_{i + 2 \\cdot lag}^2 \\cdot x_{i + lag} \\cdot x_{i}
 
     which is
 
     .. math::
 
-        \\mathbb{E}[L^2(X)^2 \cdot L(X) \cdot X]
+        \\mathbb{E}[L^2(X)^2 \\cdot L(X) \\cdot X]
 
     where :math:`\\mathbb{E}` is the mean and :math:`L` is the lag operator. It was proposed in [1] as a measure of
     non linearity in the time series.
@@ -1524,9 +1524,9 @@ def autocorrelation(x, lag):
 
     .. math::
 
-        \\frac{1}{(n-l)\sigma^{2}} \\sum_{t=1}^{n-l}(X_{t}-\\mu )(X_{t+l}-\\mu)
+        \\frac{1}{(n-l)\\sigma^{2}} \\sum_{t=1}^{n-l}(X_{t}-\\mu )(X_{t+l}-\\mu)
 
-    where :math:`n` is the length of the time series :math:`X_i`, :math:`\sigma^2` its variance and :math:`\mu` its
+    where :math:`n` is the length of the time series :math:`X_i`, :math:`\\sigma^2` its variance and :math:`\\mu` its
     mean. `l` denotes the lag.
 
     .. rubric:: References
@@ -1720,7 +1720,7 @@ def friedrich_coefficients(x, param):
     the deterministic dynamics of Langevin model
 
     .. math::
-        \dot{x}(t) = h(x(t)) + \mathcal{N}(0,R)
+        \\dot{x}(t) = h(x(t)) + \\mathcal{N}(0,R)
 
     as described by [1].
 
@@ -1771,7 +1771,7 @@ def max_langevin_fixed_point(x, r, m):
     which has been fitted to the deterministic dynamics of Langevin model
 
     .. math::
-        \dot(x)(t) = h(x(t)) + R \mathcal(N)(0,1)
+        \\dot(x)(t) = h(x(t)) + R \\mathcal(N)(0,1)
 
     as described by
 
