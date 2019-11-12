@@ -281,7 +281,10 @@ def _normalize_input_to_internal_representation(timeseries_container, column_id,
         for kind, df in timeseries_container.items():
             df[column_kind] = kind
 
-        timeseries_container = pd.concat(timeseries_container.values())
+        try:
+            timeseries_container = pd.concat(timeseries_container.values(), sort=True)
+        except TypeError: # pandas < 0.23.0
+            timeseries_container = pd.concat(timeseries_container.values())
         gc.collect()
 
     # Check ID column
