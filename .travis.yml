@@ -26,7 +26,7 @@ jobs:
       script:
         - sed -i 's/\-n auto/\-n 2/g' setup.cfg
         - "if [ $TRAVIS_PULL_REQUEST == false ] && ! [ $TRAVIS_BRANCH == 'master' ]; then py.test tests/units -n2; else python setup.py test; fi"
-      python: 2.7.11
+      python: 2.7
       after_success:
         - coveralls
 
@@ -43,7 +43,7 @@ jobs:
       script:
         - sed -i 's/\-n auto/\-n 2/g' setup.cfg
         - "if [ $TRAVIS_PULL_REQUEST == false ] && ! [ $TRAVIS_BRANCH == 'master' ]; then pytest tests/units -n2; else pytest tests; fi"
-      python: 3.5.2
+      python: 3.5
 
     - stage: Run unit tests and deploy
       env: NUMPY="1.10.4", PANDAS="0.20.3", SCIKITLEARN="0.18.0", DASK="0.15.2", DISTRIBUTED="1.18.3", SCIPY="1.2.0"
@@ -60,7 +60,7 @@ jobs:
       script:
         - sed -i 's/\-n auto/\-n 2/g' setup.cfg
         - "if [ $TRAVIS_PULL_REQUEST == false ] && ! [ $TRAVIS_BRANCH == 'master' ]; then pytest tests/units -n2; else pytest tests; fi"
-      python: 2.7.11
+      python: 2.7
 
     - stage: Run unit tests and deploy
       env: NUMPY="1.10.4", PANDAS="0.20.3", SCIKITLEARN="0.18.0", DASK="0.15.2", DISTRIBUTED="1.18.3", SCIPY="1.2.0"
@@ -77,7 +77,7 @@ jobs:
       script:
         - sed -i 's/\-n auto/\-n 2/g' setup.cfg
         - "if [ $TRAVIS_PULL_REQUEST == false ] && ! [ $TRAVIS_BRANCH == 'master' ]; then pytest tests/units -n2; else pytest tests; fi"
-      python: 3.5.2
+      python: 3.5
 
       deploy:
         provider: pypi
