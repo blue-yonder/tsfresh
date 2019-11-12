@@ -161,7 +161,7 @@ def get_range_values_per_column(df):
     :return: Dictionaries mapping column names to max, min, mean values
     :rtype: (dict, dict, dict)
     """
-    data = df.get_values()
+    data = df.values
     masked = np.ma.masked_invalid(data)
     columns = df.columns
 
