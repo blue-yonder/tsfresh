@@ -1119,7 +1119,7 @@ def index_mass_quantile(x, param):
 
     x = np.asarray(x)
     abs_x = np.abs(x)
-    s = sum(abs_x)
+    s = np.sum(abs_x)
 
     if s == 0:
         # all values in x are zero or it has length 0
