@@ -8,7 +8,10 @@ For the naming of the features, see :ref:`feature-naming-label`.
 
 from __future__ import absolute_import, division
 
-from inspect import getargspec
+try: #Python 3
+    from inspect import getfullargspec
+except ImportError: #Python 2.7
+    from inspect import getargspec as getfullargspec
 
 import pandas as pd
 import numpy as np
@@ -107,7 +110,7 @@ class ComprehensiveFCParameters(dict):
         name_to_param = {}
 
         for name, func in feature_calculators.__dict__.items():
-            if callable(func) and hasattr(func, "fctype") and len(getargspec(func).args) == 1:
+            if callable(func) and hasattr(func, "fctype") and len(getfullargspec(func).args) == 1:
                 name_to_param[name] = None
 
         name_to_param.update({
