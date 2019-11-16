@@ -549,16 +549,15 @@ def mean_second_derivative_central(x):
 
     .. math::
 
-        \\frac{1}{n} \\sum_{i=1,\\ldots, n-1}  \\frac{1}{2} (x_{i+2} - 2 \\cdot x_{i+1} + x_i)
+        \\frac{1}{2(n-2)} \\sum_{i=1,\\ldots, n-1}  \\frac{1}{2} (x_{i+2} - 2 \\cdot x_{i+1} + x_i)
 
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
     :return: the value of this feature
     :return type: float
     """
-
-    diff = (_roll(x, 1) - 2 * np.array(x) + _roll(x, -1)) / 2.0
-    return np.mean(diff[1:-1])
+    x = np.asarray(x)
+    return (x[-1] - x[-2] - x[1] + x[0]) / (2 * (len(x) - 2)) if len(x) > 2 else np.NaN
 
 
 @set_property("fctype", "simple")
