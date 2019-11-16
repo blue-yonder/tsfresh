@@ -531,14 +531,15 @@ def mean_change(x):
 
     .. math::
 
-        \\frac{1}{n} \\sum_{i=1,\\ldots, n-1}  x_{i+1} - x_{i}
+        \\frac{1}{n-1} \\sum_{i=1,\ldots, n-1}  x_{i+1} - x_{i} = \\frac{1}{n-1} (x_{n} - x_{1})
 
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
     :return: the value of this feature
     :return type: float
     """
-    return np.mean(np.diff(x))
+    x = np.asarray(x)
+    return (x[-1] - x[0]) / (len(x) - 1) if len(x) > 1 else np.NaN
 
 
 @set_property("fctype", "simple")
@@ -986,7 +987,7 @@ def fft_aggregated(x, param):
         :return: the moment requested
         :return type: float
         """
-        return y.dot(np.arange(len(y))**moment) / y.sum()
+        return y.dot(np.arange(len(y), dtype=float)**moment) / y.sum()
 
     def get_centroid(y):
         """
@@ -1119,7 +1120,7 @@ def index_mass_quantile(x, param):
 
     x = np.asarray(x)
     abs_x = np.abs(x)
-    s = sum(abs_x)
+    s = np.sum(abs_x)
 
     if s == 0:
         # all values in x are zero or it has length 0
@@ -1345,7 +1346,7 @@ def change_quantiles(x, ql, qh, isabs, f_agg):
         return 0
     # We only count changes that start and end inside the corridor
     ind = (bin_cat_0 & _roll(bin_cat_0, 1))[1:]
-    if sum(ind) == 0:
+    if np.sum(ind) == 0:
         return 0
     else:
         ind_inside_corridor = np.where(ind == 1)
