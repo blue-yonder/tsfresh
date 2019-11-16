@@ -161,7 +161,7 @@ def get_range_values_per_column(df):
     :return: Dictionaries mapping column names to max, min, mean values
     :rtype: (dict, dict, dict)
     """
-    data = df.get_values()
+    data = df.values
     masked = np.ma.masked_invalid(data)
     columns = df.columns
 
@@ -281,7 +281,10 @@ def _normalize_input_to_internal_representation(timeseries_container, column_id,
         for kind, df in timeseries_container.items():
             df[column_kind] = kind
 
-        timeseries_container = pd.concat(timeseries_container.values())
+        try:
+            timeseries_container = pd.concat(timeseries_container.values(), sort=True)
+        except TypeError: # pandas < 0.23.0
+            timeseries_container = pd.concat(timeseries_container.values())
         gc.collect()
 
     # Check ID column
