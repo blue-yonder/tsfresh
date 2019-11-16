@@ -318,6 +318,9 @@ class FeatureCalculationTestCase(TestCase):
     def test_mean_change(self):
         self.assertEqualOnAllArrayTypes(mean_change, [-2, 2, 5], 3.5)
         self.assertEqualOnAllArrayTypes(mean_change, [1, 2, -1], -1)
+        self.assertEqualOnAllArrayTypes(mean_change, [10, 20], 10)
+        self.assertIsNanOnAllArrayTypes(mean_change, [1])
+        self.assertIsNanOnAllArrayTypes(mean_change, [])
 
     def test_mean_second_derivate_central(self):
         self.assertEqualOnAllArrayTypes(mean_second_derivative_central, list(range(10)), 0)
