@@ -334,9 +334,9 @@ def _normalize_input_to_internal_representation(timeseries_container, column_id,
 
     for kind in timeseries_container[column_kind].unique():
         if kind.endswith("_"):
-            raise ValueError(f"The kind {kind} is not allowed to end with '_'")
+            raise ValueError("The kind {kind} is not allowed to end with '_'".format(kind=kind))
         if "__" in kind:
-            raise ValueError(f"The kind {kind} is not allowed to contain '__'")
+            raise ValueError("The kind {kind} is not allowed to contain '__'".format(kind=kind))
 
     # Check value column
     if column_value not in timeseries_container.columns:
