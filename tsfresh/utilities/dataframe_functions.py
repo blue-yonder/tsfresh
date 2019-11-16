@@ -332,6 +332,12 @@ def _normalize_input_to_internal_representation(timeseries_container, column_id,
     if timeseries_container[column_kind].isnull().any():
         raise ValueError("You have NaN values in your kind column.")
 
+    for kind in timeseries_container[column_kind].unique():
+        if kind.endswith("_"):
+            raise ValueError(f"The kind {kind} is not allowed to end with '_'")
+        if "__" in kind:
+            raise ValueError(f"The kind {kind} is not allowed to contain '__'")
+
     # Check value column
     if column_value not in timeseries_container.columns:
         raise ValueError("The given column for the value is not present in the data.")
