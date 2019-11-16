@@ -1120,7 +1120,7 @@ def index_mass_quantile(x, param):
 
     x = np.asarray(x)
     abs_x = np.abs(x)
-    s = sum(abs_x)
+    s = np.sum(abs_x)
 
     if s == 0:
         # all values in x are zero or it has length 0
@@ -1346,7 +1346,7 @@ def change_quantiles(x, ql, qh, isabs, f_agg):
         return 0
     # We only count changes that start and end inside the corridor
     ind = (bin_cat_0 & _roll(bin_cat_0, 1))[1:]
-    if sum(ind) == 0:
+    if np.sum(ind) == 0:
         return 0
     else:
         ind_inside_corridor = np.where(ind == 1)

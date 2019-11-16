@@ -1124,6 +1124,12 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqual(res["attr_\"intercept\""], 0, places=3)
         self.assertAlmostEqual(res["attr_\"slope\""], 1.0, places=3)
 
+    def test_change_quantiles(self):
+        """Test change_quantiles function when changing from `sum` to `np.sum`."""
+        np.random.seed(0)
+        res = change_quantiles(np.random.rand(10000) * 1000, 0.1, 0.2, False, 'mean')
+        self.assertAlmostEqual(res, -0.9443846621365727)
+
         
 class FriedrichTestCase(TestCase):
 
