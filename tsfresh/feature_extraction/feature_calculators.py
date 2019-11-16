@@ -986,7 +986,7 @@ def fft_aggregated(x, param):
         :return: the moment requested
         :return type: float
         """
-        return y.dot(np.arange(len(y))**moment) / y.sum()
+        return y.dot(np.arange(len(y), dtype=float)**moment) / y.sum()
 
     def get_centroid(y):
         """
