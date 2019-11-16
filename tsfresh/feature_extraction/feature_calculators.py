@@ -632,6 +632,7 @@ def variance(x):
 
 
 @set_property("fctype", "simple")
+@set_property("input", "pd.Series")
 def skewness(x):
     """
     Returns the sample skewness of x (calculated with the adjusted Fisher-Pearson standardized
@@ -648,6 +649,7 @@ def skewness(x):
 
 
 @set_property("fctype", "simple")
+@set_property("input", "pd.Series")
 def kurtosis(x):
     """
     Returns the kurtosis of x (calculated with the adjusted Fisher-Pearson standardized
@@ -828,6 +830,7 @@ def percentage_of_reoccurring_datapoints_to_all_datapoints(x):
 
 
 @set_property("fctype", "simple")
+@set_property("input", "pd.Series")
 def percentage_of_reoccurring_values_to_all_values(x):
     """
     Returns the ratio of unique values, that are present in the time series
@@ -1563,6 +1566,7 @@ def autocorrelation(x, lag):
 
 
 @set_property("fctype", "simple")
+@set_property("input", "pd.Series")
 def quantile(x, q):
     """
     Calculates the q quantile of x. This is the value of x greater than q% of the ordered values from x.
@@ -1574,7 +1578,8 @@ def quantile(x, q):
     :return: the value of this feature
     :return type: float
     """
-    x = pd.Series(x)
+    if not isinstance(x, pd.Series):
+        x = pd.Series(x)
     return pd.Series.quantile(x, q)
 
 
