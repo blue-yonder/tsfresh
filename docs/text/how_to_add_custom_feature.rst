@@ -31,6 +31,9 @@ You can write such a simple feature calculator, that returns exactly one feature
 
 .. code:: python
 
+    from tsfresh.feature_extraction.feature_calculators import set_propert
+
+
     @set_property("fctype", "simple")
     def your_feature_calculator(x):
         """

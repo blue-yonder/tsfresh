@@ -110,7 +110,7 @@ def _estimate_friedrich_coefficients(x, m, r):
     Coefficients of polynomial :math:`h(x)`, which has been fitted to
     the deterministic dynamics of Langevin model
     .. math::
-        \dot{x}(t) = h(x(t)) + \mathcal{N}(0,R)
+        \\dot{x}(t) = h(x(t)) + \\mathcal{N}(0,R)
 
     As described by
 
@@ -326,10 +326,10 @@ def agg_autocorrelation(x, param):
 
     .. math::
 
-        R(l) = \frac{1}{(n-l)\sigma^{2}} \sum_{t=1}^{n-l}(X_{t}-\mu )(X_{t+l}-\mu)
+        R(l) = \\frac{1}{(n-l)\\sigma^{2}} \\sum_{t=1}^{n-l}(X_{t}-\\mu )(X_{t+l}-\\mu)
 
-    where :math:`X_i` are the values of the time series, :math:`n` its length. Finally, :math:`\sigma^2` and
-    :math:`\mu` are estimators for its variance and mean
+    where :math:`X_i` are the values of the time series, :math:`n` its length. Finally, :math:`\\sigma^2` and
+    :math:`\\mu` are estimators for its variance and mean
     (See `Estimation of the Autocorrelation function <http://en.wikipedia.org/wiki/Autocorrelation#Estimation>`_).
 
     The :math:`R(l)` for different lags :math:`l` form a vector. This feature calculator applies the aggregation
@@ -337,7 +337,7 @@ def agg_autocorrelation(x, param):
 
     .. math::
 
-        f_{agg} \left( R(1), \ldots, R(m)\right) \quad \text{for} \quad m = max(n, maxlag).
+        f_{agg} \\left( R(1), \\ldots, R(m)\\right) \\quad \\text{for} \\quad m = max(n, maxlag).
 
     Here :math:`maxlag` is the second parameter passed to this function.
 
@@ -529,14 +529,15 @@ def mean_change(x):
 
     .. math::
 
-        \\frac{1}{n} \\sum_{i=1,\\ldots, n-1}  x_{i+1} - x_{i}
+        \\frac{1}{n-1} \\sum_{i=1,\\ldots, n-1}  x_{i+1} - x_{i} = \\frac{1}{n-1} (x_{n} - x_{1})
 
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
     :return: the value of this feature
     :return type: float
     """
-    return np.mean(np.diff(x))
+    x = np.asarray(x)
+    return (x[-1] - x[0]) / (len(x) - 1) if len(x) > 1 else np.NaN
 
 
 @set_property("fctype", "simple")
@@ -546,16 +547,15 @@ def mean_second_derivative_central(x):
 
     .. math::
 
-        \\frac{1}{n} \\sum_{i=1,\\ldots, n-1}  \\frac{1}{2} (x_{i+2} - 2 \\cdot x_{i+1} + x_i)
+        \\frac{1}{2(n-2)} \\sum_{i=1,\\ldots, n-1}  \\frac{1}{2} (x_{i+2} - 2 \\cdot x_{i+1} + x_i)
 
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
     :return: the value of this feature
     :return type: float
     """
-
-    diff = (_roll(x, 1) - 2 * np.array(x) + _roll(x, -1)) / 2.0
-    return np.mean(diff[1:-1])
+    x = np.asarray(x)
+    return (x[-1] - x[-2] - x[1] + x[0]) / (2 * (len(x) - 2)) if len(x) > 2 else np.NaN
 
 
 @set_property("fctype", "simple")
@@ -629,6 +629,7 @@ def variance(x):
 
 
 @set_property("fctype", "simple")
+@set_property("input", "pd.Series")
 def skewness(x):
     """
     Returns the sample skewness of x (calculated with the adjusted Fisher-Pearson standardized
@@ -645,6 +646,7 @@ def skewness(x):
 
 
 @set_property("fctype", "simple")
+@set_property("input", "pd.Series")
 def kurtosis(x):
     """
     Returns the kurtosis of x (calculated with the adjusted Fisher-Pearson standardized
@@ -689,7 +691,7 @@ def longest_strike_below_mean(x):
     """
     if not isinstance(x, (np.ndarray, pd.Series)):
         x = np.asarray(x)
-    return np.max(_get_length_sequences_where(x <= np.mean(x))) if x.size > 0 else 0
+    return np.max(_get_length_sequences_where(x < np.mean(x))) if x.size > 0 else 0
 
 
 @set_property("fctype", "simple")
@@ -704,7 +706,7 @@ def longest_strike_above_mean(x):
     """
     if not isinstance(x, (np.ndarray, pd.Series)):
         x = np.asarray(x)
-    return np.max(_get_length_sequences_where(x >= np.mean(x))) if x.size > 0 else 0
+    return np.max(_get_length_sequences_where(x > np.mean(x))) if x.size > 0 else 0
 
 
 @set_property("fctype", "simple")
@@ -825,6 +827,7 @@ def percentage_of_reoccurring_datapoints_to_all_datapoints(x):
 
 
 @set_property("fctype", "simple")
+@set_property("input", "pd.Series")
 def percentage_of_reoccurring_values_to_all_values(x):
     """
     Returns the ratio of unique values, that are present in the time series
@@ -975,7 +978,7 @@ def fft_aggregated(x, param):
     def get_moment(y, moment):
         r"""
         Returns the (non centered) moment of the distribution y:
-        E[y**moment] = \sum_i[index(y_i)^moment * y_i] / \sum_i[y_i]
+        E[y**moment] = \\sum_i[index(y_i)^moment * y_i] / \\sum_i[y_i]
         
         :param y: the discrete distribution from which one wants to calculate the moment 
         :type y: pandas.Series or np.array
@@ -984,7 +987,7 @@ def fft_aggregated(x, param):
         :return: the moment requested
         :return type: float
         """
-        return y.dot(np.arange(len(y))**moment) / y.sum()
+        return y.dot(np.arange(len(y), dtype=float)**moment) / y.sum()
 
     def get_centroid(y):
         """
@@ -1117,7 +1120,7 @@ def index_mass_quantile(x, param):
 
     x = np.asarray(x)
     abs_x = np.abs(x)
-    s = sum(abs_x)
+    s = np.sum(abs_x)
 
     if s == 0:
         # all values in x are zero or it has length 0
@@ -1343,7 +1346,7 @@ def change_quantiles(x, ql, qh, isabs, f_agg):
         return 0
     # We only count changes that start and end inside the corridor
     ind = (bin_cat_0 & _roll(bin_cat_0, 1))[1:]
-    if sum(ind) == 0:
+    if np.sum(ind) == 0:
         return 0
     else:
         ind_inside_corridor = np.where(ind == 1)
@@ -1456,7 +1459,8 @@ def binned_entropy(x, max_bins):
         x = np.asarray(x)
     hist, bin_edges = np.histogram(x, bins=max_bins)
     probs = hist / x.size
-    return - np.sum(p * np.math.log(p) for p in probs if p != 0)
+    probs[probs == 0] = 1.0
+    return - np.sum(probs * np.log(probs))
 
 # todo - include latex formula
 # todo - check if vectorizable
@@ -1560,6 +1564,7 @@ def autocorrelation(x, lag):
 
 
 @set_property("fctype", "simple")
+@set_property("input", "pd.Series")
 def quantile(x, q):
     """
     Calculates the q quantile of x. This is the value of x greater than q% of the ordered values from x.
@@ -1571,7 +1576,8 @@ def quantile(x, q):
     :return: the value of this feature
     :return type: float
     """
-    x = pd.Series(x)
+    if not isinstance(x, pd.Series):
+        x = pd.Series(x)
     return pd.Series.quantile(x, q)
 
 
@@ -1718,7 +1724,7 @@ def friedrich_coefficients(x, param):
     the deterministic dynamics of Langevin model
 
     .. math::
-        \dot{x}(t) = h(x(t)) + \mathcal{N}(0,R)
+        \\dot{x}(t) = h(x(t)) + \\mathcal{N}(0,R)
 
     as described by [1].
 
@@ -1769,7 +1775,7 @@ def max_langevin_fixed_point(x, r, m):
     which has been fitted to the deterministic dynamics of Langevin model
 
     .. math::
-        \dot(x)(t) = h(x(t)) + R \mathcal(N)(0,1)
+        \\dot(x)(t) = h(x(t)) + R \\mathcal(N)(0,1)
 
     as described by
 

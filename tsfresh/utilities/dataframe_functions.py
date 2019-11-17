@@ -161,7 +161,7 @@ def get_range_values_per_column(df):
     :return: Dictionaries mapping column names to max, min, mean values
     :rtype: (dict, dict, dict)
     """
-    data = df.get_values()
+    data = df.values
     masked = np.ma.masked_invalid(data)
     columns = df.columns
 
@@ -281,7 +281,10 @@ def _normalize_input_to_internal_representation(timeseries_container, column_id,
         for kind, df in timeseries_container.items():
             df[column_kind] = kind
 
-        timeseries_container = pd.concat(timeseries_container.values())
+        try:
+            timeseries_container = pd.concat(timeseries_container.values(), sort=True)
+        except TypeError: # pandas < 0.23.0
+            timeseries_container = pd.concat(timeseries_container.values())
         gc.collect()
 
     # Check ID column
@@ -309,21 +312,22 @@ def _normalize_input_to_internal_representation(timeseries_container, column_id,
 
     if column_kind is None and column_value is None:
         if column_sort is not None:
-            column_kind = "_variables"
-            column_value = "_values"
             sort = timeseries_container[column_sort].values
-            timeseries_container = pd.melt(timeseries_container.drop(column_sort, axis=1),
-                                           id_vars=[column_id],
-                                           value_name=column_value, var_name=column_kind)
-            timeseries_container[column_sort] = np.tile(sort, (len(timeseries_container) // len(sort)))
+            timeseries_container = timeseries_container.drop(column_sort, axis=1)
         else:
-            column_kind = "_variables"
-            column_value = "_values"
-            column_sort = "_sort"
             sort = range(len(timeseries_container))
-            timeseries_container = pd.melt(timeseries_container, id_vars=[column_id],
-                                           value_name=column_value, var_name=column_kind)
-            timeseries_container[column_sort] = np.tile(sort, (len(timeseries_container) // len(sort)))
+            column_sort = "_sort"
+
+        column_kind = "_variables"
+        column_value = "_values"
+
+        timeseries_container.index.name = 'index'
+        timeseries_container = pd.melt(timeseries_container.reset_index(),
+                                       id_vars=['index', column_id],
+                                       value_name=column_value, var_name=column_kind)
+        timeseries_container = timeseries_container.set_index('index')
+
+        timeseries_container[column_sort] = np.tile(sort, (len(timeseries_container) // len(sort)))
 
     # Check kind column
     if column_kind not in timeseries_container.columns:

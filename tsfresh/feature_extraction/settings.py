@@ -5,8 +5,7 @@
 This file contains methods/objects for controlling which features will be extracted when calling extract_features.
 For the naming of the features, see :ref:`feature-naming-label`.
 """
-
-from inspect import getargspec
+from inspect import getfullargspec
 
 import pandas as pd
 import numpy as np
@@ -105,7 +104,7 @@ class ComprehensiveFCParameters(dict):
         name_to_param = {}
 
         for name, func in feature_calculators.__dict__.items():
-            if callable(func) and hasattr(func, "fctype") and len(getargspec(func).args) == 1:
+            if callable(func) and hasattr(func, "fctype") and len(getfullargspec(func).args) == 1:
                 name_to_param[name] = None
 
         name_to_param.update({
