@@ -19,6 +19,7 @@ from __future__ import absolute_import, division
 import itertools
 import warnings
 from builtins import range
+from collections import defaultdict
 
 import numpy as np
 import pandas as pd
@@ -1746,7 +1747,7 @@ def friedrich_coefficients(x, param):
     :return: the different feature values
     :return type: pandas.Series
     """
-    calculated = {}  # calculated is dictionary storing the calculated coefficients {m: {r: friedrich_coefficients}}
+    calculated = defaultdict(dict)  # calculated is dictionary storing the calculated coefficients {m: {r: friedrich_coefficients}}
     res = {}  # res is a dictionary containg the results {"m_10__r_2__coeff_3": 15.43}
 
     for parameter_combination in param:
@@ -1757,11 +1758,8 @@ def friedrich_coefficients(x, param):
         assert coeff >= 0, "Coefficients must be positive or zero. Found {}".format(coeff)
 
         # calculate the current friedrich coefficients if they do not exist yet
-        if m not in calculated:
-            calculated[m] = {r: _estimate_friedrich_coefficients(x, m, r)}
-        else:
-            if r not in calculated[m]:
-                calculated[m] = {r: _estimate_friedrich_coefficients(x, m, r)}
+        if m not in calculated or r not in calculated[m]:
+            calculated[m].update({r: _estimate_friedrich_coefficients(x, m, r)})
 
         try:
             res["m_{}__r_{}__coeff_{}".format(m, r, coeff)] = calculated[m][r][coeff]
@@ -1831,7 +1829,7 @@ def agg_linear_trend(x, param):
     """
     # todo: we could use the index of the DataFrame here
 
-    calculated_agg = {}
+    calculated_agg = defaultdict(dict)
     res_data = []
     res_index = []
 
@@ -1840,13 +1838,13 @@ def agg_linear_trend(x, param):
         chunk_len = parameter_combination["chunk_len"]
         f_agg = parameter_combination["f_agg"]
 
-        aggregate_result = _aggregate_on_chunks(x, f_agg, chunk_len)
         if f_agg not in calculated_agg or chunk_len not in calculated_agg[f_agg]:
             if chunk_len >= len(x):
-                calculated_agg[f_agg] = {chunk_len: np.NaN}
+                calculated_agg[f_agg].update({chunk_len: np.NaN})
             else:
+                aggregate_result = _aggregate_on_chunks(x, f_agg, chunk_len)
                 lin_reg_result = linregress(range(len(aggregate_result)), aggregate_result)
-                calculated_agg[f_agg] = {chunk_len: lin_reg_result}
+                calculated_agg[f_agg].update({chunk_len: lin_reg_result})
 
         attr = parameter_combination["attr"]
 
