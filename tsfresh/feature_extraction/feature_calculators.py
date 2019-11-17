@@ -1885,6 +1885,9 @@ def energy_ratio_by_chunks(x, param):
     res_data = []
     res_index = []
     full_series_energy = np.sum(x ** 2)
+    # Avoid division by zero if x is null
+    if full_series_energy == 0:
+        full_series_energy = 1.0
 
     for parameter_combination in param:
         num_segments = parameter_combination["num_segments"]
