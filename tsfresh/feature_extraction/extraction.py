@@ -366,6 +366,26 @@ def _do_extraction_on_chunk(chunk, default_fc_parameters, kind_to_fc_parameters)
             if param in fc_parameters:
                 for d in fc_parameters[param]:
                     d["_quantiles"] = quantiles
+    dict_binned_diff = {}
+    if "max_langevin_fixed_point" in fc_parameters:
+        dict_binned_diff.update({params["r"]: None for params in fc_parameters["max_langevin_fixed_point"]})
+    if "friedrich_coefficients" in fc_parameters:
+        dict_binned_diff.update({params["r"]: None for params in fc_parameters["friedrich_coefficients"]})
+    if len(dict_binned_diff) > 0:
+        df = pd.DataFrame({'signal': data[:-1], 'delta': np.diff(data)})
+        for r in np.unique(list(dict_binned_diff.keys())):
+            try:
+                df['quantiles'] = pd.qcut(df.signal, r)
+                quantiles = df.groupby('quantiles')
+                result = pd.DataFrame({'x_mean': quantiles.signal.mean(), 'y_mean': quantiles.delta.mean()})
+                result.dropna(inplace=True)
+                dict_binned_diff[r] = result
+            except ValueError:
+                dict_binned_diff[r] = pd.DataFrame({'x_mean': [np.NaN], 'y_mean': [np.NaN]})
+        for param in ["max_langevin_fixed_point", "friedrich_coefficients"]:
+            if param in fc_parameters:
+                for d in fc_parameters[param]:
+                    d["_dict_binned_diff"] = dict_binned_diff
 
     def _f():
         for function_name, parameter_list in fc_parameters.items():

@@ -106,7 +106,7 @@ def _get_length_sequences_where(x):
         return res if len(res) > 0 else [0]
 
 
-def _estimate_friedrich_coefficients(x, m, r):
+def _estimate_friedrich_coefficients(x, m, r, _binned_diff=None):
     """
     Coefficients of polynomial :math:`h(x)`, which has been fitted to
     the deterministic dynamics of Langevin model
@@ -132,16 +132,19 @@ def _estimate_friedrich_coefficients(x, m, r):
     """
     assert m > 0, "Order of polynomial need to be positive integer, found {}".format(m)
 
-    df = pd.DataFrame({'signal': x[:-1], 'delta': np.diff(x)})
-    try:
-        df['quantiles'] = pd.qcut(df.signal, r)
-    except ValueError:
-        return [np.NaN] * (m + 1)
+    if _binned_diff is not None:
+        result = _binned_diff
+    else:
+        df = pd.DataFrame({'signal': x[:-1], 'delta': np.diff(x)})
+        try:
+            df['quantiles'] = pd.qcut(df.signal, r)
+        except ValueError:
+            return [np.NaN] * (m + 1)
 
-    quantiles = df.groupby('quantiles')
+        quantiles = df.groupby('quantiles')
 
-    result = pd.DataFrame({'x_mean': quantiles.signal.mean(), 'y_mean': quantiles.delta.mean()})
-    result.dropna(inplace=True)
+        result = pd.DataFrame({'x_mean': quantiles.signal.mean(), 'y_mean': quantiles.delta.mean()})
+        result.dropna(inplace=True)
 
     try:
         return np.polyfit(result.x_mean, result.y_mean, deg=m)
@@ -1762,12 +1765,15 @@ def friedrich_coefficients(x, param):
         m = parameter_combination['m']
         r = parameter_combination['r']
         coeff = parameter_combination["coeff"]
-
         assert coeff >= 0, "Coefficients must be positive or zero. Found {}".format(coeff)
+        try:
+            binned_diff = parameter_combination["_dict_binned_diff"][r]
+        except KeyError:
+            binned_diff = None
 
         # calculate the current friedrich coefficients if they do not exist yet
         if m not in calculated or r not in calculated[m]:
-            calculated[m][r] = _estimate_friedrich_coefficients(x, m, r)
+            calculated[m][r] = _estimate_friedrich_coefficients(x, m, r, binned_diff)
 
         try:
             res["m_{}__r_{}__coeff_{}".format(m, r, coeff)] = calculated[m][r][coeff]
@@ -1777,7 +1783,7 @@ def friedrich_coefficients(x, param):
 
 
 @set_property("fctype", "simple")
-def max_langevin_fixed_point(x, r, m):
+def max_langevin_fixed_point(x, r, m, _dict_binned_diff=None):
     r"""
     Largest fixed point of dynamics  :math:argmax_x {h(x)=0}` estimated from polynomial :math:`h(x)`,
     which has been fitted to the deterministic dynamics of Langevin model
@@ -1803,7 +1809,11 @@ def max_langevin_fixed_point(x, r, m):
     :return type: float
     """
 
-    coeff = _estimate_friedrich_coefficients(x, m, r)
+    if _dict_binned_diff is not None:
+        binned_diff = _dict_binned_diff[r]
+    else:
+        binned_diff = None
+    coeff = _estimate_friedrich_coefficients(x, m, r, binned_diff)
 
     try:
         max_fixed_point = np.max(np.real(np.roots(coeff)))
