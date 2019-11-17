@@ -321,12 +321,14 @@ def _normalize_input_to_internal_representation(timeseries_container, column_id,
         column_kind = "_variables"
         column_value = "_values"
 
+        if not set(timeseries_container.columns) - {column_id}:
+            raise ValueError("There is no column with values in your data!")
+
         timeseries_container.index.name = 'index'
         timeseries_container = pd.melt(timeseries_container.reset_index(),
                                        id_vars=['index', column_id],
                                        value_name=column_value, var_name=column_kind)
         timeseries_container = timeseries_container.set_index('index')
-
         timeseries_container[column_sort] = np.tile(sort, (len(timeseries_container) // len(sort)))
 
     # Check kind column
