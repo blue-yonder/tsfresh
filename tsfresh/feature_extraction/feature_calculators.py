@@ -1892,7 +1892,11 @@ def energy_ratio_by_chunks(x, param):
         assert segment_focus < num_segments
         assert num_segments > 0
 
-        res_data.append(np.sum(np.array_split(x, num_segments)[segment_focus] ** 2.0)/full_series_energy)
+        if full_series_energy == 0:
+            res_data.append(np.NaN)
+        else:
+            res_data.append(np.sum(np.array_split(x, num_segments)[segment_focus] ** 2.0)/full_series_energy)
+
         res_index.append("num_segments_{}__segment_focus_{}".format(num_segments, segment_focus))
 
     return list(zip(res_index, res_data)) # Materialize as list for Python 3 compatibility with name handling
