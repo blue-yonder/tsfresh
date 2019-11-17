@@ -1035,13 +1035,12 @@ class FeatureCalculationTestCase(TestCase):
             sum = sum + dat
         self.assertAlmostEqual(sum, 1.0)
 
-        # No ZeroDivisionError when x is null
         x = pd.Series(0, index=range(10))
         param = [{"num_segments": 3, "segment_focus": i} for i in range(3)]
         output = energy_ratio_by_chunks(x=x, param=param)
-        self.assertAlmostEqual(output[0][1], 0)
-        self.assertAlmostEqual(output[1][1], 0)
-        self.assertAlmostEqual(output[2][1], 0)
+        self.assertIsNaN(output[0][1])
+        self.assertIsNaN(output[1][1])
+        self.assertIsNaN(output[2][1])
 
     def test_linear_trend_timewise_hours(self):
         """Test linear_trend_timewise function with hour intervals."""
