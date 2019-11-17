@@ -1334,7 +1334,7 @@ def change_quantiles(x, ql, qh, isabs, f_agg):
     :return type: float
     """
     if ql >= qh:
-        ValueError("ql={} should be lower than qh={}".format(ql, qh))
+        return 0
 
     div = np.diff(x)
     if isabs:
