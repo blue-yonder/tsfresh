@@ -1310,7 +1310,7 @@ def ar_coefficient(x, param):
 
 
 @set_property("fctype", "simple")
-def change_quantiles(x, ql, qh, isabs, f_agg):
+def change_quantiles(x, ql, qh, isabs, f_agg, _quantiles=None):
     """
     First fixes a corridor given by the quantiles ql and qh of the distribution of x.
     Then calculates the average, absolute value of consecutive changes of the series x inside this corridor.
@@ -1328,6 +1328,8 @@ def change_quantiles(x, ql, qh, isabs, f_agg):
     :type isabs: bool
     :param f_agg: the aggregator function that is applied to the differences in the bin
     :type f_agg: str, name of a numpy function (e.g. mean, var, std, median)
+    :param _quantiles: internal cache variable, do not use
+    :type _quantiles: dictionary
 
     :return: the value of this feature
     :return type: float
@@ -1335,22 +1337,25 @@ def change_quantiles(x, ql, qh, isabs, f_agg):
     if ql >= qh:
         return 0
 
-    div = np.diff(x)
-    if isabs:
-        div = np.abs(div)
     # All values that originate from the corridor between the quantiles ql and qh will have the category 0,
     # other will be np.NaN
-    try:
-        bin_cat = pd.qcut(x, [ql, qh], labels=False)
-        bin_cat_0 = bin_cat == 0
-    except ValueError:  # Occurs when ql are qh effectively equal, e.g. x is not long enough or is too categorical
-        return 0
+    if _quantiles is not None:
+        bin_cat_0 = (x >= _quantiles[ql]) & (x <= _quantiles[qh])
+    else:
+        try:
+            bin_cat = pd.qcut(x, [ql, qh], labels=False)
+            bin_cat_0 = bin_cat == 0
+        except ValueError:  # Occurs when ql are qh effectively equal, e.g. x is not long enough or is too categorical
+            return 0
     # We only count changes that start and end inside the corridor
     ind = (bin_cat_0 & _roll(bin_cat_0, 1))[1:]
     if np.sum(ind) == 0:
         return 0
     else:
         ind_inside_corridor = np.where(ind == 1)
+        div = np.diff(x)
+        if isabs:
+            div = np.abs(div)
         aggregator = getattr(np, f_agg)
         return aggregator(div[ind_inside_corridor])
 
@@ -1566,7 +1571,7 @@ def autocorrelation(x, lag):
 
 @set_property("fctype", "simple")
 @set_property("input", "pd.Series")
-def quantile(x, q):
+def quantile(x, q, _quantiles=None):
     """
     Calculates the q quantile of x. This is the value of x greater than q% of the ordered values from x.
 
@@ -1574,9 +1579,13 @@ def quantile(x, q):
     :type x: numpy.ndarray
     :param q: the quantile to calculate
     :type q: float
+    :param _quantiles: internal cache variable, do not use
+    :type _quantiles: dictionary
     :return: the value of this feature
     :return type: float
     """
+    if _quantiles is not None:
+        return _quantiles[q]
     if not isinstance(x, pd.Series):
         x = pd.Series(x)
     return pd.Series.quantile(x, q)

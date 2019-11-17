@@ -8,6 +8,7 @@ This module contains the main function to interact with tsfresh: extract feature
 import logging
 import warnings
 
+import numpy as np
 import pandas as pd
 
 from tsfresh import defaults
@@ -351,6 +352,20 @@ def _do_extraction_on_chunk(chunk, default_fc_parameters, kind_to_fc_parameters)
         fc_parameters = kind_to_fc_parameters[kind]
     else:
         fc_parameters = default_fc_parameters
+    # compute quantiles only once
+    all_quantiles = []
+    if "change_quantiles" in fc_parameters:
+        all_quantiles.extend([v for d in fc_parameters["change_quantiles"]
+                              for v in (d["ql"], d["qh"])])
+    if "quantile" in fc_parameters:
+        all_quantiles.extend([d["q"] for d in fc_parameters["quantile"]])
+    if all_quantiles:
+        quantiles = data.quantile(np.unique(all_quantiles))
+        quantiles = {q: y for q, y in zip(quantiles.index, quantiles.values)}
+        for param in ["change_quantiles", "quantile"]:
+            if param in fc_parameters:
+                for d in fc_parameters[param]:
+                    d["_quantiles"] = quantiles
 
     def _f():
         for function_name, parameter_list in fc_parameters.items():
