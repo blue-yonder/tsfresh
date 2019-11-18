@@ -17,7 +17,7 @@ jobs:
       env: NUMPY="latest", PANDAS="latest", SCIKITLEARN="latest", DASK="latest", DISTRIBUTED="latest", SCIPY="latest"
       before_script:
         - pip install --upgrade numpy
-        - pip install --upgrade pandas
+        - pip install pandas===0.23.4 # pandas installation fails with newer version
         - pip install scikit-learn==0.20.3 # last scikit-learn version to support python 2.7
         - pip install --upgrade dask
         - pip install --upgrade distributed
