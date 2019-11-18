@@ -1759,7 +1759,7 @@ def friedrich_coefficients(x, param):
 
         # calculate the current friedrich coefficients if they do not exist yet
         if m not in calculated or r not in calculated[m]:
-            calculated[m].update({r: _estimate_friedrich_coefficients(x, m, r)})
+            calculated[m][r] = _estimate_friedrich_coefficients(x, m, r)
 
         try:
             res["m_{}__r_{}__coeff_{}".format(m, r, coeff)] = calculated[m][r][coeff]
@@ -1840,11 +1840,11 @@ def agg_linear_trend(x, param):
 
         if f_agg not in calculated_agg or chunk_len not in calculated_agg[f_agg]:
             if chunk_len >= len(x):
-                calculated_agg[f_agg].update({chunk_len: np.NaN})
+                calculated_agg[f_agg][chunk_len] = np.NaN
             else:
                 aggregate_result = _aggregate_on_chunks(x, f_agg, chunk_len)
                 lin_reg_result = linregress(range(len(aggregate_result)), aggregate_result)
-                calculated_agg[f_agg].update({chunk_len: lin_reg_result})
+                calculated_agg[f_agg][chunk_len] = lin_reg_result
 
         attr = parameter_combination["attr"]
 
