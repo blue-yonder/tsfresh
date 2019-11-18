@@ -1600,8 +1600,9 @@ def number_crossing_m(x, m):
     if not isinstance(x, (np.ndarray, pd.Series)):
         x = np.asarray(x)
     # From https://stackoverflow.com/questions/3843017/efficiently-detect-sign-changes-in-python
+    # However, we are not going with the fastest version as it breaks with pandas
     positive = x > m
-    return np.where(np.bitwise_xor(positive[1:], positive[:-1]))[0].size
+    return np.where(np.diff(positive))[0].size
 
 
 @set_property("fctype", "simple")

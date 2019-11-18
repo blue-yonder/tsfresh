@@ -554,7 +554,7 @@ class ImputeTestCase(TestCase):
 
         df = pd.DataFrame(np.transpose([[0, 1, 2, np.NaN], [1, np.PINF, 2, np.NaN], [np.NaN, -3, np.NINF, 3]]),
                           columns=["value_a", "value_b", "value_c"])
-        df = df.astype(np.float64, inplace=True)
+        df = df.astype(np.float64)
         dataframe_functions.impute(df)
 
         self.assertEqual(list(df.value_a), [0, 1, 2, 1])
@@ -563,7 +563,7 @@ class ImputeTestCase(TestCase):
 
         df = pd.DataFrame(np.transpose([[0, 1, 2, np.NaN], [1, np.PINF, 2, 3], [np.PINF, -3, np.NINF, 3]]),
                           columns=["value_a", "value_b", "value_c"])
-        df = df.astype(np.float32, inplace=True)
+        df = df.astype(np.float32)
         dataframe_functions.impute(df)
 
         self.assertEqual(list(df.value_a), [0, 1, 2, 1])
