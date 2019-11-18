@@ -13,7 +13,7 @@ install:
   - pip freeze
 jobs:
   include:
-    - stage: Run unit tests and deploy
+    - stage: Run tests on newest set of dependencies (Python 2.7)
       env: NUMPY="latest", PANDAS="latest", SCIKITLEARN="latest", DASK="latest", DISTRIBUTED="latest", SCIPY="latest"
       before_script:
         - pip install --upgrade numpy
@@ -30,7 +30,7 @@ jobs:
       after_success:
         - coveralls
 
-    - stage: Run unit tests and deploy
+    - stage: Run tests on newest set of dependencies (Python 3.5)
       env: NUMPY="latest", PANDAS="latest", SCIKITLEARN="latest", DASK="latest", DISTRIBUTED="latest", SCIPY="latest"
       before_script:
         - pip install --upgrade numpy
@@ -45,7 +45,7 @@ jobs:
         - "if [ $TRAVIS_PULL_REQUEST == false ] && ! [ $TRAVIS_BRANCH == 'master' ]; then pytest tests/units -n2; else pytest tests; fi"
       python: 3.5
 
-    - stage: Run unit tests and deploy
+    - stage: Run tests on oldest set of dependencies (Python 2.7)
       env: NUMPY="1.10.4", PANDAS="0.20.3", SCIKITLEARN="0.18.0", DASK="0.15.2", DISTRIBUTED="1.18.3", SCIPY="1.2.0"
       before_script:
         - pip install numpy==1.10.4
@@ -62,11 +62,11 @@ jobs:
         - "if [ $TRAVIS_PULL_REQUEST == false ] && ! [ $TRAVIS_BRANCH == 'master' ]; then pytest tests/units -n2; else pytest tests; fi"
       python: 2.7
 
-    - stage: Run unit tests and deploy
-      env: NUMPY="1.10.4", PANDAS="latest", SCIKITLEARN="0.18.0", DASK="0.15.2", DISTRIBUTED="1.18.3", SCIPY="1.2.0"
+    - stage: Run tests on oldest set of dependencies (Python 3.5)
+      env: NUMPY="1.10.4", PANDAS="0.20.3", SCIKITLEARN="0.18.0", DASK="0.15.2", DISTRIBUTED="1.18.3", SCIPY="1.2.0"
       before_script:
         - pip install numpy==1.10.4
-        - pip install --upgrade pandas
+        - pip install pandas==0.20.3
         - pip install scikit-learn==0.18.0
         - pip install dask==0.15.2
         - pip install distributed==1.18.3
