@@ -354,6 +354,14 @@ def _normalize_input_to_internal_representation(timeseries_container, column_id,
     # The kind columns should always be of type "str" to make the inference of feature settings later in `from_columns`
     # work
     timeseries_container[column_kind] = timeseries_container[column_kind].astype(str)
+
+    # Make sure we have only parsable names
+    for kind in timeseries_container[column_kind].unique():
+        if kind.endswith("_"):
+            raise ValueError("The kind {kind} is not allowed to end with '_'".format(kind=kind))
+        if "__" in kind:
+            raise ValueError("The kind {kind} is not allowed to contain '__'".format(kind=kind))
+
     return timeseries_container, column_id, column_kind, column_value
 
 

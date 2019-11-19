@@ -138,6 +138,12 @@ class NormalizeTestCase(TestCase):
         self.assertRaises(ValueError, dataframe_functions._normalize_input_to_internal_representation, test_df,
                           None, None, None, "value")
 
+        test_df = pd.DataFrame([{"id": 0, "a_": 3, "b": 5, "sort": 1}])
+        self.assertRaises(ValueError, dataframe_functions._normalize_input_to_internal_representation, test_df, "id", "sort", None, None)
+
+        test_df = pd.DataFrame([{"id": 0, "a__c": 3, "b": 5, "sort": 1}])
+        self.assertRaises(ValueError, dataframe_functions._normalize_input_to_internal_representation, test_df, "id", "sort", None, None)
+        
         test_df = pd.DataFrame([{"id": 0}])
         self.assertRaises(ValueError, dataframe_functions._normalize_input_to_internal_representation, test_df,
                           "id", None, None, None)
