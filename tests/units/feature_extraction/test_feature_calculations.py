@@ -318,6 +318,9 @@ class FeatureCalculationTestCase(TestCase):
     def test_mean_change(self):
         self.assertEqualOnAllArrayTypes(mean_change, [-2, 2, 5], 3.5)
         self.assertEqualOnAllArrayTypes(mean_change, [1, 2, -1], -1)
+        self.assertEqualOnAllArrayTypes(mean_change, [10, 20], 10)
+        self.assertIsNanOnAllArrayTypes(mean_change, [1])
+        self.assertIsNanOnAllArrayTypes(mean_change, [])
 
     def test_mean_second_derivate_central(self):
         self.assertEqualOnAllArrayTypes(mean_second_derivative_central, list(range(10)), 0)
@@ -1032,6 +1035,13 @@ class FeatureCalculationTestCase(TestCase):
             sum = sum + dat
         self.assertAlmostEqual(sum, 1.0)
 
+        x = pd.Series(0, index=range(10))
+        param = [{"num_segments": 3, "segment_focus": i} for i in range(3)]
+        output = energy_ratio_by_chunks(x=x, param=param)
+        self.assertIsNaN(output[0][1])
+        self.assertIsNaN(output[1][1])
+        self.assertIsNaN(output[2][1])
+
     def test_linear_trend_timewise_hours(self):
         """Test linear_trend_timewise function with hour intervals."""
         x = pd.Series(
@@ -1120,6 +1130,12 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqual(res["attr_\"stderr\""], 0, places=3)
         self.assertAlmostEqual(res["attr_\"intercept\""], 0, places=3)
         self.assertAlmostEqual(res["attr_\"slope\""], 1.0, places=3)
+
+    def test_change_quantiles(self):
+        """Test change_quantiles function when changing from `sum` to `np.sum`."""
+        np.random.seed(0)
+        res = change_quantiles(np.random.rand(10000) * 1000, 0.1, 0.2, False, 'mean')
+        self.assertAlmostEqual(res, -0.9443846621365727)
 
         
 class FriedrichTestCase(TestCase):

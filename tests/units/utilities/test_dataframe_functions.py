@@ -143,6 +143,14 @@ class NormalizeTestCase(TestCase):
 
         test_df = pd.DataFrame([{"id": 0, "a__c": 3, "b": 5, "sort": 1}])
         self.assertRaises(ValueError, dataframe_functions._normalize_input_to_internal_representation, test_df, "id", "sort", None, None)
+        
+        test_df = pd.DataFrame([{"id": 0}])
+        self.assertRaises(ValueError, dataframe_functions._normalize_input_to_internal_representation, test_df,
+                          "id", None, None, None)
+
+        test_df = pd.DataFrame([{"id": 0, "sort": 0}])
+        self.assertRaises(ValueError, dataframe_functions._normalize_input_to_internal_representation, test_df,
+                          "id", "sort", None, None)
 
 
     def test_wide_dataframe_order_preserved_with_sort_column(self):
