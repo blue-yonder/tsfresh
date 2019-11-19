@@ -25,6 +25,6 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     setup_requires=["six", "setuptools_scm"] + sphinx,
-    packages=find_packages(),
+    packages=find_packages(exclude=["tests.*", "tests"]),
     install_requires=requirements,
 )
