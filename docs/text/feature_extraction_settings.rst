@@ -15,7 +15,7 @@ So, to just calculate a comprehensive set of features, call the :func:`tsfresh.e
 passing a `default_fc_parameters` or `kind_to_fc_parameters` object, which means you are using the default options
 (which will use all feature calculators in this package for what we think are sane default parameters).
 
-For the advanced: How does I set the parameters for all kind of time series?
+For the advanced: How do I set the parameters for all kind of time series?
 ----------------------------------------------------------------------------
 
 After digging deeper into your data, you maybe want to calculate more of a certain type of feature and less of another

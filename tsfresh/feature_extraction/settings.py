@@ -105,7 +105,7 @@ class ComprehensiveFCParameters(dict):
         name_to_param = {}
 
         for name, func in feature_calculators.__dict__.items():
-            if callable(func) and hasattr(func, "fctype") and len(getargspec(func).args) == 1:
+            if callable(func) and hasattr(func, "fctype") and len(getfullargspec(func).args) == 1:
                 name_to_param[name] = None
 
         name_to_param.update({
@@ -128,7 +128,7 @@ class ComprehensiveFCParameters(dict):
             "ar_coefficient": [{"coeff": coeff, "k": k} for coeff in range(5) for k in [10]],
             "change_quantiles": [{"ql": ql, "qh": qh, "isabs": b, "f_agg": f}
                                           for ql in [0., .2, .4, .6, .8] for qh in [.2, .4, .6, .8, 1.]
-                                          for b in [False, True] for f in ["mean", "var"]],
+                                          for b in [False, True] for f in ["mean", "var"] if ql < qh],
             "fft_coefficient": [{"coeff": k, "attr": a} for a, k in product(["real", "imag", "abs", "angle"], range(100))],
             "fft_aggregated": [{"aggtype": s} for s in ["centroid", "variance", "skew", "kurtosis"]],
             "value_count": [{"value": value} for value in [0, 1, -1]],
