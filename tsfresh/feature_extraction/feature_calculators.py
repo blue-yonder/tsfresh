@@ -106,7 +106,7 @@ def _get_length_sequences_where(x):
 
 
 def _estimate_friedrich_coefficients(x, m, r):
-    r"""
+    """
     Coefficients of polynomial :math:`h(x)`, which has been fitted to
     the deterministic dynamics of Langevin model
     .. math::
