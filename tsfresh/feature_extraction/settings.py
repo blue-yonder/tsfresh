@@ -5,8 +5,7 @@
 This file contains methods/objects for controlling which features will be extracted when calling extract_features.
 For the naming of the features, see :ref:`feature-naming-label`.
 """
-
-from inspect import getargspec
+from inspect import getfullargspec
 
 import pandas as pd
 import numpy as np
