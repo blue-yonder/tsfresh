@@ -321,11 +321,20 @@ def _normalize_input_to_internal_representation(timeseries_container, column_id,
         column_kind = "_variables"
         column_value = "_values"
 
-        timeseries_container.index.name = 'index'
+        # We need to preserve the index. However, pandas has hard times to parse the columns if they
+        # have different types, so we need to preserve them.
+        # At least until https://github.com/pandas-dev/pandas/pull/28859 is merged.
+        if isinstance(column_id, int) or isinstance(column_id, float):
+            # some arbitrary number
+            index_name = column_id + 999
+        else:
+            index_name = "_temporary_index_column"
+
+        timeseries_container.index.name = index_name
         timeseries_container = pd.melt(timeseries_container.reset_index(),
-                                       id_vars=['index', column_id],
+                                       id_vars=[index_name, column_id],
                                        value_name=column_value, var_name=column_kind)
-        timeseries_container = timeseries_container.set_index('index')
+        timeseries_container = timeseries_container.set_index(index_name)
 
         timeseries_container[column_sort] = np.tile(sort, (len(timeseries_container) // len(sort)))
 
