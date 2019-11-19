@@ -321,6 +321,9 @@ def _normalize_input_to_internal_representation(timeseries_container, column_id,
         column_kind = "_variables"
         column_value = "_values"
 
+        if not set(timeseries_container.columns) - {column_id}:
+            raise ValueError("There is no column with values in your data!")
+
         # We need to preserve the index. However, pandas has hard times to parse the columns if they
         # have different types, so we need to preserve them.
         # At least until https://github.com/pandas-dev/pandas/pull/28859 is merged.
@@ -335,7 +338,6 @@ def _normalize_input_to_internal_representation(timeseries_container, column_id,
                                        id_vars=[index_name, column_id],
                                        value_name=column_value, var_name=column_kind)
         timeseries_container = timeseries_container.set_index(index_name)
-
         timeseries_container[column_sort] = np.tile(sort, (len(timeseries_container) // len(sort)))
 
     # Check kind column
@@ -361,6 +363,14 @@ def _normalize_input_to_internal_representation(timeseries_container, column_id,
     # The kind columns should always be of type "str" to make the inference of feature settings later in `from_columns`
     # work
     timeseries_container[column_kind] = timeseries_container[column_kind].astype(str)
+
+    # Make sure we have only parsable names
+    for kind in timeseries_container[column_kind].unique():
+        if kind.endswith("_"):
+            raise ValueError("The kind {kind} is not allowed to end with '_'".format(kind=kind))
+        if "__" in kind:
+            raise ValueError("The kind {kind} is not allowed to contain '__'".format(kind=kind))
+
     return timeseries_container, column_id, column_kind, column_value
 
 
