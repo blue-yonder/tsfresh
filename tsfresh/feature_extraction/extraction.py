@@ -5,14 +5,10 @@
 This module contains the main function to interact with tsfresh: extract features
 """
 
-from __future__ import absolute_import, division
-
 import logging
-import sys
 import warnings
 
 import pandas as pd
-import six
 
 from tsfresh import defaults
 from tsfresh.feature_extraction import feature_calculators
@@ -32,12 +28,6 @@ logging.basicConfig()
 
 
 _logger = logging.getLogger(__name__)
-
-if six.PY2:
-    msg = "tsfresh versions 0.11.* will be the last ones to support python 2. From tsfresh 0.12.0 on, " \
-          "we will only support python 3. You are running python {}.{}.{}".format(
-        sys.version_info.major, sys.version_info.minor, sys.version_info.micro)
-    _logger.warning(msg)
 
 
 def extract_features(timeseries_container, default_fc_parameters=None,

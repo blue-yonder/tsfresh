@@ -14,11 +14,10 @@ set_property function. Only functions in this python module, which have a parame
 seen by tsfresh as a feature calculator. Others will not be calculated.
 """
 
-from __future__ import absolute_import, division
-
 import itertools
 import warnings
 from builtins import range
+from collections import defaultdict
 
 import numpy as np
 import pandas as pd
@@ -34,36 +33,36 @@ from statsmodels.tsa.stattools import acf, adfuller, pacf
 
 def _roll(a, shift):
     """
-    Roll 1D array elements. Improves the performance of numpy.roll() by reducing the overhead introduced from the 
-    flexibility of the numpy.roll() method such as the support for rolling over multiple dimensions. 
-    
+    Roll 1D array elements. Improves the performance of numpy.roll() by reducing the overhead introduced from the
+    flexibility of the numpy.roll() method such as the support for rolling over multiple dimensions.
+
     Elements that roll beyond the last position are re-introduced at the beginning. Similarly, elements that roll
     back beyond the first position are re-introduced at the end (with negative shift).
-    
+
     Examples
     --------
     >>> x = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
     >>> _roll(x, shift=2)
     >>> array([8, 9, 0, 1, 2, 3, 4, 5, 6, 7])
-    
+
     >>> x = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
     >>> _roll(x, shift=-2)
     >>> array([2, 3, 4, 5, 6, 7, 8, 9, 0, 1])
-    
+
     >>> x = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
     >>> _roll(x, shift=12)
     >>> array([8, 9, 0, 1, 2, 3, 4, 5, 6, 7])
-    
+
     Benchmark
     ---------
     >>> x = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
     >>> %timeit _roll(x, shift=2)
     >>> 1.89 µs ± 341 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
-    
+
     >>> x = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
     >>> %timeit np.roll(x, shift=2)
     >>> 11.4 µs ± 776 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
-    
+
     :param a: the input array
     :type a: array_like
     :param shift: the number of places by which elements are shifted
@@ -938,7 +937,7 @@ def fft_coefficient(x, param):
     """
 
     assert min([config["coeff"] for config in param]) >= 0, "Coefficients must be positive or zero."
-    assert set([config["attr"] for config in param]) <= set(["imag", "real", "abs", "angle"]), \
+    assert {config["attr"] for config in param} <= {"imag", "real", "abs", "angle"}, \
         'Attribute must be "real", "imag", "angle" or "abs"'
 
     fft = np.fft.rfft(x)
@@ -973,16 +972,16 @@ def fft_aggregated(x, param):
     :return type: pandas.Series
     """
 
-    assert set([config["aggtype"] for config in param]) <= set(["centroid", "variance", "skew", "kurtosis"]), \
+    assert {config["aggtype"] for config in param} <= {"centroid", "variance", "skew", "kurtosis"}, \
         'Attribute must be "centroid", "variance", "skew", "kurtosis"'
 
 
     def get_moment(y, moment):
-        """
+        r"""
         Returns the (non centered) moment of the distribution y:
         E[y**moment] = \\sum_i[index(y_i)^moment * y_i] / \\sum_i[y_i]
-        
-        :param y: the discrete distribution from which one wants to calculate the moment 
+
+        :param y: the discrete distribution from which one wants to calculate the moment
         :type y: pandas.Series or np.array
         :param moment: the moment one wants to calcalate (choose 1,2,3, ... )
         :type moment: int
@@ -993,19 +992,19 @@ def fft_aggregated(x, param):
 
     def get_centroid(y):
         """
-        :param y: the discrete distribution from which one wants to calculate the centroid 
+        :param y: the discrete distribution from which one wants to calculate the centroid
         :type y: pandas.Series or np.array
         :return: the centroid of distribution y (aka distribution mean, first moment)
-        :return type: float 
+        :return type: float
         """
         return get_moment(y, 1)
 
     def get_variance(y):
         """
-        :param y: the discrete distribution from which one wants to calculate the variance 
+        :param y: the discrete distribution from which one wants to calculate the variance
         :type y: pandas.Series or np.array
         :return: the variance of distribution y
-        :return type: float 
+        :return type: float
         """
         return get_moment(y, 2) - get_centroid(y) ** 2
 
@@ -1013,11 +1012,11 @@ def fft_aggregated(x, param):
         """
         Calculates the skew as the third standardized moment.
         Ref: https://en.wikipedia.org/wiki/Skewness#Definition
-        
-        :param y: the discrete distribution from which one wants to calculate the skew 
+
+        :param y: the discrete distribution from which one wants to calculate the skew
         :type y: pandas.Series or np.array
         :return: the skew of distribution y
-        :return type: float 
+        :return type: float
         """
 
         variance = get_variance(y)
@@ -1034,11 +1033,11 @@ def fft_aggregated(x, param):
         """
         Calculates the kurtosis as the fourth standardized moment.
         Ref: https://en.wikipedia.org/wiki/Kurtosis#Pearson_moments
-        
-        :param y: the discrete distribution from which one wants to calculate the kurtosis 
+
+        :param y: the discrete distribution from which one wants to calculate the kurtosis
         :type y: pandas.Series or np.array
         :return: the kurtosis of distribution y
-        :return type: float 
+        :return type: float
         """
 
         variance = get_variance(y)
@@ -1722,7 +1721,7 @@ def approximate_entropy(x, m, r):
 
 @set_property("fctype", "combiner")
 def friedrich_coefficients(x, param):
-    """
+    r"""
     Coefficients of polynomial :math:`h(x)`, which has been fitted to
     the deterministic dynamics of Langevin model
 
@@ -1747,7 +1746,7 @@ def friedrich_coefficients(x, param):
     :return: the different feature values
     :return type: pandas.Series
     """
-    calculated = {}  # calculated is dictionary storing the calculated coefficients {m: {r: friedrich_coefficients}}
+    calculated = defaultdict(dict)  # calculated is dictionary storing the calculated coefficients {m: {r: friedrich_coefficients}}
     res = {}  # res is a dictionary containg the results {"m_10__r_2__coeff_3": 15.43}
 
     for parameter_combination in param:
@@ -1758,11 +1757,8 @@ def friedrich_coefficients(x, param):
         assert coeff >= 0, "Coefficients must be positive or zero. Found {}".format(coeff)
 
         # calculate the current friedrich coefficients if they do not exist yet
-        if m not in calculated:
-            calculated[m] = {r: _estimate_friedrich_coefficients(x, m, r)}
-        else:
-            if r not in calculated[m]:
-                calculated[m] = {r: _estimate_friedrich_coefficients(x, m, r)}
+        if m not in calculated or r not in calculated[m]:
+            calculated[m][r] = _estimate_friedrich_coefficients(x, m, r)
 
         try:
             res["m_{}__r_{}__coeff_{}".format(m, r, coeff)] = calculated[m][r][coeff]
@@ -1773,7 +1769,7 @@ def friedrich_coefficients(x, param):
 
 @set_property("fctype", "simple")
 def max_langevin_fixed_point(x, r, m):
-    """
+    r"""
     Largest fixed point of dynamics  :math:argmax_x {h(x)=0}` estimated from polynomial :math:`h(x)`,
     which has been fitted to the deterministic dynamics of Langevin model
 
@@ -1832,7 +1828,7 @@ def agg_linear_trend(x, param):
     """
     # todo: we could use the index of the DataFrame here
 
-    calculated_agg = {}
+    calculated_agg = defaultdict(dict)
     res_data = []
     res_index = []
 
@@ -1841,13 +1837,13 @@ def agg_linear_trend(x, param):
         chunk_len = parameter_combination["chunk_len"]
         f_agg = parameter_combination["f_agg"]
 
-        aggregate_result = _aggregate_on_chunks(x, f_agg, chunk_len)
         if f_agg not in calculated_agg or chunk_len not in calculated_agg[f_agg]:
             if chunk_len >= len(x):
-                calculated_agg[f_agg] = {chunk_len: np.NaN}
+                calculated_agg[f_agg][chunk_len] = np.NaN
             else:
+                aggregate_result = _aggregate_on_chunks(x, f_agg, chunk_len)
                 lin_reg_result = linregress(range(len(aggregate_result)), aggregate_result)
-                calculated_agg[f_agg] = {chunk_len: lin_reg_result}
+                calculated_agg[f_agg][chunk_len] = lin_reg_result
 
         attr = parameter_combination["attr"]
 

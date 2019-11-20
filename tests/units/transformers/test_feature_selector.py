@@ -101,7 +101,7 @@ class FeatureSelectorTestCase(TestCase):
         
     def test_feature_importance(self):
         selector = FeatureSelector()
-        self.assertTrue(selector.feature_importances_ is None)
+        self.assertIsNone(selector.feature_importances_)
         
         y = pd.Series(np.random.binomial(1, 0.5, 1000))
         X = pd.DataFrame(index=list(range(1000)))
@@ -115,7 +115,7 @@ class FeatureSelectorTestCase(TestCase):
 
     def test_feature_importance(self):
         selector = FeatureSelector()
-        self.assertTrue(selector.p_values is None)
+        self.assertIsNone(selector.p_values)
         
         y = pd.Series(np.random.binomial(1, 0.5, 1000))
         X = pd.DataFrame(index=list(range(1000)))

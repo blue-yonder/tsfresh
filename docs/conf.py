@@ -63,8 +63,8 @@ master_doc = 'index'
 # General information about the project.
 import datetime
 now = datetime.datetime.today()
-project = u'tsfresh'
-copyright = u'2016-{}, Maximilian Christ et al./ Blue Yonder GmbH'.format(now.year)
+project = 'tsfresh'
+copyright = '2016-{}, Maximilian Christ et al./ Blue Yonder GmbH'.format(now.year)
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -218,8 +218,8 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'user_guide.tex', u'tsfresh Documentation',
-   u'', 'manual'),
+  ('index', 'user_guide.tex', 'tsfresh Documentation',
+   '', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of

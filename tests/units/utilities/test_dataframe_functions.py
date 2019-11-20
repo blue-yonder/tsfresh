@@ -7,7 +7,6 @@ from unittest import TestCase
 import pandas as pd
 from tsfresh.utilities import dataframe_functions
 import numpy as np
-import six
 from pandas.testing import assert_frame_equal, assert_series_equal
 
 from tsfresh.utilities.dataframe_functions import get_ids
@@ -68,7 +67,7 @@ class NormalizeTestCase(TestCase):
         self.assertEqual(column_value, "value")
         self.assertEqual(column_kind, "kind")
         self.assertIn("a", set(result_df[column_kind]))
-        six.assertCountEqual(self, list(result_df.columns), ["id", "value", "kind"])
+        self.assertCountEqual(list(result_df.columns), ["id", "value", "kind"])
         self.assertEqual(list(result_df[result_df[column_kind] == "a"]["value"]), [3])
         self.assertEqual(list(result_df[result_df[column_kind] == "a"]["id"]), [0])
 
@@ -82,7 +81,7 @@ class NormalizeTestCase(TestCase):
         self.assertEqual(column_value, "value")
         self.assertEqual(column_kind, "_variables")
         self.assertIn("value", set(result_df[column_kind]))
-        six.assertCountEqual(self, list(result_df.columns), ["id", "value", "_variables"])
+        self.assertCountEqual(list(result_df.columns), ["id", "value", "_variables"])
         self.assertEqual(list(result_df[result_df[column_kind] == "value"]["value"]), [3])
         self.assertEqual(list(result_df[result_df[column_kind] == "value"]["id"]), [0])
 
@@ -97,7 +96,7 @@ class NormalizeTestCase(TestCase):
         self.assertEqual(column_kind, "_variables")
         self.assertIn("a", set(result_df[column_kind]))
         self.assertIn("b", set(result_df[column_kind]))
-        six.assertCountEqual(self, list(result_df.columns), ["_values", "_variables", "id"])
+        self.assertCountEqual(list(result_df.columns), ["_values", "_variables", "id"])
         self.assertEqual(list(result_df[result_df[column_kind] == "a"]["_values"]), [3])
         self.assertEqual(list(result_df[result_df[column_kind] == "a"]["id"]), [0])
         self.assertEqual(list(result_df[result_df[column_kind] == "b"]["_values"]), [5])
@@ -748,9 +747,9 @@ class GetIDsTestCase(TestCase):
 
     def test_get_id__correct_DataFrame(self):
         df = pd.DataFrame({"_value": [1, 2, 3, 4, 10, 11], "id": [1, 1, 1, 1, 2, 2]})
-        self.assertEqual(get_ids(df, "id"), set([1, 2]))
+        self.assertEqual(get_ids(df, "id"), {1, 2})
 
     def test_get_id__correct_dict(self):
         df_dict = {"a": pd.DataFrame({"_value": [1, 2, 3, 4, 10, 11], "id": [1, 1, 1, 1, 2, 2]}),
                    "b": pd.DataFrame({"_value": [5, 6, 7, 8, 12, 13], "id": [4, 4, 3, 3, 2, 2]})}
-        self.assertEqual(get_ids(df_dict, "id"), set([1, 2, 3, 4]))
+        self.assertEqual(get_ids(df_dict, "id"), {1, 2, 3, 4})

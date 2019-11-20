@@ -5,18 +5,10 @@
 This file contains methods/objects for controlling which features will be extracted when calling extract_features.
 For the naming of the features, see :ref:`feature-naming-label`.
 """
-
-from __future__ import absolute_import, division
-
-try: #Python 3
-    from inspect import getfullargspec
-except ImportError: #Python 2.7
-    from inspect import getargspec as getfullargspec
+from inspect import getfullargspec
 
 import pandas as pd
-import numpy as np
 from builtins import range
-from past.builtins import basestring
 
 from itertools import product
 
@@ -54,7 +46,7 @@ def from_columns(columns, columns_to_ignore=None):
         if col in columns_to_ignore:
             continue
 
-        if not isinstance(col, basestring):
+        if not isinstance(col, str):
             raise TypeError("Column name {} should be a string or unicode".format(col))
 
         # Split according to our separator into <col_name>, <feature_name>, <feature_params>
@@ -155,7 +147,7 @@ class ComprehensiveFCParameters(dict):
                              {"attr": "slope"}, {"attr": "stderr"}]
         })
 
-        super(ComprehensiveFCParameters, self).__init__(name_to_param)
+        super().__init__(name_to_param)
 
 
 class MinimalFCParameters(ComprehensiveFCParameters):

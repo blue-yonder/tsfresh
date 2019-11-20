@@ -2,8 +2,6 @@
 # This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
-from __future__ import absolute_import, division
-from __future__ import print_function
 from random import shuffle
 from unittest import TestCase
 from tsfresh.feature_extraction.feature_calculators import *
@@ -12,7 +10,6 @@ from tsfresh.feature_extraction.feature_calculators import _get_length_sequences
 from tsfresh.feature_extraction.feature_calculators import _estimate_friedrich_coefficients
 from tsfresh.feature_extraction.feature_calculators import _aggregate_on_chunks
 from tsfresh.examples.driftbif_simulation import velocity
-import six
 import math
 
 
@@ -23,12 +20,12 @@ class FeatureCalculationTestCase(TestCase):
 
     def assertEqualOnAllArrayTypes(self, f, input_to_f, result, *args, **kwargs):
         self.assertEqual(f(input_to_f, *args, **kwargs), result,
-                         msg="Not equal for lists: %s != %s" % (f(input_to_f, *args, **kwargs), result))
+                         msg="Not equal for lists: {} != {}".format(f(input_to_f, *args, **kwargs), result))
         self.assertEqual(f(np.array(input_to_f), *args, **kwargs), result,
-                         msg="Not equal for numpy.arrays: %s != %s" % (
+                         msg="Not equal for numpy.arrays: {} != {}".format(
                          f(np.array(input_to_f), *args, **kwargs), result))
         self.assertEqual(f(pd.Series(input_to_f), *args, **kwargs), result,
-                         msg="Not equal for pandas.Series: %s != %s" % (
+                         msg="Not equal for pandas.Series: {} != {}".format(
                          f(pd.Series(input_to_f), *args, **kwargs), result))
 
     def assertTrueOnAllArrayTypes(self, f, input_to_f, *args, **kwargs):
@@ -53,12 +50,12 @@ class FeatureCalculationTestCase(TestCase):
 
     def assertAlmostEqualOnAllArrayTypes(self, f, input_t_f, result, *args, **kwargs):
         self.assertAlmostEqual(f(input_t_f, *args, **kwargs), result,
-                               msg="Not almost equal for lists: %s != %s" % (f(input_t_f, *args, **kwargs), result))
+                               msg="Not almost equal for lists: {} != {}".format(f(input_t_f, *args, **kwargs), result))
         self.assertAlmostEqual(f(np.array(input_t_f), *args, **kwargs), result,
-                               msg="Not almost equal for np.arrays: %s != %s" % (
+                               msg="Not almost equal for np.arrays: {} != {}".format(
                                    f(np.array(input_t_f), *args, **kwargs), result))
         self.assertAlmostEqual(f(pd.Series(input_t_f), *args, **kwargs), result,
-                               msg="Not almost equal for pd.Series: %s != %s" % (
+                               msg="Not almost equal for pd.Series: {} != {}".format(
                                    f(pd.Series(input_t_f), *args, **kwargs), result))
 
     def assertIsNanOnAllArrayTypes(self, f, input_to_f, *args, **kwargs):
@@ -68,7 +65,7 @@ class FeatureCalculationTestCase(TestCase):
 
     def assertEqualPandasSeriesWrapper(self, f, input_to_f, result, *args, **kwargs):
         self.assertEqual(f(pd.Series(input_to_f), *args, **kwargs), result,
-                         msg="Not equal for pandas.Series: %s != %s" % (
+                         msg="Not equal for pandas.Series: {} != {}".format(
                              f(pd.Series(input_to_f), *args, **kwargs), result))
 
     def test__roll(self):
@@ -258,7 +255,7 @@ class FeatureCalculationTestCase(TestCase):
 
         res = augmented_dickey_fuller(x=x, param=param)
         res = pd.Series(dict(res))
-        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertCountEqual(list(res.index), expected_index)
         self.assertGreater(res['attr_"pvalue"'], 0.10)
         self.assertEqual(res['attr_"usedlag"'], 0)
 
@@ -275,7 +272,7 @@ class FeatureCalculationTestCase(TestCase):
 
         res = augmented_dickey_fuller(x=x, param=param)
         res = pd.Series(dict(res))
-        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertCountEqual(list(res.index), expected_index)
         self.assertLessEqual(res['attr_"pvalue"'], 0.05)
         self.assertEqual(res['attr_"usedlag"'], 0)
 
@@ -482,7 +479,7 @@ class FeatureCalculationTestCase(TestCase):
                           'coeff_0__attr_"abs"', 'coeff_1__attr_"abs"', 'coeff_2__attr_"abs"']
 
         res = pd.Series(dict(fft_coefficient(x, param)))
-        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertCountEqual(list(res.index), expected_index)
         self.assertAlmostEqual(res['coeff_0__attr_"imag"'], 0, places=6)
         self.assertAlmostEqual(res['coeff_0__attr_"real"'], sum(x), places=6)
         self.assertAlmostEqual(res['coeff_0__attr_"angle"'], 0, places=6)
@@ -506,7 +503,7 @@ class FeatureCalculationTestCase(TestCase):
         expected_index = ['coeff_10__attr_"real"']
 
         res = pd.Series(dict(fft_coefficient(x, param)))
-        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertCountEqual(list(res.index), expected_index)
         self.assertIsNaN(res['coeff_10__attr_"real"'])
 
     def test_fft_aggregated(self):
@@ -520,7 +517,7 @@ class FeatureCalculationTestCase(TestCase):
 
         x = np.arange(10)
         res = pd.Series(dict(fft_aggregated(x, param)))
-        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertCountEqual(list(res.index), expected_index)
         self.assertAlmostEqual(res['aggtype_"centroid"'], 1.135, places=3)
         self.assertAlmostEqual(res['aggtype_"variance"'], 2.368, places=3)
         self.assertAlmostEqual(res['aggtype_"skew"'], 1.249, places=3)
@@ -529,7 +526,7 @@ class FeatureCalculationTestCase(TestCase):
         # Scalar multiplying the distribution should not change the results:
         x = 10*x
         res = pd.Series(dict(fft_aggregated(x, param)))
-        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertCountEqual(list(res.index), expected_index)
         self.assertAlmostEqual(res['aggtype_"centroid"'], 1.135, places=3)
         self.assertAlmostEqual(res['aggtype_"variance"'], 2.368, places=3)
         self.assertAlmostEqual(res['aggtype_"skew"'], 1.249, places=3)
@@ -540,7 +537,7 @@ class FeatureCalculationTestCase(TestCase):
         # therefore bad features, therefore an nan should be returned for these values
         x = np.sin(2 * np.pi / 10 * np.arange(30))
         res = pd.Series(dict(fft_aggregated(x, param)))
-        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertCountEqual(list(res.index), expected_index)
         self.assertAlmostEqual(res['aggtype_"centroid"'], 3., places=5)
         self.assertAlmostEqual(res['aggtype_"variance"'], 0., places=5)
         self.assertIsNaN(res['aggtype_"skew"'])
@@ -560,7 +557,7 @@ class FeatureCalculationTestCase(TestCase):
 
         # Calculate values for unit test:
         res = pd.Series(dict(fft_aggregated(x, param)))
-        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertCountEqual(list(res.index), expected_index)
 
         # Compare against hand calculated values:
         rel_diff_allowed = 0.02
@@ -590,7 +587,7 @@ class FeatureCalculationTestCase(TestCase):
         res = index_mass_quantile(x, param)
 
         res = pd.Series(dict(res))
-        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertCountEqual(list(res.index), expected_index)
         self.assertAlmostEqual(res["q_0.5"], 0.5, places=1)
 
         # Test for parts of pandas series
@@ -600,7 +597,7 @@ class FeatureCalculationTestCase(TestCase):
         res = index_mass_quantile(x[x > 0], param)
 
         res = pd.Series(dict(res))
-        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertCountEqual(list(res.index), expected_index)
         self.assertAlmostEqual(res["q_0.5"], 0.5, places=1)
 
         x = [0] * 1000 + [1]
@@ -609,7 +606,7 @@ class FeatureCalculationTestCase(TestCase):
         res = index_mass_quantile(x, param)
 
         res = pd.Series(dict(res))
-        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertCountEqual(list(res.index), expected_index)
         self.assertAlmostEqual(res["q_0.5"], 1, places=1)
         self.assertAlmostEqual(res["q_0.99"], 1, places=1)
 
@@ -621,7 +618,7 @@ class FeatureCalculationTestCase(TestCase):
 
         res = pd.Series(dict(res))
 
-        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertCountEqual(list(res.index), expected_index)
         self.assertAlmostEqual(res["q_0.3"], 0.25, places=1)
         self.assertAlmostEqual(res["q_0.6"], 0.375, places=1)
         self.assertAlmostEqual(res["q_0.9"], 0.75, places=1)
@@ -632,7 +629,7 @@ class FeatureCalculationTestCase(TestCase):
         res = index_mass_quantile(x, param)
 
         res = pd.Series(dict(res))
-        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertCountEqual(list(res.index), expected_index)
         self.assertTrue(np.isnan(res["q_0.5"]))
 
         x = []
@@ -641,7 +638,7 @@ class FeatureCalculationTestCase(TestCase):
         res = index_mass_quantile(x, param)
 
         res = pd.Series(dict(res))
-        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertCountEqual(list(res.index), expected_index)
         self.assertTrue(np.isnan(res["q_0.5"]))
 
     def test_number_cwt_peaks(self):
@@ -655,7 +652,7 @@ class FeatureCalculationTestCase(TestCase):
         param = [{"coeff": 1}, {"coeff": 10}]
         expected_index = ["coeff_1", "coeff_10"]
         res = pd.Series(dict(spkt_welch_density(x, param)))
-        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertCountEqual(list(res.index), expected_index)
         self.assertIsNaN(res["coeff_10"])
 
     def test_cwt_coefficients(self):
@@ -673,7 +670,7 @@ class FeatureCalculationTestCase(TestCase):
         res = pd.Series(dict(res))
 
         # todo: add unit test for the values
-        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertCountEqual(list(res.index), expected_index)
         self.assertTrue(math.isnan(res["widths_(1, 3)__coeff_5__w_3"]))
 
     def test_ar_coefficient(self):
@@ -690,7 +687,7 @@ class FeatureCalculationTestCase(TestCase):
         expected_index = ["k_1__coeff_0", "k_1__coeff_1"]
 
         res = pd.Series(dict(res))
-        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertCountEqual(list(res.index), expected_index)
         self.assertAlmostEqual(res["k_1__coeff_0"], 1, places=2)
         self.assertAlmostEqual(res["k_1__coeff_1"], 2.5, places=2)
 
@@ -711,7 +708,7 @@ class FeatureCalculationTestCase(TestCase):
         res = pd.Series(dict(res))
 
         self.assertIsInstance(res, pd.Series)
-        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertCountEqual(list(res.index), expected_index)
         self.assertAlmostEqual(res["k_2__coeff_0"], 1, places=2)
         self.assertAlmostEqual(res["k_2__coeff_1"], 3.5, places=2)
         self.assertAlmostEqual(res["k_2__coeff_2"], -2, places=2)
@@ -875,13 +872,13 @@ class FeatureCalculationTestCase(TestCase):
         ds = velocity(tau=3.8, delta_t=0.05, R=3e-4, seed=0)
         v = ds.simulate(100000, v0=np.zeros(1))
         v0 = max_langevin_fixed_point(v[:, 0], **default_params)
-        self.assertTrue(abs(ds.deterministic - v0) < 0.001)
+        self.assertLess(abs(ds.deterministic - v0), 0.001)
 
         # Brownian motion
         ds = velocity(tau=2.0 / 0.3 - 3.8, delta_t=0.05, R=3e-4, seed=0)
         v = ds.simulate(10000, v0=np.zeros(1))
         v0 = max_langevin_fixed_point(v[:, 0], **default_params)
-        self.assertTrue(v0 < 0.001)
+        self.assertLess(v0, 0.001)
 
     def test_linear_trend(self):
         # check linear up trend
@@ -897,7 +894,7 @@ class FeatureCalculationTestCase(TestCase):
                           "attr_\"stderr\""]
 
         self.assertEqual(len(res), 5)
-        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertCountEqual(list(res.index), expected_index)
         self.assertAlmostEqual(res["attr_\"pvalue\""], 0)
         self.assertAlmostEqual(res["attr_\"stderr\""], 0)
         self.assertAlmostEqual(res["attr_\"intercept\""], 0)
@@ -965,7 +962,7 @@ class FeatureCalculationTestCase(TestCase):
         res = pd.Series(dict(res))
         self.assertEqual(len(res), 8)
         self.maxDiff = 2000
-        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertCountEqual(list(res.index), expected_index)
         self.assertAlmostEqual(res['f_agg_"max"__chunk_len_3__attr_"intercept"'], 2)
         self.assertAlmostEqual(res['f_agg_"max"__chunk_len_3__attr_"slope"'], 3)
         self.assertAlmostEqual(res['f_agg_"min"__chunk_len_3__attr_"intercept"'], 0)
@@ -1062,7 +1059,7 @@ class FeatureCalculationTestCase(TestCase):
                           "attr_\"stderr\""]
 
         self.assertEqual(len(res), 5)
-        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertCountEqual(list(res.index), expected_index)
         self.assertAlmostEqual(res["attr_\"pvalue\""], 0, places=3)
         self.assertAlmostEqual(res["attr_\"stderr\""], 0, places=3)
         self.assertAlmostEqual(res["attr_\"intercept\""], 0, places=3)
@@ -1150,13 +1147,13 @@ class FriedrichTestCase(TestCase):
         ds = velocity(tau=3.8, delta_t=0.05, R=3e-4, seed=0)
         v = ds.simulate(10000, v0=np.zeros(1))
         coeff = _estimate_friedrich_coefficients(v[:, 0], **default_params)
-        self.assertTrue(abs(coeff[-1]) < 0.0001)
+        self.assertLess(abs(coeff[-1]), 0.0001)
 
         # Brownian motion
         ds = velocity(tau=2.0 / 0.3 - 3.8, delta_t=0.05, R=3e-4, seed=0)
         v = ds.simulate(10000, v0=np.zeros(1))
         coeff = _estimate_friedrich_coefficients(v[:, 0], **default_params)
-        self.assertTrue(abs(coeff[-1]) < 0.0001)
+        self.assertLess(abs(coeff[-1]), 0.0001)
 
     def test_friedrich_coefficients(self):
         # Test binning error returns vector of NaNs
@@ -1165,7 +1162,7 @@ class FriedrichTestCase(TestCase):
         res = pd.Series(dict(friedrich_coefficients(x, param)))
 
         expected_index = ["m_2__r_30__coeff_0", "m_2__r_30__coeff_1", "m_2__r_30__coeff_2", "m_2__r_30__coeff_3"]
-        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertCountEqual(list(res.index), expected_index)
         self.assertTrue(np.sum(np.isnan(res)), 3)
 
     def test_friedrich_number_of_returned_features_is_equal_to_number_of_parameters(self):
@@ -1175,7 +1172,7 @@ class FriedrichTestCase(TestCase):
         res = pd.Series(dict(friedrich_coefficients(x, param)))
 
         expected_index = ["m_3__r_5__coeff_2", "m_3__r_5__coeff_3", "m_3__r_2__coeff_3"]
-        six.assertCountEqual(self, list(res.index), expected_index)
+        self.assertCountEqual(list(res.index), expected_index)
         self.assertTrue(np.sum(np.isnan(res)), 3)
 
     def test_friedrich_equal_to_snapshot(self):

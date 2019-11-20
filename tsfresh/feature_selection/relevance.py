@@ -10,8 +10,6 @@ Afterwards the Benjamini Hochberg procedure which is a multiple testing procedur
 which to cut off (solely based on the p-values).
 """
 
-from __future__ import absolute_import, division, print_function
-
 import logging
 from multiprocessing import Pool
 

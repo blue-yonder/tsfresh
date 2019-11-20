@@ -2,7 +2,6 @@
 # This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
-from __future__ import absolute_import, division
 from tests.fixtures import DataTestCase
 from tsfresh import extract_features, select_features, extract_relevant_features
 from tsfresh.feature_extraction.settings import ComprehensiveFCParameters
