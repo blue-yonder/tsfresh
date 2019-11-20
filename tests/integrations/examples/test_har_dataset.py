@@ -5,7 +5,6 @@
 from unittest import TestCase
 from tsfresh.examples.har_dataset import download_har_dataset, load_har_dataset, load_har_classes
 from pandas import DataFrame, Series
-import six
 
 class HumanActivityTestCase(TestCase):
     def setUp(self):
@@ -21,4 +20,4 @@ class HumanActivityTestCase(TestCase):
         self.assertIsInstance(self.classes, Series)
 
     def test_index(self):
-        six.assertCountEqual(self, self.data.index, self.classes.index)
+        self.assertCountEqual(self.data.index, self.classes.index)

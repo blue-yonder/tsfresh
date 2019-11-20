@@ -6,8 +6,6 @@ This module contains the filtering process for the extracted features. The filte
 other features that are not based on time series.
 """
 
-from __future__ import absolute_import
-
 import logging
 import pandas as pd
 import numpy as np

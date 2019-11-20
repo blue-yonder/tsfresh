@@ -7,7 +7,6 @@ from unittest import TestCase
 from tsfresh import extract_features
 from tsfresh.examples.robot_execution_failures import load_robot_execution_failures, download_robot_execution_failures
 from pandas import DataFrame, Series
-import six
 import numpy as np
 
 
@@ -20,12 +19,12 @@ class RobotExecutionFailuresTestCase(TestCase):
         self.assertEqual(len(self.X), 1320)
         self.assertIsInstance(self.X, DataFrame)
         self.assertIsInstance(self.y, Series)
-        six.assertCountEqual(self, ['id', 'time', 'F_x', 'F_y', 'F_z', 'T_x', 'T_y', 'T_z'], list(self.X.columns))
+        self.assertCountEqual(['id', 'time', 'F_x', 'F_y', 'F_z', 'T_x', 'T_y', 'T_z'], list(self.X.columns))
 
     def test_extraction_runs_through(self):
         df = extract_features(self.X[self.X.id < 3], column_id="id", column_sort="time")
 
-        six.assertCountEqual(self, df.index.values, [1, 2])
+        self.assertCountEqual(df.index.values, [1, 2])
         self.assertGreater(len(df), 0)
 
     def test_binary_target_is_default(self):

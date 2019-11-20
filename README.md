@@ -3,7 +3,6 @@
 [![Coverage Status](https://coveralls.io/repos/github/blue-yonder/tsfresh/badge.svg?branch=master)](https://coveralls.io/github/blue-yonder/tsfresh?branch=master)
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/blue-yonder/tsfresh/blob/master/LICENSE.txt)
 [![Gitter chat](https://badges.gitter.im/tsfresh/Lobby.svg)](https://gitter.im/tsfresh/Lobby?utm_source=share-link&utm_medium=link&utm_campaign=share-link)
-![py27 status](https://img.shields.io/badge/python2.7-supported-green.svg)
 [![py352 status](https://img.shields.io/badge/python3.5.2-supported-green.svg)](https://github.com/blue-yonder/tsfresh/issues/8)
 [![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/blue-yonder/tsfresh/master?filepath=notebooks)
 [![Downloads](https://pepy.tech/badge/tsfresh)](https://pepy.tech/project/tsfresh)
