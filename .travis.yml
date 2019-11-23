@@ -59,7 +59,7 @@ jobs:
       after_success:
         - coveralls
 
-    - stage: Run tests on oldest set of dependencies (Python 3.5)
+    - stage: Run tests on oldest set of dependencies (Python 3.5.3)
       env: NUMPY="1.12.0", PANDAS="0.20.3", SCIKITLEARN="0.19.0", DASK="0.15.2", DISTRIBUTED="1.18.3", SCIPY="1.2.0"
       before_script:
         - pip install numpy==1.12.0  # First version with official python 3.6 support.
@@ -74,7 +74,7 @@ jobs:
       script:
         - sed -i 's/\-n auto/\-n 2/g' setup.cfg
         - "if [ $TRAVIS_PULL_REQUEST == false ] && ! [ $TRAVIS_BRANCH == 'master' ]; then pytest tests/units -n2; else pytest tests; fi"
-      python: 3.5.2
+      python: 3.5.3
 
     - stage: Run tests on oldest set of dependencies (Python 3.6)
       env: NUMPY="1.12.0", PANDAS="0.20.3", SCIKITLEARN="0.19.0", DASK="0.15.2", DISTRIBUTED="1.18.3", SCIPY="1.2.0"
