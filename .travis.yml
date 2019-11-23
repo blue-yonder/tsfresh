@@ -1,5 +1,6 @@
 # Travis Build file for tsfresh
 language: python
+os: linux
 # We want the pip folder to be cached, to speed up installation
 cache:
   directories:
@@ -9,107 +10,59 @@ install:
   - pip install -r requirements.txt -r test-requirements.txt
   - pip install -U .
   - pip freeze
+before_script:
+  - "[ $NUMPY = latest ] && pip install --upgrade numpy || pip install numpy==$NUMPY"
+  - "[ $PANDAS = latest ] && pip install --upgrade pandas || pip install pandas==$PANDAS"
+  - "[ $SCIKITLEARN = latest ] && pip install --upgrade scikit-learn || pip install scikit-learn==$SCIKITLEARN"
+  - "[ $DASK = latest ] && pip install --upgrade dask || pip install dask==$DASK"
+  - "[ $DISTRIBUTED = latest ] && pip install --upgrade distributed || pip install distributed==$DISTRIBUTED"
+  # need to downgrade tornado manually
+  - "[ $SCIPY = latest ] || pip install tornado==4.5.3"
+  - "[ $SCIPY = latest ] && pip install --upgrade scipy || pip install scipy==$SCIPY"
+  - pip list
+  - sed -i -e 's/-n auto/-n 2/g' setup.cfg
+  - sed -e '/^\s*--cov tsfresh/d' setup.cfg > setup-nocov.cfg
+env:
+  global:
+    - PYTEST_ADDOPTS="-c setup-nocov.cfg"
 jobs:
+  # some dependencies are not yet ready for Python 3.8
+  allow_failures:
+    - python: 3.8
+  fast_finish: true
   include:
-    - stage: Run tests on newest set of dependencies (Python 3.5.3)
+    - stage: Run tests
       env: NUMPY="latest", PANDAS="latest", SCIKITLEARN="latest", DASK="latest", DISTRIBUTED="latest", SCIPY="latest"
-      before_script:
-        - pip install --upgrade numpy
-        - pip install --upgrade pandas
-        - pip install --upgrade scikit-learn
-        - pip install --upgrade dask
-        - pip install --upgrade distributed
-        - pip install --upgrade scipy
-        - pip list
-      script:
-        - sed -i 's/\-n auto/\-n 2/g' setup.cfg
-        - "if [ $TRAVIS_PULL_REQUEST == false ] && ! [ $TRAVIS_BRANCH == 'master' ]; then pytest tests/units -n2; else pytest tests; fi"
-      python: 3.5.3
-
-    - stage: Run tests on newest set of dependencies (Python 3.6)
-      env: NUMPY="latest", PANDAS="latest", SCIKITLEARN="latest", DASK="latest", DISTRIBUTED="latest", SCIPY="latest"
-      before_script:
-        - pip install --upgrade numpy
-        - pip install --upgrade pandas
-        - pip install --upgrade scikit-learn
-        - pip install --upgrade dask
-        - pip install --upgrade distributed
-        - pip install --upgrade scipy
-        - pip list
-      script:
-        - sed -i 's/\-n auto/\-n 2/g' setup.cfg
-        - "if [ $TRAVIS_PULL_REQUEST == false ] && ! [ $TRAVIS_BRANCH == 'master' ]; then pytest tests/units -n2; else pytest tests; fi"
-      python: 3.6
-
-
-    - stage: Run tests on newest set of dependencies (Python 3.7)
-      env: NUMPY="latest", PANDAS="latest", SCIKITLEARN="latest", DASK="latest", DISTRIBUTED="latest", SCIPY="latest"
-      before_script:
-        - pip install --upgrade numpy
-        - pip install --upgrade pandas
-        - pip install --upgrade scikit-learn
-        - pip install --upgrade dask
-        - pip install --upgrade distributed
-        - pip install --upgrade scipy
-        - pip list
-      script:
-        - sed -i 's/\-n auto/\-n 2/g' setup.cfg
-        - "if [ $TRAVIS_PULL_REQUEST == false ] && ! [ $TRAVIS_BRANCH == 'master' ]; then pytest tests/units -n2; else pytest tests; fi"
+      python: 3.8
+      script: &test
+        - "if [ $TRAVIS_PULL_REQUEST = false ] && ! [ $TRAVIS_BRANCH = master ]; then pytest tests/units; else pytest tests; fi"
+    - env: NUMPY="latest", PANDAS="latest", SCIKITLEARN="latest", DASK="latest", DISTRIBUTED="latest", SCIPY="latest" PYTEST_ADDOPTS="-c setup.cfg"
       python: 3.7
-      after_success:
-        - coveralls
-
-    - stage: Run tests on oldest set of dependencies (Python 3.5.3)
-      env: NUMPY="1.12.0", PANDAS="0.20.3", SCIKITLEARN="0.19.0", DASK="0.15.2", DISTRIBUTED="1.18.3", SCIPY="1.2.0"
-      before_script:
-        - pip install numpy==1.12.0  # First version with official python 3.6 support.
-        - pip install pandas==0.20.3
-        - pip install scikit-learn==0.19.0
-        - pip install dask==0.15.2
-        - pip install distributed==1.18.3
-        # need to downgrade tornado manually
-        - pip install tornado==4.5.3
-        - pip install scipy==1.2.0
-        - pip list
-      script:
-        - sed -i 's/\-n auto/\-n 2/g' setup.cfg
-        - "if [ $TRAVIS_PULL_REQUEST == false ] && ! [ $TRAVIS_BRANCH == 'master' ]; then pytest tests/units -n2; else pytest tests; fi"
-      python: 3.5.3
-
-    - stage: Run tests on oldest set of dependencies (Python 3.6)
-      env: NUMPY="1.12.0", PANDAS="0.20.3", SCIKITLEARN="0.19.0", DASK="0.15.2", DISTRIBUTED="1.18.3", SCIPY="1.2.0"
-      before_script:
-        - pip install numpy==1.12.0  # First version with official python 3.6 support.
-        - pip install pandas==0.20.3
-        - pip install scikit-learn==0.19.0
-        - pip install dask==0.15.2
-        - pip install distributed==1.18.3
-        # need to downgrade tornado manually
-        - pip install tornado==4.5.3
-        - pip install scipy==1.2.0
-        - pip list
-      script:
-        - sed -i 's/\-n auto/\-n 2/g' setup.cfg
-        - "if [ $TRAVIS_PULL_REQUEST == false ] && ! [ $TRAVIS_BRANCH == 'master' ]; then pytest tests/units -n2; else pytest tests; fi"
+      script: *test
+    - env: NUMPY="latest", PANDAS="latest", SCIKITLEARN="latest", DASK="latest", DISTRIBUTED="latest", SCIPY="latest"
       python: 3.6
-
-    - stage: Run tests on oldest set of dependencies (Python 3.7)
-      env: NUMPY="1.15.1", PANDAS="0.23.2", SCIKITLEARN="0.19.2", DASK="0.16.1", DISTRIBUTED="1.18.3", SCIPY="1.2.0"
-      before_script:
-        - pip install numpy==1.15.1 # First version with official python 3.7 support.
-        - pip install pandas==0.23.2 # First version with official python 3.7 support.
-        - pip install scikit-learn==0.19.2 # First version with python 3.7 support.
-        - pip install dask==0.16.1
-        - pip install distributed==1.18.3
-        # need to downgrade tornado manually
-        - pip install tornado==4.5.3
-        - pip install scipy==1.2.0
-        - pip list
-      script:
-        - sed -i 's/\-n auto/\-n 2/g' setup.cfg
-        - "if [ $TRAVIS_PULL_REQUEST == false ] && ! [ $TRAVIS_BRANCH == 'master' ]; then pytest tests/units -n2; else pytest tests; fi"
+      script: *test
+    - env: NUMPY="latest", PANDAS="latest", SCIKITLEARN="latest", DASK="latest", DISTRIBUTED="latest", SCIPY="latest"
+      # pandas 0.25 requires python >= 3.5.3
+      python: 3.5.3
+      script: *test
+    - env: NUMPY="1.15.1", PANDAS="0.23.2", SCIKITLEARN="0.19.2", DASK="0.16.1", DISTRIBUTED="1.18.3", SCIPY="1.2.0"
       python: 3.7
+      script: *test
+    - env: NUMPY="1.12.0", PANDAS="0.20.3", SCIKITLEARN="0.19.0", DASK="0.15.2", DISTRIBUTED="1.18.3", SCIPY="1.2.0"
+      python: 3.6
+      script: *test
+    - env: NUMPY="1.12.0", PANDAS="0.20.3", SCIKITLEARN="0.19.0", DASK="0.15.2", DISTRIBUTED="1.18.3", SCIPY="1.2.0"
+      python: 3.5.3
+      script: *test
 
+    - stage: Test coverage
+      if: env(PYTEST_ADDOPTS) = "-c setup.cfg" AND fork = false
+      script: coveralls
+
+    - stage: Deploy
+      if: tag IS present AND fork = false
+      python: 3.7
       deploy:
         provider: pypi
         user: MaxChrist
