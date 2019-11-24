@@ -163,7 +163,7 @@ class TestEfficientFCParameters(TestCase):
         """
         rfs = IndexBasedFCParameters()
         all_feature_calculators = [name for name, func in feature_calculators.__dict__.items()
-                                   if getattr(func, "input", None) == "pd.Series"]
+                                   if getattr(func, "fctype", False) and getattr(func, "input", None) == "pd.Series"]
 
         for calculator in all_feature_calculators:
             self.assertIn(calculator, rfs,

@@ -31,6 +31,18 @@ from statsmodels.tsa.stattools import acf, adfuller, pacf
 # todo: make sure '_' works in parameter names in all cases, add a warning if not
 
 
+def set_property(key, value):
+    """
+    This method returns a decorator that sets the property key of the function to value
+    """
+    def decorate_func(func):
+        setattr(func, key, value)
+        if func.__doc__ and key == "fctype":
+            func.__doc__ = func.__doc__ + "\n\n    *This function is of type: " + value + "*\n"
+        return func
+    return decorate_func
+
+
 def _roll(a, shift):
     """
     Roll 1D array elements. Improves the performance of numpy.roll() by reducing the overhead introduced from the
@@ -106,6 +118,42 @@ def _get_length_sequences_where(x):
         return res if len(res) > 0 else [0]
 
 
+@set_property("update_fc_parameters", ["friedrich_coefficients", "max_langevin_fixed_point"])
+def _update_friedrich_params(x, fc_parameters):
+    """
+    Internal function to speed-up "friedrich_coefficients" and "max_langevin_fixed_point" functions.
+    This function gathers all unique values of r requested in fc_parameters,
+    computes corresponding bins for x, and store them in a "_dict_binned_diff"
+    key added to fc_parameters.
+
+    :param x: the time series to calculate the feature of
+    :type x: numpy.array
+    :param fc_parameters: the parameters to update
+    :type fc_parameters: dict
+    """
+    dict_binned_diff = {}
+    if "max_langevin_fixed_point" in fc_parameters:
+        dict_binned_diff.update({params["r"]: None for params in fc_parameters["max_langevin_fixed_point"]})
+    if "friedrich_coefficients" in fc_parameters:
+        dict_binned_diff.update({params["r"]: None for params in fc_parameters["friedrich_coefficients"]})
+    if len(dict_binned_diff) == 0:
+        return
+    df = pd.DataFrame({'signal': x[:-1], 'delta': np.diff(x)})
+    for r in np.unique(list(dict_binned_diff.keys())):
+        try:
+            df['quantiles'] = pd.qcut(df.signal, r)
+            quantiles = df.groupby('quantiles')
+            result = pd.DataFrame({'x_mean': quantiles.signal.mean(), 'y_mean': quantiles.delta.mean()})
+            result.dropna(inplace=True)
+            dict_binned_diff[r] = result
+        except ValueError:
+            dict_binned_diff[r] = pd.DataFrame({'x_mean': [np.NaN], 'y_mean': [np.NaN]})
+    for param in ["max_langevin_fixed_point", "friedrich_coefficients"]:
+        if param in fc_parameters:
+            for d in fc_parameters[param]:
+                d["_dict_binned_diff"] = dict_binned_diff
+
+
 def _estimate_friedrich_coefficients(x, m, r, _binned_diff=None):
     """
     Coefficients of polynomial :math:`h(x)`, which has been fitted to
@@ -167,18 +215,6 @@ def _aggregate_on_chunks(x, f_agg, chunk_len):
     :return type: list
     """
     return [getattr(x[i * chunk_len: (i + 1) * chunk_len], f_agg)() for i in range(int(np.ceil(len(x) / chunk_len)))]
-
-
-def set_property(key, value):
-    """
-    This method returns a decorator that sets the property key of the function to value
-    """
-    def decorate_func(func):
-        setattr(func, key, value)
-        if func.__doc__ and key == "fctype":
-            func.__doc__ = func.__doc__ + "\n\n    *This function is of type: " + value + "*\n"
-        return func
-    return decorate_func
 
 
 @set_property("fctype", "simple")
@@ -1310,6 +1346,35 @@ def ar_coefficient(x, param):
             res[column_name] = np.NaN
 
     return [(key, value) for key, value in res.items()]
+
+
+@set_property("update_fc_parameters", ["quantile", "change_quantiles"])
+@set_property("input", "pd.Series")
+def _update_quantiles_params(x, fc_parameters):
+    """
+    Internal function to speed-up "quantile" and "change_quantiles" functions.
+    This function gathers all unique values of quantiles requested in fc_parameters,
+    computes corresponding values of quantiles for x, and store them in a "_quantile"
+    key added to fc_parameters.
+
+    :param x: the time series to calculate the feature of
+    :type x: pandas.Series
+    :param fc_parameters: the parameters to update
+    :type fc_parameters: dict
+    """
+    all_quantiles = []
+    if "quantile" in fc_parameters:
+        all_quantiles.extend([d["q"] for d in fc_parameters["quantile"]])
+    if "change_quantiles" in fc_parameters:
+        all_quantiles.extend([v for d in fc_parameters["change_quantiles"]
+                              for v in (d["ql"], d["qh"])])
+    if all_quantiles:
+        quantiles = x.quantile(np.unique(all_quantiles))
+        quantiles_as_dict = {q: y for q, y in zip(quantiles.index, quantiles.values)}
+        for param in ["change_quantiles", "quantile"]:
+            if param in fc_parameters:
+                for d in fc_parameters[param]:
+                    d["_quantiles"] = quantiles_as_dict
 
 
 @set_property("fctype", "simple")

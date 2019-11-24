@@ -5,6 +5,7 @@
 This module contains the main function to interact with tsfresh: extract features
 """
 
+import copy
 import logging
 import warnings
 
@@ -29,6 +30,16 @@ logging.basicConfig()
 
 
 _logger = logging.getLogger(__name__)
+
+PREPROCESSOR_FUNCS = {}
+for name, func in feature_calculators.__dict__.items():
+    if callable(func) and hasattr(func, "update_fc_parameters"):
+        cached = getattr(func, "update_fc_parameters")
+        if isinstance(cached, str):
+            PREPROCESSOR_FUNCS[cached] = name
+        else:
+            for c in cached:
+                PREPROCESSOR_FUNCS[c] = name
 
 
 def extract_features(timeseries_container, default_fc_parameters=None,
@@ -352,40 +363,24 @@ def _do_extraction_on_chunk(chunk, default_fc_parameters, kind_to_fc_parameters)
         fc_parameters = kind_to_fc_parameters[kind]
     else:
         fc_parameters = default_fc_parameters
-    # compute quantiles only once
-    all_quantiles = []
-    if "change_quantiles" in fc_parameters:
-        all_quantiles.extend([v for d in fc_parameters["change_quantiles"]
-                              for v in (d["ql"], d["qh"])])
-    if "quantile" in fc_parameters:
-        all_quantiles.extend([d["q"] for d in fc_parameters["quantile"]])
-    if all_quantiles:
-        quantiles = data.quantile(np.unique(all_quantiles))
-        quantiles = {q: y for q, y in zip(quantiles.index, quantiles.values)}
-        for param in ["change_quantiles", "quantile"]:
-            if param in fc_parameters:
-                for d in fc_parameters[param]:
-                    d["_quantiles"] = quantiles
-    dict_binned_diff = {}
-    if "max_langevin_fixed_point" in fc_parameters:
-        dict_binned_diff.update({params["r"]: None for params in fc_parameters["max_langevin_fixed_point"]})
-    if "friedrich_coefficients" in fc_parameters:
-        dict_binned_diff.update({params["r"]: None for params in fc_parameters["friedrich_coefficients"]})
-    if len(dict_binned_diff) > 0:
-        df = pd.DataFrame({'signal': data[:-1], 'delta': np.diff(data)})
-        for r in np.unique(list(dict_binned_diff.keys())):
-            try:
-                df['quantiles'] = pd.qcut(df.signal, r)
-                quantiles = df.groupby('quantiles')
-                result = pd.DataFrame({'x_mean': quantiles.signal.mean(), 'y_mean': quantiles.delta.mean()})
-                result.dropna(inplace=True)
-                dict_binned_diff[r] = result
-            except ValueError:
-                dict_binned_diff[r] = pd.DataFrame({'x_mean': [np.NaN], 'y_mean': [np.NaN]})
-        for param in ["max_langevin_fixed_point", "friedrich_coefficients"]:
-            if param in fc_parameters:
-                for d in fc_parameters[param]:
-                    d["_dict_binned_diff"] = dict_binned_diff
+    # check if some functions need preprocessing
+    preprocessors = set()
+    for function_name in fc_parameters.keys():
+        if function_name in PREPROCESSOR_FUNCS:
+            preprocessors.add(PREPROCESSOR_FUNCS[function_name])
+    # copy parameters so that they are not overwritten
+    if preprocessors:
+        fc_parameters = copy.deepcopy(fc_parameters)
+    # update parameters
+    for updater in preprocessors:
+        func = getattr(feature_calculators, updater)
+        # If the function uses the index, pass is at as a pandas Series.
+        # Otherwise, convert to numpy array
+        if getattr(func, 'input', False) == 'pd.Series':
+            x = data
+        else:
+            x = data.values
+        func(x, fc_parameters)
 
     def _f():
         for function_name, parameter_list in fc_parameters.items():
