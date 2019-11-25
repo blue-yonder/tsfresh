@@ -10,7 +10,6 @@ install:
   - pip install -r requirements.txt -r test-requirements.txt
   - pip install -U .
   - pip freeze
-before_script:
   - "[ $NUMPY = latest ] && pip install --upgrade numpy || pip install numpy==$NUMPY"
   - "[ $PANDAS = latest ] && pip install --upgrade pandas || pip install pandas==$PANDAS"
   - "[ $SCIKITLEARN = latest ] && pip install --upgrade scikit-learn || pip install scikit-learn==$SCIKITLEARN"
@@ -21,9 +20,11 @@ before_script:
   - "[ $SCIPY = latest ] && pip install --upgrade scipy || pip install scipy==$SCIPY"
   - pip list
   - sed -i -e 's/-n auto/-n 2/g' setup.cfg
+  # we want to run coverage only inside a single job
   - sed -e '/^\s*--cov tsfresh/d' setup.cfg > setup-nocov.cfg
 env:
   global:
+    # all jobs call pytest with setup-nocov.cfg to not run coverage test, except one which overrides this variable
     - PYTEST_ADDOPTS="-c setup-nocov.cfg"
 jobs:
   # some dependencies are not yet ready for Python 3.8
