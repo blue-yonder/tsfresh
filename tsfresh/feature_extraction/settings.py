@@ -98,6 +98,7 @@ class ComprehensiveFCParameters(dict):
     to extract all features (which is the default nevertheless) or you change the ComprehensiveFCParameters
     object to other types (see below).
     """
+
     def __init__(self):
         name_to_param = {}
 
@@ -124,9 +125,10 @@ class ComprehensiveFCParameters(dict):
             "spkt_welch_density": [{"coeff": coeff} for coeff in [2, 5, 8]],
             "ar_coefficient": [{"coeff": coeff, "k": k} for coeff in range(5) for k in [10]],
             "change_quantiles": [{"ql": ql, "qh": qh, "isabs": b, "f_agg": f}
-                                          for ql in [0., .2, .4, .6, .8] for qh in [.2, .4, .6, .8, 1.]
-                                          for b in [False, True] for f in ["mean", "var"] if ql < qh],
-            "fft_coefficient": [{"coeff": k, "attr": a} for a, k in product(["real", "imag", "abs", "angle"], range(100))],
+                                 for ql in [0., .2, .4, .6, .8] for qh in [.2, .4, .6, .8, 1.]
+                                 for b in [False, True] for f in ["mean", "var"] if ql < qh],
+            "fft_coefficient": [{"coeff": k, "attr": a} for a, k in
+                                product(["real", "imag", "abs", "angle"], range(100))],
             "fft_aggregated": [{"aggtype": s} for s in ["centroid", "variance", "skew", "kurtosis"]],
             "value_count": [{"value": value} for value in [0, 1, -1]],
             "range_count": [{"min": -1, "max": 1}, {"min": 1e12, "max": 0}, {"min": 0, "max": 1e12}],
@@ -141,10 +143,10 @@ class ComprehensiveFCParameters(dict):
                                  for f in ["max", "min", "mean", "var"]],
             "augmented_dickey_fuller": [{"attr": "teststat"}, {"attr": "pvalue"}, {"attr": "usedlag"}],
             "number_crossing_m": [{"m": 0}, {"m": -1}, {"m": 1}],
-            "energy_ratio_by_chunks": [{"num_segments" : 10, "segment_focus": i} for i in range(10)],
+            "energy_ratio_by_chunks": [{"num_segments": 10, "segment_focus": i} for i in range(10)],
             "ratio_beyond_r_sigma": [{"r": x} for x in [0.5, 1, 1.5, 2, 2.5, 3, 5, 6, 7, 10]],
             "linear_trend_timewise": [{"attr": "pvalue"}, {"attr": "rvalue"}, {"attr": "intercept"},
-                             {"attr": "slope"}, {"attr": "stderr"}]
+                                      {"attr": "slope"}, {"attr": "stderr"}]
         })
 
         super().__init__(name_to_param)

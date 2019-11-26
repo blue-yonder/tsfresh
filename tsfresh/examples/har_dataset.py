@@ -37,7 +37,7 @@ data_file_name_classes = os.path.join(module_path, 'data', 'UCI HAR Dataset', 't
 def download_har_dataset():
     """
     Download human activity recognition dataset from UCI ML Repository and store it at /tsfresh/notebooks/data.
-    
+
     Examples
     ========
 
@@ -45,7 +45,7 @@ def download_har_dataset():
     >>> har_dataset.download_har_dataset()
     """
 
-    zipurl = 'https://github.com/MaxBenChrist/human-activity-dataset/blob/master/UCI%20HAR%20Dataset.zip?raw=True' 
+    zipurl = 'https://github.com/MaxBenChrist/human-activity-dataset/blob/master/UCI%20HAR%20Dataset.zip?raw=True'
 
     if os.path.exists(data_file_name_dataset) and os.path.exists(data_file_name_classes):
         _logger.warning("You have already downloaded the Human Activity Data Set.")

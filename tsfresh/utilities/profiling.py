@@ -5,7 +5,9 @@
 Contains methods to start and stop the profiler that checks the runtime of the different feature calculators
 """
 
-import cProfile, pstats, io
+import cProfile
+import pstats
+import io
 import logging
 
 

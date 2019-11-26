@@ -205,7 +205,7 @@ def ratio_beyond_r_sigma(x, r):
     """
     if not isinstance(x, (np.ndarray, pd.Series)):
         x = np.asarray(x)
-    return np.sum(np.abs(x - np.mean(x)) > r * np.std(x))/x.size
+    return np.sum(np.abs(x - np.mean(x)) > r * np.std(x)) / x.size
 
 
 @set_property("fctype", "simple")
@@ -437,13 +437,13 @@ def augmented_dickey_fuller(x, param):
         res = adfuller(x)
     except LinAlgError:
         res = np.NaN, np.NaN, np.NaN
-    except ValueError: # occurs if sample size is too small
+    except ValueError:  # occurs if sample size is too small
         res = np.NaN, np.NaN, np.NaN
-    except MissingDataError: # is thrown for e.g. inf or nan in the data
+    except MissingDataError:  # is thrown for e.g. inf or nan in the data
         res = np.NaN, np.NaN, np.NaN
 
     return [('attr_"{}"'.format(config["attr"]),
-                  res[0] if config["attr"] == "teststat"
+             res[0] if config["attr"] == "teststat"
              else res[1] if config["attr"] == "pvalue"
              else res[2] if config["attr"] == "usedlag" else np.NaN)
             for config in param]
@@ -496,8 +496,8 @@ def cid_ce(x, normalize):
         x = np.asarray(x)
     if normalize:
         s = np.std(x)
-        if s!=0:
-            x = (x - np.mean(x))/s
+        if s != 0:
+            x = (x - np.mean(x)) / s
         else:
             return 0.0
 
@@ -975,7 +975,6 @@ def fft_aggregated(x, param):
     assert {config["aggtype"] for config in param} <= {"centroid", "variance", "skew", "kurtosis"}, \
         'Attribute must be "centroid", "variance", "skew", "kurtosis"'
 
-
     def get_moment(y, moment):
         r"""
         Returns the (non centered) moment of the distribution y:
@@ -1026,7 +1025,7 @@ def fft_aggregated(x, param):
             return np.nan
         else:
             return (
-                get_moment(y, 3) - 3*get_centroid(y)*variance - get_centroid(y)**3
+                get_moment(y, 3) - 3 * get_centroid(y) * variance - get_centroid(y)**3
             ) / get_variance(y)**(1.5)
 
     def get_kurtosis(y):
@@ -1047,8 +1046,8 @@ def fft_aggregated(x, param):
             return np.nan
         else:
             return (
-                get_moment(y, 4) - 4*get_centroid(y)*get_moment(y, 3)
-                + 6*get_moment(y, 2)*get_centroid(y)**2 - 3*get_centroid(y)
+                get_moment(y, 4) - 4 * get_centroid(y) * get_moment(y, 3)
+                + 6 * get_moment(y, 2) * get_centroid(y)**2 - 3 * get_centroid(y)
             ) / get_variance(y)**2
 
     calculation = dict(
@@ -1130,7 +1129,7 @@ def index_mass_quantile(x, param):
         # at least one value is not zero
         mass_centralized = np.cumsum(abs_x) / s
         return [("q_{}".format(config["q"]),
-                (np.argmax(mass_centralized >= config["q"])+1)/len(x)) for config in param]
+                 (np.argmax(mass_centralized >= config["q"]) + 1) / len(x)) for config in param]
 
 
 @set_property("fctype", "simple")
@@ -1294,7 +1293,7 @@ def ar_coefficient(x, param):
             try:
                 calculated_ar_params[k] = calculated_AR.fit(maxlag=k, solver="mle").params
             except (LinAlgError, ValueError):
-                calculated_ar_params[k] = [np.NaN]*k
+                calculated_ar_params[k] = [np.NaN] * k
 
         mod = calculated_ar_params[k]
 
@@ -1353,7 +1352,6 @@ def change_quantiles(x, ql, qh, isabs, f_agg):
         ind_inside_corridor = np.where(ind == 1)
         aggregator = getattr(np, f_agg)
         return aggregator(div[ind_inside_corridor])
-
 
 
 @set_property("fctype", "simple")
@@ -1484,8 +1482,8 @@ def sample_entropy(x):
     """
     x = np.array(x)
 
-    sample_length = 1 # number of sequential points of the time series
-    tolerance = 0.2 * np.std(x) # 0.2 is a common value for r - why?
+    sample_length = 1  # number of sequential points of the time series
+    tolerance = 0.2 * np.std(x)  # 0.2 is a common value for r - why?
 
     n = len(x)
     prev = np.zeros(n)
@@ -1545,12 +1543,12 @@ def autocorrelation(x, lag):
     """
     # This is important: If a series is passed, the product below is calculated
     # based on the index, which corresponds to squaring the series.
-    if type(x) is pd.Series:
+    if isinstance(x, pd.Series):
         x = x.values
     if len(x) < lag:
         return np.nan
     # Slice the relevant subseries based on the lag
-    y1 = x[:(len(x)-lag)]
+    y1 = x[:(len(x) - lag)]
     y2 = x[lag:]
     # Subtract the mean of the whole series x
     x_mean = np.mean(x)
@@ -1707,13 +1705,13 @@ def approximate_entropy(x, m, r):
     r *= np.std(x)
     if r < 0:
         raise ValueError("Parameter r must be positive.")
-    if N <= m+1:
+    if N <= m + 1:
         return 0
 
     def _phi(m):
-        x_re = np.array([x[i:i+m] for i in range(N - m + 1)])
+        x_re = np.array([x[i:i + m] for i in range(N - m + 1)])
         C = np.sum(np.max(np.abs(x_re[:, np.newaxis] - x_re[np.newaxis, :]),
-                          axis=2) <= r, axis=0) / (N-m+1)
+                          axis=2) <= r, axis=0) / (N - m + 1)
         return np.sum(np.log(C)) / (N - m + 1.0)
 
     return np.abs(_phi(m) - _phi(m + 1))
@@ -1739,15 +1737,18 @@ def friedrich_coefficients(x, param):
 
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
-    :param param: contains dictionaries {"m": x, "r": y, "coeff": z} with x being positive integer, the order of polynom to fit for estimating fixed points of
-                    dynamics, y positive float, the number of quantils to use for averaging and finally z, a positive integer corresponding to the returned
-                    coefficient
+    :param param: contains dictionaries {"m": x, "r": y, "coeff": z} with x being positive integer,
+                  the order of polynom to fit for estimating fixed points of
+                  dynamics, y positive float, the number of quantils to use for averaging and finally z,
+                  a positive integer corresponding to the returned coefficient
     :type param: list
     :return: the different feature values
     :return type: pandas.Series
     """
-    calculated = defaultdict(dict)  # calculated is dictionary storing the calculated coefficients {m: {r: friedrich_coefficients}}
-    res = {}  # res is a dictionary containg the results {"m_10__r_2__coeff_3": 15.43}
+    # calculated is dictionary storing the calculated coefficients {m: {r: friedrich_coefficients}}
+    calculated = defaultdict(dict)
+    # res is a dictionary containg the results {"m_10__r_2__coeff_3": 15.43}
+    res = {}
 
     for parameter_combination in param:
         m = parameter_combination['m']
@@ -1892,11 +1893,12 @@ def energy_ratio_by_chunks(x, param):
         if full_series_energy == 0:
             res_data.append(np.NaN)
         else:
-            res_data.append(np.sum(np.array_split(x, num_segments)[segment_focus] ** 2.0)/full_series_energy)
+            res_data.append(np.sum(np.array_split(x, num_segments)[segment_focus] ** 2.0) / full_series_energy)
 
         res_index.append("num_segments_{}__segment_focus_{}".format(num_segments, segment_focus))
 
-    return list(zip(res_index, res_data)) # Materialize as list for Python 3 compatibility with name handling
+    # Materialize as list for Python 3 compatibility with name handling
+    return list(zip(res_index, res_data))
 
 
 @set_property("fctype", "combiner")

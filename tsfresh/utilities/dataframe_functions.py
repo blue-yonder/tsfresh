@@ -135,9 +135,9 @@ def impute_dataframe_range(df_impute, col_to_max, col_to_min, col_to_median):
                          "to replace")
 
     # Make the replacement dataframes as large as the real one
-    col_to_max = pd.DataFrame([col_to_max]*len(df_impute), index=df_impute.index)
-    col_to_min = pd.DataFrame([col_to_min]*len(df_impute), index=df_impute.index)
-    col_to_median = pd.DataFrame([col_to_median]*len(df_impute), index=df_impute.index)
+    col_to_max = pd.DataFrame([col_to_max] * len(df_impute), index=df_impute.index)
+    col_to_min = pd.DataFrame([col_to_min] * len(df_impute), index=df_impute.index)
+    col_to_median = pd.DataFrame([col_to_median] * len(df_impute), index=df_impute.index)
 
     df_impute.where(df_impute.values != np.PINF, other=col_to_max, inplace=True)
     df_impute.where(df_impute.values != np.NINF, other=col_to_min, inplace=True)
@@ -234,7 +234,8 @@ def get_ids(df_or_dict, column_id):
 
 # todo: add more testcases
 # todo: rewrite in a more straightforward way
-def _normalize_input_to_internal_representation(timeseries_container, column_id, column_sort, column_kind, column_value):
+def _normalize_input_to_internal_representation(timeseries_container, column_id, column_sort,
+                                                column_kind, column_value):
     """
     Try to transform any given input to the internal representation of time series, which is a flat DataFrame
     (the first format from see :ref:`data-formats-label`).
@@ -283,7 +284,7 @@ def _normalize_input_to_internal_representation(timeseries_container, column_id,
 
         try:
             timeseries_container = pd.concat(timeseries_container.values(), sort=True)
-        except TypeError: # pandas < 0.23.0
+        except TypeError:  # pandas < 0.23.0
             timeseries_container = pd.concat(timeseries_container.values())
         gc.collect()
 
@@ -433,14 +434,14 @@ def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_di
 
     if column_id is not None:
         if column_id not in df:
-                raise AttributeError("The given column for the id is not present in the data.")
+            raise AttributeError("The given column for the id is not present in the data.")
     else:
         raise ValueError("You have to set the column_id which contains the ids of the different time series")
 
     if column_kind is not None:
         grouper = [column_kind, column_id]
     else:
-        grouper = [column_id,]
+        grouper = [column_id, ]
 
     if column_sort is not None and df[column_sort].dtype != np.object:
 
@@ -555,4 +556,3 @@ def make_forecasting_frame(x, kind, max_timeshift, rolling_direction):
     df_shift = df_shift[mask]
 
     return df_shift, df["value"][1:]
-

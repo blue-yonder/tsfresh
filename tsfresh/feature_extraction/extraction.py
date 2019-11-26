@@ -225,8 +225,10 @@ def generate_data_chunk_format(df, column_id, column_kind, column_value):
 
     if df[[column_id, column_kind]].nunique().prod() >= MAX_VALUES_GROUPBY:
         _logger.error(
-            "The time series container has {} different ids and {} different kind of time series, in total {} possible combinations. "
-            "Due to a limitation in pandas we can only process a maximum of {} id/kind combinations. Please reduce your time series container and restart "
+            "The time series container has {} different ids and {} different kind of time series, "
+            "in total {} possible combinations. "
+            "Due to a limitation in pandas we can only process a maximum of {} id/kind combinations. "
+            "Please reduce your time series container and restart "
             "the calculation".format(
                 df[column_id].nunique(), df[column_kind].nunique(),
                 df[[column_id, column_kind]].nunique().prod(), MAX_VALUES_GROUPBY)

@@ -56,6 +56,7 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
     If you are interested in more information on the features, you can look into the member
     ``relevant_features`` after the fit.
     """
+
     def __init__(self, test_for_binary_target_binary_feature=defaults.TEST_FOR_BINARY_TARGET_BINARY_FEATURE,
                  test_for_binary_target_real_feature=defaults.TEST_FOR_BINARY_TARGET_REAL_FEATURE,
                  test_for_real_target_binary_feature=defaults.TEST_FOR_REAL_TARGET_BINARY_FEATURE,
@@ -65,20 +66,22 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
         """
         Create a new FeatureSelector instance.
 
-        :param test_for_binary_target_binary_feature: Which test to be used for binary target, binary feature (currently unused)
+        :param test_for_binary_target_binary_feature: Which test to be used for binary target, binary feature
+                                                      (currently unused)
         :type test_for_binary_target_binary_feature: str
 
         :param test_for_binary_target_real_feature: Which test to be used for binary target, real feature
         :type test_for_binary_target_real_feature: str
 
-        :param test_for_real_target_binary_feature: Which test to be used for real target, binary feature (currently unused)
+        :param test_for_real_target_binary_feature: Which test to be used for real target, binary feature
+                                                    (currently unused)
         :type test_for_real_target_binary_feature: str
 
         :param test_for_real_target_real_feature: Which test to be used for real target, real feature (currently unused)
         :type test_for_real_target_real_feature: str
 
-        :param fdr_level: The FDR level that should be respected, this is the theoretical expected percentage of irrelevant
-                      features among all created features.
+        :param fdr_level: The FDR level that should be respected, this is the theoretical expected percentage
+                          of irrelevant features among all created features.
         :type fdr_level: float
 
         :param hypotheses_independent: Can the significance of the features be assumed to be independent?
@@ -139,10 +142,10 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
             y = pd.Series(y.copy())
 
         relevance_table = calculate_relevance_table(
-                                X, y, ml_task=self.ml_task, n_jobs=self.n_jobs,
-                                chunksize=self.chunksize, fdr_level=self.fdr_level,
-                                hypotheses_independent=self.hypotheses_independent,
-                                test_for_binary_target_real_feature=self.test_for_binary_target_real_feature)
+            X, y, ml_task=self.ml_task, n_jobs=self.n_jobs,
+            chunksize=self.chunksize, fdr_level=self.fdr_level,
+            hypotheses_independent=self.hypotheses_independent,
+            test_for_binary_target_real_feature=self.test_for_binary_target_real_feature)
         self.relevant_features = relevance_table.loc[relevance_table.relevant].feature.tolist()
         self.feature_importances_ = 1.0 - relevance_table.p_value.values
         self.p_values = relevance_table.p_value.values

@@ -9,12 +9,15 @@ At the top level we export the three most important submodules of tsfresh, which
 """
 
 
+from tsfresh.feature_selection import select_features
+from tsfresh.feature_extraction import extract_features
+from tsfresh.convenience.relevant_extraction import extract_relevant_features
 import pkg_resources
 
 
 try:
     __version__ = pkg_resources.get_distribution(__name__).version
-except:
+except Exception:
     __version__ = 'unknown'
 
 
@@ -23,8 +26,3 @@ import logging
 from logging import NullHandler
 
 logging.getLogger(__name__).addHandler(NullHandler())
-
-
-from tsfresh.convenience.relevant_extraction import extract_relevant_features
-from tsfresh.feature_extraction import extract_features
-from tsfresh.feature_selection import select_features
