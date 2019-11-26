@@ -10,14 +10,15 @@ install:
   - pip install -r requirements.txt -r test-requirements.txt
   - pip install -U .
   - pip freeze
-  - "[ $NUMPY = latest ] && pip install --upgrade numpy || pip install numpy==$NUMPY"
-  - "[ $PANDAS = latest ] && pip install --upgrade pandas || pip install pandas==$PANDAS"
-  - "[ $SCIKITLEARN = latest ] && pip install --upgrade scikit-learn || pip install scikit-learn==$SCIKITLEARN"
-  - "[ $DASK = latest ] && pip install --upgrade dask || pip install dask==$DASK"
-  - "[ $DISTRIBUTED = latest ] && pip install --upgrade distributed || pip install distributed==$DISTRIBUTED"
+  # install is run during all stages; those packages are needed only to run tests
+  - "[ \"$NUMPY\" = latest ] && pip install --upgrade numpy || [ -z \"$NUMPY\" ] || pip install numpy==$NUMPY"
+  - "[ \"$PANDAS\" = latest ] && pip install --upgrade pandas || [ -z \"$PANDAS\" ] || pip install pandas==$PANDAS"
+  - "[ \"$SCIKITLEARN\" = latest ] && pip install --upgrade scikit-learn || [ -z \"$SCIKITLEARN\" ] || pip install scikit-learn==$SCIKITLEARN"
+  - "[ \"$DASK\" = latest ] && pip install --upgrade dask || [ -z \"$DASK\" ] || pip install dask==$DASK"
+  - "[ \"$DISTRIBUTED\" = latest ] && pip install --upgrade distributed || [ -z \"$DISTRIBUTED\" ] || pip install distributed==$DISTRIBUTED"
   # need to downgrade tornado manually
-  - "[ $SCIPY = latest ] || pip install tornado==4.5.3"
-  - "[ $SCIPY = latest ] && pip install --upgrade scipy || pip install scipy==$SCIPY"
+  - "[ \"$SCIPY\" = latest ] || [ -z \"$SCIPY\" ] || pip install tornado==4.5.3"
+  - "[ \"$SCIPY\" = latest ] && pip install --upgrade scipy || [ -z \"$SCIPY\" ] || pip install scipy==$SCIPY"
   - pip list
   - sed -i -e 's/-n auto/-n 2/g' setup.cfg
   # we want to run coverage only inside a single job
