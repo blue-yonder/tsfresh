@@ -8,6 +8,7 @@ from tsfresh.feature_extraction.settings import ComprehensiveFCParameters
 from tsfresh.transformers import FeatureAugmenter
 import numpy as np
 
+
 class FeatureAugmenterTestCase(DataTestCase):
     def setUp(self):
         self.test_df = self.create_test_data_sample()
@@ -21,7 +22,7 @@ class FeatureAugmenterTestCase(DataTestCase):
                                      column_kind="kind",
                                      kind_to_fc_parameters=self.kind_to_fc_parameters,
                                      n_jobs=0,
-                                     disable_progressbar = True)
+                                     disable_progressbar=True)
 
         # Fit should do nothing
         returned_df = augmenter.fit()
@@ -31,7 +32,7 @@ class FeatureAugmenterTestCase(DataTestCase):
         augmenter.set_timeseries_container(self.test_df)
 
         # Add features to all time series
-        X_with_index = pd.DataFrame([{"feature_1": 1}]*2, index=[10, 500])
+        X_with_index = pd.DataFrame([{"feature_1": 1}] * 2, index=[10, 500])
         X_transformed = augmenter.transform(X_with_index)
 
         # Require same shape
@@ -57,7 +58,7 @@ class FeatureAugmenterTestCase(DataTestCase):
                                      column_kind="kind",
                                      kind_to_fc_parameters=self.kind_to_fc_parameters,
                                      n_jobs=0,
-                                     disable_progressbar = True)
+                                     disable_progressbar=True)
 
         augmenter.set_timeseries_container(self.test_df)
 

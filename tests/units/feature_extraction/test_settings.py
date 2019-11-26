@@ -41,8 +41,8 @@ class TestSettingsObject(TestCase):
 
         kind_to_fc_parameters = from_columns(feature_names)
         self.assertCountEqual(list(kind_to_fc_parameters[tsn].keys()),
-                             ["sum_values", "median", "length", "sample_entropy", "quantile", "number_peaks",
-                              "ar_coefficient", "value_count"])
+                              ["sum_values", "median", "length", "sample_entropy", "quantile", "number_peaks",
+                               "ar_coefficient", "value_count"])
 
         self.assertIsNone(kind_to_fc_parameters[tsn]["sum_values"])
         self.assertEqual(kind_to_fc_parameters[tsn]["ar_coefficient"],
@@ -74,7 +74,7 @@ class TestSettingsObject(TestCase):
                                                                                "THIS_AS_WELL"])
 
         self.assertCountEqual(list(kind_to_fc_parameters[tsn].keys()),
-                             ["sum_values", "median", "length", "sample_entropy"])
+                              ["sum_values", "median", "length", "sample_entropy"])
 
     def test_default_calculates_all_features(self):
         """
@@ -195,6 +195,6 @@ class TestMinimalSettingsObject(TestCase):
                                               column_sort="time", column_id="id")
 
         self.assertCountEqual(extracted_features.columns, ["0__median", "0__standard_deviation", "0__sum_values",
-                                                                "0__maximum", "0__variance", "0__minimum", "0__mean",
-                                                                "0__length"])
+                                                           "0__maximum", "0__variance", "0__minimum", "0__mean",
+                                                           "0__length"])
         self.assertCountEqual(extracted_features.index, [0, 1])

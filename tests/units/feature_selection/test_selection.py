@@ -12,7 +12,7 @@ from tsfresh.feature_selection.selection import select_features
 class TestSelectFeatures:
     def test_assert_list(self):
         with pytest.raises(AssertionError):
-            select_features(pd.DataFrame(index=range(2)),[1,2,3])
+            select_features(pd.DataFrame(index=range(2)), [1, 2, 3])
 
     def test_assert_one_row_X(self):
         X = pd.DataFrame([1], index=[1])

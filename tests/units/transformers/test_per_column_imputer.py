@@ -53,7 +53,7 @@ class PerColumnImputerTestCase(TestCase):
         imputer.fit(X)
         selected_X = imputer.transform(X)
 
-        #re-initialize for new dicts
+        # re-initialize for new dicts
         imputer = PerColumnImputer()
         imputer.fit(X_numpy)
         selected_X_numpy = imputer.transform(X_numpy)
@@ -166,8 +166,8 @@ class PerColumnImputerTestCase(TestCase):
         data = [np.NINF, np.PINF, np.nan, 100.0, -100.0, 1.0, 1.0]
         truth_a = [-100.0, 100.0, 0.0, 100.0, -100.0, 1.0, 1.0]
         truth_b = [-100.0, 100.0, 1.0, 100.0, -100.0, 1.0, 1.0]
-        X = pd.DataFrame({"a": data, "b":data})
-        true_X = pd.DataFrame({"a":truth_a, "b":truth_b})
+        X = pd.DataFrame({"a": data, "b": data})
+        true_X = pd.DataFrame({"a": truth_a, "b": truth_b})
 
         col_to_median = {"a": 0}
         imputer = PerColumnImputer(col_to_NAN_repl_preset=col_to_median)
@@ -175,13 +175,13 @@ class PerColumnImputerTestCase(TestCase):
         imputer.fit(X)
         selected_X = imputer.transform(X)
 
-        pdt.assert_frame_equal(selected_X,true_X)
+        pdt.assert_frame_equal(selected_X, true_X)
 
     def test_NINF_preset_contains_more_columns_than_dataframe_to_fit(self):
         X = pd.DataFrame(index=list(range(10)))
         X["a"] = np.ones(10)
 
-        col_to_min = {"a": 0, "b":0}
+        col_to_min = {"a": 0, "b": 0}
 
         imputer = PerColumnImputer(col_to_NINF_repl_preset=col_to_min)
 
@@ -191,7 +191,7 @@ class PerColumnImputerTestCase(TestCase):
         X = pd.DataFrame(index=list(range(10)))
         X["a"] = np.ones(10)
 
-        col_to_max = {"a": 0, "b":0}
+        col_to_max = {"a": 0, "b": 0}
 
         imputer = PerColumnImputer(col_to_PINF_repl_preset=col_to_max)
 
@@ -201,7 +201,7 @@ class PerColumnImputerTestCase(TestCase):
         X = pd.DataFrame(index=list(range(10)))
         X["a"] = np.ones(10)
 
-        col_to_median = {"a": 0, "b":0}
+        col_to_median = {"a": 0, "b": 0}
 
         imputer = PerColumnImputer(col_to_NAN_repl_preset=col_to_median)
 

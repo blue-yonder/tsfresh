@@ -280,13 +280,17 @@ class GenerateDataChunkTestCase(DataTestCase):
         df.sort_values(by=["id", "kind", "sort"], inplace=True)
 
         result = generate_data_chunk_format(df, "id", "kind", "val")
-        expected = [(10, 'a', pd.Series([36, 71, 27, 62, 56, 58, 67, 11, 2, 24, 45, 30, 0, 9, 41, 28, 33, 19, 29, 43],
-                                        index=[10]*20, name="val")),
-                    (10, 'b', pd.Series([78, 37, 23, 44, 6, 3, 21, 61, 39, 31, 53, 16, 66, 50, 40, 47, 7, 42, 38, 55],
-                                        index=[10] *20, name="val")),
-                    (500, 'a', pd.Series([76, 72, 74, 75, 32, 64, 46, 35, 15, 70, 57, 65, 51, 26, 5, 25, 10, 69, 73, 77],
-                                         index=[500]*20, name="val")),
-                    (500, 'b', pd.Series([8, 60, 12, 68, 22, 17, 18, 63, 49, 34, 20, 52, 48, 14, 79, 4, 1, 59, 54, 13],
-                                         index=[500] *20, name="val"))]
+        expected = [(10, 'a', pd.Series([36, 71, 27, 62, 56, 58, 67, 11, 2, 24, 45, 30, 0,
+                                        9, 41, 28, 33, 19, 29, 43],
+                                        index=[10] * 20, name="val")),
+                    (10, 'b', pd.Series([78, 37, 23, 44, 6, 3, 21, 61, 39, 31, 53, 16, 66,
+                                         50, 40, 47, 7, 42, 38, 55],
+                                        index=[10] * 20, name="val")),
+                    (500, 'a', pd.Series([76, 72, 74, 75, 32, 64, 46, 35, 15, 70, 57, 65,
+                                          51, 26, 5, 25, 10, 69, 73, 77],
+                                         index=[500] * 20, name="val")),
+                    (500, 'b', pd.Series([8, 60, 12, 68, 22, 17, 18, 63, 49, 34, 20, 52,
+                                          48, 14, 79, 4, 1, 59, 54, 13],
+                                         index=[500] * 20, name="val"))]
 
         self.assert_data_chunk_object_equal(result, expected)

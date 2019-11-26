@@ -45,8 +45,10 @@ class FeatureCalculationTestCase(TestCase):
 
     def assertAllFalseOnAllArrayTypes(self, f, input_to_f, *args, **kwargs):
         self.assertFalse(any(dict(f(input_to_f, *args, **kwargs)).values()), msg="Not false for lists")
-        self.assertFalse(any(dict(f(np.array(input_to_f), *args, **kwargs)).values()), msg="Not false for numpy.arrays")
-        self.assertFalse(any(dict(f(pd.Series(input_to_f), *args, **kwargs)).values()), msg="Not false for pandas.Series")
+        self.assertFalse(any(dict(f(np.array(input_to_f), *args, **kwargs)).values()),
+                         msg="Not false for numpy.arrays")
+        self.assertFalse(any(dict(f(pd.Series(input_to_f), *args, **kwargs)).values()),
+                         msg="Not false for pandas.Series")
 
     def assertAlmostEqualOnAllArrayTypes(self, f, input_t_f, result, *args, **kwargs):
         self.assertAlmostEqual(f(input_t_f, *args, **kwargs), result,
@@ -71,7 +73,7 @@ class FeatureCalculationTestCase(TestCase):
     def test__roll(self):
         x = np.random.normal(size=30)
         for shift in [0, 1, 10, 11, 30, 31, 50, 51, 150, 151]:
-            np.testing.assert_array_equal(_roll(x,  shift), np.roll(x,  shift))
+            np.testing.assert_array_equal(_roll(x, shift), np.roll(x, shift))
             np.testing.assert_array_equal(_roll(x, -shift), np.roll(x, -shift))
 
     def test___get_length_sequences_where(self):
@@ -99,7 +101,7 @@ class FeatureCalculationTestCase(TestCase):
 
     def test_symmetry_looking(self):
         self.assertAllTrueOnAllArrayTypes(symmetry_looking, [-1, -1, 1, 1],
-                                           [dict(r=0.05), dict(r=0.75)])
+                                          [dict(r=0.05), dict(r=0.75)])
         self.assertAllFalseOnAllArrayTypes(symmetry_looking, [-1, -1, 1, 1], [dict(r=0)])
         self.assertAllFalseOnAllArrayTypes(symmetry_looking, [-1, -1, -1, -1, 1], [dict(r=0.05)])
         self.assertAllTrueOnAllArrayTypes(symmetry_looking, [-2, -2, -2, -1, -1, -1], [dict(r=0.05)])
@@ -240,7 +242,6 @@ class FeatureCalculationTestCase(TestCase):
             else:
                 self.assertIsNaN(lag_val)
 
-
     def test_augmented_dickey_fuller(self):
         # todo: add unit test for the values of the test statistic
 
@@ -266,7 +267,7 @@ class FeatureCalculationTestCase(TestCase):
         x = [0] * m
         x[0] = 100
         for i in range(1, m):
-            x[i] = x[i-1] * 0.5 + e[i]
+            x[i] = x[i - 1] * 0.5 + e[i]
         param = [{"attr": "teststat"}, {"attr": "pvalue"}, {"attr": "usedlag"}]
         expected_index = ['attr_"teststat"', 'attr_"pvalue"', 'attr_"usedlag"']
 
@@ -302,10 +303,10 @@ class FeatureCalculationTestCase(TestCase):
 
     def test_ratio_beyond_r_sigma(self):
 
-        x = [0, 1]*10 + [10, 20, -30] # std of x is 7.21, mean 3.04
-        self.assertEqualOnAllArrayTypes(ratio_beyond_r_sigma, x, 3./len(x), r=1)
-        self.assertEqualOnAllArrayTypes(ratio_beyond_r_sigma, x, 2./len(x), r=2)
-        self.assertEqualOnAllArrayTypes(ratio_beyond_r_sigma, x, 1./len(x), r=3)
+        x = [0, 1] * 10 + [10, 20, -30]  # std of x is 7.21, mean 3.04
+        self.assertEqualOnAllArrayTypes(ratio_beyond_r_sigma, x, 3. / len(x), r=1)
+        self.assertEqualOnAllArrayTypes(ratio_beyond_r_sigma, x, 2. / len(x), r=2)
+        self.assertEqualOnAllArrayTypes(ratio_beyond_r_sigma, x, 1. / len(x), r=3)
         self.assertEqualOnAllArrayTypes(ratio_beyond_r_sigma, x, 0, r=20)
 
     def test_mean_abs_change(self):
@@ -472,7 +473,7 @@ class FeatureCalculationTestCase(TestCase):
         param = [{"coeff": 0, "attr": "real"}, {"coeff": 1, "attr": "real"}, {"coeff": 2, "attr": "real"},
                  {"coeff": 0, "attr": "imag"}, {"coeff": 1, "attr": "imag"}, {"coeff": 2, "attr": "imag"},
                  {"coeff": 0, "attr": "angle"}, {"coeff": 1, "attr": "angle"}, {"coeff": 2, "attr": "angle"},
-                 {"coeff": 0, "attr": "abs"}, {"coeff": 1, "attr": "abs"}, {"coeff": 2, "attr": "abs"} ]
+                 {"coeff": 0, "attr": "abs"}, {"coeff": 1, "attr": "abs"}, {"coeff": 2, "attr": "abs"}]
         expected_index = ['coeff_0__attr_"real"', 'coeff_1__attr_"real"', 'coeff_2__attr_"real"',
                           'coeff_0__attr_"imag"', 'coeff_1__attr_"imag"', 'coeff_2__attr_"imag"',
                           'coeff_0__attr_"angle"', 'coeff_1__attr_"angle"', 'coeff_2__attr_"angle"',
@@ -524,7 +525,7 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqual(res['aggtype_"kurtosis"'], 3.643, places=3)
 
         # Scalar multiplying the distribution should not change the results:
-        x = 10*x
+        x = 10 * x
         res = pd.Series(dict(fft_aggregated(x, param)))
         self.assertCountEqual(list(res.index), expected_index)
         self.assertAlmostEqual(res['aggtype_"centroid"'], 1.135, places=3)
@@ -545,15 +546,17 @@ class FeatureCalculationTestCase(TestCase):
 
         # Gaussian test:
         def normal(y, mean_, sigma_):
-            return 1/(2 * np.pi * sigma_ ** 2) * np.exp(-(y - mean_) ** 2 / (2 * sigma_ ** 2))
-        mean_ = 500.; sigma_ = 1.; range_ = int(2*mean_)
+            return 1 / (2 * np.pi * sigma_ ** 2) * np.exp(-(y - mean_) ** 2 / (2 * sigma_ ** 2))
+        mean_ = 500.
+        sigma_ = 1.
+        range_ = int(2 * mean_)
         x = list(map(lambda x: normal(x, mean_, sigma_), range(range_)))
 
         # The fourier transform of a Normal dist in the positive halfspace is a half normal,
         # Hand calculated values of centroid and variance based for the half-normal dist:
         # (Ref: https://en.wikipedia.org/wiki/Half-normal_distribution)
-        expected_fft_centroid = (range_/(2*np.pi*sigma_))*np.sqrt(2/np.pi)
-        expected_fft_var = (range_/(2*np.pi*sigma_))**2*(1-2/np.pi)
+        expected_fft_centroid = (range_ / (2 * np.pi * sigma_)) * np.sqrt(2 / np.pi)
+        expected_fft_var = (range_ / (2 * np.pi * sigma_))**2 * (1 - 2 / np.pi)
 
         # Calculate values for unit test:
         res = pd.Series(dict(fft_aggregated(x, param)))
@@ -563,11 +566,11 @@ class FeatureCalculationTestCase(TestCase):
         rel_diff_allowed = 0.02
         self.assertAlmostEqual(
             res['aggtype_"centroid"'], expected_fft_centroid,
-            delta=rel_diff_allowed*expected_fft_centroid
+            delta=rel_diff_allowed * expected_fft_centroid
         )
         self.assertAlmostEqual(
             res['aggtype_"variance"'], expected_fft_var,
-            delta=rel_diff_allowed*expected_fft_var
+            delta=rel_diff_allowed * expected_fft_var
         )
 
     def test_number_peaks(self):
@@ -886,7 +889,6 @@ class FeatureCalculationTestCase(TestCase):
         param = [{"attr": "pvalue"}, {"attr": "rvalue"}, {"attr": "intercept"}, {"attr": "slope"}, {"attr": "stderr"}]
         res = linear_trend(x, param)
 
-
         res = pd.Series(dict(res))
 
         expected_index = ["attr_\"pvalue\"", "attr_\"intercept\"",
@@ -922,14 +924,17 @@ class FeatureCalculationTestCase(TestCase):
 
     def test__aggregate_on_chunks(self):
         self.assertListEqual(_aggregate_on_chunks(x=pd.Series([0, 1, 2, 3]), f_agg="max", chunk_len=2), [1, 3])
-        self.assertListEqual(_aggregate_on_chunks(x=pd.Series([1, 1, 3, 3]),  f_agg="max", chunk_len=2), [1, 3])
+        self.assertListEqual(_aggregate_on_chunks(x=pd.Series([1, 1, 3, 3]), f_agg="max", chunk_len=2), [1, 3])
 
         self.assertListEqual(_aggregate_on_chunks(x=pd.Series([0, 1, 2, 3]), f_agg="min", chunk_len=2), [0, 2])
         self.assertListEqual(_aggregate_on_chunks(x=pd.Series([0, 1, 2, 3, 5]), f_agg="min", chunk_len=2), [0, 2, 5])
 
-        self.assertListEqual(_aggregate_on_chunks(x=pd.Series([0, 1, 2, 3]), f_agg="mean", chunk_len=2), [0.5, 2.5])
-        self.assertListEqual(_aggregate_on_chunks(x=pd.Series([0, 1, 0, 4, 5]), f_agg="mean", chunk_len=2), [0.5, 2, 5])
-        self.assertListEqual(_aggregate_on_chunks(x=pd.Series([0, 1, 0, 4, 5]), f_agg="mean", chunk_len=3), [1/3, 4.5])
+        self.assertListEqual(_aggregate_on_chunks(x=pd.Series([0, 1, 2, 3]), f_agg="mean", chunk_len=2),
+                             [0.5, 2.5])
+        self.assertListEqual(_aggregate_on_chunks(x=pd.Series([0, 1, 0, 4, 5]), f_agg="mean", chunk_len=2),
+                             [0.5, 2, 5])
+        self.assertListEqual(_aggregate_on_chunks(x=pd.Series([0, 1, 0, 4, 5]), f_agg="mean", chunk_len=3),
+                             [1 / 3, 4.5])
 
         self.assertListEqual(_aggregate_on_chunks(x=pd.Series([0, 1, 2, 3, 5, -2]),
                                                   f_agg="median", chunk_len=2), [0.5, 2.5, 1.5])
@@ -1090,7 +1095,7 @@ class FeatureCalculationTestCase(TestCase):
         """Test linear_trend_timewise function with second intervals."""
         # Try with different days
         x = pd.Series(
-            [0, 1/float(3600), 2/float(3600), 3/float(3600)],
+            [0, 1 / float(3600), 2 / float(3600), 3 / float(3600)],
             index=pd.DatetimeIndex([
                 '2018-01-01 04:00:01', '2018-01-01 04:00:02',
                 '2018-01-01 04:00:03', '2018-01-01 04:00:04'
@@ -1111,7 +1116,7 @@ class FeatureCalculationTestCase(TestCase):
         """Test linear_trend_timewise function with year intervals."""
         # Try with different days
         x = pd.Series(
-            [0, 365*24, 365*48, 365*72+24],  # Add 24 to the last one since it's a leap year
+            [0, 365 * 24, 365 * 48, 365 * 72 + 24],  # Add 24 to the last one since it's a leap year
             index=pd.DatetimeIndex([
                 '2018-01-01 04:00:00', '2019-01-01 04:00:00',
                 '2020-01-01 04:00:00', '2021-01-01 04:00:00'
@@ -1134,7 +1139,7 @@ class FeatureCalculationTestCase(TestCase):
         res = change_quantiles(np.random.rand(10000) * 1000, 0.1, 0.2, False, 'mean')
         self.assertAlmostEqual(res, -0.9443846621365727)
 
-        
+
 class FriedrichTestCase(TestCase):
 
     def test_estimate_friedrich_coefficients(self):
@@ -1177,10 +1182,10 @@ class FriedrichTestCase(TestCase):
 
     def test_friedrich_equal_to_snapshot(self):
         param = [{"coeff": coeff, "m": 2, "r": 30} for coeff in range(4)]
-        x = np.array([-0.53, -0.61, -1.26, -0.88, -0.34,  0.58,  2.86, -0.47,  0.78,
-                      -0.45, -0.27,  0.43,  1.72,  0.26,  1.02, -0.09,  0.65,  1.49,
-                      -0.95, -1.02, -0.64, -1.63, -0.71, -0.43, -1.69,  0.05,  1.58,
-                      1.1,  0.55, -1.02])
+        x = np.array([-0.53, -0.61, -1.26, -0.88, -0.34, 0.58, 2.86, -0.47, 0.78,
+                      -0.45, -0.27, 0.43, 1.72, 0.26, 1.02, -0.09, 0.65, 1.49,
+                      -0.95, -1.02, -0.64, -1.63, -0.71, -0.43, -1.69, 0.05, 1.58,
+                      1.1, 0.55, -1.02])
 
         res = pd.Series(dict(friedrich_coefficients(x, param)))
 
