@@ -58,7 +58,7 @@ jobs:
       script: *test
 
     - stage: Test coverage
-      if: env(PYTEST_ADDOPTS) = "-c setup.cfg" AND fork = false
+      python: 3.7
       script: coveralls
 
     - stage: Deploy
