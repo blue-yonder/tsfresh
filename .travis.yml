@@ -41,6 +41,8 @@ jobs:
     - env: NUMPY="latest", PANDAS="latest", SCIKITLEARN="latest", DASK="latest", DISTRIBUTED="latest", SCIPY="latest" PYTEST_ADDOPTS="-c setup.cfg"
       python: 3.7
       script: *test
+      after_success:
+        - coveralls
     - env: NUMPY="latest", PANDAS="latest", SCIKITLEARN="latest", DASK="latest", DISTRIBUTED="latest", SCIPY="latest"
       python: 3.6
       script: *test
@@ -57,11 +59,6 @@ jobs:
     - env: NUMPY="1.12.0", PANDAS="0.20.3", SCIKITLEARN="0.19.0", DASK="0.15.2", DISTRIBUTED="1.18.3", SCIPY="1.2.0"
       python: 3.5.3
       script: *test
-
-    - stage: Test coverage
-      python: 3.7
-      # fix TRAVIS_JOB_ID, we want to scan output of 1st job
-      script: TRAVIS_JOB_ID=${TRAVIS_JOB_ID%[0-9]}1 coveralls
 
     - stage: Deploy
       if: tag IS present AND fork = false
