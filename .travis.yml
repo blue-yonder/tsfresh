@@ -60,7 +60,8 @@ jobs:
 
     - stage: Test coverage
       python: 3.7
-      script: coveralls
+      # fix TRAVIS_JOB_ID, we want to scan output of 1st job
+      script: TRAVIS_JOB_ID=${TRAVIS_JOB_ID%[0-9]}1 coveralls
 
     - stage: Deploy
       if: tag IS present AND fork = false
