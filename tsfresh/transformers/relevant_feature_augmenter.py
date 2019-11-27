@@ -145,7 +145,7 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
         :param n_jobs: The number of processes to use for parallelization. If zero, no parallelization is used.
         :type n_jobs: int
 
-        :param: show_warnings: Show warnings during the feature extraction (needed for debugging of calculators).
+        :param show_warnings: Show warnings during the feature extraction (needed for debugging of calculators).
         :type show_warnings: bool
 
         :param disable_progressbar: Do not show a progressbar while doing the calculation.

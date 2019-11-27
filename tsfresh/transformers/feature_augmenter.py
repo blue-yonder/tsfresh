@@ -103,7 +103,7 @@ class FeatureAugmenter(BaseEstimator, TransformerMixin):
             smaller chunksize.
         :type chunksize: None or int
 
-        :param: show_warnings: Show warnings during the feature extraction (needed for debugging of calculators).
+        :param show_warnings: Show warnings during the feature extraction (needed for debugging of calculators).
         :type show_warnings: bool
 
         :param disable_progressbar: Do not show a progressbar while doing the calculation.
