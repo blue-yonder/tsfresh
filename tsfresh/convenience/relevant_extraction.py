@@ -170,6 +170,7 @@ def extract_relevant_features(timeseries_container, y, X=None,
                             test_for_real_target_real_feature=test_for_real_target_real_feature,
                             fdr_level=fdr_level, hypotheses_independent=hypotheses_independent,
                             n_jobs=n_jobs,
+                            show_warnings=show_warnings,
                             chunksize=chunksize,
                             ml_task=ml_task)
 

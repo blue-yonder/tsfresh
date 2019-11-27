@@ -10,9 +10,6 @@ import warnings
 
 import numpy as np
 import pandas as pd
-import logging
-
-_logger = logging.getLogger(__name__)
 
 
 def check_for_nans_in_columns(df, columns=None):
@@ -169,8 +166,8 @@ def get_range_values_per_column(df):
 
     if np.any(is_col_non_finite):
         # We have columns that does not contain any finite value at all, so we will store 0 instead.
-        _logger.warning("The columns {} did not have any finite values. Filling with zeros.".format(
-            df.iloc[:, np.where(is_col_non_finite)[0]].columns.values))
+        warnings.warn("The columns {} did not have any finite values. Filling with zeros.".format(
+            df.iloc[:, np.where(is_col_non_finite)[0]].columns.values), RuntimeWarning)
 
         masked.data[:, is_col_non_finite] = 0  # Set the values of the columns to 0
         masked.mask[:, is_col_non_finite] = False  # Remove the mask for this column
