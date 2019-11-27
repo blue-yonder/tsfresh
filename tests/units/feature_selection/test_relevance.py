@@ -93,11 +93,13 @@ class TestCalculateRelevanceTable:
         significance_test_feature_binary_mock.return_value = 0.95
         significance_test_feature_real_mock.return_value = 0.95
 
-        with mock.patch('logging.Logger.warning') as m:
-            _ = calculate_relevance_table(X, y_real, n_jobs=0, ml_task="regression")
-            m.assert_called_with("No feature was found relevant for regression for fdr level = 0.05 (which corresponds "
-                                 "to the maximal percentage of irrelevant features, consider using an higher fdr level "
-                                 "or add other features.")
+        with pytest.warns(RuntimeWarning) as record:
+            _ = calculate_relevance_table(X, y_real, n_jobs=0, ml_task="regression", show_warnings=True)
+            assert len(record) == 1
+            assert str(record[0].message) == (
+                "No feature was found relevant for regression for fdr level = 0.05 (which corresponds "
+                "to the maximal percentage of irrelevant features, consider using an higher fdr level "
+                "or add other features." )
 
 
 class TestCombineRelevanceTables:
