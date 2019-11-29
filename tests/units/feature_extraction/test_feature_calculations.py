@@ -301,6 +301,11 @@ class FeatureCalculationTestCase(TestCase):
         for index, val in res_value_error:
             self.assertIsNaN(val)
 
+        # Should return NaN if "attr" is unknown
+        res_attr_error = augmented_dickey_fuller(x=x, param=[{"autolag": "AIC", "attr": ""}])
+        for index, val in res_attr_error:
+            self.assertIsNaN(val)
+
     def test_abs_energy(self):
         self.assertEqualOnAllArrayTypes(abs_energy, [1, 1, 1], 3)
         self.assertEqualOnAllArrayTypes(abs_energy, [1, 2, 3], 14)
