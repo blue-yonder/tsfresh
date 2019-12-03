@@ -20,7 +20,7 @@ class TestSettingsObject(TestCase):
     def test_from_column_raises_on_wrong_column_format(self):
 
         self.assertRaises(TypeError, from_columns, 42)
-        self.assertRaises(TypeError, from_columns, 42)
+        self.assertRaises(TypeError, from_columns, [42])
         self.assertRaises(ValueError, from_columns, ["This is not a column name"])
         self.assertRaises(ValueError, from_columns, ["This__neither"])
         self.assertRaises(ValueError, from_columns, ["This__also__not"])

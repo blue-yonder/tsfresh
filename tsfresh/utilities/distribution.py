@@ -261,7 +261,7 @@ class LocalDaskDistributor(DistributorBaseClass):
         """
 
         if isinstance(partitioned_chunks, Iterable):
-            # since dask 2.0.0 client map no longer accepts iteratables
+            # since dask 2.0.0 client map no longer accepts iterables
             partitioned_chunks = list(partitioned_chunks)
         result = self.client.gather(self.client.map(partial(func, **kwargs), partitioned_chunks))
         return [item for sublist in result for item in sublist]
@@ -319,7 +319,9 @@ class ClusterDaskDistributor(DistributorBaseClass):
         :return: The result of the calculation as a list - each item should be the result of the application of func
             to a single element.
         """
-
+        if isinstance(partitioned_chunks, Iterable):
+            # since dask 2.0.0 client map no longer accepts iterables
+            partitioned_chunks = list(partitioned_chunks)
         result = self.client.gather(self.client.map(partial(func, **kwargs), partitioned_chunks))
         return [item for sublist in result for item in sublist]
 
