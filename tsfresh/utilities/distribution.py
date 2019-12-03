@@ -355,7 +355,8 @@ class MultiprocessingDistributor(DistributorBaseClass):
     Distributor using a multiprocessing Pool to calculate the jobs in parallel on the local machine.
     """
 
-    def __init__(self, n_workers, disable_progressbar=False, progressbar_title="Feature Extraction", show_warnings=True):
+    def __init__(self, n_workers, disable_progressbar=False, progressbar_title="Feature Extraction",
+                 show_warnings=True):
         """
         Creates a new MultiprocessingDistributor instance
 

@@ -24,7 +24,6 @@ from tsfresh.feature_selection.significance_tests import target_binary_feature_r
 from tsfresh.utilities.distribution import initialize_warnings_in_workers
 
 
-
 def calculate_relevance_table(X, y, ml_task='auto', n_jobs=defaults.N_PROCESSES,
                               show_warnings=defaults.SHOW_WARNINGS, chunksize=defaults.CHUNKSIZE,
                               test_for_binary_target_binary_feature=defaults.TEST_FOR_BINARY_TARGET_BINARY_FEATURE,
@@ -163,7 +162,8 @@ def calculate_relevance_table(X, y, ml_task='auto', n_jobs=defaults.N_PROCESSES,
         table_const['relevant'] = False
 
         if not table_const.empty:
-            warnings.warn("[test_feature_significance] Constant features: {}".format(", ".join(table_const.feature)), RuntimeWarning)
+            warnings.warn("[test_feature_significance] Constant features: {}"
+                          .format(", ".join(table_const.feature)), RuntimeWarning)
 
         if len(table_const) == len(relevance_table):
             if n_jobs != 0:
@@ -176,7 +176,7 @@ def calculate_relevance_table(X, y, ml_task='auto', n_jobs=defaults.N_PROCESSES,
             tables = []
             for label in y.unique():
                 _test_real_feature = partial(target_binary_feature_real_test, y=(y == label),
-                                            test=test_for_binary_target_real_feature)
+                                             test=test_for_binary_target_real_feature)
                 _test_binary_feature = partial(target_binary_feature_binary_test, y=(y == label))
                 tmp = _calculate_relevance_table_for_implicit_target(
                     table_real, table_binary, X, _test_real_feature, _test_binary_feature, hypotheses_independent,
@@ -188,8 +188,8 @@ def calculate_relevance_table(X, y, ml_task='auto', n_jobs=defaults.N_PROCESSES,
             _test_real_feature = partial(target_real_feature_real_test, y=y)
             _test_binary_feature = partial(target_real_feature_binary_test, y=y)
             relevance_table = _calculate_relevance_table_for_implicit_target(
-                table_real, table_binary, X, _test_real_feature, _test_binary_feature, hypotheses_independent, fdr_level,
-                map_function
+                table_real, table_binary, X, _test_real_feature, _test_binary_feature, hypotheses_independent,
+                fdr_level, map_function
             )
 
         if n_jobs != 0:
@@ -201,8 +201,9 @@ def calculate_relevance_table(X, y, ml_task='auto', n_jobs=defaults.N_PROCESSES,
 
         if sum(relevance_table['relevant']) == 0:
             warnings.warn(
-                "No feature was found relevant for {} for fdr level = {} (which corresponds to the maximal percentage of "
-                "irrelevant features, consider using an higher fdr level or add other features.".format(ml_task, fdr_level), RuntimeWarning)
+                "No feature was found relevant for {} for fdr level = {} (which corresponds to the maximal percentage "
+                "of irrelevant features, consider using an higher fdr level or add other features."
+                .format(ml_task, fdr_level), RuntimeWarning)
 
     return relevance_table
 

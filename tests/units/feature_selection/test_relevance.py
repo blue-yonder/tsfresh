@@ -99,7 +99,7 @@ class TestCalculateRelevanceTable:
             assert str(record[0].message) == (
                 "No feature was found relevant for regression for fdr level = 0.05 (which corresponds "
                 "to the maximal percentage of irrelevant features, consider using an higher fdr level "
-                "or add other features." )
+                "or add other features.")
 
 
 class TestCombineRelevanceTables:
