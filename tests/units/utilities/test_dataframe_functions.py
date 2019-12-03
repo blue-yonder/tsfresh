@@ -111,7 +111,15 @@ class NormalizeTestCase(TestCase):
         self.assertRaises(AttributeError, dataframe_functions._normalize_input_to_internal_representation, test_df,
                           "strange_id", "sort", "kind", "value")
 
+        test_df = pd.DataFrame([{"id": 0, "kind": "a", "value": 3, "sort": 1}])
+        self.assertRaises(AttributeError, dataframe_functions._normalize_input_to_internal_representation, test_df,
+                          "id", "sort", "strange_kind", "value")
+
         test_df = pd.DataFrame([{"id": np.NaN, "kind": "a", "value": 3, "sort": 1}])
+        self.assertRaises(ValueError, dataframe_functions._normalize_input_to_internal_representation, test_df,
+                          "id", "sort", "kind", "value")
+
+        test_df = pd.DataFrame([{"id": 0, "kind": np.NaN, "value": 3, "sort": 1}])
         self.assertRaises(ValueError, dataframe_functions._normalize_input_to_internal_representation, test_df,
                           "id", "sort", "kind", "value")
 
@@ -199,6 +207,11 @@ class RollingTestCase(TestCase):
         test_df = pd.DataFrame({"id": [0, 0], "kind": ["a", "b"], "value": [3, 3], "sort": [1, 1]})
         self.assertRaises(AttributeError, dataframe_functions.roll_time_series,
                           df_or_dict=test_df, column_id="strange_id",
+                          column_sort="sort", column_kind="kind",
+                          rolling_direction=1)
+
+        self.assertRaises(ValueError, dataframe_functions.roll_time_series,
+                          df_or_dict=test_df, column_id=None,
                           column_sort="sort", column_kind="kind",
                           rolling_direction=1)
 
@@ -753,3 +766,7 @@ class GetIDsTestCase(TestCase):
         df_dict = {"a": pd.DataFrame({"_value": [1, 2, 3, 4, 10, 11], "id": [1, 1, 1, 1, 2, 2]}),
                    "b": pd.DataFrame({"_value": [5, 6, 7, 8, 12, 13], "id": [4, 4, 3, 3, 2, 2]})}
         self.assertEqual(get_ids(df_dict, "id"), {1, 2, 3, 4})
+
+    def test_get_id_wrong(self):
+        other_type = np.array([1, 2, 3])
+        self.assertRaises(TypeError, get_ids, other_type, "id")
