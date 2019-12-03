@@ -10,10 +10,10 @@ import numpy as np
 
 from tsfresh.transformers.feature_selector import FeatureSelector
 
+
 class FeatureSelectorTestCase(TestCase):
     def setUp(self):
         np.random.seed(0)
-
 
     def test_not_fitted(self):
         selector = FeatureSelector()
@@ -98,11 +98,11 @@ class FeatureSelectorTestCase(TestCase):
         self.assertTrue((selected_X_numpy == selected_X.values).all())
 
         self.assertTrue(selected_X_numpy.shape, (1, 1000))
-        
+
     def test_feature_importance(self):
         selector = FeatureSelector()
         self.assertIsNone(selector.feature_importances_)
-        
+
         y = pd.Series(np.random.binomial(1, 0.5, 1000))
         X = pd.DataFrame(index=list(range(1000)))
 
@@ -116,7 +116,7 @@ class FeatureSelectorTestCase(TestCase):
     def test_feature_importance(self):
         selector = FeatureSelector()
         self.assertIsNone(selector.p_values)
-        
+
         y = pd.Series(np.random.binomial(1, 0.5, 1000))
         X = pd.DataFrame(index=list(range(1000)))
 
@@ -127,5 +127,4 @@ class FeatureSelectorTestCase(TestCase):
 
         self.assertEqual(selector.p_values.shape, (2,))
         np.testing.assert_almost_equal(selector.p_values,
-                                       1.0-selector.feature_importances_)
-
+                                       1.0 - selector.feature_importances_)

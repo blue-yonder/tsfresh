@@ -17,7 +17,6 @@ class TestInferMLTask:
         y = pd.Series([1, 2, 3])
         assert 'classification' == infer_ml_task(y)
 
-
     def test_infers_classification_for_boolean_target(self):
         y = pd.Series([True, False, False])
         assert 'classification' == infer_ml_task(y)
@@ -58,12 +57,12 @@ class TestCalculateRelevanceTable:
         assert "feature_binary" == relevance_table.index[0]
         assert 'constant' == relevance_table.type[0]
         assert np.isnan(relevance_table.p_value[0])
-        assert False == relevance_table.relevant[0]
+        assert not relevance_table.relevant[0]
 
     @mock.patch('tsfresh.feature_selection.relevance.target_binary_feature_real_test')
     @mock.patch('tsfresh.feature_selection.relevance.target_binary_feature_binary_test')
     def test_target_binary_calls_correct_tests(self, significance_test_feature_binary_mock,
-                                         significance_test_feature_real_mock, X, y_binary):
+                                               significance_test_feature_real_mock, X, y_binary):
         significance_test_feature_binary_mock.return_value = 0.5
         significance_test_feature_real_mock.return_value = 0.7
         relevance_table = calculate_relevance_table(X, y_binary, n_jobs=0)
@@ -76,7 +75,7 @@ class TestCalculateRelevanceTable:
     @mock.patch('tsfresh.feature_selection.relevance.target_real_feature_real_test')
     @mock.patch('tsfresh.feature_selection.relevance.target_real_feature_binary_test')
     def test_target_real_calls_correct_tests(self, significance_test_feature_binary_mock,
-                                         significance_test_feature_real_mock, X, y_real):
+                                             significance_test_feature_real_mock, X, y_real):
         significance_test_feature_binary_mock.return_value = 0.5
         significance_test_feature_real_mock.return_value = 0.7
 
@@ -96,9 +95,10 @@ class TestCalculateRelevanceTable:
 
         with mock.patch('logging.Logger.warning') as m:
             _ = calculate_relevance_table(X, y_real, n_jobs=0, ml_task="regression")
-            m.assert_called_with("No feature was found relevant for regression for fdr level = 0.05 (which corresponds " 
+            m.assert_called_with("No feature was found relevant for regression for fdr level = 0.05 (which corresponds "
                                  "to the maximal percentage of irrelevant features, consider using an higher fdr level "
                                  "or add other features.")
+
 
 class TestCombineRelevanceTables:
     @pytest.fixture()

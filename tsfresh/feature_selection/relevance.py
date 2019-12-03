@@ -27,11 +27,11 @@ _logger = logging.getLogger(__name__)
 
 
 def calculate_relevance_table(X, y, ml_task='auto', n_jobs=defaults.N_PROCESSES, chunksize=defaults.CHUNKSIZE,
-                   test_for_binary_target_binary_feature=defaults.TEST_FOR_BINARY_TARGET_BINARY_FEATURE,
-                   test_for_binary_target_real_feature=defaults.TEST_FOR_BINARY_TARGET_REAL_FEATURE,
-                   test_for_real_target_binary_feature=defaults.TEST_FOR_REAL_TARGET_BINARY_FEATURE,
-                   test_for_real_target_real_feature=defaults.TEST_FOR_REAL_TARGET_REAL_FEATURE,
-                   fdr_level=defaults.FDR_LEVEL, hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT):
+                              test_for_binary_target_binary_feature=defaults.TEST_FOR_BINARY_TARGET_BINARY_FEATURE,
+                              test_for_binary_target_real_feature=defaults.TEST_FOR_BINARY_TARGET_REAL_FEATURE,
+                              test_for_real_target_binary_feature=defaults.TEST_FOR_REAL_TARGET_BINARY_FEATURE,
+                              test_for_real_target_real_feature=defaults.TEST_FOR_REAL_TARGET_REAL_FEATURE,
+                              fdr_level=defaults.FDR_LEVEL, hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT):
     """
     Calculate the relevance table for the features contained in feature matrix `X` with respect to target vector `y`.
     The relevance table is calculated for the intended machine learning task `ml_task`.
@@ -85,7 +85,8 @@ def calculate_relevance_table(X, y, ml_task='auto', n_jobs=defaults.N_PROCESSES,
                     else regression.
     :type ml_task: str
 
-    :param test_for_binary_target_binary_feature: Which test to be used for binary target, binary feature (currently unused)
+    :param test_for_binary_target_binary_feature: Which test to be used for binary target, binary feature
+                                                  (currently unused)
     :type test_for_binary_target_binary_feature: str
 
     :param test_for_binary_target_real_feature: Which test to be used for binary target, real feature

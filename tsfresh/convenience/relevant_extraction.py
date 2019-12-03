@@ -103,7 +103,8 @@ def extract_relevant_features(timeseries_container, y, X=None,
     :param profiling_filename: Where to save the profiling results.
     :type profiling_filename: basestring
 
-    :param test_for_binary_target_binary_feature: Which test to be used for binary target, binary feature (currently unused)
+    :param test_for_binary_target_binary_feature: Which test to be used for binary target, binary feature
+                                                  (currently unused)
     :type test_for_binary_target_binary_feature: str
 
     :param test_for_binary_target_real_feature: Which test to be used for binary target, real feature

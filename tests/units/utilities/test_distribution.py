@@ -63,7 +63,6 @@ class LocalDaskDistributorTestCase(DataTestCase):
         self.assertTrue(np.all(extracted_features.b__mean == np.array([37.85, 34.75])))
         self.assertTrue(np.all(extracted_features.b__median == np.array([39.5, 28.0])))
 
-
     def test_local_dask_cluster_extraction_two_worker(self):
 
         Distributor = LocalDaskDistributor(n_workers=2)
@@ -82,6 +81,7 @@ class LocalDaskDistributorTestCase(DataTestCase):
         self.assertTrue(np.all(extracted_features.b__abs_energy == np.array([36619, 35483])))
         self.assertTrue(np.all(extracted_features.b__mean == np.array([37.85, 34.75])))
         self.assertTrue(np.all(extracted_features.b__median == np.array([39.5, 28.0])))
+
 
 class ClusterDaskDistributorTestCase(DataTestCase):
 
@@ -128,4 +128,3 @@ class ClusterDaskDistributorTestCase(DataTestCase):
         self.assertTrue(np.all(extracted_features.b__mean == np.array([37.85, 34.75])))
         self.assertTrue(np.all(extracted_features.b__median == np.array([39.5, 28.0])))
         cluster.close()
-

@@ -7,8 +7,8 @@ import pandas as pd
 import numpy as np
 
 from tsfresh.defaults import TEST_FOR_BINARY_TARGET_REAL_FEATURE
-from tsfresh.feature_selection.significance_tests import target_real_feature_binary_test, target_real_feature_real_test,\
-    target_binary_feature_real_test, target_binary_feature_binary_test
+from tsfresh.feature_selection.significance_tests import target_real_feature_binary_test,\
+    target_real_feature_real_test, target_binary_feature_real_test, target_binary_feature_binary_test
 
 
 @pytest.fixture()
@@ -35,6 +35,7 @@ class TestChecksBinaryReal:
     """
     Test the checks for the `target_binary_feature_real_test`.
     """
+
     def test_check_target_is_binary(self, real_series):
         with pytest.raises(ValueError):
             target_binary_feature_real_test(x=real_series, y=real_series,
@@ -67,6 +68,7 @@ class TestChecksBinaryBinary:
     """
     Test the checks for the `target_binary_feature_binary_test`.
     """
+
     def test_checks_feature_is_binary(self, binary_series, real_series):
         with pytest.raises(ValueError):
             target_binary_feature_binary_test(x=real_series, y=binary_series)
@@ -96,6 +98,7 @@ class TestChecksRealReal:
     """
     Test the checks for the `target_real_feature_real_test`.
     """
+
     def test_checks_feature_is_series(self, real_series):
         with pytest.raises(TypeError):
             target_real_feature_real_test(x=real_series.values, y=real_series)
@@ -117,6 +120,7 @@ class TestChecksRealBinary:
     """
     Test the checks for the `target_real_feature_binary_test`.
     """
+
     def test_feature_is_binary(self, real_series):
         with pytest.raises(ValueError):
             target_real_feature_binary_test(x=real_series, y=real_series)

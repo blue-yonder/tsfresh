@@ -105,7 +105,6 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
                  fdr_level=defaults.FDR_LEVEL,
                  hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
                  ml_task='auto'):
-
         """
         Create a new RelevantFeatureAugmenter instance.
 
@@ -121,8 +120,8 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
 
         :param kind_to_fc_parameters: mapping from kind names to objects of the same type as the ones for
                 default_fc_parameters. If you put a kind as a key here, the fc_parameters
-                object (which is the value), will be used instead of the default_fc_parameters. This means that kinds, for
-                which kind_of_fc_parameters doe not have any entries, will be ignored by the feature selection.
+                object (which is the value), will be used instead of the default_fc_parameters. This means that kinds,
+                for which kind_of_fc_parameters doe not have any entries, will be ignored by the feature selection.
         :type kind_to_fc_parameters: dict
         :param column_id: The column with the id. See :mod:`~tsfresh.feature_extraction.extraction`.
         :type column_id: basestring
@@ -162,20 +161,22 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
         :param profiling_filename: Where to save the profiling results.
         :type profiling_filename: basestring
 
-        :param test_for_binary_target_binary_feature: Which test to be used for binary target, binary feature (currently unused)
+        :param test_for_binary_target_binary_feature: Which test to be used for binary target, binary feature
+                                                      (currently unused)
         :type test_for_binary_target_binary_feature: str
 
         :param test_for_binary_target_real_feature: Which test to be used for binary target, real feature
         :type test_for_binary_target_real_feature: str
 
-        :param test_for_real_target_binary_feature: Which test to be used for real target, binary feature (currently unused)
+        :param test_for_real_target_binary_feature: Which test to be used for real target, binary feature
+                                                    (currently unused)
         :type test_for_real_target_binary_feature: str
 
         :param test_for_real_target_real_feature: Which test to be used for real target, real feature (currently unused)
         :type test_for_real_target_real_feature: str
 
-        :param fdr_level: The FDR level that should be respected, this is the theoretical expected percentage of irrelevant
-                          features among all created features.
+        :param fdr_level: The FDR level that should be respected, this is the theoretical expected percentage
+                          of irrelevant features among all created features.
         :type fdr_level: float
 
         :param hypotheses_independent: Can the significance of the features be assumed to be independent?
@@ -306,7 +307,8 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
         After the fit step, it is known which features are relevant, Only extract those from the time series handed in
         with the function :func:`~set_timeseries_container`.
 
-        If filter_only_tsfresh_features is False, also delete the irrelevant, already present features in the data frame.
+        If filter_only_tsfresh_features is False, also delete the irrelevant,
+        already present features in the data frame.
 
         :param X: the data sample to add the relevant (and delete the irrelevant) features to.
         :type X: pandas.DataFrame or numpy.array

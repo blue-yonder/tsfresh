@@ -2,7 +2,7 @@
 # This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2017
 """
-This module contains the Distributor class, such objects are used to distribute the calculation of features. 
+This module contains the Distributor class, such objects are used to distribute the calculation of features.
 Essentially, a Distributor organizes the application of feature calculators to data chunks.
 
 Design of this module by Nils Braun
@@ -21,7 +21,7 @@ def _function_with_partly_reduce(chunk_list, map_function, kwargs):
     Small helper function to call a function (map_function)
     on a list of data chunks (chunk_list) and convert the results into
     a flattened list.
-    
+
     This function is used to send chunks of data with a size larger than 1 to
     the workers in parallel and process these on the worker.
 
@@ -29,7 +29,7 @@ def _function_with_partly_reduce(chunk_list, map_function, kwargs):
     :type chunk_list: list
     :param map_function: A function, which is called on each chunk in the list separately.
     :type map_function: callable
-    
+
     :return: A list of the results of the function evaluated on each chunk and flattened.
     :rtype: list
     """
@@ -42,14 +42,14 @@ def _function_with_partly_reduce(chunk_list, map_function, kwargs):
 class DistributorBaseClass:
     """
     The distributor abstract base class.
-    
-    The main purpose of the instances of the DistributorBaseClass subclasses is to evaluate a function (called map_function)
-    on a list of data items (called data).
-    
+
+    The main purpose of the instances of the DistributorBaseClass subclasses is to evaluate a function
+    (called map_function) on a list of data items (called data).
+
     This is done on chunks of the data, meaning, that the DistributorBaseClass classes will chunk the data into chunks,
     distribute the data and apply the feature calculator functions from
     :mod:`tsfresh.feature_extraction.feature_calculators` on the time series.
-    
+
     Dependent on the implementation of the distribute function, this is done in parallel or using a cluster of nodes.
     """
 
@@ -84,9 +84,9 @@ class DistributorBaseClass:
 
     def calculate_best_chunk_size(self, data_length):
         """
-        Calculates the best chunk size for a list of length data_length. The current implemented formula is more or 
+        Calculates the best chunk size for a list of length data_length. The current implemented formula is more or
         less an empirical result for multiprocessing case on one machine.
-        
+
         :param data_length: A length which defines how many calculations there need to be.
         :type data_length: int
         :return: the calculated chunk size
@@ -102,12 +102,12 @@ class DistributorBaseClass:
     def map_reduce(self, map_function, data, function_kwargs=None, chunk_size=None, data_length=None):
         """
         This method contains the core functionality of the DistributorBaseClass class.
-        
+
         It maps the map_function to each element of the data and reduces the results to return a flattened list.
 
-        How the jobs are calculated, is determined by the classes 
-        :func:`tsfresh.utilities.distribution.DistributorBaseClass.distribute` method, which can distribute the jobs in multiple
-        threads, across multiple processing units etc.
+        How the jobs are calculated, is determined by the classes
+        :func:`tsfresh.utilities.distribution.DistributorBaseClass.distribute` method,
+        which can distribute the jobs in multiple threads, across multiple processing units etc.
 
         To not transport each element of the data individually, the data is split into chunks, according to the chunk
         size (or an empirical guess if none is given). By this, worker processes not tiny but adequate sized parts of
@@ -124,7 +124,7 @@ class DistributorBaseClass:
         :param data_length: If the data is a generator, you have to set the length here. If it is none, the
           length is deduced from the len of the data.
         :type data_length: int
-        
+
         :return: the calculated results
         :rtype: list
         """
@@ -162,8 +162,8 @@ class DistributorBaseClass:
         :type partitioned_chunks: iterable
         :param kwargs: parameters for the map function
         :type kwargs: dict of string to parameter
-        
-        :return: The result of the calculation as a list - each item should be the result of the application of func 
+
+        :return: The result of the calculation as a list - each item should be the result of the application of func
             to a single element.
         """
         raise NotImplementedError

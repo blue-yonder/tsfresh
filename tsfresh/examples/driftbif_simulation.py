@@ -30,16 +30,21 @@ class velocity:
     >>> ds = velocity(tau=3.5) # Dissipative soliton with equilibrium velocity 1.5e-3
     >>> print(ds.label) # Discriminating before or beyond Drift-Bifurcation
     1
-    >>> print(ds.deterministic) # Equilibrium velocity
+
+    # Equilibrium velocity
+    >>> print(ds.deterministic)
     0.0015191090506254991
-    >>> v = ds.simulate(20000) #Simulated velocity as a time series with 20000 time steps being disturbed by Gaussian white noise
+
+    # Simulated velocity as a time series with 20000 time steps being disturbed by Gaussian white noise
+    >>> v = ds.simulate(20000)
     """
 
     def __init__(self, tau=3.8, kappa_3=0.3, Q=1950.0, R=3e-4, delta_t=0.05, seed=None):
         """
-        :param tau: Bifurcation parameter determining the intrinsic velocity of the dissipative soliton, which is zero for tau<=1.0/kappa_3 and np.sqrt(kappa_3**3/Q * (tau - 1.0/kappa_3)) otherwise
+        :param tau: Bifurcation parameter determining the intrinsic velocity of the dissipative soliton,
+                    which is zero for tau<=1.0/kappa_3 and np.sqrt(kappa_3**3/Q * (tau - 1.0/kappa_3)) otherwise
         :type tau: float
-        :param kappa_3: Inverse bifurcation point. 
+        :param kappa_3: Inverse bifurcation point.
         :type kappa_3:
         :param Q: Shape parameter of dissipative soliton
         :type Q: float
@@ -60,7 +65,7 @@ class velocity:
         self.c = np.sqrt(self.delta_t) * R
         self.delta_t = self.delta_t
 
-        if not seed is None:
+        if seed is not None:
             np.random.seed(seed)
 
         if tau <= 1.0 / kappa_3:
@@ -85,7 +90,7 @@ class velocity:
 
         :param N: number of time steps
         :type N: int
-        :param v0: initial velocity vector 
+        :param v0: initial velocity vector
         :type v0: ndarray
         :return: time series of velocity vectors with shape (N, v0.shape[0])
         :rtype: ndarray
@@ -106,8 +111,8 @@ def sample_tau(n=10, kappa_3=0.3, ratio=0.5, rel_increase=0.15):
     """
     Return list of control parameters
 
-    :param n: number of samples 
-    :type n: int    
+    :param n: number of samples
+    :type n: int
     :param kappa_3: inverse bifurcation point
     :type kappa_3: float
     :param ratio: ratio (default 0.5) of samples before and beyond drift-bifurcation
@@ -138,7 +143,7 @@ def load_driftbif(n, l, m=2, classification=True, kappa_3=0.3, seed=False):
     classification=False:
     target is bifurcation parameter tau
 
-    :param n: number of samples 
+    :param n: number of samples
     :type n: int
     :param l: length of the time series
     :type l: int

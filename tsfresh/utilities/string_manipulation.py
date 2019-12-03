@@ -68,4 +68,3 @@ def convert_to_output_format(param):
             return str(x)
 
     return "__".join(str(key) + "_" + add_parenthesis_if_string_value(param[key]) for key in sorted(param.keys()))
-

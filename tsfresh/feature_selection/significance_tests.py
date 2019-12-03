@@ -12,10 +12,14 @@ decide between four settings depending if the features and target are binary or 
 
 The four functions are named
 
-1. :func:`~tsfresh.feature_selection.significance_tests.target_binary_feature_binary_test`: Target and feature are both binary
-2. :func:`~tsfresh.feature_selection.significance_tests.target_binary_feature_real_test`: Target is binary and feature real
-3. :func:`~tsfresh.feature_selection.significance_tests.target_real_feature_binary_test`: Target is real and the feature is binary
-4. :func:`~tsfresh.feature_selection.significance_tests.target_real_feature_real_test`: Target and feature are both real
+1. :func:`~tsfresh.feature_selection.significance_tests.target_binary_feature_binary_test`:
+   Target and feature are both binary
+2. :func:`~tsfresh.feature_selection.significance_tests.target_binary_feature_real_test`:
+   Target is binary and feature real
+3. :func:`~tsfresh.feature_selection.significance_tests.target_real_feature_binary_test`:
+   Target is real and the feature is binary
+4. :func:`~tsfresh.feature_selection.significance_tests.target_real_feature_real_test`:
+   Target and feature are both real
 
 References
 ----------
@@ -60,7 +64,6 @@ def target_binary_feature_binary_test(x, y):
     # Check for correct value range
     __check_for_binary_feature(x)
     __check_for_binary_target(y)
-
 
     # Extract the unique values
     x0, x1 = np.unique(x.values)
@@ -199,9 +202,9 @@ def __check_if_pandas_series(x, y):
 
     :raise: ``TypeError`` if one of the objects is not a pandas.Series.
     """
-    if not type(x) == pd.Series:
+    if not isinstance(x, pd.Series):
         raise TypeError("x should be a pandas Series")
-    if not type(y) == pd.Series:
+    if not isinstance(y, pd.Series):
         raise TypeError("y should be a pandas Series")
 
 
@@ -219,8 +222,9 @@ def __check_for_binary_target(y):
     :raises: ``ValueError`` if the values are not binary.
     """
     if not set(y) == {0, 1}:
-        _logger.warning("[target_binary_feature_binary_test] The binary target should have values 1 and 0 (or True and False). " +
-              "Instead found" + str(set(y)))
+        _logger.warning("[target_binary_feature_binary_test] The binary target should have "
+                        "values 1 and 0 (or True and False). "
+                        "Instead found" + str(set(y)))
         if len(set(y)) > 2:
             raise ValueError("[target_binary_feature_binary_test] Target is not binary!")
 
@@ -239,8 +243,9 @@ def __check_for_binary_feature(x):
     :raises: ``ValueError`` if the values are not binary.
     """
     if not set(x) == {0, 1}:
-        _logger.warning("[target_binary_feature_binary_test] A binary feature should have only values 1 and 0 (incl. True and False). " +
-              "Instead found " + str(set(x)) + " in feature ''" + str(x.name) + "''.")
+        _logger.warning("[target_binary_feature_binary_test] A binary feature should have only "
+                        "values 1 and 0 (incl. True and False). "
+                        "Instead found " + str(set(x)) + " in feature ''" + str(x.name) + "''.")
         if len(set(x)) > 2:
             raise ValueError("[target_binary_feature_binary_test] Feature is not binary!")
 
