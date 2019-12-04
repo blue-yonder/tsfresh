@@ -251,14 +251,22 @@ class FeatureCalculationTestCase(TestCase):
         # H0 is true
         np.random.seed(seed=42)
         x = np.cumsum(np.random.uniform(size=100))
-        param = [{"attr": "teststat"}, {"attr": "pvalue"}, {"attr": "usedlag"}]
-        expected_index = ['attr_"teststat"', 'attr_"pvalue"', 'attr_"usedlag"']
+        param = [
+            {"autolag": "BIC", "attr": "teststat"},
+            {"autolag": "BIC", "attr": "pvalue"},
+            {"autolag": "BIC", "attr": "usedlag"}
+        ]
+        expected_index = [
+            'autolag_"BIC"__attr_"teststat"',
+            'autolag_"BIC"__attr_"pvalue"',
+            'autolag_"BIC"__attr_"usedlag"',
+        ]
 
         res = augmented_dickey_fuller(x=x, param=param)
         res = pd.Series(dict(res))
         self.assertCountEqual(list(res.index), expected_index)
-        self.assertGreater(res['attr_"pvalue"'], 0.10)
-        self.assertEqual(res['attr_"usedlag"'], 0)
+        self.assertGreater(res['autolag_"BIC"__attr_"pvalue"'], 0.10)
+        self.assertEqual(res['autolag_"BIC"__attr_"usedlag"'], 0)
 
         # H0 should be rejected for AR(1) model with x_{t} = 1/2 x_{t-1} + e_{t}
         np.random.seed(seed=42)
@@ -268,14 +276,22 @@ class FeatureCalculationTestCase(TestCase):
         x[0] = 100
         for i in range(1, m):
             x[i] = x[i - 1] * 0.5 + e[i]
-        param = [{"attr": "teststat"}, {"attr": "pvalue"}, {"attr": "usedlag"}]
-        expected_index = ['attr_"teststat"', 'attr_"pvalue"', 'attr_"usedlag"']
+        param = [
+            {"autolag": "AIC", "attr": "teststat"},
+            {"autolag": "AIC", "attr": "pvalue"},
+            {"autolag": "AIC", "attr": "usedlag"}
+        ]
+        expected_index = [
+            'autolag_"AIC"__attr_"teststat"',
+            'autolag_"AIC"__attr_"pvalue"',
+            'autolag_"AIC"__attr_"usedlag"',
+        ]
 
         res = augmented_dickey_fuller(x=x, param=param)
         res = pd.Series(dict(res))
         self.assertCountEqual(list(res.index), expected_index)
-        self.assertLessEqual(res['attr_"pvalue"'], 0.05)
-        self.assertEqual(res['attr_"usedlag"'], 0)
+        self.assertLessEqual(res['autolag_"AIC"__attr_"pvalue"'], 0.05)
+        self.assertEqual(res['autolag_"AIC"__attr_"usedlag"'], 0)
 
         # Check if LinAlgError and ValueError are catched
         res_linalg_error = augmented_dickey_fuller(x=np.repeat(np.nan, 100), param=param)
