@@ -10,11 +10,10 @@ Afterwards the Benjamini Hochberg procedure which is a multiple testing procedur
 which to cut off (solely based on the p-values).
 """
 
-import logging
 from multiprocessing import Pool
+import warnings
 
 import numpy as np
-import os
 import pandas as pd
 from functools import partial, reduce
 
@@ -22,11 +21,11 @@ from tsfresh import defaults
 from tsfresh.feature_selection.benjamini_hochberg_test import benjamini_hochberg_test
 from tsfresh.feature_selection.significance_tests import target_binary_feature_real_test, \
     target_real_feature_binary_test, target_real_feature_real_test, target_binary_feature_binary_test
+from tsfresh.utilities.distribution import initialize_warnings_in_workers
 
-_logger = logging.getLogger(__name__)
 
-
-def calculate_relevance_table(X, y, ml_task='auto', n_jobs=defaults.N_PROCESSES, chunksize=defaults.CHUNKSIZE,
+def calculate_relevance_table(X, y, ml_task='auto', n_jobs=defaults.N_PROCESSES,
+                              show_warnings=defaults.SHOW_WARNINGS, chunksize=defaults.CHUNKSIZE,
                               test_for_binary_target_binary_feature=defaults.TEST_FOR_BINARY_TARGET_BINARY_FEATURE,
                               test_for_binary_target_real_feature=defaults.TEST_FOR_BINARY_TARGET_REAL_FEATURE,
                               test_for_real_target_binary_feature=defaults.TEST_FOR_REAL_TARGET_BINARY_FEATURE,
@@ -110,6 +109,9 @@ def calculate_relevance_table(X, y, ml_task='auto', n_jobs=defaults.N_PROCESSES,
     :param n_jobs: Number of processes to use during the p-value calculation
     :type n_jobs: int
 
+    :param show_warnings: Show warnings during the p-value calculation (needed for debugging of calculators).
+    :type show_warnings: bool
+
     :param chunksize: The size of one chunk that is submitted to the worker
         process for the parallelisation.  Where one chunk is defined as a
         singular time series for one id and one kind. If you set the chunksize
@@ -134,59 +136,74 @@ def calculate_relevance_table(X, y, ml_task='auto', n_jobs=defaults.N_PROCESSES,
     elif ml_task == 'auto':
         ml_task = infer_ml_task(y)
 
-    if n_jobs == 0:
-        map_function = map
-    else:
-        pool = Pool(n_jobs)
-        map_function = partial(pool.map, chunksize=chunksize)
+    with warnings.catch_warnings():
+        if not show_warnings:
+            warnings.simplefilter("ignore")
+        else:
+            warnings.simplefilter("default")
 
-    relevance_table = pd.DataFrame(index=pd.Series(X.columns, name='feature'))
-    relevance_table['feature'] = relevance_table.index
-    relevance_table['type'] = pd.Series(
-        map_function(get_feature_type, [X[feature] for feature in relevance_table.index]),
-        index=relevance_table.index
-    )
-    table_real = relevance_table[relevance_table.type == 'real'].copy()
-    table_binary = relevance_table[relevance_table.type == 'binary'].copy()
+        if n_jobs == 0:
+            map_function = map
+        else:
+            pool = Pool(processes=n_jobs, initializer=initialize_warnings_in_workers, initargs=(show_warnings,))
+            map_function = partial(pool.map, chunksize=chunksize)
 
-    table_const = relevance_table[relevance_table.type == 'constant'].copy()
-    table_const['p_value'] = np.NaN
-    table_const['relevant'] = False
+        relevance_table = pd.DataFrame(index=pd.Series(X.columns, name='feature'))
+        relevance_table['feature'] = relevance_table.index
+        relevance_table['type'] = pd.Series(
+            map_function(get_feature_type, [X[feature] for feature in relevance_table.index]),
+            index=relevance_table.index
+        )
+        table_real = relevance_table[relevance_table.type == 'real'].copy()
+        table_binary = relevance_table[relevance_table.type == 'binary'].copy()
 
-    if len(table_const) == len(relevance_table):
-        return table_const
+        table_const = relevance_table[relevance_table.type == 'constant'].copy()
+        table_const['p_value'] = np.NaN
+        table_const['relevant'] = False
 
-    if ml_task == 'classification':
-        tables = []
-        for label in y.unique():
-            _test_real_feature = partial(target_binary_feature_real_test, y=(y == label),
-                                         test=test_for_binary_target_real_feature)
-            _test_binary_feature = partial(target_binary_feature_binary_test, y=(y == label))
-            tmp = _calculate_relevance_table_for_implicit_target(
+        if not table_const.empty:
+            warnings.warn("[test_feature_significance] Constant features: {}"
+                          .format(", ".join(table_const.feature)), RuntimeWarning)
+
+        if len(table_const) == len(relevance_table):
+            if n_jobs != 0:
+                pool.close()
+                pool.terminate()
+                pool.join()
+            return table_const
+
+        if ml_task == 'classification':
+            tables = []
+            for label in y.unique():
+                _test_real_feature = partial(target_binary_feature_real_test, y=(y == label),
+                                             test=test_for_binary_target_real_feature)
+                _test_binary_feature = partial(target_binary_feature_binary_test, y=(y == label))
+                tmp = _calculate_relevance_table_for_implicit_target(
+                    table_real, table_binary, X, _test_real_feature, _test_binary_feature, hypotheses_independent,
+                    fdr_level, map_function
+                )
+                tables.append(tmp)
+            relevance_table = combine_relevance_tables(tables)
+        elif ml_task == 'regression':
+            _test_real_feature = partial(target_real_feature_real_test, y=y)
+            _test_binary_feature = partial(target_real_feature_binary_test, y=y)
+            relevance_table = _calculate_relevance_table_for_implicit_target(
                 table_real, table_binary, X, _test_real_feature, _test_binary_feature, hypotheses_independent,
                 fdr_level, map_function
             )
-            tables.append(tmp)
-        relevance_table = combine_relevance_tables(tables)
-    elif ml_task == 'regression':
-        _test_real_feature = partial(target_real_feature_real_test, y=y)
-        _test_binary_feature = partial(target_real_feature_binary_test, y=y)
-        relevance_table = _calculate_relevance_table_for_implicit_target(
-            table_real, table_binary, X, _test_real_feature, _test_binary_feature, hypotheses_independent, fdr_level,
-            map_function
-        )
 
-    relevance_table = pd.concat([relevance_table, table_const], axis=0)
+        if n_jobs != 0:
+            pool.close()
+            pool.terminate()
+            pool.join()
 
-    if n_jobs != 0:
-        pool.close()
-        pool.terminate()
-        pool.join()
+        relevance_table = pd.concat([relevance_table, table_const], axis=0)
 
-    if sum(relevance_table['relevant']) == 0:
-        _logger.warning(
-            "No feature was found relevant for {} for fdr level = {} (which corresponds to the maximal percentage of "
-            "irrelevant features, consider using an higher fdr level or add other features.".format(ml_task, fdr_level))
+        if sum(relevance_table['relevant']) == 0:
+            warnings.warn(
+                "No feature was found relevant for {} for fdr level = {} (which corresponds to the maximal percentage "
+                "of irrelevant features, consider using an higher fdr level or add other features."
+                .format(ml_task, fdr_level), RuntimeWarning)
 
     return relevance_table
 
@@ -222,7 +239,6 @@ def infer_ml_task(y):
     else:
         ml_task = 'regression'
 
-    _logger.warning('Infered {} as machine learning task'.format(ml_task))
     return ml_task
 
 
@@ -255,7 +271,6 @@ def get_feature_type(feature_column):
     """
     n_unique_values = len(set(feature_column.values))
     if n_unique_values == 1:
-        _logger.warning("[test_feature_significance] Feature {} is constant".format(feature_column.name))
         return 'constant'
     elif n_unique_values == 2:
         return 'binary'

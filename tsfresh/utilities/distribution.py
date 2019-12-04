@@ -10,6 +10,7 @@ Design of this module by Nils Braun
 
 import math
 import itertools
+import warnings
 from collections import Iterable
 from functools import partial
 from multiprocessing import Pool
@@ -37,6 +38,23 @@ def _function_with_partly_reduce(chunk_list, map_function, kwargs):
     results = (map_function(chunk, **kwargs) for chunk in chunk_list)
     results = list(itertools.chain.from_iterable(results))
     return results
+
+
+def initialize_warnings_in_workers(show_warnings):
+    """
+    Small helper function to initialize warnings module in multiprocessing workers.
+
+    On Windows, Python spawns fresh processes which do not inherit from warnings
+    state, so warnings must be enabled/disabled before running computations.
+
+    :param show_warnings: whether to show warnings or not.
+    :type show_warnings: bool
+    """
+    warnings.catch_warnings()
+    if not show_warnings:
+        warnings.simplefilter("ignore")
+    else:
+        warnings.simplefilter("default")
 
 
 class DistributorBaseClass:
@@ -337,7 +355,8 @@ class MultiprocessingDistributor(DistributorBaseClass):
     Distributor using a multiprocessing Pool to calculate the jobs in parallel on the local machine.
     """
 
-    def __init__(self, n_workers, disable_progressbar=False, progressbar_title="Feature Extraction"):
+    def __init__(self, n_workers, disable_progressbar=False, progressbar_title="Feature Extraction",
+                 show_warnings=True):
         """
         Creates a new MultiprocessingDistributor instance
 
@@ -347,8 +366,10 @@ class MultiprocessingDistributor(DistributorBaseClass):
         :type disable_progressbar: bool
         :param progressbar_title: the title of the progressbar
         :type progressbar_title: basestring
+        :param show_warnings: whether to show warnings or not.
+        :type show_warnings: bool
         """
-        self.pool = Pool(processes=n_workers)
+        self.pool = Pool(processes=n_workers, initializer=initialize_warnings_in_workers, initargs=(show_warnings,))
         self.n_workers = n_workers
         self.disable_progressbar = disable_progressbar
         self.progressbar_title = progressbar_title

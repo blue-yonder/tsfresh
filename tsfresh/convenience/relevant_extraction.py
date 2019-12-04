@@ -87,7 +87,7 @@ def extract_relevant_features(timeseries_container, y, X=None,
     :param n_jobs: The number of processes to use for parallelization. If zero, no parallelization is used.
     :type n_jobs: int
 
-    :param: show_warnings: Show warnings during the feature extraction (needed for debugging of calculators).
+    :param show_warnings: Show warnings during the feature extraction (needed for debugging of calculators).
     :type show_warnings: bool
 
     :param disable_progressbar: Do not show a progressbar while doing the calculation.
@@ -170,6 +170,7 @@ def extract_relevant_features(timeseries_container, y, X=None,
                             test_for_real_target_real_feature=test_for_real_target_real_feature,
                             fdr_level=fdr_level, hypotheses_independent=hypotheses_independent,
                             n_jobs=n_jobs,
+                            show_warnings=show_warnings,
                             chunksize=chunksize,
                             ml_task=ml_task)
 
