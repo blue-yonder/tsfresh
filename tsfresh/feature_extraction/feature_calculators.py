@@ -15,6 +15,7 @@ seen by tsfresh as a feature calculator. Others will not be calculated.
 """
 
 import itertools
+import functools
 import warnings
 from builtins import range
 from collections import defaultdict
@@ -428,29 +429,29 @@ def augmented_dickey_fuller(x, param):
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
     :param param: contains dictionaries {"attr": x, "autolag": y} with x str, either "teststat", "pvalue" or "usedlag"
-                  and with y str, either of "AIC", "BIC", "t-stats" or None.
+                  and with y str, either of "AIC", "BIC", "t-stats" or None (See the documentation of adfuller() in
+                  statsmodels).
     :type param: list
     :return: the value of this feature
     :return type: float
     """
+
+    @functools.lru_cache()
     def compute_adf(autolag):
         try:
             return adfuller(x, autolag=autolag)
         except LinAlgError:
-            return (np.NaN, np.NaN, np.NaN)
+            return np.NaN, np.NaN, np.NaN
         except ValueError:  # occurs if sample size is too small
-            return (np.NaN, np.NaN, np.NaN)
+            return np.NaN, np.NaN, np.NaN
         except MissingDataError:  # is thrown for e.g. inf or nan in the data
-            return (np.NaN, np.NaN, np.NaN)
+            return np.NaN, np.NaN, np.NaN
 
-    cache = {}
     res = []
     for config in param:
         autolag = config.get("autolag", "AIC")
-        if autolag not in cache:
-            cache[autolag] = compute_adf(autolag)
 
-        adf = cache[autolag]
+        adf = compute_adf(autolag)
         index = 'autolag_"{}"__attr_"{}"'.format(autolag, config["attr"])
 
         if config["attr"] == "teststat":
@@ -462,6 +463,7 @@ def augmented_dickey_fuller(x, param):
         else:
             res.append((index, np.NaN))
     return res
+
 
 @set_property("fctype", "simple")
 def abs_energy(x):
@@ -1474,6 +1476,7 @@ def binned_entropy(x, max_bins):
     probs = hist / x.size
     probs[probs == 0] = 1.0
     return - np.sum(probs * np.log(probs))
+
 
 # todo - include latex formula
 # todo - check if vectorizable
