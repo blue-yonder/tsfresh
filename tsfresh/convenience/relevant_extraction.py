@@ -2,7 +2,6 @@
 # This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
-from __future__ import absolute_import
 import pandas as pd
 from tsfresh.feature_extraction import extract_features
 from tsfresh import defaults
@@ -88,7 +87,7 @@ def extract_relevant_features(timeseries_container, y, X=None,
     :param n_jobs: The number of processes to use for parallelization. If zero, no parallelization is used.
     :type n_jobs: int
 
-    :param: show_warnings: Show warnings during the feature extraction (needed for debugging of calculators).
+    :param show_warnings: Show warnings during the feature extraction (needed for debugging of calculators).
     :type show_warnings: bool
 
     :param disable_progressbar: Do not show a progressbar while doing the calculation.
@@ -104,7 +103,8 @@ def extract_relevant_features(timeseries_container, y, X=None,
     :param profiling_filename: Where to save the profiling results.
     :type profiling_filename: basestring
 
-    :param test_for_binary_target_binary_feature: Which test to be used for binary target, binary feature (currently unused)
+    :param test_for_binary_target_binary_feature: Which test to be used for binary target, binary feature
+                                                  (currently unused)
     :type test_for_binary_target_binary_feature: str
 
     :param test_for_binary_target_real_feature: Which test to be used for binary target, real feature
@@ -170,6 +170,7 @@ def extract_relevant_features(timeseries_container, y, X=None,
                             test_for_real_target_real_feature=test_for_real_target_real_feature,
                             fdr_level=fdr_level, hypotheses_independent=hypotheses_independent,
                             n_jobs=n_jobs,
+                            show_warnings=show_warnings,
                             chunksize=chunksize,
                             ml_task=ml_task)
 

@@ -18,7 +18,6 @@ References
 
 """
 
-from __future__ import absolute_import, division
 from io import BytesIO
 from urllib.request import urlopen
 from zipfile import ZipFile
@@ -38,7 +37,7 @@ data_file_name_classes = os.path.join(module_path, 'data', 'UCI HAR Dataset', 't
 def download_har_dataset():
     """
     Download human activity recognition dataset from UCI ML Repository and store it at /tsfresh/notebooks/data.
-    
+
     Examples
     ========
 
@@ -46,7 +45,7 @@ def download_har_dataset():
     >>> har_dataset.download_har_dataset()
     """
 
-    zipurl = 'https://github.com/MaxBenChrist/human-activity-dataset/blob/master/UCI%20HAR%20Dataset.zip?raw=True' 
+    zipurl = 'https://github.com/MaxBenChrist/human-activity-dataset/blob/master/UCI%20HAR%20Dataset.zip?raw=True'
 
     if os.path.exists(data_file_name_dataset) and os.path.exists(data_file_name_classes):
         _logger.warning("You have already downloaded the Human Activity Data Set.")
@@ -61,14 +60,14 @@ def download_har_dataset():
 def load_har_dataset():
     try:
         return pd.read_csv(data_file_name_dataset, delim_whitespace=True, header=None)
-    except IOError:
-        raise IOError('File {} was not found. Have you downloaded the dataset with download_har_dataset() '
+    except OSError:
+        raise OSError('File {} was not found. Have you downloaded the dataset with download_har_dataset() '
                       'before?'.format(data_file_name_dataset))
 
 
 def load_har_classes():
     try:
         return pd.read_csv(data_file_name_classes, delim_whitespace=True, header=None, squeeze=True)
-    except IOError:
-        raise IOError('File {} was not found. Have you downloaded the dataset with download_har_dataset() '
+    except OSError:
+        raise OSError('File {} was not found. Have you downloaded the dataset with download_har_dataset() '
                       'before?'.format(data_file_name_classes))

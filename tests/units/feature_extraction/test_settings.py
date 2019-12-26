@@ -2,15 +2,12 @@
 # This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
-from __future__ import absolute_import, division
-
 from unittest import TestCase
 import numpy as np
 import pandas as pd
 from tsfresh.feature_extraction.extraction import extract_features
 from tsfresh.feature_extraction.settings import ComprehensiveFCParameters, MinimalFCParameters, \
     EfficientFCParameters, from_columns, TimeBasedFCParameters, IndexBasedFCParameters
-import six
 from tsfresh.feature_extraction import feature_calculators
 from pandas.testing import assert_frame_equal
 
@@ -23,7 +20,7 @@ class TestSettingsObject(TestCase):
     def test_from_column_raises_on_wrong_column_format(self):
 
         self.assertRaises(TypeError, from_columns, 42)
-        self.assertRaises(TypeError, from_columns, 42)
+        self.assertRaises(TypeError, from_columns, [42])
         self.assertRaises(ValueError, from_columns, ["This is not a column name"])
         self.assertRaises(ValueError, from_columns, ["This__neither"])
         self.assertRaises(ValueError, from_columns, ["This__also__not"])
@@ -43,11 +40,11 @@ class TestSettingsObject(TestCase):
         feature_names += [tsn + '__ar_coefficient__k_20__coeff_4', tsn + '__ar_coefficient__coeff_10__k_-1']
 
         kind_to_fc_parameters = from_columns(feature_names)
-        six.assertCountEqual(self, list(kind_to_fc_parameters[tsn].keys()),
-                             ["sum_values", "median", "length", "sample_entropy", "quantile", "number_peaks",
-                              "ar_coefficient", "value_count"])
+        self.assertCountEqual(list(kind_to_fc_parameters[tsn].keys()),
+                              ["sum_values", "median", "length", "sample_entropy", "quantile", "number_peaks",
+                               "ar_coefficient", "value_count"])
 
-        self.assertEqual(kind_to_fc_parameters[tsn]["sum_values"], None)
+        self.assertIsNone(kind_to_fc_parameters[tsn]["sum_values"])
         self.assertEqual(kind_to_fc_parameters[tsn]["ar_coefficient"],
                          [{"k": 20, "coeff": 4}, {"k": -1, "coeff": 10}])
 
@@ -76,8 +73,8 @@ class TestSettingsObject(TestCase):
         kind_to_fc_parameters = from_columns(feature_names, columns_to_ignore=["THIS_COL_SHOULD_BE_IGNORED",
                                                                                "THIS_AS_WELL"])
 
-        six.assertCountEqual(self, list(kind_to_fc_parameters[tsn].keys()),
-                             ["sum_values", "median", "length", "sample_entropy"])
+        self.assertCountEqual(list(kind_to_fc_parameters[tsn].keys()),
+                              ["sum_values", "median", "length", "sample_entropy"])
 
     def test_default_calculates_all_features(self):
         """
@@ -127,7 +124,7 @@ class TestEfficientFCParameters(TestCase):
                                               column_kind="kind", column_value="value",
                                               column_sort="time", column_id="id")
 
-        six.assertCountEqual(self, extracted_features.index, [0, 1])
+        self.assertCountEqual(extracted_features.index, [0, 1])
 
     def test_contains_all_non_high_comp_cost_features(self):
         """
@@ -197,7 +194,7 @@ class TestMinimalSettingsObject(TestCase):
                                               column_kind="kind", column_value="value",
                                               column_sort="time", column_id="id")
 
-        six.assertCountEqual(self, extracted_features.columns, ["0__median", "0__standard_deviation", "0__sum_values",
-                                                                "0__maximum", "0__variance", "0__minimum", "0__mean",
-                                                                "0__length"])
-        six.assertCountEqual(self, extracted_features.index, [0, 1])
+        self.assertCountEqual(extracted_features.columns, ["0__median", "0__standard_deviation", "0__sum_values",
+                                                           "0__maximum", "0__variance", "0__minimum", "0__mean",
+                                                           "0__length"])
+        self.assertCountEqual(extracted_features.index, [0, 1])

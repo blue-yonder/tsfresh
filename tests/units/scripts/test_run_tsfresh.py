@@ -14,6 +14,7 @@ class RunTSFreshTestCase(TestCase):
     Test the command line interface to tsfresh. This does not test the tsfresh functionality (this is tested elsewhere),
     but mocks the extract_features functionality by just outputting the same df as going in into the function.
     """
+
     def setUp(self):
         # Create a temporary directory
         self.test_dir = tempfile.mkdtemp()
@@ -85,15 +86,16 @@ class RunTSFreshTestCase(TestCase):
 
         self.assertEqual(called_kwargs["column_id"], "id")
         self.assertEqual(called_kwargs["column_value"], "value")
-        self.assertEqual(called_kwargs["column_kind"], None)
+        self.assertIsNone(called_kwargs["column_kind"])
         self.assertEqual(called_kwargs["column_sort"], "time")
 
     def test_csv_with_header(self):
         input_csv = "ID SORT KIND VALUE\n0 0 a 0\n1 0 a 1\n0 0 b 1\n1 0 b 3"
         output_csv = ",ID,SORT,KIND,VALUE\n0,0,0,a,0\n1,1,0,a,1\n2,0,0,b,1\n3,1,0,b,3\n"
 
-        result_csv = self.call_main_function(input_csv_string=input_csv,
-                                             arguments="--column-id ID --column-sort SORT --column-value VALUE --column-kind KIND --csv-with-headers")
+        result_csv = self.call_main_function(
+            input_csv_string=input_csv,
+            arguments="--column-id ID --column-sort SORT --column-value VALUE --column-kind KIND --csv-with-headers")
 
         self.assertEqual(result_csv, output_csv)
 

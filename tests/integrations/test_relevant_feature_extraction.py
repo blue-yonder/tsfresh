@@ -2,7 +2,6 @@
 # This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
-from __future__ import absolute_import, division
 from tests.fixtures import DataTestCase
 from tsfresh import extract_features, select_features, extract_relevant_features
 from tsfresh.feature_extraction.settings import ComprehensiveFCParameters
@@ -11,6 +10,7 @@ from unittest import TestCase
 import numpy as np
 import pandas.util.testing as pdt
 import pandas as pd
+
 
 class RelevantFeatureExtractionDataTestCase(DataTestCase):
     """
@@ -110,5 +110,3 @@ class RelevantFeatureExtractionTestCase(TestCase):
         df_dict = {"a": pd.DataFrame({"val": [1, 2, 3, 4, 10, 11], "id": [1, 1, 1, 1, 2, 2]}),
                    "b": pd.DataFrame({"val": [5, 6, 7, 8, 12, 13], "id": [4, 4, 3, 3, 2, 2]})}
         self.assertRaises(AssertionError, extract_relevant_features, df_dict, y, None, None, None, "id", None, "val")
-
-

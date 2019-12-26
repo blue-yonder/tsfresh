@@ -10,9 +10,6 @@ import warnings
 
 import numpy as np
 import pandas as pd
-import logging
-
-_logger = logging.getLogger(__name__)
 
 
 def check_for_nans_in_columns(df, columns=None):
@@ -135,9 +132,9 @@ def impute_dataframe_range(df_impute, col_to_max, col_to_min, col_to_median):
                          "to replace")
 
     # Make the replacement dataframes as large as the real one
-    col_to_max = pd.DataFrame([col_to_max]*len(df_impute), index=df_impute.index)
-    col_to_min = pd.DataFrame([col_to_min]*len(df_impute), index=df_impute.index)
-    col_to_median = pd.DataFrame([col_to_median]*len(df_impute), index=df_impute.index)
+    col_to_max = pd.DataFrame([col_to_max] * len(df_impute), index=df_impute.index)
+    col_to_min = pd.DataFrame([col_to_min] * len(df_impute), index=df_impute.index)
+    col_to_median = pd.DataFrame([col_to_median] * len(df_impute), index=df_impute.index)
 
     df_impute.where(df_impute.values != np.PINF, other=col_to_max, inplace=True)
     df_impute.where(df_impute.values != np.NINF, other=col_to_min, inplace=True)
@@ -161,7 +158,7 @@ def get_range_values_per_column(df):
     :return: Dictionaries mapping column names to max, min, mean values
     :rtype: (dict, dict, dict)
     """
-    data = df.get_values()
+    data = df.values
     masked = np.ma.masked_invalid(data)
     columns = df.columns
 
@@ -169,8 +166,8 @@ def get_range_values_per_column(df):
 
     if np.any(is_col_non_finite):
         # We have columns that does not contain any finite value at all, so we will store 0 instead.
-        _logger.warning("The columns {} did not have any finite values. Filling with zeros.".format(
-            df.iloc[:, np.where(is_col_non_finite)[0]].columns.values))
+        warnings.warn("The columns {} did not have any finite values. Filling with zeros.".format(
+            df.iloc[:, np.where(is_col_non_finite)[0]].columns.values), RuntimeWarning)
 
         masked.data[:, is_col_non_finite] = 0  # Set the values of the columns to 0
         masked.mask[:, is_col_non_finite] = False  # Remove the mask for this column
@@ -234,7 +231,8 @@ def get_ids(df_or_dict, column_id):
 
 # todo: add more testcases
 # todo: rewrite in a more straightforward way
-def _normalize_input_to_internal_representation(timeseries_container, column_id, column_sort, column_kind, column_value):
+def _normalize_input_to_internal_representation(timeseries_container, column_id, column_sort,
+                                                column_kind, column_value):
     """
     Try to transform any given input to the internal representation of time series, which is a flat DataFrame
     (the first format from see :ref:`data-formats-label`).
@@ -281,7 +279,10 @@ def _normalize_input_to_internal_representation(timeseries_container, column_id,
         for kind, df in timeseries_container.items():
             df[column_kind] = kind
 
-        timeseries_container = pd.concat(timeseries_container.values())
+        try:
+            timeseries_container = pd.concat(timeseries_container.values(), sort=True)
+        except TypeError:  # pandas < 0.23.0
+            timeseries_container = pd.concat(timeseries_container.values())
         gc.collect()
 
     # Check ID column
@@ -309,21 +310,33 @@ def _normalize_input_to_internal_representation(timeseries_container, column_id,
 
     if column_kind is None and column_value is None:
         if column_sort is not None:
-            column_kind = "_variables"
-            column_value = "_values"
             sort = timeseries_container[column_sort].values
-            timeseries_container = pd.melt(timeseries_container.drop(column_sort, axis=1),
-                                           id_vars=[column_id],
-                                           value_name=column_value, var_name=column_kind)
-            timeseries_container[column_sort] = np.tile(sort, (len(timeseries_container) // len(sort)))
+            timeseries_container = timeseries_container.drop(column_sort, axis=1)
         else:
-            column_kind = "_variables"
-            column_value = "_values"
-            column_sort = "_sort"
             sort = range(len(timeseries_container))
-            timeseries_container = pd.melt(timeseries_container, id_vars=[column_id],
-                                           value_name=column_value, var_name=column_kind)
-            timeseries_container[column_sort] = np.tile(sort, (len(timeseries_container) // len(sort)))
+            column_sort = "_sort"
+
+        column_kind = "_variables"
+        column_value = "_values"
+
+        if not set(timeseries_container.columns) - {column_id}:
+            raise ValueError("There is no column with values in your data!")
+
+        # We need to preserve the index. However, pandas has hard times to parse the columns if they
+        # have different types, so we need to preserve them.
+        # At least until https://github.com/pandas-dev/pandas/pull/28859 is merged.
+        if isinstance(column_id, int) or isinstance(column_id, float):
+            # some arbitrary number
+            index_name = column_id + 999
+        else:
+            index_name = "_temporary_index_column"
+
+        timeseries_container.index.name = index_name
+        timeseries_container = pd.melt(timeseries_container.reset_index(),
+                                       id_vars=[index_name, column_id],
+                                       value_name=column_value, var_name=column_kind)
+        timeseries_container = timeseries_container.set_index(index_name)
+        timeseries_container[column_sort] = np.tile(sort, (len(timeseries_container) // len(sort)))
 
     # Check kind column
     if column_kind not in timeseries_container.columns:
@@ -348,6 +361,14 @@ def _normalize_input_to_internal_representation(timeseries_container, column_id,
     # The kind columns should always be of type "str" to make the inference of feature settings later in `from_columns`
     # work
     timeseries_container[column_kind] = timeseries_container[column_kind].astype(str)
+
+    # Make sure we have only parsable names
+    for kind in timeseries_container[column_kind].unique():
+        if kind.endswith("_"):
+            raise ValueError("The kind {kind} is not allowed to end with '_'".format(kind=kind))
+        if "__" in kind:
+            raise ValueError("The kind {kind} is not allowed to contain '__'".format(kind=kind))
+
     return timeseries_container, column_id, column_kind, column_value
 
 
@@ -410,14 +431,14 @@ def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_di
 
     if column_id is not None:
         if column_id not in df:
-                raise AttributeError("The given column for the id is not present in the data.")
+            raise AttributeError("The given column for the id is not present in the data.")
     else:
         raise ValueError("You have to set the column_id which contains the ids of the different time series")
 
     if column_kind is not None:
         grouper = [column_kind, column_id]
     else:
-        grouper = [column_id,]
+        grouper = [column_id, ]
 
     if column_sort is not None and df[column_sort].dtype != np.object:
 
@@ -532,4 +553,3 @@ def make_forecasting_frame(x, kind, max_timeshift, rolling_direction):
     df_shift = df_shift[mask]
 
     return df_shift, df["value"][1:]
-

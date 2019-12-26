@@ -6,9 +6,6 @@ This module contains the filtering process for the extracted features. The filte
 other features that are not based on time series.
 """
 
-from __future__ import absolute_import
-
-import logging
 import pandas as pd
 import numpy as np
 from tsfresh import defaults
@@ -16,16 +13,13 @@ from tsfresh.utilities.dataframe_functions import check_for_nans_in_columns
 from tsfresh.feature_selection.relevance import calculate_relevance_table
 
 
-_logger = logging.getLogger(__name__)
-
-
 def select_features(X, y, test_for_binary_target_binary_feature=defaults.TEST_FOR_BINARY_TARGET_BINARY_FEATURE,
                     test_for_binary_target_real_feature=defaults.TEST_FOR_BINARY_TARGET_REAL_FEATURE,
                     test_for_real_target_binary_feature=defaults.TEST_FOR_REAL_TARGET_BINARY_FEATURE,
                     test_for_real_target_real_feature=defaults.TEST_FOR_REAL_TARGET_REAL_FEATURE,
                     fdr_level=defaults.FDR_LEVEL, hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
-                    n_jobs=defaults.N_PROCESSES, chunksize=defaults.CHUNKSIZE,
-                    ml_task='auto'):
+                    n_jobs=defaults.N_PROCESSES, show_warnings=defaults.SHOW_WARNINGS,
+                    chunksize=defaults.CHUNKSIZE, ml_task='auto'):
     """
     Check the significance of all features (columns) of feature matrix X and return a possibly reduced feature matrix
     only containing relevant features.
@@ -82,7 +76,8 @@ def select_features(X, y, test_for_binary_target_binary_feature=defaults.TEST_FO
     :param y: Target vector which is needed to test which features are relevant. Can be binary or real-valued.
     :type y: pandas.Series or numpy.ndarray
 
-    :param test_for_binary_target_binary_feature: Which test to be used for binary target, binary feature (currently unused)
+    :param test_for_binary_target_binary_feature: Which test to be used for binary target, binary feature
+                                                  (currently unused)
     :type test_for_binary_target_binary_feature: str
 
     :param test_for_binary_target_real_feature: Which test to be used for binary target, real feature
@@ -105,6 +100,9 @@ def select_features(X, y, test_for_binary_target_binary_feature=defaults.TEST_FO
 
     :param n_jobs: Number of processes to use during the p-value calculation
     :type n_jobs: int
+
+    :param show_warnings: Show warnings during the p-value calculation (needed for debugging of calculators).
+    :type show_warnings: bool
 
     :param chunksize: The size of one chunk that is submitted to the worker
         process for the parallelisation.  Where one chunk is defined as a
@@ -143,7 +141,7 @@ def select_features(X, y, test_for_binary_target_binary_feature=defaults.TEST_FO
         y = pd.Series(y, index=X.index)
 
     relevance_table = calculate_relevance_table(
-        X, y, ml_task=ml_task, n_jobs=n_jobs, chunksize=chunksize,
+        X, y, ml_task=ml_task, n_jobs=n_jobs, show_warnings=show_warnings, chunksize=chunksize,
         test_for_binary_target_real_feature=test_for_binary_target_real_feature,
         fdr_level=fdr_level, hypotheses_independent=hypotheses_independent,
     )

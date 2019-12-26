@@ -5,14 +5,10 @@
 This module contains the main function to interact with tsfresh: extract features
 """
 
-from __future__ import absolute_import, division
-
 import logging
-import sys
 import warnings
 
 import pandas as pd
-import six
 
 from tsfresh import defaults
 from tsfresh.feature_extraction import feature_calculators
@@ -32,12 +28,6 @@ logging.basicConfig()
 
 
 _logger = logging.getLogger(__name__)
-
-if six.PY2:
-    msg = "tsfresh versions 0.11.* will be the last ones to support python 2. From tsfresh 0.12.0 on, " \
-          "we will only support python 3. You are running python {}.{}.{}".format(
-        sys.version_info.major, sys.version_info.minor, sys.version_info.micro)
-    _logger.warning(msg)
 
 
 def extract_features(timeseries_container, default_fc_parameters=None,
@@ -116,7 +106,7 @@ def extract_features(timeseries_container, default_fc_parameters=None,
         smaller chunksize.
     :type chunksize: None or int
 
-    :param: show_warnings: Show warnings during the feature extraction (needed for debugging of calculators).
+    :param show_warnings: Show warnings during the feature extraction (needed for debugging of calculators).
     :type show_warnings: bool
 
     :param disable_progressbar: Do not show a progressbar while doing the calculation.
@@ -173,6 +163,7 @@ def extract_features(timeseries_container, default_fc_parameters=None,
                                 column_kind=column_kind,
                                 n_jobs=n_jobs, chunk_size=chunksize,
                                 disable_progressbar=disable_progressbar,
+                                show_warnings=show_warnings,
                                 default_fc_parameters=default_fc_parameters,
                                 kind_to_fc_parameters=kind_to_fc_parameters,
                                 distributor=distributor)
@@ -235,8 +226,10 @@ def generate_data_chunk_format(df, column_id, column_kind, column_value):
 
     if df[[column_id, column_kind]].nunique().prod() >= MAX_VALUES_GROUPBY:
         _logger.error(
-            "The time series container has {} different ids and {} different kind of time series, in total {} possible combinations. "
-            "Due to a limitation in pandas we can only process a maximum of {} id/kind combinations. Please reduce your time series container and restart "
+            "The time series container has {} different ids and {} different kind of time series, "
+            "in total {} possible combinations. "
+            "Due to a limitation in pandas we can only process a maximum of {} id/kind combinations. "
+            "Please reduce your time series container and restart "
             "the calculation".format(
                 df[column_id].nunique(), df[column_kind].nunique(),
                 df[[column_id, column_kind]].nunique().prod(), MAX_VALUES_GROUPBY)
@@ -251,7 +244,7 @@ def generate_data_chunk_format(df, column_id, column_kind, column_value):
 
 def _do_extraction(df, column_id, column_value, column_kind,
                    default_fc_parameters, kind_to_fc_parameters,
-                   n_jobs, chunk_size, disable_progressbar, distributor):
+                   n_jobs, chunk_size, disable_progressbar, show_warnings, distributor):
     """
     Wrapper around the _do_extraction_on_chunk, which calls it on all chunks in the data frame.
     A chunk is a subset of the data, with a given kind and id - so a single time series.
@@ -293,6 +286,9 @@ def _do_extraction(df, column_id, column_value, column_kind,
     :param disable_progressbar: Do not show a progressbar while doing the calculation.
     :type disable_progressbar: bool
 
+    :param show_warnings: Show warnings during the feature extraction (needed for debugging of calculators).
+    :type show_warnings: bool
+
     :param distributor: Advanced parameter:  See the utilities/distribution.py for more information.
                          Leave to None, if you want TSFresh to choose the best distributor.
     :type distributor: DistributorBaseClass
@@ -310,7 +306,8 @@ def _do_extraction(df, column_id, column_value, column_kind,
         else:
             distributor = MultiprocessingDistributor(n_workers=n_jobs,
                                                      disable_progressbar=disable_progressbar,
-                                                     progressbar_title="Feature Extraction")
+                                                     progressbar_title="Feature Extraction",
+                                                     show_warnings=show_warnings)
 
     if not isinstance(distributor, DistributorBaseClass):
         raise ValueError("the passed distributor is not an DistributorBaseClass object")
@@ -325,7 +322,7 @@ def _do_extraction(df, column_id, column_value, column_kind,
 
     # Return a dataframe in the typical form (id as index and feature names as columns)
     result = pd.DataFrame(result)
-    if result.columns.contains("value"):
+    if "value" in result.columns:
         result["value"] = result["value"].astype(float)
 
     if len(result) != 0:

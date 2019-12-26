@@ -69,7 +69,7 @@ class FeatureSignificanceTestCase(TestCase):
             else:
                 self.assertEqual(row.type, "binary")
 
-            self.assertEqual(row.relevant, False)
+            self.assertFalse(row.relevant)
 
             # Assert that all of the relevant features are kept.
             # THIS FAILS!
@@ -131,7 +131,7 @@ class FeatureSignificanceTestCase(TestCase):
             self.assertEqual(row.feature, "irr{}".format(i))
             self.assertEqual(row.type, "binary")
 
-            self.assertEqual(row.relevant, False)
+            self.assertFalse(row.relevant)
 
     def test_binomial_target_realvalued_features(self):
         # Real valued random variables and binomial target
@@ -172,7 +172,7 @@ class FeatureSignificanceTestCase(TestCase):
             self.assertEqual(row.feature, "irr{}".format(i))
             self.assertEqual(row.type, "real")
 
-            self.assertEqual(row.relevant, False)
+            self.assertFalse(row.relevant)
 
     def test_real_target_mixed_case(self):
         # Mixed case with real target
@@ -224,7 +224,7 @@ class FeatureSignificanceTestCase(TestCase):
             else:
                 self.assertEqual(row.type, "real")
 
-            self.assertEqual(row.relevant, False)
+            self.assertFalse(row.relevant)
 
     def test_real_target_binary_features(self):
         # Mixed case with real target

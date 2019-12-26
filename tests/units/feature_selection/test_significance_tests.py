@@ -40,10 +40,9 @@ class TestUnsignificant:
     def minimal_p_value_for_unsignificant_features(self):
         return 0.05
 
-
     def test_feature_selection_target_binary_features_binary(self, minimal_p_value_for_unsignificant_features,
-                                                                     binary_feature,
-                                                                     binary_target_not_related):
+                                                             binary_feature,
+                                                             binary_target_not_related):
         """
         Test if the p_value returned by target_binary_feature_binary_test is
         large enough for highly unsignificant features.
@@ -51,10 +50,9 @@ class TestUnsignificant:
         p_value = target_binary_feature_binary_test(binary_feature, binary_target_not_related)
         assert minimal_p_value_for_unsignificant_features < p_value
 
-
     def test_feature_selection_target_binary_features_realvalued(self, minimal_p_value_for_unsignificant_features,
-                                                                         real_feature,
-                                                                         binary_target_not_related):
+                                                                 real_feature,
+                                                                 binary_target_not_related):
         """
         Test if the p_value returned by target_binary_feature_binary_test is
         large enough for highly unsignificant features.
@@ -63,20 +61,18 @@ class TestUnsignificant:
                                                   TEST_FOR_BINARY_TARGET_REAL_FEATURE)
         assert minimal_p_value_for_unsignificant_features < p_value
 
-
     def test_feature_selection_target_realvalued_features_binary(self, minimal_p_value_for_unsignificant_features,
-                                                                         binary_feature,
-                                                                         real_target_not_related):
+                                                                 binary_feature,
+                                                                 real_target_not_related):
         """
         Test if the p_value returned by target_real_feature_binary_test is
         large enough for highly unsignificant features."""
         p_value = target_real_feature_binary_test(binary_feature, real_target_not_related)
         assert minimal_p_value_for_unsignificant_features < p_value
 
-
     def test_feature_selection_target_realvalued_features_realvalued(self, minimal_p_value_for_unsignificant_features,
-                                                                             real_feature,
-                                                                             real_target_not_related):
+                                                                     real_feature,
+                                                                     real_target_not_related):
         """
         Test if the p_value returned by target_real_feature_real_test is
         large enough for highly unsignificant features.
@@ -91,7 +87,7 @@ class TestSignificant:
         return 0.15
 
     def test_feature_selection_target_binary_features_binary(self, maximal_p_value_for_significant_features,
-                                                                  binary_feature):
+                                                             binary_feature):
         """
         Test if the p_value returned by target_binary_feature_binary_test is
         low enough for highly significant features.
@@ -104,9 +100,8 @@ class TestSignificant:
         p_value = target_binary_feature_binary_test(binary_feature, y)
         assert maximal_p_value_for_significant_features > p_value
 
-
     def test_feature_selection_target_binary_features_realvalued_mann(self, maximal_p_value_for_significant_features,
-                                                                           real_feature):
+                                                                      real_feature):
         """
         Test if the p_value returned by target_binary_feature_real_test is
         low enough for highly significant features.
@@ -121,9 +116,8 @@ class TestSignificant:
         p_value = target_binary_feature_real_test(real_feature, y, TEST_FOR_BINARY_TARGET_REAL_FEATURE)
         assert maximal_p_value_for_significant_features > p_value
 
-
     def test_feature_selection_target_binary_features_realvalued_smir(self, maximal_p_value_for_significant_features,
-                                                                           real_feature):
+                                                                      real_feature):
         """
         Test if the p_value returned by target_binary_feature_real_test is
         low enough for highly significant features.
@@ -138,9 +132,8 @@ class TestSignificant:
         p_value = target_binary_feature_real_test(real_feature, y, test="smir")
         assert maximal_p_value_for_significant_features > p_value
 
-
     def test_feature_selection_target_realvalued_features_binary(self, maximal_p_value_for_significant_features,
-                                                                      binary_feature):
+                                                                 binary_feature):
         """
         Test if the p_value returned by target_real_feature_binary_test is
         low enough for highly significant features.
@@ -150,9 +143,8 @@ class TestSignificant:
         p_value = target_real_feature_binary_test(binary_feature, y)
         assert maximal_p_value_for_significant_features > p_value
 
-
     def test_feature_selection_target_realvalued_features_realvalued(self, maximal_p_value_for_significant_features,
-                                                                          real_feature):
+                                                                     real_feature):
         """
         Test if the p_value returned by target_real_feature_real_test is
         low enough for highly significant features.

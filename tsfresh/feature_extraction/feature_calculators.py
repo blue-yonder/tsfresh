@@ -14,11 +14,11 @@ set_property function. Only functions in this python module, which have a parame
 seen by tsfresh as a feature calculator. Others will not be calculated.
 """
 
-from __future__ import absolute_import, division
-
 import itertools
+import functools
 import warnings
 from builtins import range
+from collections import defaultdict
 
 import numpy as np
 import pandas as pd
@@ -34,36 +34,36 @@ from statsmodels.tsa.stattools import acf, adfuller, pacf
 
 def _roll(a, shift):
     """
-    Roll 1D array elements. Improves the performance of numpy.roll() by reducing the overhead introduced from the 
-    flexibility of the numpy.roll() method such as the support for rolling over multiple dimensions. 
-    
+    Roll 1D array elements. Improves the performance of numpy.roll() by reducing the overhead introduced from the
+    flexibility of the numpy.roll() method such as the support for rolling over multiple dimensions.
+
     Elements that roll beyond the last position are re-introduced at the beginning. Similarly, elements that roll
     back beyond the first position are re-introduced at the end (with negative shift).
-    
+
     Examples
     --------
     >>> x = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
     >>> _roll(x, shift=2)
     >>> array([8, 9, 0, 1, 2, 3, 4, 5, 6, 7])
-    
+
     >>> x = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
     >>> _roll(x, shift=-2)
     >>> array([2, 3, 4, 5, 6, 7, 8, 9, 0, 1])
-    
+
     >>> x = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
     >>> _roll(x, shift=12)
     >>> array([8, 9, 0, 1, 2, 3, 4, 5, 6, 7])
-    
+
     Benchmark
     ---------
     >>> x = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
     >>> %timeit _roll(x, shift=2)
     >>> 1.89 µs ± 341 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
-    
+
     >>> x = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
     >>> %timeit np.roll(x, shift=2)
     >>> 11.4 µs ± 776 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
-    
+
     :param a: the input array
     :type a: array_like
     :param shift: the number of places by which elements are shifted
@@ -112,7 +112,7 @@ def _estimate_friedrich_coefficients(x, m, r):
     Coefficients of polynomial :math:`h(x)`, which has been fitted to
     the deterministic dynamics of Langevin model
     .. math::
-        \dot{x}(t) = h(x(t)) + \mathcal{N}(0,R)
+        \\dot{x}(t) = h(x(t)) + \\mathcal{N}(0,R)
 
     As described by
 
@@ -206,7 +206,7 @@ def ratio_beyond_r_sigma(x, r):
     """
     if not isinstance(x, (np.ndarray, pd.Series)):
         x = np.asarray(x)
-    return np.sum(np.abs(x - np.mean(x)) > r * np.std(x))/x.size
+    return np.sum(np.abs(x - np.mean(x)) > r * np.std(x)) / x.size
 
 
 @set_property("fctype", "simple")
@@ -328,10 +328,10 @@ def agg_autocorrelation(x, param):
 
     .. math::
 
-        R(l) = \frac{1}{(n-l)\sigma^{2}} \sum_{t=1}^{n-l}(X_{t}-\mu )(X_{t+l}-\mu)
+        R(l) = \\frac{1}{(n-l)\\sigma^{2}} \\sum_{t=1}^{n-l}(X_{t}-\\mu )(X_{t+l}-\\mu)
 
-    where :math:`X_i` are the values of the time series, :math:`n` its length. Finally, :math:`\sigma^2` and
-    :math:`\mu` are estimators for its variance and mean
+    where :math:`X_i` are the values of the time series, :math:`n` its length. Finally, :math:`\\sigma^2` and
+    :math:`\\mu` are estimators for its variance and mean
     (See `Estimation of the Autocorrelation function <http://en.wikipedia.org/wiki/Autocorrelation#Estimation>`_).
 
     The :math:`R(l)` for different lags :math:`l` form a vector. This feature calculator applies the aggregation
@@ -339,7 +339,7 @@ def agg_autocorrelation(x, param):
 
     .. math::
 
-        f_{agg} \left( R(1), \ldots, R(m)\right) \quad \text{for} \quad m = max(n, maxlag).
+        f_{agg} \\left( R(1), \\ldots, R(m)\\right) \\quad \\text{for} \\quad m = max(n, maxlag).
 
     Here :math:`maxlag` is the second parameter passed to this function.
 
@@ -428,26 +428,41 @@ def augmented_dickey_fuller(x, param):
 
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
-    :param param: contains dictionaries {"attr": x} with x str, either "teststat", "pvalue" or "usedlag"
+    :param param: contains dictionaries {"attr": x, "autolag": y} with x str, either "teststat", "pvalue" or "usedlag"
+                  and with y str, either of "AIC", "BIC", "t-stats" or None (See the documentation of adfuller() in
+                  statsmodels).
     :type param: list
     :return: the value of this feature
     :return type: float
     """
-    res = None
-    try:
-        res = adfuller(x)
-    except LinAlgError:
-        res = np.NaN, np.NaN, np.NaN
-    except ValueError: # occurs if sample size is too small
-        res = np.NaN, np.NaN, np.NaN
-    except MissingDataError: # is thrown for e.g. inf or nan in the data
-        res = np.NaN, np.NaN, np.NaN
 
-    return [('attr_"{}"'.format(config["attr"]),
-                  res[0] if config["attr"] == "teststat"
-             else res[1] if config["attr"] == "pvalue"
-             else res[2] if config["attr"] == "usedlag" else np.NaN)
-            for config in param]
+    @functools.lru_cache()
+    def compute_adf(autolag):
+        try:
+            return adfuller(x, autolag=autolag)
+        except LinAlgError:
+            return np.NaN, np.NaN, np.NaN
+        except ValueError:  # occurs if sample size is too small
+            return np.NaN, np.NaN, np.NaN
+        except MissingDataError:  # is thrown for e.g. inf or nan in the data
+            return np.NaN, np.NaN, np.NaN
+
+    res = []
+    for config in param:
+        autolag = config.get("autolag", "AIC")
+
+        adf = compute_adf(autolag)
+        index = 'autolag_"{}"__attr_"{}"'.format(autolag, config["attr"])
+
+        if config["attr"] == "teststat":
+            res.append((index, adf[0]))
+        elif config["attr"] == "pvalue":
+            res.append((index, adf[1]))
+        elif config["attr"] == "usedlag":
+            res.append((index, adf[2]))
+        else:
+            res.append((index, np.NaN))
+    return res
 
 
 @set_property("fctype", "simple")
@@ -457,7 +472,7 @@ def abs_energy(x):
 
     .. math::
 
-        E = \\sum_{i=1,\ldots, n} x_i^2
+        E = \\sum_{i=1,\\ldots, n} x_i^2
 
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
@@ -477,7 +492,7 @@ def cid_ce(x, normalize):
 
     .. math::
 
-        \\sqrt{ \\sum_{i=0}^{n-2lag} ( x_{i} - x_{i+1})^2 }
+        \\sqrt{ \\sum_{i=1}^{n-2lag} ( x_{i} - x_{i+1})^2 }
 
     .. rubric:: References
 
@@ -497,8 +512,8 @@ def cid_ce(x, normalize):
         x = np.asarray(x)
     if normalize:
         s = np.std(x)
-        if s!=0:
-            x = (x - np.mean(x))/s
+        if s != 0:
+            x = (x - np.mean(x)) / s
         else:
             return 0.0
 
@@ -513,7 +528,7 @@ def mean_abs_change(x):
 
     .. math::
 
-        \\frac{1}{n} \\sum_{i=1,\ldots, n-1} | x_{i+1} - x_{i}|
+        \\frac{1}{n} \\sum_{i=1,\\ldots, n-1} | x_{i+1} - x_{i}|
 
 
     :param x: the time series to calculate the feature of
@@ -531,14 +546,15 @@ def mean_change(x):
 
     .. math::
 
-        \\frac{1}{n} \\sum_{i=1,\ldots, n-1}  x_{i+1} - x_{i}
+        \\frac{1}{n-1} \\sum_{i=1,\\ldots, n-1}  x_{i+1} - x_{i} = \\frac{1}{n-1} (x_{n} - x_{1})
 
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
     :return: the value of this feature
     :return type: float
     """
-    return np.mean(np.diff(x))
+    x = np.asarray(x)
+    return (x[-1] - x[0]) / (len(x) - 1) if len(x) > 1 else np.NaN
 
 
 @set_property("fctype", "simple")
@@ -548,16 +564,15 @@ def mean_second_derivative_central(x):
 
     .. math::
 
-        \\frac{1}{n} \\sum_{i=1,\ldots, n-1}  \\frac{1}{2} (x_{i+2} - 2 \\cdot x_{i+1} + x_i)
+        \\frac{1}{2(n-2)} \\sum_{i=1,\\ldots, n-1}  \\frac{1}{2} (x_{i+2} - 2 \\cdot x_{i+1} + x_i)
 
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
     :return: the value of this feature
     :return type: float
     """
-
-    diff = (_roll(x, 1) - 2 * np.array(x) + _roll(x, -1)) / 2.0
-    return np.mean(diff[1:-1])
+    x = np.asarray(x)
+    return (x[-1] - x[-2] - x[1] + x[0]) / (2 * (len(x) - 2)) if len(x) > 2 else np.NaN
 
 
 @set_property("fctype", "simple")
@@ -631,6 +646,7 @@ def variance(x):
 
 
 @set_property("fctype", "simple")
+@set_property("input", "pd.Series")
 def skewness(x):
     """
     Returns the sample skewness of x (calculated with the adjusted Fisher-Pearson standardized
@@ -647,6 +663,7 @@ def skewness(x):
 
 
 @set_property("fctype", "simple")
+@set_property("input", "pd.Series")
 def kurtosis(x):
     """
     Returns the kurtosis of x (calculated with the adjusted Fisher-Pearson standardized
@@ -669,7 +686,7 @@ def absolute_sum_of_changes(x):
 
     .. math::
 
-        \\sum_{i=1, \ldots, n-1} \\mid x_{i+1}- x_i \\mid
+        \\sum_{i=1, \\ldots, n-1} \\mid x_{i+1}- x_i \\mid
 
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
@@ -691,7 +708,7 @@ def longest_strike_below_mean(x):
     """
     if not isinstance(x, (np.ndarray, pd.Series)):
         x = np.asarray(x)
-    return np.max(_get_length_sequences_where(x <= np.mean(x))) if x.size > 0 else 0
+    return np.max(_get_length_sequences_where(x < np.mean(x))) if x.size > 0 else 0
 
 
 @set_property("fctype", "simple")
@@ -706,7 +723,7 @@ def longest_strike_above_mean(x):
     """
     if not isinstance(x, (np.ndarray, pd.Series)):
         x = np.asarray(x)
-    return np.max(_get_length_sequences_where(x >= np.mean(x))) if x.size > 0 else 0
+    return np.max(_get_length_sequences_where(x > np.mean(x))) if x.size > 0 else 0
 
 
 @set_property("fctype", "simple")
@@ -827,6 +844,7 @@ def percentage_of_reoccurring_datapoints_to_all_datapoints(x):
 
 
 @set_property("fctype", "simple")
+@set_property("input", "pd.Series")
 def percentage_of_reoccurring_values_to_all_values(x):
     """
     Returns the ratio of unique values, that are present in the time series
@@ -935,7 +953,7 @@ def fft_coefficient(x, param):
     """
 
     assert min([config["coeff"] for config in param]) >= 0, "Coefficients must be positive or zero."
-    assert set([config["attr"] for config in param]) <= set(["imag", "real", "abs", "angle"]), \
+    assert {config["attr"] for config in param} <= {"imag", "real", "abs", "angle"}, \
         'Attribute must be "real", "imag", "angle" or "abs"'
 
     fft = np.fft.rfft(x)
@@ -970,39 +988,38 @@ def fft_aggregated(x, param):
     :return type: pandas.Series
     """
 
-    assert set([config["aggtype"] for config in param]) <= set(["centroid", "variance", "skew", "kurtosis"]), \
+    assert {config["aggtype"] for config in param} <= {"centroid", "variance", "skew", "kurtosis"}, \
         'Attribute must be "centroid", "variance", "skew", "kurtosis"'
 
-
     def get_moment(y, moment):
-        """
+        r"""
         Returns the (non centered) moment of the distribution y:
-        E[y**moment] = \sum_i[index(y_i)^moment * y_i] / \sum_i[y_i]
-        
-        :param y: the discrete distribution from which one wants to calculate the moment 
+        E[y**moment] = \\sum_i[index(y_i)^moment * y_i] / \\sum_i[y_i]
+
+        :param y: the discrete distribution from which one wants to calculate the moment
         :type y: pandas.Series or np.array
         :param moment: the moment one wants to calcalate (choose 1,2,3, ... )
         :type moment: int
         :return: the moment requested
         :return type: float
         """
-        return y.dot(np.arange(len(y))**moment) / y.sum()
+        return y.dot(np.arange(len(y), dtype=float)**moment) / y.sum()
 
     def get_centroid(y):
         """
-        :param y: the discrete distribution from which one wants to calculate the centroid 
+        :param y: the discrete distribution from which one wants to calculate the centroid
         :type y: pandas.Series or np.array
         :return: the centroid of distribution y (aka distribution mean, first moment)
-        :return type: float 
+        :return type: float
         """
         return get_moment(y, 1)
 
     def get_variance(y):
         """
-        :param y: the discrete distribution from which one wants to calculate the variance 
+        :param y: the discrete distribution from which one wants to calculate the variance
         :type y: pandas.Series or np.array
         :return: the variance of distribution y
-        :return type: float 
+        :return type: float
         """
         return get_moment(y, 2) - get_centroid(y) ** 2
 
@@ -1010,11 +1027,11 @@ def fft_aggregated(x, param):
         """
         Calculates the skew as the third standardized moment.
         Ref: https://en.wikipedia.org/wiki/Skewness#Definition
-        
-        :param y: the discrete distribution from which one wants to calculate the skew 
+
+        :param y: the discrete distribution from which one wants to calculate the skew
         :type y: pandas.Series or np.array
         :return: the skew of distribution y
-        :return type: float 
+        :return type: float
         """
 
         variance = get_variance(y)
@@ -1024,18 +1041,18 @@ def fft_aggregated(x, param):
             return np.nan
         else:
             return (
-                get_moment(y, 3) - 3*get_centroid(y)*variance - get_centroid(y)**3
+                get_moment(y, 3) - 3 * get_centroid(y) * variance - get_centroid(y)**3
             ) / get_variance(y)**(1.5)
 
     def get_kurtosis(y):
         """
         Calculates the kurtosis as the fourth standardized moment.
         Ref: https://en.wikipedia.org/wiki/Kurtosis#Pearson_moments
-        
-        :param y: the discrete distribution from which one wants to calculate the kurtosis 
+
+        :param y: the discrete distribution from which one wants to calculate the kurtosis
         :type y: pandas.Series or np.array
         :return: the kurtosis of distribution y
-        :return type: float 
+        :return type: float
         """
 
         variance = get_variance(y)
@@ -1045,8 +1062,8 @@ def fft_aggregated(x, param):
             return np.nan
         else:
             return (
-                get_moment(y, 4) - 4*get_centroid(y)*get_moment(y, 3)
-                + 6*get_moment(y, 2)*get_centroid(y)**2 - 3*get_centroid(y)
+                get_moment(y, 4) - 4 * get_centroid(y) * get_moment(y, 3)
+                + 6 * get_moment(y, 2) * get_centroid(y)**2 - 3 * get_centroid(y)
             ) / get_variance(y)**2
 
     calculation = dict(
@@ -1119,7 +1136,7 @@ def index_mass_quantile(x, param):
 
     x = np.asarray(x)
     abs_x = np.abs(x)
-    s = sum(abs_x)
+    s = np.sum(abs_x)
 
     if s == 0:
         # all values in x are zero or it has length 0
@@ -1128,7 +1145,7 @@ def index_mass_quantile(x, param):
         # at least one value is not zero
         mass_centralized = np.cumsum(abs_x) / s
         return [("q_{}".format(config["q"]),
-                (np.argmax(mass_centralized >= config["q"])+1)/len(x)) for config in param]
+                 (np.argmax(mass_centralized >= config["q"]) + 1) / len(x)) for config in param]
 
 
 @set_property("fctype", "simple")
@@ -1292,7 +1309,7 @@ def ar_coefficient(x, param):
             try:
                 calculated_ar_params[k] = calculated_AR.fit(maxlag=k, solver="mle").params
             except (LinAlgError, ValueError):
-                calculated_ar_params[k] = [np.NaN]*k
+                calculated_ar_params[k] = [np.NaN] * k
 
         mod = calculated_ar_params[k]
 
@@ -1331,7 +1348,7 @@ def change_quantiles(x, ql, qh, isabs, f_agg):
     :return type: float
     """
     if ql >= qh:
-        ValueError("ql={} should be lower than qh={}".format(ql, qh))
+        return 0
 
     div = np.diff(x)
     if isabs:
@@ -1345,13 +1362,12 @@ def change_quantiles(x, ql, qh, isabs, f_agg):
         return 0
     # We only count changes that start and end inside the corridor
     ind = (bin_cat_0 & _roll(bin_cat_0, 1))[1:]
-    if sum(ind) == 0:
+    if np.sum(ind) == 0:
         return 0
     else:
         ind_inside_corridor = np.where(ind == 1)
         aggregator = getattr(np, f_agg)
         return aggregator(div[ind_inside_corridor])
-
 
 
 @set_property("fctype", "simple")
@@ -1361,13 +1377,13 @@ def time_reversal_asymmetry_statistic(x, lag):
 
     .. math::
 
-        \\frac{1}{n-2lag} \sum_{i=0}^{n-2lag} x_{i + 2 \cdot lag}^2 \cdot x_{i + lag} - x_{i + lag} \cdot  x_{i}^2
+        \\frac{1}{n-2lag} \\sum_{i=1}^{n-2lag} x_{i + 2 \\cdot lag}^2 \\cdot x_{i + lag} - x_{i + lag} \\cdot  x_{i}^2
 
     which is
 
     .. math::
 
-        \\mathbb{E}[L^2(X)^2 \cdot L(X) - L(X) \cdot X^2]
+        \\mathbb{E}[L^2(X)^2 \\cdot L(X) - L(X) \\cdot X^2]
 
     where :math:`\\mathbb{E}` is the mean and :math:`L` is the lag operator. It was proposed in [1] as a
     promising feature to extract from time series.
@@ -1402,13 +1418,13 @@ def c3(x, lag):
 
     .. math::
 
-        \\frac{1}{n-2lag} \sum_{i=0}^{n-2lag} x_{i + 2 \cdot lag}^2 \cdot x_{i + lag} \cdot x_{i}
+        \\frac{1}{n-2lag} \\sum_{i=1}^{n-2lag} x_{i + 2 \\cdot lag} \\cdot x_{i + lag} \\cdot x_{i}
 
     which is
 
     .. math::
 
-        \\mathbb{E}[L^2(X)^2 \cdot L(X) \cdot X]
+        \\mathbb{E}[L^2(X) \\cdot L(X) \\cdot X]
 
     where :math:`\\mathbb{E}` is the mean and :math:`L` is the lag operator. It was proposed in [1] as a measure of
     non linearity in the time series.
@@ -1458,7 +1474,9 @@ def binned_entropy(x, max_bins):
         x = np.asarray(x)
     hist, bin_edges = np.histogram(x, bins=max_bins)
     probs = hist / x.size
-    return - np.sum(p * np.math.log(p) for p in probs if p != 0)
+    probs[probs == 0] = 1.0
+    return - np.sum(probs * np.log(probs))
+
 
 # todo - include latex formula
 # todo - check if vectorizable
@@ -1481,8 +1499,8 @@ def sample_entropy(x):
     """
     x = np.array(x)
 
-    sample_length = 1 # number of sequential points of the time series
-    tolerance = 0.2 * np.std(x) # 0.2 is a common value for r - why?
+    sample_length = 1  # number of sequential points of the time series
+    tolerance = 0.2 * np.std(x)  # 0.2 is a common value for r - why?
 
     n = len(x)
     prev = np.zeros(n)
@@ -1524,9 +1542,9 @@ def autocorrelation(x, lag):
 
     .. math::
 
-        \\frac{1}{(n-l)\sigma^{2}} \\sum_{t=1}^{n-l}(X_{t}-\\mu )(X_{t+l}-\\mu)
+        \\frac{1}{(n-l)\\sigma^{2}} \\sum_{t=1}^{n-l}(X_{t}-\\mu )(X_{t+l}-\\mu)
 
-    where :math:`n` is the length of the time series :math:`X_i`, :math:`\sigma^2` its variance and :math:`\mu` its
+    where :math:`n` is the length of the time series :math:`X_i`, :math:`\\sigma^2` its variance and :math:`\\mu` its
     mean. `l` denotes the lag.
 
     .. rubric:: References
@@ -1542,12 +1560,12 @@ def autocorrelation(x, lag):
     """
     # This is important: If a series is passed, the product below is calculated
     # based on the index, which corresponds to squaring the series.
-    if type(x) is pd.Series:
+    if isinstance(x, pd.Series):
         x = x.values
     if len(x) < lag:
         return np.nan
     # Slice the relevant subseries based on the lag
-    y1 = x[:(len(x)-lag)]
+    y1 = x[:(len(x) - lag)]
     y2 = x[lag:]
     # Subtract the mean of the whole series x
     x_mean = np.mean(x)
@@ -1562,6 +1580,7 @@ def autocorrelation(x, lag):
 
 
 @set_property("fctype", "simple")
+@set_property("input", "pd.Series")
 def quantile(x, q):
     """
     Calculates the q quantile of x. This is the value of x greater than q% of the ordered values from x.
@@ -1573,7 +1592,8 @@ def quantile(x, q):
     :return: the value of this feature
     :return type: float
     """
-    x = pd.Series(x)
+    if not isinstance(x, pd.Series):
+        x = pd.Series(x)
     return pd.Series.quantile(x, q)
 
 
@@ -1594,8 +1614,9 @@ def number_crossing_m(x, m):
     if not isinstance(x, (np.ndarray, pd.Series)):
         x = np.asarray(x)
     # From https://stackoverflow.com/questions/3843017/efficiently-detect-sign-changes-in-python
+    # However, we are not going with the fastest version as it breaks with pandas
     positive = x > m
-    return np.where(np.bitwise_xor(positive[1:], positive[:-1]))[0].size
+    return np.where(np.diff(positive))[0].size
 
 
 @set_property("fctype", "simple")
@@ -1701,13 +1722,13 @@ def approximate_entropy(x, m, r):
     r *= np.std(x)
     if r < 0:
         raise ValueError("Parameter r must be positive.")
-    if N <= m+1:
+    if N <= m + 1:
         return 0
 
     def _phi(m):
-        x_re = np.array([x[i:i+m] for i in range(N - m + 1)])
+        x_re = np.array([x[i:i + m] for i in range(N - m + 1)])
         C = np.sum(np.max(np.abs(x_re[:, np.newaxis] - x_re[np.newaxis, :]),
-                          axis=2) <= r, axis=0) / (N-m+1)
+                          axis=2) <= r, axis=0) / (N - m + 1)
         return np.sum(np.log(C)) / (N - m + 1.0)
 
     return np.abs(_phi(m) - _phi(m + 1))
@@ -1715,12 +1736,12 @@ def approximate_entropy(x, m, r):
 
 @set_property("fctype", "combiner")
 def friedrich_coefficients(x, param):
-    """
+    r"""
     Coefficients of polynomial :math:`h(x)`, which has been fitted to
     the deterministic dynamics of Langevin model
 
     .. math::
-        \dot{x}(t) = h(x(t)) + \mathcal{N}(0,R)
+        \\dot{x}(t) = h(x(t)) + \\mathcal{N}(0,R)
 
     as described by [1].
 
@@ -1733,15 +1754,18 @@ def friedrich_coefficients(x, param):
 
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
-    :param param: contains dictionaries {"m": x, "r": y, "coeff": z} with x being positive integer, the order of polynom to fit for estimating fixed points of
-                    dynamics, y positive float, the number of quantils to use for averaging and finally z, a positive integer corresponding to the returned
-                    coefficient
+    :param param: contains dictionaries {"m": x, "r": y, "coeff": z} with x being positive integer,
+                  the order of polynom to fit for estimating fixed points of
+                  dynamics, y positive float, the number of quantils to use for averaging and finally z,
+                  a positive integer corresponding to the returned coefficient
     :type param: list
     :return: the different feature values
     :return type: pandas.Series
     """
-    calculated = {}  # calculated is dictionary storing the calculated coefficients {m: {r: friedrich_coefficients}}
-    res = {}  # res is a dictionary containg the results {"m_10__r_2__coeff_3": 15.43}
+    # calculated is dictionary storing the calculated coefficients {m: {r: friedrich_coefficients}}
+    calculated = defaultdict(dict)
+    # res is a dictionary containg the results {"m_10__r_2__coeff_3": 15.43}
+    res = {}
 
     for parameter_combination in param:
         m = parameter_combination['m']
@@ -1751,11 +1775,8 @@ def friedrich_coefficients(x, param):
         assert coeff >= 0, "Coefficients must be positive or zero. Found {}".format(coeff)
 
         # calculate the current friedrich coefficients if they do not exist yet
-        if m not in calculated:
-            calculated[m] = {r: _estimate_friedrich_coefficients(x, m, r)}
-        else:
-            if r not in calculated[m]:
-                calculated[m] = {r: _estimate_friedrich_coefficients(x, m, r)}
+        if m not in calculated or r not in calculated[m]:
+            calculated[m][r] = _estimate_friedrich_coefficients(x, m, r)
 
         try:
             res["m_{}__r_{}__coeff_{}".format(m, r, coeff)] = calculated[m][r][coeff]
@@ -1766,12 +1787,12 @@ def friedrich_coefficients(x, param):
 
 @set_property("fctype", "simple")
 def max_langevin_fixed_point(x, r, m):
-    """
+    r"""
     Largest fixed point of dynamics  :math:argmax_x {h(x)=0}` estimated from polynomial :math:`h(x)`,
     which has been fitted to the deterministic dynamics of Langevin model
 
     .. math::
-        \dot(x)(t) = h(x(t)) + R \mathcal(N)(0,1)
+        \\dot(x)(t) = h(x(t)) + R \\mathcal(N)(0,1)
 
     as described by
 
@@ -1825,7 +1846,7 @@ def agg_linear_trend(x, param):
     """
     # todo: we could use the index of the DataFrame here
 
-    calculated_agg = {}
+    calculated_agg = defaultdict(dict)
     res_data = []
     res_index = []
 
@@ -1834,13 +1855,13 @@ def agg_linear_trend(x, param):
         chunk_len = parameter_combination["chunk_len"]
         f_agg = parameter_combination["f_agg"]
 
-        aggregate_result = _aggregate_on_chunks(x, f_agg, chunk_len)
         if f_agg not in calculated_agg or chunk_len not in calculated_agg[f_agg]:
             if chunk_len >= len(x):
-                calculated_agg[f_agg] = {chunk_len: np.NaN}
+                calculated_agg[f_agg][chunk_len] = np.NaN
             else:
+                aggregate_result = _aggregate_on_chunks(x, f_agg, chunk_len)
                 lin_reg_result = linregress(range(len(aggregate_result)), aggregate_result)
-                calculated_agg[f_agg] = {chunk_len: lin_reg_result}
+                calculated_agg[f_agg][chunk_len] = lin_reg_result
 
         attr = parameter_combination["attr"]
 
@@ -1886,10 +1907,15 @@ def energy_ratio_by_chunks(x, param):
         assert segment_focus < num_segments
         assert num_segments > 0
 
-        res_data.append(np.sum(np.array_split(x, num_segments)[segment_focus] ** 2.0)/full_series_energy)
+        if full_series_energy == 0:
+            res_data.append(np.NaN)
+        else:
+            res_data.append(np.sum(np.array_split(x, num_segments)[segment_focus] ** 2.0) / full_series_energy)
+
         res_index.append("num_segments_{}__segment_focus_{}".format(num_segments, segment_focus))
 
-    return list(zip(res_index, res_data)) # Materialize as list for Python 3 compatibility with name handling
+    # Materialize as list for Python 3 compatibility with name handling
+    return list(zip(res_index, res_data))
 
 
 @set_property("fctype", "combiner")

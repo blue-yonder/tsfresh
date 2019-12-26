@@ -5,15 +5,16 @@
 from unittest import TestCase
 import numpy as np
 import pandas as pd
+from distributed import LocalCluster, Client
 
 from tsfresh import extract_features
-from tsfresh.utilities.distribution import MultiprocessingDistributor, LocalDaskDistributor
+from tsfresh.utilities.distribution import MultiprocessingDistributor, LocalDaskDistributor, ClusterDaskDistributor
 from tests.fixtures import DataTestCase
 
 
 class MultiprocessingDistributorTestCase(TestCase):
 
-    def test_partion(self):
+    def test_partition(self):
 
         distributor = MultiprocessingDistributor(n_workers=1)
 
@@ -62,7 +63,6 @@ class LocalDaskDistributorTestCase(DataTestCase):
         self.assertTrue(np.all(extracted_features.b__mean == np.array([37.85, 34.75])))
         self.assertTrue(np.all(extracted_features.b__median == np.array([39.5, 28.0])))
 
-
     def test_local_dask_cluster_extraction_two_worker(self):
 
         Distributor = LocalDaskDistributor(n_workers=2)
@@ -82,3 +82,49 @@ class LocalDaskDistributorTestCase(DataTestCase):
         self.assertTrue(np.all(extracted_features.b__mean == np.array([37.85, 34.75])))
         self.assertTrue(np.all(extracted_features.b__median == np.array([39.5, 28.0])))
 
+
+class ClusterDaskDistributorTestCase(DataTestCase):
+
+    def test_dask_cluster_extraction_one_worker(self):
+        cluster = LocalCluster(n_workers=1, threads_per_worker=1, diagnostics_port=False)
+        client = Client(cluster)
+        address = client.scheduler_info()['address']
+        Distributor = ClusterDaskDistributor(address=address)
+
+        df = self.create_test_data_sample()
+        extracted_features = extract_features(df, column_id="id", column_sort="sort", column_kind="kind",
+                                              column_value="val",
+                                              distributor=Distributor)
+
+        self.assertIsInstance(extracted_features, pd.DataFrame)
+        self.assertTrue(np.all(extracted_features.a__maximum == np.array([71, 77])))
+        self.assertTrue(np.all(extracted_features.a__sum_values == np.array([691, 1017])))
+        self.assertTrue(np.all(extracted_features.a__abs_energy == np.array([32211, 63167])))
+        self.assertTrue(np.all(extracted_features.b__sum_values == np.array([757, 695])))
+        self.assertTrue(np.all(extracted_features.b__minimum == np.array([3, 1])))
+        self.assertTrue(np.all(extracted_features.b__abs_energy == np.array([36619, 35483])))
+        self.assertTrue(np.all(extracted_features.b__mean == np.array([37.85, 34.75])))
+        self.assertTrue(np.all(extracted_features.b__median == np.array([39.5, 28.0])))
+        cluster.close()
+
+    def test_dask_cluster_extraction_two_workers(self):
+        cluster = LocalCluster(n_workers=2, threads_per_worker=1, diagnostics_port=False)
+        client = Client(cluster)
+        address = client.scheduler_info()['address']
+        Distributor = ClusterDaskDistributor(address=address)
+
+        df = self.create_test_data_sample()
+        extracted_features = extract_features(df, column_id="id", column_sort="sort", column_kind="kind",
+                                              column_value="val",
+                                              distributor=Distributor)
+
+        self.assertIsInstance(extracted_features, pd.DataFrame)
+        self.assertTrue(np.all(extracted_features.a__maximum == np.array([71, 77])))
+        self.assertTrue(np.all(extracted_features.a__sum_values == np.array([691, 1017])))
+        self.assertTrue(np.all(extracted_features.a__abs_energy == np.array([32211, 63167])))
+        self.assertTrue(np.all(extracted_features.b__sum_values == np.array([757, 695])))
+        self.assertTrue(np.all(extracted_features.b__minimum == np.array([3, 1])))
+        self.assertTrue(np.all(extracted_features.b__abs_energy == np.array([36619, 35483])))
+        self.assertTrue(np.all(extracted_features.b__mean == np.array([37.85, 34.75])))
+        self.assertTrue(np.all(extracted_features.b__median == np.array([39.5, 28.0])))
+        cluster.close()

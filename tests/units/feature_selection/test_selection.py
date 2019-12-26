@@ -5,7 +5,6 @@
 import numpy as np
 import pandas as pd
 import pytest
-from future.utils import lrange
 
 from tsfresh.feature_selection.selection import select_features
 
@@ -13,7 +12,7 @@ from tsfresh.feature_selection.selection import select_features
 class TestSelectFeatures:
     def test_assert_list(self):
         with pytest.raises(AssertionError):
-            select_features(pd.DataFrame(index=range(2)),[1,2,3])
+            select_features(pd.DataFrame(index=range(2)), [1, 2, 3])
 
     def test_assert_one_row_X(self):
         X = pd.DataFrame([1], index=[1])
@@ -47,9 +46,9 @@ class TestSelectFeatures:
 
     def test_selects_for_each_class(self):
         df = pd.DataFrame()
-        df['f1'] = [10] * 10 + lrange(10) + lrange(10)
-        df['f2'] = lrange(10) + [10] * 10 + lrange(10)
-        df['f3'] = lrange(10) + lrange(10) + [10] * 10
+        df['f1'] = [10] * 10 + list(range(10)) + list(range(10))
+        df['f2'] = list(range(10)) + [10] * 10 + list(range(10))
+        df['f3'] = list(range(10)) + list(range(10)) + [10] * 10
         df['y'] = [0] * 10 + [1] * 10 + [2] * 10
 
         y = df.y

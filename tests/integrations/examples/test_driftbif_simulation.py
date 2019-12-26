@@ -30,9 +30,10 @@ class DriftBifSimlationTestCase(unittest.TestCase):
         k3t = ds.kappa_3 * ds.tau
         k3st = ds.kappa_3 ** 2 * ds.tau
         a0 = v0 / ds.kappa_3
-        acceleration = lambda t: ds.kappa_3 * (a0 * np.sqrt(k3t - 1) * np.exp(k3st * t) /
-                                               np.sqrt(np.exp(2.0 * k3st * t) * ds.Q * a0 ** 2 +
-                                                       np.exp(2.0 * ds.kappa_3 * t) * (k3t - 1 - ds.Q * a0 ** 2)))
+
+        def acceleration(t): return ds.kappa_3 * (a0 * np.sqrt(k3t - 1) * np.exp(k3st * t) /
+                                                  np.sqrt(np.exp(2.0 * k3st * t) * ds.Q * a0 ** 2 +
+                                                          np.exp(2.0 * ds.kappa_3 * t) * (k3t - 1 - ds.Q * a0 ** 2)))
         t = ds.delta_t * np.arange(Nt)
         return np.testing.assert_array_almost_equal(v[:, 0], np.vectorize(acceleration)(t),
                                                     decimal=8)
@@ -55,7 +56,8 @@ class DriftBifSimlationTestCase(unittest.TestCase):
         Nt = 10
         v = ds.simulate(Nt)
         self.assertEqual(v.shape, (Nt, 2),
-                         'The default configuration should return velocities from a two-dimensional dissipative soliton.')
+                         "The default configuration should return velocities "
+                         "from a two-dimensional dissipative soliton.")
 
         v = ds.simulate(Nt, v0=np.zeros(3))
         self.assertEqual(v.shape, (Nt, 3),
@@ -65,8 +67,8 @@ class DriftBifSimlationTestCase(unittest.TestCase):
 class SampleTauTestCase(unittest.TestCase):
     def test_range(self):
         tau = sample_tau(100)
-        self.assertTrue(min(tau) >= 2.87)
-        self.assertTrue(max(tau) <= 3.8)
+        self.assertGreaterEqual(min(tau), 2.87)
+        self.assertLessEqual(max(tau), 3.8)
 
     def test_ratio(self):
         tau = sample_tau(100000, ratio=0.4)
@@ -79,7 +81,7 @@ class SampleTauTestCase(unittest.TestCase):
 class LoadDriftBifTestCase(unittest.TestCase):
     def test_classification_labels(self):
         X, y = load_driftbif(10, 100)
-        self.assertEqual(set(y), set([0, 1]))
+        self.assertEqual(set(y), {0, 1})
 
     def test_regression_labels(self):
         Nsamples = 10

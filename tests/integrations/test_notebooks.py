@@ -6,7 +6,6 @@ import os
 import subprocess
 import tempfile
 import nbformat
-import six
 
 from unittest import TestCase
 
@@ -29,21 +28,18 @@ def _notebook_run(path, timeout=default_timeout):
     try:
         if os.environ['TRAVIS']:
             return [], []
-    except:
+    except BaseException:
         pass
 
-    # Ensure temporary files are not auto-deleted as processes have limited 
+    # Ensure temporary files are not auto-deleted as processes have limited
     # permissions to re-use file handles under WinNT-based operating systems.
     fname = ''
     with tempfile.NamedTemporaryFile(mode='w+t', suffix=".ipynb", delete=False) as fout:
         fname = fout.name
-        
+
         args = ["jupyter", "nbconvert",
                 "--to", "notebook", "--execute", execproc_timeout]
-        if six.PY2:
-            args += ["--ExecutePreprocessor.kernel_name=python2"]
-        elif six.PY3:
-            args += ["--ExecutePreprocessor.kernel_name=python3"]
+        args += ["--ExecutePreprocessor.kernel_name=python3"]
         args += ["--output", fout.name, path]
         subprocess.check_call(args)
 
@@ -52,7 +48,7 @@ def _notebook_run(path, timeout=default_timeout):
     os.remove(fname)
 
     errors = [output for cell in nb.cells if "outputs" in cell
-              for output in cell["outputs"] \
+              for output in cell["outputs"]
               if output.output_type == "error"]
     return nb, errors
 

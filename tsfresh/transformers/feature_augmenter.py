@@ -44,8 +44,9 @@ class FeatureAugmenter(BaseEstimator, TransformerMixin):
     >>> augmenter.set_timeseries_container(time_series)
     >>> df_with_time_series_features = augmenter.transform(df)
 
-    The settings for the feature calculation can be controlled with the settings object. If you pass ``None``, the default
-    settings are used. Please refer to :class:`~tsfresh.feature_extraction.settings.ComprehensiveFCParameters` for
+    The settings for the feature calculation can be controlled with the settings object.
+    If you pass ``None``, the default settings are used.
+    Please refer to :class:`~tsfresh.feature_extraction.settings.ComprehensiveFCParameters` for
     more information.
 
     This estimator does not select the relevant features, but calculates and adds all of them to the DataFrame. See the
@@ -55,6 +56,7 @@ class FeatureAugmenter(BaseEstimator, TransformerMixin):
     For a description what the parameters column_id, column_sort, column_kind and column_value mean, please see
     :mod:`~tsfresh.feature_extraction.extraction`.
     """
+
     def __init__(self, default_fc_parameters=None,
                  kind_to_fc_parameters=None, column_id=None, column_sort=None,
                  column_kind=None, column_value=None, timeseries_container=None,
@@ -75,8 +77,8 @@ class FeatureAugmenter(BaseEstimator, TransformerMixin):
 
         :param kind_to_fc_parameters: mapping from kind names to objects of the same type as the ones for
                 default_fc_parameters. If you put a kind as a key here, the fc_parameters
-                object (which is the value), will be used instead of the default_fc_parameters. This means that kinds, for
-                which kind_of_fc_parameters doe not have any entries, will be ignored by the feature selection.
+                object (which is the value), will be used instead of the default_fc_parameters. This means that kinds,
+                for which kind_of_fc_parameters doe not have any entries, will be ignored by the feature selection.
         :type kind_to_fc_parameters: dict
 
         :param column_id: The column with the id. See :mod:`~tsfresh.feature_extraction.extraction`.
@@ -101,7 +103,7 @@ class FeatureAugmenter(BaseEstimator, TransformerMixin):
             smaller chunksize.
         :type chunksize: None or int
 
-        :param: show_warnings: Show warnings during the feature extraction (needed for debugging of calculators).
+        :param show_warnings: Show warnings during the feature extraction (needed for debugging of calculators).
         :type show_warnings: bool
 
         :param disable_progressbar: Do not show a progressbar while doing the calculation.

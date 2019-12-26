@@ -4,7 +4,6 @@
 
 import ast
 import numpy as np
-from six import string_types
 
 
 def get_config_from_string(parts):
@@ -63,10 +62,9 @@ def convert_to_output_format(param):
     """
 
     def add_parenthesis_if_string_value(x):
-        if isinstance(x, string_types):
+        if isinstance(x, str):
             return '"' + str(x) + '"'
         else:
             return str(x)
 
     return "__".join(str(key) + "_" + add_parenthesis_if_string_value(param[key]) for key in sorted(param.keys()))
-
