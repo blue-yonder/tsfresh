@@ -18,15 +18,6 @@ from tsfresh.utilities.distribution import MapDistributor, MultiprocessingDistri
     DistributorBaseClass
 from tsfresh.utilities.string_manipulation import convert_to_output_format
 
-# todo: remove this call after we drop python 2.7 support
-# From the description of https://docs.python.org/3/library/logging.html
-# This function should be called from the main thread before other threads are started. In versions of Python prior
-# to 2.7.1 and 3.2, if this function is called from multiple threads, it is possible (in rare circumstances) that a
-# handler will be added to the root logger more than once, leading to unexpected results such as messages being
-# duplicated in the log.
-logging.basicConfig()
-
-
 _logger = logging.getLogger(__name__)
 
 
