@@ -1295,7 +1295,6 @@ def ar_coefficient(x, param):
     calculated_ar_params = {}
 
     x_as_list = list(x)
-    calculated_AR = AR(x_as_list)
 
     res = {}
 
@@ -1307,6 +1306,7 @@ def ar_coefficient(x, param):
 
         if k not in calculated_ar_params:
             try:
+                calculated_AR = AR(x_as_list)
                 calculated_ar_params[k] = calculated_AR.fit(maxlag=k, solver="mle").params
             except (LinAlgError, ValueError):
                 calculated_ar_params[k] = [np.NaN] * k
