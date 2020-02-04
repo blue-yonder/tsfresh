@@ -28,8 +28,6 @@ install:
   # need to downgrade tornado manually
   - "[ \"$SCIPY\" = latest ] || [ -z \"$SCIPY\" ] || pip install tornado==4.5.3"
   - "[ \"$SCIPY\" = latest ] && pip install --upgrade scipy || [ -z \"$SCIPY\" ] || pip install scipy==$SCIPY"
-  # recent dask requires fsspec to load data from disk
-  - "[ \"$DASK\" = latest ] && pip install fsspec || true"
   # Print out the pip versions for debugging
   - pip list
   # Only use two cores
@@ -94,4 +92,3 @@ jobs:
     - python: 3.8
   # Make sure to not wait for Python 3.8
   fast_finish: true
-      
