@@ -5,6 +5,27 @@ Changelog
 tsfresh uses `Semantic Versioning <http://semver.org/>`_
 
 
+Version 0.14.0
+==============
+
+- Breaking Change
+    - Replace Benjamini-Hochberg implementation with statsmodels implementation (#570)
+- Refactoring and Documentation
+    - travis.yml (#605)
+    - gitignore (#608)
+    - Fix docstring of c3 (#590)
+    - Feature/pep8 (#607)
+- Added Features
+    - Improve test coverage (#609)
+    - Add "autolag" parameter to augmented_dickey_fuller() (#612)
+- Bugfixes
+    - Feature/pep8 (#607)
+    - Fix filtering on warnings with multiprocessing on Windows (#610)
+    - Remove outdated logging config (#621)
+    - Replace Benjamini-Hochberg implementation with statsmodels implementation (#570)
+    -  Fix the kernel and the naming of a notebook (#626)
+
+
 Version 0.13.0
 ==============
 
