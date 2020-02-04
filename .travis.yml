@@ -22,6 +22,7 @@ install:
   - "[ \"$NUMPY\" = latest ] && pip install --upgrade numpy || [ -z \"$NUMPY\" ] || pip install numpy==$NUMPY"
   - "[ \"$PANDAS\" = latest ] && pip install --upgrade pandas || [ -z \"$PANDAS\" ] || pip install pandas==$PANDAS"
   - "[ \"$SCIKITLEARN\" = latest ] && pip install --upgrade scikit-learn || [ -z \"$SCIKITLEARN\" ] || pip install scikit-learn==$SCIKITLEARN"
+  - "[ \"$STATSMODELS\" = latest ] && pip install --upgrade statsmodels || [ -z \"$STATSMODELS\" ] || pip install statsmodels==$STATSMODELS"
   - "[ \"$DASK\" = latest ] && pip install --upgrade dask || [ -z \"$DASK\" ] || pip install dask==$DASK"
   - "[ \"$DISTRIBUTED\" = latest ] && pip install --upgrade distributed || [ -z \"$DISTRIBUTED\" ] || pip install distributed==$DISTRIBUTED"
   # need to downgrade tornado manually
@@ -47,30 +48,30 @@ jobs:
   include:
     # First stage: tests
     - stage: Run tests
-      env: NUMPY="latest" PANDAS="latest" SCIKITLEARN="latest" DASK="latest" DISTRIBUTED="latest" SCIPY="latest"
+      env: NUMPY="latest" PANDAS="latest" SCIKITLEARN="latest" DASK="latest" DISTRIBUTED="latest" SCIPY="latest" STATSMODELS="latest"
       python: 3.8
 
-    - env: NUMPY="latest" PANDAS="latest" SCIKITLEARN="latest" DASK="latest" DISTRIBUTED="latest" SCIPY="latest" PYTEST_ADDOPTS="-c setup.cfg"
+    - env: NUMPY="latest" PANDAS="latest" SCIKITLEARN="latest" DASK="latest" DISTRIBUTED="latest" SCIPY="latest" STATSMODELS="latest" PYTEST_ADDOPTS="-c setup.cfg"
       python: 3.7
       # We only run coverage tests here (we also set a different setup.cfg script here)
       after_success:
         - coveralls
 
-    - env: NUMPY="latest" PANDAS="latest" SCIKITLEARN="latest" DASK="latest" DISTRIBUTED="latest" SCIPY="latest"
+    - env: NUMPY="latest" PANDAS="latest" SCIKITLEARN="latest" DASK="latest" DISTRIBUTED="latest" SCIPY="latest" STATSMODELS="latest"
       python: 3.6
 
-    - env: NUMPY="latest" PANDAS="latest" SCIKITLEARN="latest" DASK="latest" DISTRIBUTED="latest" SCIPY="latest"
+    - env: NUMPY="latest" PANDAS="latest" SCIKITLEARN="latest" DASK="latest" DISTRIBUTED="latest" SCIPY="latest" STATSMODELS="latest"
       # newest pandas (>= 0.25) requires python >= 3.5.3
       python: 3.5.3
 
-    - env: NUMPY="1.15.1" PANDAS="0.23.2" SCIKITLEARN="0.19.2" DASK="0.16.1" DISTRIBUTED="1.18.3" SCIPY="1.2.0"
+    - env: NUMPY="1.15.1" PANDAS="0.23.2" SCIKITLEARN="0.19.2" DASK="0.16.1" DISTRIBUTED="1.18.3" SCIPY="1.2.0" STATSMODELS="0.9.0"
       # python 3.7 requires pandas >= 0.23.2
       python: 3.7
 
-    - env: NUMPY="1.12.0" PANDAS="0.20.3" SCIKITLEARN="0.19.0" DASK="0.15.2" DISTRIBUTED="1.18.3" SCIPY="1.2.0"
+    - env: NUMPY="1.12.0" PANDAS="0.20.3" SCIKITLEARN="0.19.0" DASK="0.15.2" DISTRIBUTED="1.18.3" SCIPY="1.2.0" STATSMODELS="0.9.0"
       python: 3.6
 
-    - env: NUMPY="1.12.0" PANDAS="0.20.3" SCIKITLEARN="0.19.0" DASK="0.15.2" DISTRIBUTED="1.18.3" SCIPY="1.2.0"
+    - env: NUMPY="1.12.0" PANDAS="0.20.3" SCIKITLEARN="0.19.0" DASK="0.15.2" DISTRIBUTED="1.18.3" SCIPY="1.2.0" STATSMODELS="0.9.0"
       python: 3.5.3
 
 
@@ -91,4 +92,3 @@ jobs:
     - python: 3.8
   # Make sure to not wait for Python 3.8
   fast_finish: true
-      
