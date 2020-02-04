@@ -16,9 +16,9 @@ import warnings
 import numpy as np
 import pandas as pd
 from functools import partial, reduce
+from statsmodels.stats.multitest import multipletests
 
 from tsfresh import defaults
-from tsfresh.feature_selection.benjamini_hochberg_test import benjamini_hochberg_test
 from tsfresh.feature_selection.significance_tests import target_binary_feature_real_test, \
     target_real_feature_binary_test, target_real_feature_real_test, target_binary_feature_binary_test
 from tsfresh.utilities.distribution import initialize_warnings_in_workers
@@ -219,7 +219,9 @@ def _calculate_relevance_table_for_implicit_target(table_real, table_binary, X, 
         index=table_binary.index
     )
     relevance_table = pd.concat([table_real, table_binary])
-    return benjamini_hochberg_test(relevance_table, hypotheses_independent, fdr_level)
+    method = 'fdr_bh' if hypotheses_independent else 'fdr_by'
+    relevance_table['relevant'] = multipletests(relevance_table.p_value, fdr_level, method)[0]
+    return relevance_table.sort_values('p_value')
 
 
 def infer_ml_task(y):
