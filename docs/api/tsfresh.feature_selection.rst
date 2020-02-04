@@ -6,14 +6,6 @@ feature_selection
     :undoc-members:
     :show-inheritance:
 
-benjamini_hochberg_test
------------------------
-
-.. automodule:: tsfresh.feature_selection.benjamini_hochberg_test
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 relevance
 ---------
 

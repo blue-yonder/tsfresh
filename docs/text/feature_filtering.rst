@@ -48,7 +48,7 @@ Phase 3 - Multiple test procedure
 
 The vector of p-values is evaluated on basis of the Benjamini-Yekutieli procedure [2]_ in order to decide which features
 to keep.
-This multiple testing procedure is contained in the submodule :mod:`tsfresh.feature_selection.benjamini_hochberg_test`.
+This multiple testing procedure is taken from the statsmodel package.
 
 In the figure from above, this corresponds to the change from p-values to selected features.
 
