@@ -23,7 +23,7 @@ Version 0.14.0
     - Fix filtering on warnings with multiprocessing on Windows (#610)
     - Remove outdated logging config (#621)
     - Replace Benjamini-Hochberg implementation with statsmodels implementation (#570)
-    -  Fix the kernel and the naming of a notebook (#626)
+    - Fix the kernel and the naming of a notebook (#626)
 
 
 Version 0.13.0
@@ -31,26 +31,26 @@ Version 0.13.0
 
 - Drop python 2.7 support (#568)
 - Fixed bugs
-  - Fix cache in friedrich_coefficients and agg_linear_trend (#593)
-  - Added a check for wrong column names and a test for this check (#586)
-  - Make sure to not install the tests folder (#599)
-  - Make sure there is at least a single column which we can use for data (#589)
-  - Avoid division by zero in energy_ratio_by_chunks (#588)
-  - Ensure that get_moment() uses float computations (#584)
-  - Preserve index when column_value and column_kind not provided (#576)
-  - Add @set_property("input", "pd.Series") when needed (#582)
-  - Fix off-by-one error in longest strike features (fixes #577) (#578)
-  - Add `set_property` import (#572)
-  - Fix typo (#571)
-  - Fix indexing of melted normalized input (#563)
-  - Fix travis (#569)
+    - Fix cache in friedrich_coefficients and agg_linear_trend (#593)
+    - Added a check for wrong column names and a test for this check (#586)
+    - Make sure to not install the tests folder (#599)
+    - Make sure there is at least a single column which we can use for data (#589)
+    - Avoid division by zero in energy_ratio_by_chunks (#588)
+    - Ensure that get_moment() uses float computations (#584)
+    - Preserve index when column_value and column_kind not provided (#576)
+    - Add @set_property("input", "pd.Series") when needed (#582)
+    - Fix off-by-one error in longest strike features (fixes #577) (#578)
+    - Add `set_property` import (#572)
+    - Fix typo (#571)
+    - Fix indexing of melted normalized input (#563)
+    - Fix travis (#569)
 - Remove warnings (#583)
 - Update to newest python version (#594)
 - Optimizations
-  - Early return from change_quantiles if ql >= qh (#591)
-  - Optimize mean_second_derivative_central (#587)
-  - Improve performance with Numpy's sum function (#567)
-  - Optimize mean_change (fixes issue #542) and correct documentation (#574)
+    - Early return from change_quantiles if ql >= qh (#591)
+    - Optimize mean_second_derivative_central (#587)
+    - Improve performance with Numpy's sum function (#567)
+    - Optimize mean_change (fixes issue #542) and correct documentation (#574)
 
 
 Version 0.12.0
