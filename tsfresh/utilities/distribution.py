@@ -296,7 +296,7 @@ class ClusterDaskDistributor(DistributorBaseClass):
     Distributor using a dask cluster, meaning that the calculation is spread over a cluster
     """
 
-    def __init__(self, address):
+    def __init__(self, address, security=None):
         """
         Sets up a distributor that connects to a Dask Scheduler to distribute the calculaton of the features
 
@@ -306,7 +306,7 @@ class ClusterDaskDistributor(DistributorBaseClass):
 
         from distributed import Client
 
-        self.client = Client(address=address)
+        self.client = Client(address=address, security=security)
 
     def calculate_best_chunk_size(self, data_length):
         """
