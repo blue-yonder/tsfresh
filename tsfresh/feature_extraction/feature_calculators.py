@@ -1983,4 +1983,3 @@ def count_below(x, t):
     :return type: float
     """
     return np.sum(x <= t)/len(x)
-
