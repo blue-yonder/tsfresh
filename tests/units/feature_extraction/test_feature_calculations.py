@@ -1160,6 +1160,29 @@ class FeatureCalculationTestCase(TestCase):
         res = change_quantiles(np.random.rand(10000) * 1000, 0.1, 0.2, False, 'mean')
         self.assertAlmostEqual(res, -0.9443846621365727)
 
+    def test_count_above(self):
+        self.assertEqualPandasSeriesWrapper(count_above, [1] * 10, 1, t=1)
+        self.assertEqualPandasSeriesWrapper(count_above, list(range(10)), 1, t=0)
+        self.assertEqualPandasSeriesWrapper(count_above, list(range(10)), 0.5, t=5)
+        self.assertEqualPandasSeriesWrapper(count_above, [0.1, 0.2, 0.3] * 3, 2/3, t=0.2)
+        self.assertEqualPandasSeriesWrapper(count_above, [np.NaN, 0, 1] * 3, 2/3, t=0)
+        self.assertEqualPandasSeriesWrapper(count_above, [np.NINF, 0, 1] * 3, 2/3, t=0)
+        self.assertEqualPandasSeriesWrapper(count_above, [np.PINF, 0, 1] * 3, 1, t=0)
+        self.assertEqualPandasSeriesWrapper(count_above, [np.NaN, 0, 1] * 3, 0, t=np.NaN)
+        self.assertEqualPandasSeriesWrapper(count_above, [np.NINF, 0, np.PINF] * 3, 1, t=np.NINF)
+        self.assertEqualPandasSeriesWrapper(count_above, [np.PINF, 0, 1] * 3, 1/3, t=np.PINF)
+
+    def test_count_below(self):
+        self.assertEqualPandasSeriesWrapper(count_below, [1] * 10, 0, t=1)
+        self.assertEqualPandasSeriesWrapper(count_below, list(range(10)), 1/10, t=0)
+        self.assertEqualPandasSeriesWrapper(count_below, list(range(10)), 6/10, t=5)
+        self.assertEqualPandasSeriesWrapper(count_below, [0.1, 0.2, 0.3] * 3, 2/3, t=0.2)
+        self.assertEqualPandasSeriesWrapper(count_below, [np.NaN, 0, 1] * 3, 1/3, t=0)
+        self.assertEqualPandasSeriesWrapper(count_below, [np.NINF, 0, 1] * 3, 2/3, t=0)
+        self.assertEqualPandasSeriesWrapper(count_below, [np.PINF, 0, 1] * 3, 1/3, t=0)
+        self.assertEqualPandasSeriesWrapper(count_below, [np.NaN, 0, 1] * 3, 0, t=np.NaN)
+        self.assertEqualPandasSeriesWrapper(count_below, [np.NINF, 0, np.PINF] * 3, 1/3, t=np.NINF)
+        self.assertEqualPandasSeriesWrapper(count_below, [np.PINF, 0, 1] * 3, 1, t=np.PINF)
 
 class FriedrichTestCase(TestCase):
 
@@ -1213,27 +1236,3 @@ class FriedrichTestCase(TestCase):
         self.assertAlmostEqual(res['m_2__r_30__coeff_0'], -0.24536975738843042)
         self.assertAlmostEqual(res['m_2__r_30__coeff_1'], -0.533309548662685)
         self.assertAlmostEqual(res['m_2__r_30__coeff_2'], 0.2759399238199404)
-
-    def test_count_above(self):
-        self.assertEqualPandasSeriesWrapper(count_above, [1] * 10, 1, t=1)
-        self.assertEqualPandasSeriesWrapper(count_above, list(range(10)), 1, t=0)
-        self.assertEqualPandasSeriesWrapper(count_above, list(range(10)), 0.5, t=5)
-        self.assertEqualPandasSeriesWrapper(count_above, [0.1, 0.2, 0.3] * 3, 2/3, t=0.2)
-        self.assertEqualPandasSeriesWrapper(count_above, [np.NaN, 0, 1] * 3, 2/3, t=0)
-        self.assertEqualPandasSeriesWrapper(count_above, [np.NINF, 0, 1] * 3, 2/3, t=0)
-        self.assertEqualPandasSeriesWrapper(count_above, [np.PINF, 0, 1] * 3, 1, t=0)
-        self.assertEqualPandasSeriesWrapper(count_above, [np.NaN, 0, 1] * 3, 0, t=np.NaN)
-        self.assertEqualPandasSeriesWrapper(count_above, [np.NINF, 0, np.PINF] * 3, 1, t=np.NINF)
-        self.assertEqualPandasSeriesWrapper(count_above, [np.PINF, 0, 1] * 3, 1/3, t=np.PINF)
-
-    def test_count_below(self):
-        self.assertEqualPandasSeriesWrapper(count_above, [1] * 10, 0, t=1)
-        self.assertEqualPandasSeriesWrapper(count_above, list(range(10)), 1/10, t=0)
-        self.assertEqualPandasSeriesWrapper(count_above, list(range(10)), 6/10, t=5)
-        self.assertEqualPandasSeriesWrapper(count_above, [0.1, 0.2, 0.3] * 3, 2/3, t=0.2)
-        self.assertEqualPandasSeriesWrapper(count_above, [np.NaN, 0, 1] * 3, 1/3, t=0)
-        self.assertEqualPandasSeriesWrapper(count_above, [np.NINF, 0, 1] * 3, 2/3, t=0)
-        self.assertEqualPandasSeriesWrapper(count_above, [np.PINF, 0, 1] * 3, 1/3, t=0)
-        self.assertEqualPandasSeriesWrapper(count_above, [np.NaN, 0, 1] * 3, 0, t=np.NaN)
-        self.assertEqualPandasSeriesWrapper(count_above, [np.NINF, 0, np.PINF] * 3, 1/3, t=np.NINF)
-        self.assertEqualPandasSeriesWrapper(count_above, [np.PINF, 0, 1] * 3, 1, t=np.PINF)
