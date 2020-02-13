@@ -1173,7 +1173,7 @@ class FeatureCalculationTestCase(TestCase):
         self.assertEqualPandasSeriesWrapper(count_above, [np.PINF, 0, 1] * 3, 1/3, t=np.PINF)
 
     def test_count_below(self):
-        self.assertEqualPandasSeriesWrapper(count_below, [1] * 10, 0, t=1)
+        self.assertEqualPandasSeriesWrapper(count_below, [1] * 10, 1, t=1)
         self.assertEqualPandasSeriesWrapper(count_below, list(range(10)), 1/10, t=0)
         self.assertEqualPandasSeriesWrapper(count_below, list(range(10)), 6/10, t=5)
         self.assertEqualPandasSeriesWrapper(count_below, [0.1, 0.2, 0.3] * 3, 2/3, t=0.2)
@@ -1183,6 +1183,7 @@ class FeatureCalculationTestCase(TestCase):
         self.assertEqualPandasSeriesWrapper(count_below, [np.NaN, 0, 1] * 3, 0, t=np.NaN)
         self.assertEqualPandasSeriesWrapper(count_below, [np.NINF, 0, np.PINF] * 3, 1/3, t=np.NINF)
         self.assertEqualPandasSeriesWrapper(count_below, [np.PINF, 0, 1] * 3, 1, t=np.PINF)
+
 
 class FriedrichTestCase(TestCase):
 
