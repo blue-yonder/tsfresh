@@ -12,6 +12,9 @@ There are two types of features:
 They are specified using the "fctype" parameter of each feature calculator, which is added using the
 set_property function. Only functions in this python module, which have a parameter called  "fctype" are
 seen by tsfresh as a feature calculator. Others will not be calculated.
+
+Feature calculators of type combiner should return the concatenated parameters sorted
+alphabetically ascending.
 """
 
 import itertools
