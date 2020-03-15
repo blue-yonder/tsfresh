@@ -1951,3 +1951,35 @@ def linear_trend_timewise(x, param):
 
     return [("attr_\"{}\"".format(config["attr"]), getattr(linReg, config["attr"]))
             for config in param]
+
+
+@set_property("fctype", "simple")
+def count_above(x, t):
+    """
+    Returns the percentage of values in x that are higher than t
+
+    :param x: the time series to calculate the feature of
+    :type x: pandas.Series
+    :param t: value used as threshold
+    :type t: float
+
+    :return: the value of this feature
+    :return type: float
+    """
+    return np.sum(x >= t)/len(x)
+
+
+@set_property("fctype", "simple")
+def count_below(x, t):
+    """
+    Returns the percentage of values in x that are lower than t
+
+    :param x: the time series to calculate the feature of
+    :type x: pandas.Series
+    :param t: value used as threshold
+    :type t: float
+
+    :return: the value of this feature
+    :return type: float
+    """
+    return np.sum(x <= t)/len(x)
