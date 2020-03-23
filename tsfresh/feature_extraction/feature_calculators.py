@@ -1218,7 +1218,7 @@ def cwt_coefficients(x, param):
     indices = []
 
     for parameter_combination in param:
-        widths = parameter_combination["widths"]
+        widths = tuple(parameter_combination["widths"])
         w = parameter_combination["w"]
         coeff = parameter_combination["coeff"]
 
