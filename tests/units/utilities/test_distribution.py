@@ -2,7 +2,8 @@
 # This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
-from unittest import TestCase
+from unittest import TestCase, skipIf
+import sys
 import numpy as np
 import pandas as pd
 from distributed import LocalCluster, Client
@@ -84,7 +85,7 @@ class LocalDaskDistributorTestCase(DataTestCase):
 
 
 class ClusterDaskDistributorTestCase(DataTestCase):
-
+    @skipIf(sys.version_info < (3, 6, 0), "dask requires python >= 3.6")
     def test_dask_cluster_extraction_one_worker(self):
         cluster = LocalCluster(n_workers=1, threads_per_worker=1, diagnostics_port=False)
         client = Client(cluster)
@@ -107,6 +108,7 @@ class ClusterDaskDistributorTestCase(DataTestCase):
         self.assertTrue(np.all(extracted_features.b__median == np.array([39.5, 28.0])))
         cluster.close()
 
+    @skipIf(sys.version_info < (3, 6, 0), "dask requires python >= 3.6")
     def test_dask_cluster_extraction_two_workers(self):
         cluster = LocalCluster(n_workers=2, threads_per_worker=1, diagnostics_port=False)
         client = Client(cluster)
