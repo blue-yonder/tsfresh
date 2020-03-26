@@ -14,4 +14,12 @@ relevant_extraction module
     :undoc-members:
     :show-inheritance:
 
+bindings module
+--------------------------
+
+.. automodule:: tsfresh.convenience.bindings
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
