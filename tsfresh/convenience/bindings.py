@@ -5,7 +5,10 @@ from tsfresh.feature_extraction.settings import ComprehensiveFCParameters
 
 import pandas as pd
 
-def _feature_extraction_on_chunk_helper(df, column_id, column_kind, column_sort, column_value, default_fc_parameters, kind_to_fc_parameters):
+
+def _feature_extraction_on_chunk_helper(df, column_id, column_kind,
+                                        column_sort, column_value,
+                                        default_fc_parameters, kind_to_fc_parameters):
     """
     Helper function wrapped around _do_extraction_on_chunk to use the correct format
     of the "chunk" and output a pandas dataframe.
@@ -19,18 +22,21 @@ def _feature_extraction_on_chunk_helper(df, column_id, column_kind, column_sort,
         default_fc_parameters = {}
 
     chunk = df[column_id].iloc[0], df[column_kind].iloc[0], df.sort_values(column_sort)[column_value]
-    features = _do_extraction_on_chunk(chunk, default_fc_parameters=default_fc_parameters, kind_to_fc_parameters=kind_to_fc_parameters)
+    features = _do_extraction_on_chunk(chunk, default_fc_parameters=default_fc_parameters,
+                                       kind_to_fc_parameters=kind_to_fc_parameters)
     features = pd.DataFrame(features)
     features["value"] = features["value"].astype("double")
 
     return features[[column_id, "variable", "value"]]
 
 
-def dask_feature_extraction_on_chunk(df, column_id, column_kind, column_sort, column_value, default_fc_parameters=None, kind_to_fc_parameters=None):
+def dask_feature_extraction_on_chunk(df, column_id, column_kind,
+                                     column_sort, column_value,
+                                     default_fc_parameters=None, kind_to_fc_parameters=None):
     """
     Extract features on a grouped dask dataframe given the column names and the extraction settings.
-    This wrapper function should only be used if you have a dask dataframe as input. All format handling (input and output)
-    needs to be done before or after that.
+    This wrapper function should only be used if you have a dask dataframe as input.
+    All format handling (input and output) needs to be done before or after that.
 
     Examples
     ========
@@ -49,12 +55,15 @@ def dask_feature_extraction_on_chunk(df, column_id, column_kind, column_sort, co
 
     Prepare the data into correct format.
     The format needs to be a grouped dataframe (grouped by time series id and feature kind),
-    where each group chunk consists of a dataframe with exactly 4 columns: ``column_id``, ``column_kind``, ``column_sort`` and ``column_value``.
+    where each group chunk consists of a dataframe with exactly 4 columns: ``column_id``,
+    ``column_kind``, ``column_sort`` and ``column_value``.
     You can find the description of the columns in :ref:`data-formats-label`.
-    Please note: for this function to work you need to have all columns present! If necessary create the columns and fill them with
-    dummy values.
+    Please note: for this function to work you need to have all columns present!
+    If necessary create the columns and fill them with dummy values.
 
-    >>>  df = df.melt(id_vars=["id", "time"], value_vars=["F_x", "F_y", "F_z", "T_x", "T_y", "T_z"], var_name="kind", value_name="value")
+    >>>  df = df.melt(id_vars=["id", "time"],
+    ...               value_vars=["F_x", "F_y", "F_z", "T_x", "T_y", "T_z"],
+    ...               var_name="kind", value_name="value")
     >>>  df_grouped = df.groupby(["id", "kind"])
 
     Call the feature extraction
@@ -81,8 +90,9 @@ def dask_feature_extraction_on_chunk(df, column_id, column_kind, column_sort, co
 
     :param kind_to_fc_parameters: mapping from kind names to objects of the same type as the ones for
             default_fc_parameters. If you put a kind as a key here, the fc_parameters
-            object (which is the value), will be used instead of the default_fc_parameters. This means that kinds, for
-            which kind_of_fc_parameters doe not have any entries, will be ignored by the feature selection.
+            object (which is the value), will be used instead of the default_fc_parameters. This means
+            that kinds, for which kind_of_fc_parameters doe not have any entries, will be ignored by
+            the feature selection.
     :type kind_to_fc_parameters: dict
 
     :param column_id: The name of the id column to group by.
@@ -97,22 +107,26 @@ def dask_feature_extraction_on_chunk(df, column_id, column_kind, column_sort, co
     :param column_value: The name for the column keeping the value itself.
     :type column_value: str
 
-    :return: A dask dataframe with the columns ``column_id``, "variable" and "value". The index is taken from the grouped dataframe.
+    :return: A dask dataframe with the columns ``column_id``, "variable" and "value". The index is taken
+            from the grouped dataframe.
     :rtype: dask.dataframe.DataFrame (id int64, variable object, value float64)
 
     """
     feature_extraction = partial(_feature_extraction_on_chunk_helper,
                                  column_id=column_id, column_kind=column_kind,
                                  column_sort=column_sort, column_value=column_value,
-                                 default_fc_parameters=default_fc_parameters, kind_to_fc_parameters=kind_to_fc_parameters)
+                                 default_fc_parameters=default_fc_parameters,
+                                 kind_to_fc_parameters=kind_to_fc_parameters)
     return df.apply(feature_extraction, meta={column_id: 'int64', 'variable': 'object', 'value': 'float64'})
 
 
-def spark_feature_extraction_on_chunk(df, column_id, column_kind, column_sort, column_value, default_fc_parameters, kind_to_fc_parameters=None):
+def spark_feature_extraction_on_chunk(df, column_id, column_kind,
+                                      column_sort, column_value,
+                                      default_fc_parameters, kind_to_fc_parameters=None):
     """
     Extract features on a grouped spark dataframe given the column names and the extraction settings.
-    This wrapper function should only be used if you have a spark dataframe as input. All format handling (input and output)
-    needs to be done before or after that.
+    This wrapper function should only be used if you have a spark dataframe as input.
+    All format handling (input and output) needs to be done before or after that.
 
     Examples
     ========
@@ -130,10 +144,11 @@ def spark_feature_extraction_on_chunk(df, column_id, column_kind, column_sort, c
 
     Prepare the data into correct format.
     The format needs to be a grouped dataframe (grouped by time series id and feature kind),
-    where each group chunk consists of a dataframe with exactly 4 columns: ``column_id``, ``column_kind``, ``column_sort`` and ``column_value``.
+    where each group chunk consists of a dataframe with exactly 4 columns: ``column_id``,
+    ``column_kind``, ``column_sort`` and ``column_value``.
     You can find the description of the columns in :ref:`data-formats-label`.
-    Please note: for this function to work you need to have all columns present! If necessary create the columns and fill them with
-    dummy values.
+    Please note: for this function to work you need to have all columns present!
+    If necessary create the columns and fill them with dummy values.
 
     >>>  df = ...
     >>>  df_grouped = df.groupby(["id", "kind"])
@@ -160,8 +175,9 @@ def spark_feature_extraction_on_chunk(df, column_id, column_kind, column_sort, c
 
     :param kind_to_fc_parameters: mapping from kind names to objects of the same type as the ones for
             default_fc_parameters. If you put a kind as a key here, the fc_parameters
-            object (which is the value), will be used instead of the default_fc_parameters. This means that kinds, for
-            which kind_of_fc_parameters doe not have any entries, will be ignored by the feature selection.
+            object (which is the value), will be used instead of the default_fc_parameters.
+            This means that kinds, for which kind_of_fc_parameters doe not have any entries,
+            will be ignored by the feature selection.
     :type kind_to_fc_parameters: dict
 
     :param column_id: The name of the id column to group by.
@@ -176,7 +192,7 @@ def spark_feature_extraction_on_chunk(df, column_id, column_kind, column_sort, c
     :param column_value: The name for the column keeping the value itself.
     :type column_value: str
 
-    :return: A dask dataframe with the columns ``column_id``, "variable" and "value". The index is taken from the grouped dataframe.
+    :return: A dask dataframe with the columns ``column_id``, "variable" and "value".
     :rtype: pyspark.sql.DataFrame[id: bigint, variable: string, value: double]
 
     """
@@ -185,8 +201,10 @@ def spark_feature_extraction_on_chunk(df, column_id, column_kind, column_sort, c
     feature_extraction = partial(_feature_extraction_on_chunk_helper,
                                  column_id=column_id, column_kind=column_kind,
                                  column_sort=column_sort, column_value=column_value,
-                                 default_fc_parameters=default_fc_parameters, kind_to_fc_parameters=kind_to_fc_parameters)
+                                 default_fc_parameters=default_fc_parameters,
+                                 kind_to_fc_parameters=kind_to_fc_parameters)
 
-    feature_extraction_udf = pandas_udf(f"{column_id} long, variable string, value double", PandasUDFType.GROUPED_MAP)(feature_extraction)
+    feature_extraction_udf = pandas_udf(f"{column_id} long, variable string, value double",
+                                        PandasUDFType.GROUPED_MAP)(feature_extraction)
 
     return df.apply(feature_extraction_udf)
