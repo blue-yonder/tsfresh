@@ -4,6 +4,23 @@ Changelog
 
 tsfresh uses `Semantic Versioning <http://semver.org/>`_
 
+Version 0.15.1
+==============
+
+- Added Features
+    - Add count_above and count_below feature (#632)
+    - Add convenience bindings for dask dataframes and pyspark dataframes (#651)
+- Bugfixes
+    - Fix documentation build and feature table in sphinx (#637, #631, #627)
+    - Add scripts to API documentation
+    - Skip dask test for older python versions (#649)
+    - Add missing distributor keyword (#648)
+    - Fix tuple input for cwt (#645)
+
+Version 0.14.1
+==============
+
+- Fix travis deployment
 
 Version 0.14.0
 ==============
