@@ -7,6 +7,11 @@ tsfresh uses `Semantic Versioning <http://semver.org/>`_
 Version 0.15.1
 ==============
 
+- Changelog and documentation fixes
+
+Version 0.15.0
+==============
+
 - Added Features
     - Add count_above and count_below feature (#632)
     - Add convenience bindings for dask dataframes and pyspark dataframes (#651)
