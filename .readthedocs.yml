@@ -7,3 +7,8 @@ sphinx:
 
 python:
   version: 3.7
+  install:
+   - requirements: rdocs-requirements.txt
+   - method: pip
+     path: .
+  
