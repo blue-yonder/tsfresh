@@ -632,7 +632,6 @@ def standard_deviation(x):
 
 
 @set_property("fctype", "simple")
-@set_property("minimal", True)
 def variation_coefficient(x):
     """
     Returns the variation coefficient of x
