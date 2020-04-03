@@ -630,6 +630,7 @@ def standard_deviation(x):
     """
     return np.std(x)
 
+
 @set_property("fctype", "simple")
 @set_property("minimal", True)
 def variation_coefficient(x):
