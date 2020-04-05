@@ -370,6 +370,12 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqualOnAllArrayTypes(standard_deviation, [1, 2, -2, -1], 1.58113883008)
         self.assertIsNanOnAllArrayTypes(standard_deviation, [])
 
+    def test_variation_coefficient(self):
+        self.assertIsNanOnAllArrayTypes(variation_coefficient, [1, 1, -1, -1],)
+        self.assertAlmostEqualOnAllArrayTypes(variation_coefficient, [1, 2, -3, -1], -7.681145747868608)
+        self.assertAlmostEqualOnAllArrayTypes(variation_coefficient, [1, 2, 4, -1], 1.2018504251546631)
+        self.assertIsNanOnAllArrayTypes(variation_coefficient, [])
+
     def test_variance(self):
         self.assertAlmostEqualOnAllArrayTypes(variance, [1, 1, -1, -1], 1)
         self.assertAlmostEqualOnAllArrayTypes(variance, [1, 2, -2, -1], 2.5)
