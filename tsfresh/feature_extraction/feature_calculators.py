@@ -634,7 +634,7 @@ def standard_deviation(x):
 @set_property("fctype", "simple")
 def variation_coefficient(x):
     """
-    Returns the variation coefficient of x
+    Returns the variation coefficient (standard error / mean, give relative value of variation around mean) of x.
 
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
@@ -643,7 +643,7 @@ def variation_coefficient(x):
     """
     mean = np.mean(x)
     if mean != 0:
-        return np.std(x) / np.mean(x)
+        return np.std(x) / mean
     else:
         return np.nan
 
