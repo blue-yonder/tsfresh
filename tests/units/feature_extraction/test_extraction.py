@@ -196,7 +196,6 @@ class ExtractionTestCase(DataTestCase):
         features = extract_features(df, column_id="id", column_sort="sort",
                                     column_kind="kind", column_value="val")
 
-
         for col_name in features.columns:
             # split out the configuration of the features calculator
             col_name_chunks = col_name.split("__")
@@ -204,7 +203,6 @@ class ExtractionTestCase(DataTestCase):
             col_name_chunks = col_name_chunks[2:]
 
             self.assertEqual(col_name_chunks, list(sorted(col_name_chunks)))
-
 
 
 class ParallelExtractionTestCase(DataTestCase):
