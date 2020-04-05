@@ -25,6 +25,7 @@ def extract_relevant_features(timeseries_container, y, X=None,
                               fdr_level=defaults.FDR_LEVEL,
                               hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
                               n_jobs=defaults.N_PROCESSES,
+                              distributor=None,
                               chunksize=defaults.CHUNKSIZE,
                               ml_task='auto'):
     """
@@ -86,6 +87,11 @@ def extract_relevant_features(timeseries_container, y, X=None,
 
     :param n_jobs: The number of processes to use for parallelization. If zero, no parallelization is used.
     :type n_jobs: int
+
+    :param distributor: Advanced parameter: set this to a class name that you want to use as a
+             distributor. See the utilities/distribution.py for more information. Leave to None, if you want
+             TSFresh to choose the best distributor.
+    :type distributor: class
 
     :param show_warnings: Show warnings during the feature extraction (needed for debugging of calculators).
     :type show_warnings: bool
@@ -161,6 +167,7 @@ def extract_relevant_features(timeseries_container, y, X=None,
                              n_jobs=n_jobs,
                              column_id=column_id, column_sort=column_sort,
                              column_kind=column_kind, column_value=column_value,
+                             distributor=distributor,
                              impute_function=impute)
 
     X_sel = select_features(X_ext, y,

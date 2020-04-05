@@ -12,6 +12,7 @@ API documentation
     tsfresh.feature_extraction
     tsfresh.feature_selection
     tsfresh.examples
+    tsfresh.scripts
     tsfresh.transformers
     tsfresh.utilities
 

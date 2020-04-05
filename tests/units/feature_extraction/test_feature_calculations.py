@@ -370,6 +370,12 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqualOnAllArrayTypes(standard_deviation, [1, 2, -2, -1], 1.58113883008)
         self.assertIsNanOnAllArrayTypes(standard_deviation, [])
 
+    def test_variation_coefficient(self):
+        self.assertIsNanOnAllArrayTypes(variation_coefficient, [1, 1, -1, -1],)
+        self.assertAlmostEqualOnAllArrayTypes(variation_coefficient, [1, 2, -3, -1], -7.681145747868608)
+        self.assertAlmostEqualOnAllArrayTypes(variation_coefficient, [1, 2, 4, -1], 1.2018504251546631)
+        self.assertIsNanOnAllArrayTypes(variation_coefficient, [])
+
     def test_variance(self):
         self.assertAlmostEqualOnAllArrayTypes(variance, [1, 1, -1, -1], 1)
         self.assertAlmostEqualOnAllArrayTypes(variance, [1, 2, -2, -1], 2.5)
@@ -1159,6 +1165,30 @@ class FeatureCalculationTestCase(TestCase):
         np.random.seed(0)
         res = change_quantiles(np.random.rand(10000) * 1000, 0.1, 0.2, False, 'mean')
         self.assertAlmostEqual(res, -0.9443846621365727)
+
+    def test_count_above(self):
+        self.assertEqualPandasSeriesWrapper(count_above, [1] * 10, 1, t=1)
+        self.assertEqualPandasSeriesWrapper(count_above, list(range(10)), 1, t=0)
+        self.assertEqualPandasSeriesWrapper(count_above, list(range(10)), 0.5, t=5)
+        self.assertEqualPandasSeriesWrapper(count_above, [0.1, 0.2, 0.3] * 3, 2/3, t=0.2)
+        self.assertEqualPandasSeriesWrapper(count_above, [np.NaN, 0, 1] * 3, 2/3, t=0)
+        self.assertEqualPandasSeriesWrapper(count_above, [np.NINF, 0, 1] * 3, 2/3, t=0)
+        self.assertEqualPandasSeriesWrapper(count_above, [np.PINF, 0, 1] * 3, 1, t=0)
+        self.assertEqualPandasSeriesWrapper(count_above, [np.NaN, 0, 1] * 3, 0, t=np.NaN)
+        self.assertEqualPandasSeriesWrapper(count_above, [np.NINF, 0, np.PINF] * 3, 1, t=np.NINF)
+        self.assertEqualPandasSeriesWrapper(count_above, [np.PINF, 0, 1] * 3, 1/3, t=np.PINF)
+
+    def test_count_below(self):
+        self.assertEqualPandasSeriesWrapper(count_below, [1] * 10, 1, t=1)
+        self.assertEqualPandasSeriesWrapper(count_below, list(range(10)), 1/10, t=0)
+        self.assertEqualPandasSeriesWrapper(count_below, list(range(10)), 6/10, t=5)
+        self.assertEqualPandasSeriesWrapper(count_below, [0.1, 0.2, 0.3] * 3, 2/3, t=0.2)
+        self.assertEqualPandasSeriesWrapper(count_below, [np.NaN, 0, 1] * 3, 1/3, t=0)
+        self.assertEqualPandasSeriesWrapper(count_below, [np.NINF, 0, 1] * 3, 2/3, t=0)
+        self.assertEqualPandasSeriesWrapper(count_below, [np.PINF, 0, 1] * 3, 1/3, t=0)
+        self.assertEqualPandasSeriesWrapper(count_below, [np.NaN, 0, 1] * 3, 0, t=np.NaN)
+        self.assertEqualPandasSeriesWrapper(count_below, [np.NINF, 0, np.PINF] * 3, 1/3, t=np.NINF)
+        self.assertEqualPandasSeriesWrapper(count_below, [np.PINF, 0, 1] * 3, 1, t=np.PINF)
 
 
 class FriedrichTestCase(TestCase):

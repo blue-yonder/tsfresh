@@ -635,6 +635,23 @@ def standard_deviation(x):
 
 
 @set_property("fctype", "simple")
+def variation_coefficient(x):
+    """
+    Returns the variation coefficient (standard error / mean, give relative value of variation around mean) of x.
+
+    :param x: the time series to calculate the feature of
+    :type x: numpy.ndarray
+    :return: the value of this feature
+    :return type: float
+    """
+    mean = np.mean(x)
+    if mean != 0:
+        return np.std(x) / mean
+    else:
+        return np.nan
+
+
+@set_property("fctype", "simple")
 @set_property("minimal", True)
 def variance(x):
     """
@@ -1221,7 +1238,7 @@ def cwt_coefficients(x, param):
     indices = []
 
     for parameter_combination in param:
-        widths = parameter_combination["widths"]
+        widths = tuple(parameter_combination["widths"])
         w = parameter_combination["w"]
         coeff = parameter_combination["coeff"]
 
@@ -1954,3 +1971,35 @@ def linear_trend_timewise(x, param):
 
     return [("attr_\"{}\"".format(config["attr"]), getattr(linReg, config["attr"]))
             for config in param]
+
+
+@set_property("fctype", "simple")
+def count_above(x, t):
+    """
+    Returns the percentage of values in x that are higher than t
+
+    :param x: the time series to calculate the feature of
+    :type x: pandas.Series
+    :param t: value used as threshold
+    :type t: float
+
+    :return: the value of this feature
+    :return type: float
+    """
+    return np.sum(x >= t)/len(x)
+
+
+@set_property("fctype", "simple")
+def count_below(x, t):
+    """
+    Returns the percentage of values in x that are lower than t
+
+    :param x: the time series to calculate the feature of
+    :type x: pandas.Series
+    :param t: value used as threshold
+    :type t: float
+
+    :return: the value of this feature
+    :return type: float
+    """
+    return np.sum(x <= t)/len(x)
