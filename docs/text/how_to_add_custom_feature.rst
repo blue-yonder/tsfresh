@@ -25,7 +25,8 @@ Step 2. Write the feature calculator
 
 Depending on which type of feature you are implementing, you can use the following feature calculator skeletons:
 
-*1.* simple features
+1. simple features
+~~~~~~~~~~~~~~~~~~
 
 You can write such a simple feature calculator, that returns exactly one feature, without parameter
 
@@ -72,7 +73,8 @@ or with parameter
         return f
 
 
-*2.* combiner features
+2. combiner features
+~~~~~~~~~~~~~~~~~~~~
 
 .. code:: python
 
@@ -87,8 +89,8 @@ or with parameter
         :type c: str
         :param param: contains dictionaries {"p1": x, "p2": y, ...} with p1 float, p2 int ...
         :type param: list
-        :return: list of tuples (s, f) where s are the parameters, serialized as a string, and f the respective feature
-            value as bool, int or float
+        :return: list of tuples (s, f) where s are the parameters, serialized as a string,
+                 and f the respective feature value as bool, int or float
         :return type: pandas.Series
         """
         # s is a function that serializes the config
@@ -98,6 +100,30 @@ or with parameter
 
 After implementing the feature calculator, please add it to the :mod:`tsfresh.feature_extraction.feature_calculators`
 submodule. tsfresh will only find feature calculators that are in this submodule.
+
+Writing your own time-based feature calculators
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Writing your own time-based feature calculators is no different from usual. Only two new properties must be set using the `@set_property` decorator:
+
+* Adding ``@set_property("input", "pd.Series")`` tells the function that the input of the function is a ``pd.Series`` rather than a ``numpy`` array.
+  This allows the index to be used.
+* Adding ``@set_property("index_type", pd.DatetimeIndex)`` tells the function that the input is a `DatetimeIndex`,
+  allowing it to perform calculations based on time datatypes.
+
+For example, if we want to write a function that calculates the time between the first and last measurement, it could look something like this:
+
+.. code:: python
+
+    @set_property("input", "pd.Series")
+    @set_property("index_type", pd.DatetimeIndex)
+    def timespan(x, param):
+        ix = x.index
+
+        # Get differences between the last timestamp and the first timestamp in seconds,
+        # then convert to hours.
+        times_seconds = (ix[-1] - ix[0]).total_seconds()
+        return times_seconds / float(3600)
 
 
 Step 3. Add custom settings for your feature
