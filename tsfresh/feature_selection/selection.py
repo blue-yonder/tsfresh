@@ -105,10 +105,10 @@ def select_features(X, y, test_for_binary_target_binary_feature=defaults.TEST_FO
     :type show_warnings: bool
 
     :param chunksize: The size of one chunk that is submitted to the worker
-        process for the parallelisation.  Where one chunk is defined as a
-        singular time series for one id and one kind. If you set the chunksize
-        to 10, then it means that one task is to calculate all features for 10
-        time series.  If it is set it to None, depending on distributor,
+        process for the parallelisation.  Where one chunk is defined as
+        the data for one feature. If you set the chunksize
+        to 10, then it means that one task is to filter 10 features.
+        If it is set it to None, depending on distributor,
         heuristics are used to find the optimal chunksize. If you get out of
         memory exceptions, you can try it with the dask distributor and a
         smaller chunksize.
