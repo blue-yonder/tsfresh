@@ -257,16 +257,16 @@ class FeatureCalculationTestCase(TestCase):
             {"autolag": "BIC", "attr": "usedlag"}
         ]
         expected_index = [
-            'autolag_"BIC"__attr_"teststat"',
-            'autolag_"BIC"__attr_"pvalue"',
-            'autolag_"BIC"__attr_"usedlag"',
+            'attr_"teststat"__autolag_"BIC"',
+            'attr_"pvalue"__autolag_"BIC"',
+            'attr_"usedlag"__autolag_"BIC"',
         ]
 
         res = augmented_dickey_fuller(x=x, param=param)
         res = pd.Series(dict(res))
         self.assertCountEqual(list(res.index), expected_index)
-        self.assertGreater(res['autolag_"BIC"__attr_"pvalue"'], 0.10)
-        self.assertEqual(res['autolag_"BIC"__attr_"usedlag"'], 0)
+        self.assertGreater(res['attr_"pvalue"__autolag_"BIC"'], 0.10)
+        self.assertEqual(res['attr_"usedlag"__autolag_"BIC"'], 0)
 
         # H0 should be rejected for AR(1) model with x_{t} = 1/2 x_{t-1} + e_{t}
         np.random.seed(seed=42)
@@ -282,16 +282,16 @@ class FeatureCalculationTestCase(TestCase):
             {"autolag": "AIC", "attr": "usedlag"}
         ]
         expected_index = [
-            'autolag_"AIC"__attr_"teststat"',
-            'autolag_"AIC"__attr_"pvalue"',
-            'autolag_"AIC"__attr_"usedlag"',
+            'attr_"teststat"__autolag_"AIC"',
+            'attr_"pvalue"__autolag_"AIC"',
+            'attr_"usedlag"__autolag_"AIC"',
         ]
 
         res = augmented_dickey_fuller(x=x, param=param)
         res = pd.Series(dict(res))
         self.assertCountEqual(list(res.index), expected_index)
-        self.assertLessEqual(res['autolag_"AIC"__attr_"pvalue"'], 0.05)
-        self.assertEqual(res['autolag_"AIC"__attr_"usedlag"'], 0)
+        self.assertLessEqual(res['attr_"pvalue"__autolag_"AIC"'], 0.05)
+        self.assertEqual(res['attr_"usedlag"__autolag_"AIC"'], 0)
 
         # Check if LinAlgError and ValueError are catched
         res_linalg_error = augmented_dickey_fuller(x=np.repeat(np.nan, 100), param=param)
@@ -501,38 +501,38 @@ class FeatureCalculationTestCase(TestCase):
                  {"coeff": 0, "attr": "imag"}, {"coeff": 1, "attr": "imag"}, {"coeff": 2, "attr": "imag"},
                  {"coeff": 0, "attr": "angle"}, {"coeff": 1, "attr": "angle"}, {"coeff": 2, "attr": "angle"},
                  {"coeff": 0, "attr": "abs"}, {"coeff": 1, "attr": "abs"}, {"coeff": 2, "attr": "abs"}]
-        expected_index = ['coeff_0__attr_"real"', 'coeff_1__attr_"real"', 'coeff_2__attr_"real"',
-                          'coeff_0__attr_"imag"', 'coeff_1__attr_"imag"', 'coeff_2__attr_"imag"',
-                          'coeff_0__attr_"angle"', 'coeff_1__attr_"angle"', 'coeff_2__attr_"angle"',
-                          'coeff_0__attr_"abs"', 'coeff_1__attr_"abs"', 'coeff_2__attr_"abs"']
+        expected_index = ['attr_"real"__coeff_0', 'attr_"real"__coeff_1', 'attr_"real"__coeff_2',
+                          'attr_"imag"__coeff_0', 'attr_"imag"__coeff_1', 'attr_"imag"__coeff_2',
+                          'attr_"angle"__coeff_0', 'attr_"angle"__coeff_1', 'attr_"angle"__coeff_2',
+                          'attr_"abs"__coeff_0', 'attr_"abs"__coeff_1', 'attr_"abs"__coeff_2']
 
         res = pd.Series(dict(fft_coefficient(x, param)))
         self.assertCountEqual(list(res.index), expected_index)
-        self.assertAlmostEqual(res['coeff_0__attr_"imag"'], 0, places=6)
-        self.assertAlmostEqual(res['coeff_0__attr_"real"'], sum(x), places=6)
-        self.assertAlmostEqual(res['coeff_0__attr_"angle"'], 0, places=6)
-        self.assertAlmostEqual(res['coeff_0__attr_"abs"'], sum(x), places=6)
+        self.assertAlmostEqual(res['attr_"imag"__coeff_0'], 0, places=6)
+        self.assertAlmostEqual(res['attr_"real"__coeff_0'], sum(x), places=6)
+        self.assertAlmostEqual(res['attr_"angle"__coeff_0'], 0, places=6)
+        self.assertAlmostEqual(res['attr_"abs"__coeff_0'], sum(x), places=6)
 
         x = [0, 1, 0, 0]
         res = pd.Series(dict(fft_coefficient(x, param)))
         # see documentation of fft in numpy
         # should return array([1. + 0.j, 0. - 1.j, -1. + 0.j])
-        self.assertAlmostEqual(res['coeff_0__attr_"imag"'], 0, places=6)
-        self.assertAlmostEqual(res['coeff_0__attr_"real"'], 1, places=6)
-        self.assertAlmostEqual(res['coeff_1__attr_"imag"'], -1, places=6)
-        self.assertAlmostEqual(res['coeff_1__attr_"angle"'], -90, places=6)
-        self.assertAlmostEqual(res['coeff_1__attr_"real"'], 0, places=6)
-        self.assertAlmostEqual(res['coeff_2__attr_"imag"'], 0, places=6)
-        self.assertAlmostEqual(res['coeff_2__attr_"real"'], -1, places=6)
+        self.assertAlmostEqual(res['attr_"imag"__coeff_0'], 0, places=6)
+        self.assertAlmostEqual(res['attr_"real"__coeff_0'], 1, places=6)
+        self.assertAlmostEqual(res['attr_"imag"__coeff_1'], -1, places=6)
+        self.assertAlmostEqual(res['attr_"angle"__coeff_1'], -90, places=6)
+        self.assertAlmostEqual(res['attr_"real"__coeff_1'], 0, places=6)
+        self.assertAlmostEqual(res['attr_"imag"__coeff_2'], 0, places=6)
+        self.assertAlmostEqual(res['attr_"real"__coeff_2'], -1, places=6)
 
         # test what happens if coeff is biger than time series lenght
         x = range(5)
         param = [{"coeff": 10, "attr": "real"}]
-        expected_index = ['coeff_10__attr_"real"']
+        expected_index = ['attr_"real"__coeff_10']
 
         res = pd.Series(dict(fft_coefficient(x, param)))
         self.assertCountEqual(list(res.index), expected_index)
-        self.assertIsNaN(res['coeff_10__attr_"real"'])
+        self.assertIsNaN(res['attr_"real"__coeff_10'])
 
     def test_fft_aggregated(self):
         param = [
@@ -692,16 +692,16 @@ class FeatureCalculationTestCase(TestCase):
                  {"widths": (1, 3), "coeff": 5, "w": 3}]
         shuffle(param)
 
-        expected_index = ["widths_(1, 2, 3)__coeff_2__w_1",
-                          "widths_(1, 3)__coeff_2__w_3",
-                          "widths_(1, 3)__coeff_5__w_3"]
+        expected_index = ["coeff_2__w_1__widths_(1, 2, 3)",
+                          "coeff_2__w_3__widths_(1, 3)",
+                          "coeff_5__w_3__widths_(1, 3)"]
 
         res = cwt_coefficients(x, param)
         res = pd.Series(dict(res))
 
         # todo: add unit test for the values
         self.assertCountEqual(list(res.index), expected_index)
-        self.assertTrue(math.isnan(res["widths_(1, 3)__coeff_5__w_3"]))
+        self.assertTrue(math.isnan(res["coeff_5__w_3__widths_(1, 3)"]))
 
     def test_ar_coefficient(self):
 
@@ -714,12 +714,12 @@ class FeatureCalculationTestCase(TestCase):
             x[i] = 2.5 * x[i - 1] + 1
 
         res = ar_coefficient(x, param)
-        expected_index = ["k_1__coeff_0", "k_1__coeff_1"]
+        expected_index = ["coeff_0__k_1", "coeff_1__k_1"]
 
         res = pd.Series(dict(res))
         self.assertCountEqual(list(res.index), expected_index)
-        self.assertAlmostEqual(res["k_1__coeff_0"], 1, places=2)
-        self.assertAlmostEqual(res["k_1__coeff_1"], 2.5, places=2)
+        self.assertAlmostEqual(res["coeff_0__k_1"], 1, places=2)
+        self.assertAlmostEqual(res["coeff_1__k_1"], 2.5, places=2)
 
         # Test for X_i = 1.4 * X_{i-1} - 1 X_{i-2} + 1
         param = [{"k": 1, "coeff": 0}, {"k": 1, "coeff": 1},
@@ -731,18 +731,18 @@ class FeatureCalculationTestCase(TestCase):
             x[i] = (-2) * x[i - 2] + 3.5 * x[i - 1] + 1
 
         res = ar_coefficient(x, param)
-        expected_index = ["k_1__coeff_0", "k_1__coeff_1",
-                          "k_2__coeff_0", "k_2__coeff_1",
-                          "k_2__coeff_2", "k_2__coeff_3"]
+        expected_index = ["coeff_0__k_1", "coeff_1__k_1",
+                          "coeff_0__k_2", "coeff_1__k_2",
+                          "coeff_2__k_2", "coeff_3__k_2"]
 
         res = pd.Series(dict(res))
 
         self.assertIsInstance(res, pd.Series)
         self.assertCountEqual(list(res.index), expected_index)
-        self.assertAlmostEqual(res["k_2__coeff_0"], 1, places=2)
-        self.assertAlmostEqual(res["k_2__coeff_1"], 3.5, places=2)
-        self.assertAlmostEqual(res["k_2__coeff_2"], -2, places=2)
-        self.assertTrue(np.isnan(res["k_2__coeff_3"]))
+        self.assertAlmostEqual(res["coeff_0__k_2"], 1, places=2)
+        self.assertAlmostEqual(res["coeff_1__k_2"], 3.5, places=2)
+        self.assertAlmostEqual(res["coeff_2__k_2"], -2, places=2)
+        self.assertTrue(np.isnan(res["coeff_3__k_2"]))
 
     def test_time_reversal_asymmetry_statistic(self):
         x = [1] * 10
@@ -980,14 +980,14 @@ class FeatureCalculationTestCase(TestCase):
                  {"attr": "slope", "chunk_len": 3, "f_agg": "mean"},
                  {"attr": "intercept", "chunk_len": 3, "f_agg": "median"},
                  {"attr": "slope", "chunk_len": 3, "f_agg": "median"}]
-        expected_index = ['f_agg_"max"__chunk_len_3__attr_"intercept"',
-                          'f_agg_"max"__chunk_len_3__attr_"slope"',
-                          'f_agg_"min"__chunk_len_3__attr_"intercept"',
-                          'f_agg_"min"__chunk_len_3__attr_"slope"',
-                          'f_agg_"mean"__chunk_len_3__attr_"intercept"',
-                          'f_agg_"mean"__chunk_len_3__attr_"slope"',
-                          'f_agg_"median"__chunk_len_3__attr_"intercept"',
-                          'f_agg_"median"__chunk_len_3__attr_"slope"']
+        expected_index = ['attr_"intercept"__chunk_len_3__f_agg_"max"',
+                          'attr_"slope"__chunk_len_3__f_agg_"max"',
+                          'attr_"intercept"__chunk_len_3__f_agg_"min"',
+                          'attr_"slope"__chunk_len_3__f_agg_"min"',
+                          'attr_"intercept"__chunk_len_3__f_agg_"mean"',
+                          'attr_"slope"__chunk_len_3__f_agg_"mean"',
+                          'attr_"intercept"__chunk_len_3__f_agg_"median"',
+                          'attr_"slope"__chunk_len_3__f_agg_"median"']
 
         res = agg_linear_trend(x=x, param=param)
 
@@ -995,42 +995,42 @@ class FeatureCalculationTestCase(TestCase):
         self.assertEqual(len(res), 8)
         self.maxDiff = 2000
         self.assertCountEqual(list(res.index), expected_index)
-        self.assertAlmostEqual(res['f_agg_"max"__chunk_len_3__attr_"intercept"'], 2)
-        self.assertAlmostEqual(res['f_agg_"max"__chunk_len_3__attr_"slope"'], 3)
-        self.assertAlmostEqual(res['f_agg_"min"__chunk_len_3__attr_"intercept"'], 0)
-        self.assertAlmostEqual(res['f_agg_"min"__chunk_len_3__attr_"slope"'], 3)
-        self.assertAlmostEqual(res['f_agg_"mean"__chunk_len_3__attr_"intercept"'], 1)
-        self.assertAlmostEqual(res['f_agg_"mean"__chunk_len_3__attr_"slope"'], 3)
-        self.assertAlmostEqual(res['f_agg_"median"__chunk_len_3__attr_"intercept"'], 1)
-        self.assertAlmostEqual(res['f_agg_"median"__chunk_len_3__attr_"slope"'], 3)
+        self.assertAlmostEqual(res['attr_"intercept"__chunk_len_3__f_agg_"max"'], 2)
+        self.assertAlmostEqual(res['attr_"slope"__chunk_len_3__f_agg_"max"'], 3)
+        self.assertAlmostEqual(res['attr_"intercept"__chunk_len_3__f_agg_"min"'], 0)
+        self.assertAlmostEqual(res['attr_"slope"__chunk_len_3__f_agg_"min"'], 3)
+        self.assertAlmostEqual(res['attr_"intercept"__chunk_len_3__f_agg_"mean"'], 1)
+        self.assertAlmostEqual(res['attr_"slope"__chunk_len_3__f_agg_"mean"'], 3)
+        self.assertAlmostEqual(res['attr_"intercept"__chunk_len_3__f_agg_"median"'], 1)
+        self.assertAlmostEqual(res['attr_"slope"__chunk_len_3__f_agg_"median"'], 3)
 
         x = pd.Series([np.NaN, np.NaN, np.NaN, -3, -3, -3])
         res = agg_linear_trend(x=x, param=param)
 
         res = pd.Series(dict(res))
 
-        self.assertIsNaN(res['f_agg_"max"__chunk_len_3__attr_"intercept"'])
-        self.assertIsNaN(res['f_agg_"max"__chunk_len_3__attr_"slope"'])
-        self.assertIsNaN(res['f_agg_"min"__chunk_len_3__attr_"intercept"'])
-        self.assertIsNaN(res['f_agg_"min"__chunk_len_3__attr_"slope"'])
-        self.assertIsNaN(res['f_agg_"mean"__chunk_len_3__attr_"intercept"'])
-        self.assertIsNaN(res['f_agg_"mean"__chunk_len_3__attr_"slope"'])
-        self.assertIsNaN(res['f_agg_"median"__chunk_len_3__attr_"intercept"'])
-        self.assertIsNaN(res['f_agg_"median"__chunk_len_3__attr_"slope"'])
+        self.assertIsNaN(res['attr_"intercept"__chunk_len_3__f_agg_"max"'])
+        self.assertIsNaN(res['attr_"slope"__chunk_len_3__f_agg_"max"'])
+        self.assertIsNaN(res['attr_"intercept"__chunk_len_3__f_agg_"min"'])
+        self.assertIsNaN(res['attr_"slope"__chunk_len_3__f_agg_"min"'])
+        self.assertIsNaN(res['attr_"intercept"__chunk_len_3__f_agg_"mean"'])
+        self.assertIsNaN(res['attr_"slope"__chunk_len_3__f_agg_"mean"'])
+        self.assertIsNaN(res['attr_"intercept"__chunk_len_3__f_agg_"median"'])
+        self.assertIsNaN(res['attr_"slope"__chunk_len_3__f_agg_"median"'])
 
         x = pd.Series([np.NaN, np.NaN, -3, -3, -3, -3])
         res = agg_linear_trend(x=x, param=param)
 
         res = pd.Series(dict(res))
 
-        self.assertAlmostEqual(res['f_agg_"max"__chunk_len_3__attr_"intercept"'], -3)
-        self.assertAlmostEqual(res['f_agg_"max"__chunk_len_3__attr_"slope"'], 0)
-        self.assertAlmostEqual(res['f_agg_"min"__chunk_len_3__attr_"intercept"'], -3)
-        self.assertAlmostEqual(res['f_agg_"min"__chunk_len_3__attr_"slope"'], 0)
-        self.assertAlmostEqual(res['f_agg_"mean"__chunk_len_3__attr_"intercept"'], -3)
-        self.assertAlmostEqual(res['f_agg_"mean"__chunk_len_3__attr_"slope"'], 0)
-        self.assertAlmostEqual(res['f_agg_"median"__chunk_len_3__attr_"intercept"'], -3)
-        self.assertAlmostEqual(res['f_agg_"median"__chunk_len_3__attr_"slope"'], 0)
+        self.assertAlmostEqual(res['attr_"intercept"__chunk_len_3__f_agg_"max"'], -3)
+        self.assertAlmostEqual(res['attr_"slope"__chunk_len_3__f_agg_"max"'], 0)
+        self.assertAlmostEqual(res['attr_"intercept"__chunk_len_3__f_agg_"min"'], -3)
+        self.assertAlmostEqual(res['attr_"slope"__chunk_len_3__f_agg_"min"'], 0)
+        self.assertAlmostEqual(res['attr_"intercept"__chunk_len_3__f_agg_"mean"'], -3)
+        self.assertAlmostEqual(res['attr_"slope"__chunk_len_3__f_agg_"mean"'], 0)
+        self.assertAlmostEqual(res['attr_"intercept"__chunk_len_3__f_agg_"median"'], -3)
+        self.assertAlmostEqual(res['attr_"slope"__chunk_len_3__f_agg_"median"'], 0)
 
     def test_energy_ratio_by_chunks(self):
         x = pd.Series(range(90), index=range(90))
@@ -1217,7 +1217,7 @@ class FriedrichTestCase(TestCase):
         x = np.zeros(100)
         res = pd.Series(dict(friedrich_coefficients(x, param)))
 
-        expected_index = ["m_2__r_30__coeff_0", "m_2__r_30__coeff_1", "m_2__r_30__coeff_2", "m_2__r_30__coeff_3"]
+        expected_index = ["coeff_0__m_2__r_30", "coeff_1__m_2__r_30", "coeff_2__m_2__r_30", "coeff_3__m_2__r_30"]
         self.assertCountEqual(list(res.index), expected_index)
         self.assertTrue(np.sum(np.isnan(res)), 3)
 
@@ -1227,7 +1227,7 @@ class FriedrichTestCase(TestCase):
         x = np.zeros(100)
         res = pd.Series(dict(friedrich_coefficients(x, param)))
 
-        expected_index = ["m_3__r_5__coeff_2", "m_3__r_5__coeff_3", "m_3__r_2__coeff_3"]
+        expected_index = ["coeff_2__m_3__r_5", "coeff_3__m_3__r_5", "coeff_3__m_3__r_2"]
         self.assertCountEqual(list(res.index), expected_index)
         self.assertTrue(np.sum(np.isnan(res)), 3)
 
@@ -1240,6 +1240,6 @@ class FriedrichTestCase(TestCase):
 
         res = pd.Series(dict(friedrich_coefficients(x, param)))
 
-        self.assertAlmostEqual(res['m_2__r_30__coeff_0'], -0.24536975738843042)
-        self.assertAlmostEqual(res['m_2__r_30__coeff_1'], -0.533309548662685)
-        self.assertAlmostEqual(res['m_2__r_30__coeff_2'], 0.2759399238199404)
+        self.assertAlmostEqual(res['coeff_0__m_2__r_30'], -0.24536975738843042)
+        self.assertAlmostEqual(res['coeff_1__m_2__r_30'], -0.533309548662685)
+        self.assertAlmostEqual(res['coeff_2__m_2__r_30'], 0.2759399238199404)
