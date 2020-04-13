@@ -8,6 +8,9 @@ Utility functions for handling the DataFrame conversions to the internal normali
 import gc
 import warnings
 
+from tsfresh import defaults
+from tsfresh.utilities.distribution import MapDistributor, MultiprocessingDistributor, DistributorBaseClass
+
 import numpy as np
 import pandas as pd
 
@@ -372,7 +375,54 @@ def _normalize_input_to_internal_representation(timeseries_container, column_id,
     return timeseries_container, column_id, column_kind, column_value
 
 
-def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_direction, max_timeshift=None, min_timeshift=1):
+def _roll_out_time_series(time_shift, grouped_data, rolling_direction, max_timeshift, min_timeshift, column_sort, column_id):
+    """
+    Internal helper function for roll_time_series.
+    This function has the task to extract the rolled forecast data frame of the number `time_shift`.
+    This means it is `time_shift` in the future - starting counting from the first row
+    for each id (and kind).
+    This means we cut out the data until `time_shift`.
+    The first row we cut out is either 0 or given by the maximal allowed length of `max_timeshift`.
+    for a negative rolling direction it is reversed
+    """
+    def _f(x):
+        if rolling_direction > 0:
+            shift_until = time_shift
+            shift_from = max(shift_until - max_timeshift - 1, 0)
+
+            df_temp = x.iloc[shift_from:shift_until] if shift_until <= len(x) else None
+        else:
+            shift_from = max(time_shift - 1, 0)
+            shift_until = shift_from + max_timeshift + 1
+
+            df_temp = x.iloc[shift_from:shift_until]
+
+        if df_temp is None or len(df_temp) < min_timeshift + 1:
+            return
+
+        df_temp = df_temp.copy()
+
+        # and set the shift correctly
+        if column_sort and rolling_direction > 0:
+            shift_string = f"timeshift={df_temp[column_sort].iloc[-1]}"
+        elif column_sort and rolling_direction < 0:
+            shift_string = f"timeshift={df_temp[column_sort].iloc[0]}"
+        else:
+            shift_string = f"timeshift={time_shift - 1}"
+        # and now create new ones ids out of the old ones
+        df_temp["id"] = df_temp.apply(lambda row: f"id={row[column_id]},{shift_string}", axis=1)
+
+        return df_temp
+
+    return [grouped_data.apply(_f)]
+
+
+def roll_time_series(df_or_dict, column_id, column_sort=None, column_kind=None,
+                     rolling_direction=1, max_timeshift=None, min_timeshift=0,
+                     chunksize=defaults.CHUNKSIZE,
+                     n_jobs=defaults.N_PROCESSES, show_warnings=defaults.SHOW_WARNINGS,
+                     disable_progressbar=defaults.DISABLE_PROGRESSBAR,
+                     distributor=None):
     """
     This method creates sub windows of the time series. It rolls the (sorted) data frames for each kind and each id
     separately in the "time" domain (which is represented by the sort order of the sort column given by `column_sort`).
@@ -391,23 +441,46 @@ def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_di
     :param df_or_dict: a pandas DataFrame or a dictionary. The required shape/form of the object depends on the rest of
         the passed arguments.
     :type df_or_dict: pandas.DataFrame or dict
+
     :param column_id: it must be present in the pandas DataFrame or in all DataFrames in the dictionary.
         It is not allowed to have NaN values in this column.
     :type column_id: basestring or None
+
     :param column_sort: if not None, sort the rows by this column. It is not allowed to
-        have NaN values in this column.
+        have NaN values in this column. If not given, will be filled by an increasing number.
     :type column_sort: basestring or None
+
     :param column_kind: It can only be used when passing a pandas DataFrame (the dictionary is already assumed to be
         grouped by the kind). Is must be present in the DataFrame and no NaN values are allowed.
         If the kind column is not passed, it is assumed that each column in the pandas DataFrame (except the id or
         sort column) is a possible kind.
     :type column_kind: basestring or None
+
     :param rolling_direction: The sign decides, if to roll backwards or forwards in "time"
     :type rolling_direction: int
+
     :param max_timeshift: If not None, shift only up to max_timeshift. If None, shift as often as possible.
     :type max_timeshift: int
-    :param min_timeshift: Throw away all extracted forecast windows smaller than this. Must be larger than 0.
+
+    :param min_timeshift: Throw away all extracted forecast windows smaller than this. Must be larger than or equal 0.
     :type min_timeshift: int
+
+    :param n_jobs: The number of processes to use for parallelization. If zero, no parallelization is used.
+    :type n_jobs: int
+
+    :param chunksize: How many shifts per job should be calculated.
+    :type chunksize: None or int
+
+    :param show_warnings: Show warnings during the feature extraction (needed for debugging of calculators).
+    :type show_warnings: bool
+
+    :param disable_progressbar: Do not show a progressbar while doing the calculation.
+    :type disable_progressbar: bool
+
+    :param distributor: Advanced parameter: set this to a class name that you want to use as a
+             distributor. See the utilities/distribution.py for more information. Leave to None, if you want
+             TSFresh to choose the best distributor.
+    :type distributor: class
 
     :return: The rolled data frame or dictionary of data frames
     :rtype: the one from df_or_dict
@@ -419,8 +492,8 @@ def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_di
     if max_timeshift is not None and max_timeshift <= 0:
         raise ValueError("max_timeshift needs to be positive!")
 
-    if min_timeshift <= 0:
-        raise ValueError("min_timeshift needs to be positive!")
+    if min_timeshift < 0:
+        raise ValueError("min_timeshift needs to be positive or zero!")
 
     if isinstance(df_or_dict, dict):
         if column_kind is not None:
@@ -432,7 +505,12 @@ def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_di
                                       column_kind=column_kind,
                                       rolling_direction=rolling_direction,
                                       max_timeshift=max_timeshift,
-                                      min_timeshift=min_timeshift)
+                                      min_timeshift=min_timeshift,
+                                      chunksize=chunksize,
+                                      n_jobs=n_jobs,
+                                      show_warnings=show_warnings,
+                                      disable_progressbar=disable_progressbar,
+                                      distributor=distributor)
                 for key in df_or_dict}
 
     # Now we know that this is a pandas data frame
@@ -484,47 +562,38 @@ def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_di
     if column_sort is None:
         df["sort"] = range(df.shape[0])
 
-    def roll_out_time_series(time_shift):
-        # Now comes the fun part.
-        # This function has the task to extract the rolled forecast data frame of the number `time_shift`.
-        # This means it is `time_shift` in the future - starting counting from the first row
-        # for each id (and kind).
-        # This means we cut out the data until `time_shift`.
-        # The first row we cut out is either 0 or given by the maximal allowed length of `max_timeshift`.
-        # for a negative rolling direction it is reversed
-        def _f(x):
-            if rolling_direction > 0:
-                shift_until = time_shift
-                shift_from = max(shift_until - max_timeshift - 1, 0)
+    if rolling_direction > 0:
+        range_of_shifts = range(1, prediction_steps + 1)
+    else:
+        range_of_shifts = range(1, prediction_steps + 1)
 
-                df_temp = x.iloc[shift_from:shift_until] if shift_until <= len(x) else None
-            else:
-                shift_from = max(time_shift - 1, 0)
-                shift_until = shift_from + max_timeshift + 1
+    if distributor is None:
+        if n_jobs == 0:
+            distributor = MapDistributor(disable_progressbar=disable_progressbar,
+                                         progressbar_title="Feature Extraction")
+        else:
+            distributor = MultiprocessingDistributor(n_workers=n_jobs,
+                                                     disable_progressbar=disable_progressbar,
+                                                     progressbar_title="Feature Extraction",
+                                                     show_warnings=show_warnings)
 
-                df_temp = x.iloc[shift_from:shift_until]
+    if not isinstance(distributor, DistributorBaseClass):
+        raise ValueError("the passed distributor is not an DistributorBaseClass object")
 
-            if df_temp is None or len(df_temp) == 0:
-                return
+    kwargs = {
+        "grouped_data": grouped_data,
+        "rolling_direction": rolling_direction,
+        "max_timeshift": max_timeshift,
+        "min_timeshift": min_timeshift,
+        "column_sort": column_sort,
+        "column_id": column_id,
+    }
 
-            df_temp = df_temp.copy()
+    shifted_chunks = distributor.map_reduce(_roll_out_time_series, data=range_of_shifts,
+                                            chunk_size=chunksize, function_kwargs=kwargs)
 
-            # and set the shift correctly
-            if column_sort and rolling_direction > 0:
-                shift_string = f"timeshift={df_temp[column_sort].iloc[-1]}"
-            elif column_sort and rolling_direction < 0:
-                shift_string = f"timeshift={df_temp[column_sort].iloc[0]}"
-            else:
-                shift_string = f"timeshift={time_shift - 1}"
-            # and now create new ones ids out of the old ones
-            df_temp[column_id] = df_temp.apply(lambda row: f"id={row[column_id]},{shift_string}", axis=1)
+    distributor.close()
 
-            return df_temp
-
-        return grouped_data.apply(_f)
-
-    range_of_shifts = range(min_timeshift, prediction_steps + 1)
-    shifted_chunks = map(lambda time_shift: roll_out_time_series(time_shift), range_of_shifts)
     df_shift = pd.concat(shifted_chunks, ignore_index=True)
 
     return df_shift.sort_values(by=[column_id, column_sort or "sort"])
