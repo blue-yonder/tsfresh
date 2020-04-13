@@ -277,7 +277,21 @@ class RollingTestCase(TestCase):
         4  10  12    20   2
         5  11  13    21   2
         """
-        correct_indices = [0, 1, 1, 2, 2, 2, 3, 3, 3, 3, 20, 21, 21]
+        correct_indices = [
+                'id=1,shift=0',
+                'id=1,shift=1',
+                'id=1,shift=1',
+                'id=1,shift=2',
+                'id=1,shift=2',
+                'id=1,shift=2',
+                'id=1,shift=3',
+                'id=1,shift=3',
+                'id=1,shift=3',
+                'id=1,shift=3',
+                'id=2,shift=0',
+                'id=2,shift=1',
+                'id=2,shift=1'
+            ]
         correct_values_a = [1.0, 1.0, 2.0, 1.0, 2.0, 3.0, 1.0, 2.0, 3.0, 4.0, 10.0, 10.0, 11.0]
         correct_values_b = [5.0, 5.0, 6.0, 5.0, 6.0, 7.0, 5.0, 6.0, 7.0, 8.0, 12.0, 12.0, 13.0]
 
@@ -300,7 +314,20 @@ class RollingTestCase(TestCase):
                                                   column_kind=None, rolling_direction=1,
                                                   max_timeshift=2)
 
-        correct_indices = [0, 1, 1, 2, 2, 2, 3, 3, 3, 20, 21, 21]
+        correct_indices = [
+            'id=1,shift=0',
+            'id=1,shift=1',
+            'id=1,shift=1',
+            'id=1,shift=2',
+            'id=1,shift=2',
+            'id=1,shift=2',
+            'id=1,shift=3',
+            'id=1,shift=3',
+            'id=1,shift=3',
+            'id=2,shift=0',
+            'id=2,shift=1',
+            'id=2,shift=1'
+        ]
         correct_values_a = [1.0, 1.0, 2.0, 1.0, 2.0, 3.0, 2.0, 3.0, 4.0, 10.0, 10.0, 11.0]
         correct_values_b = [5.0, 5.0, 6.0, 5.0, 6.0, 7.0, 6.0, 7.0, 8.0, 12.0, 12.0, 13.0]
 
