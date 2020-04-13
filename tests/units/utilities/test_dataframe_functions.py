@@ -353,7 +353,21 @@ class RollingTestCase(TestCase):
         5  11  13    21   2
         """
 
-        correct_indices = ([0, 0, 0, 0, 1, 1, 1, 2, 2, 3, 20, 20, 21])
+        correct_indices = [
+            'id=1,shift=0',
+            'id=1,shift=0',
+            'id=1,shift=0',
+            'id=1,shift=0',
+            'id=1,shift=1',
+            'id=1,shift=1',
+            'id=1,shift=1',
+            'id=1,shift=2',
+            'id=1,shift=2',
+            'id=1,shift=3',
+            'id=2,shift=0',
+            'id=2,shift=0',
+            'id=2,shift=1'
+        ]
         correct_values_a = [1.0, 2.0, 3.0, 4.0, 2.0, 3.0, 4.0, 3.0, 4.0, 4.0, 10.0, 11.0, 11.0]
         correct_values_b = [5.0, 6.0, 7.0, 8.0, 6.0, 7.0, 8.0, 7.0, 8.0, 8.0, 12.0, 13.0, 13.0]
 
@@ -376,7 +390,18 @@ class RollingTestCase(TestCase):
                                                   column_kind=None, rolling_direction=-1,
                                                   max_timeshift=1)
 
-        correct_indices = ([0, 0, 1, 1, 2, 2, 3, 20, 20, 21])
+        correct_indices = [
+            'id=1,shift=0',
+            'id=1,shift=0',
+            'id=1,shift=1',
+            'id=1,shift=1',
+            'id=1,shift=2',
+            'id=1,shift=2',
+            'id=1,shift=3',
+            'id=2,shift=0',
+            'id=2,shift=0',
+            'id=2,shift=1'
+        ]
         correct_values_a = [1.0, 2.0, 2.0, 3.0, 3.0, 4.0, 4.0, 10.0, 11.0, 11.0]
         correct_values_b = [5.0, 6.0, 6.0, 7.0, 7.0, 8.0, 8.0, 12.0, 13.0, 13.0]
 
@@ -388,7 +413,20 @@ class RollingTestCase(TestCase):
                                                   column_kind=None, rolling_direction=-1,
                                                   max_timeshift=2)
 
-        correct_indices = ([0, 0, 0, 1, 1, 1, 2, 2, 3, 20, 20, 21])
+        correct_indices = [
+            'id=1,shift=0',
+            'id=1,shift=0',
+            'id=1,shift=0',
+            'id=1,shift=1',
+            'id=1,shift=1',
+            'id=1,shift=1',
+            'id=1,shift=2',
+            'id=1,shift=2',
+            'id=1,shift=3',
+            'id=2,shift=0',
+            'id=2,shift=0',
+            'id=2,shift=1'
+        ]
         correct_values_a = [1.0, 2.0, 3.0, 2.0, 3.0, 4.0, 3.0, 4.0, 4.0, 10.0, 11.0, 11.0]
         correct_values_b = [5.0, 6.0, 7.0, 6.0, 7.0, 8.0, 7.0, 8.0, 8.0, 12.0, 13.0, 13.0]
 
@@ -400,7 +438,21 @@ class RollingTestCase(TestCase):
                                                   column_kind=None, rolling_direction=-1,
                                                   max_timeshift=4)
 
-        correct_indices = ([0, 0, 0, 0, 1, 1, 1, 2, 2, 3, 20, 20, 21])
+        correct_indices = [
+            'id=1,shift=0',
+            'id=1,shift=0',
+            'id=1,shift=0',
+            'id=1,shift=0',
+            'id=1,shift=1',
+            'id=1,shift=1',
+            'id=1,shift=1',
+            'id=1,shift=2',
+            'id=1,shift=2',
+            'id=1,shift=3',
+            'id=2,shift=0',
+            'id=2,shift=0',
+            'id=2,shift=1'
+        ]
         correct_values_a = [1.0, 2.0, 3.0, 4.0, 2.0, 3.0, 4.0, 3.0, 4.0, 4.0, 10.0, 11.0, 11.0]
         correct_values_b = [5.0, 6.0, 7.0, 8.0, 6.0, 7.0, 8.0, 7.0, 8.0, 8.0, 12.0, 13.0, 13.0]
 
@@ -440,10 +492,16 @@ class RollingTestCase(TestCase):
         df = dataframe_functions.roll_time_series(df_stacked, column_id="id", column_sort="time",
                                                   column_kind="kind", rolling_direction=-1)
 
-        correct_indices = ([0] * 2 * 4 + [1] * 2 * 3 + [2] * 2 * 2 + [3] * 2 * 1 + [20] * 4 + [21] * 2)
+        correct_indices = (
+            ['id=1,shift=0'] * 2 * 4 +
+            ['id=1,shift=1'] * 2 * 3 +
+            ['id=1,shift=2'] * 2 * 2 +
+            ['id=1,shift=3'] * 2 * 1 +
+            ['id=2,shift=0'] * 2 * 2 +
+            ['id=2,shift=1'] * 2 * 1
+        )
         self.assertListEqual(list(df["id"].values), correct_indices)
 
-        print(df["_value"].values)
         self.assertListEqual(list(df["kind"].values), ["a", "b"] * 13)
         self.assertListEqual(list(df["_value"].values),
                              [1., 5., 2., 6., 3., 7., 4., 8., 2., 6., 3., 7., 4., 8., 3., 7., 4., 8., 4., 8., 10., 12.,
@@ -457,40 +515,41 @@ class RollingTestCase(TestCase):
         df = dataframe_functions.roll_time_series(df_dict, column_id="id", column_sort=None, column_kind=None,
                                                   rolling_direction=-1)
         """ df is
-        {a: _value  sort id
-         7      1.0   0.0  0
-         3      2.0   1.0  0
-         1      3.0   2.0  0
-         0      4.0   3.0  0
-         8      2.0   1.0  1
-         4      3.0   2.0  1
-         2      4.0   3.0  1
-         9      3.0   2.0  2
-         5      4.0   3.0  2
-         10     4.0   3.0  3
-         11    10.0   4.0  4
-         6     11.0   5.0  4
-         12    11.0   5.0  5,
+        {a: _value  id
+              1.0   1
+              2.0   1
+              3.0   1
+              4.0   1
+             10.0   2
+             11.0   2,
 
-         b: _value  sort id
-         7      5.0   0.0  0
-         3      6.0   1.0  0
-         1      7.0   2.0  0
-         0      8.0   3.0  0
-         8      6.0   1.0  1
-         4      7.0   2.0  1
-         2      8.0   3.0  1
-         9      7.0   2.0  2
-         5      8.0   3.0  2
-         10     8.0   3.0  3
-         11    12.0   4.0  4
-         6     13.0   5.0  4
-         12    13.0   5.0  5}
+         b: _value  id
+               5.0   1
+               6.0   1
+               7.0   1
+               8.0   1
+              12.0   2
+              13.0   2
+         }
         """
 
-        correct_indices = [0, 0, 0, 0, 1, 1, 1, 2, 2, 3, 4, 4, 5]
-
+        correct_indices = [
+            'id=1,shift=0',
+            'id=1,shift=0',
+            'id=1,shift=0',
+            'id=1,shift=0',
+            'id=1,shift=1',
+            'id=1,shift=1',
+            'id=1,shift=1',
+            'id=1,shift=2',
+            'id=1,shift=2',
+            'id=1,shift=3',
+            'id=2,shift=0',
+            'id=2,shift=0',
+            'id=2,shift=1'
+        ]
         self.assertListEqual(list(df["a"]["id"].values), correct_indices)
+
         self.assertListEqual(list(df["b"]["id"].values), correct_indices)
 
         self.assertListEqual(list(df["a"]["_value"].values),
@@ -506,32 +565,36 @@ class RollingTestCase(TestCase):
         df = dataframe_functions.roll_time_series(df_dict, column_id="id", column_sort=None, column_kind=None,
                                                   rolling_direction=-1, max_timeshift=1)
         """ df is
-        {a: _value  sort id
-         7      1.0   0.0  0
-         3      2.0   1.0  0
-         8      2.0   1.0  1
-         4      3.0   2.0  1
-         9      3.0   2.0  2
-         5      4.0   3.0  2
-         10     4.0   3.0  3
-         11    10.0   4.0  4
-         6     11.0   5.0  4
-         12    11.0   5.0  5,
+        {a: _value  id
+              1.0   1
+              2.0   1
+              3.0   1
+              4.0   1
+             10.0   2
+             11.0   2,
 
-         b: _value  sort id
-         7      5.0   0.0  0
-         3      6.0   1.0  0
-         8      6.0   1.0  1
-         4      7.0   2.0  1
-         9      7.0   2.0  2
-         5      8.0   3.0  2
-         10     8.0   3.0  3
-         11    12.0   4.0  4
-         6     13.0   5.0  4
-         12    13.0   5.0  5}
+         b: _value  id
+               5.0   1
+               6.0   1
+               7.0   1
+               8.0   1
+              12.0   2
+              13.0   2
+         }
         """
 
-        correct_indices = [0, 0, 1, 1, 2, 2, 3, 4, 4, 5]
+        correct_indices = [
+            'id=1,shift=0',
+            'id=1,shift=0',
+            'id=1,shift=1',
+            'id=1,shift=1',
+            'id=1,shift=2',
+            'id=1,shift=2',
+            'id=1,shift=3',
+            'id=2,shift=0',
+            'id=2,shift=0',
+            'id=2,shift=1'
+        ]
 
         self.assertListEqual(list(df["a"]["id"].values), correct_indices)
         self.assertListEqual(list(df["b"]["id"].values), correct_indices)
@@ -542,7 +605,7 @@ class RollingTestCase(TestCase):
     def test_warning_on_non_uniform_time_steps(self):
         with warnings.catch_warnings(record=True) as w:
             first_class = pd.DataFrame({"a": [1, 2, 3, 4], "b": [5, 6, 7, 8], "time": [1, 2, 4, 5]})
-            second_class = pd.DataFrame({"a": [10, 11], "b": [12, 13], "time": range(20, 22)})
+            second_class = pd.DataFrame({"a": [10, 11], "b": [12, 13], "time": list(range(20, 22))})
 
             first_class["id"] = 1
             second_class["id"] = 2

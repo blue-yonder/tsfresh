@@ -450,7 +450,6 @@ def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_di
         grouper = [column_id, ]
 
     if column_sort is not None:
-
         # Require no Nans in column
         if df[column_sort].isnull().any():
             raise ValueError("You have NaN values in your sort column.")
@@ -493,9 +492,20 @@ def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_di
         # for each id (and kind).
         # This means we cut out the data until `time_shift`.
         # The first row we cut out is either 0 or given by the maximal allowed length of `max_timeshift`.
-        shift_until = time_shift
-        shift_from = max(shift_until - max_timeshift - 1, 0)
-        df_temp = grouped_data.apply(lambda x: x.iloc[shift_from:shift_until] if shift_until <= len(x) else None)
+        # for a negative rolling direction it is reversed
+        if rolling_direction > 0:
+            shift_until = time_shift
+            shift_from = max(shift_until - max_timeshift - 1, 0)
+
+            df_temp = grouped_data.apply(lambda x: x.iloc[shift_from:shift_until] if shift_until <= len(x) else None)
+        else:
+            shift_from = max(time_shift - 1, 0)
+            shift_until = shift_from + max_timeshift + 1
+
+            df_temp = grouped_data.apply(lambda x: x.iloc[shift_from:shift_until])
+
+        if len(df_temp) == 0:
+            return
 
         # Make sure we keep the old column id values
         old_column_id = df_temp[column_id]
