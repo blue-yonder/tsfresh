@@ -9,8 +9,6 @@ from tsfresh.utilities import dataframe_functions
 import numpy as np
 from pandas.testing import assert_frame_equal, assert_series_equal
 
-from tsfresh.utilities.dataframe_functions import get_ids
-
 
 class NormalizeTestCase(TestCase):
     def test_with_dictionaries_one_row(self):
@@ -775,13 +773,42 @@ class GetIDsTestCase(TestCase):
 
     def test_get_id__correct_DataFrame(self):
         df = pd.DataFrame({"_value": [1, 2, 3, 4, 10, 11], "id": [1, 1, 1, 1, 2, 2]})
-        self.assertEqual(get_ids(df, "id"), {1, 2})
+        self.assertEqual(dataframe_functions.get_ids(df, "id"), {1, 2})
 
     def test_get_id__correct_dict(self):
         df_dict = {"a": pd.DataFrame({"_value": [1, 2, 3, 4, 10, 11], "id": [1, 1, 1, 1, 2, 2]}),
                    "b": pd.DataFrame({"_value": [5, 6, 7, 8, 12, 13], "id": [4, 4, 3, 3, 2, 2]})}
-        self.assertEqual(get_ids(df_dict, "id"), {1, 2, 3, 4})
+        self.assertEqual(dataframe_functions.get_ids(df_dict, "id"), {1, 2, 3, 4})
 
     def test_get_id_wrong(self):
         other_type = np.array([1, 2, 3])
-        self.assertRaises(TypeError, get_ids, other_type, "id")
+        self.assertRaises(TypeError, dataframe_functions.get_ids, other_type, "id")
+
+
+class AddSubIdTestCase(TestCase):
+    def test_no_parameters(self):
+        dataframe = pd.DataFrame({"value": [1, 2, 3, 4, 5, 6, 7, 8, 9]})
+        extended_dataframe = dataframe_functions.add_sub_time_series_index(dataframe, 2)
+
+        self.assertEqual(list(extended_dataframe["id"]), [0, 0, 1, 1, 2, 2, 3, 3, 4])
+        assert_series_equal(dataframe["value"], extended_dataframe["value"])
+
+    def test_id_parameters(self):
+        dataframe = pd.DataFrame({"value": [1, 2, 3, 4, 5, 6, 7, 8, 9],
+                                  "id": [1, 1, 1, 1, 2, 2, 2, 2, 2]})
+
+        extended_dataframe = dataframe_functions.add_sub_time_series_index(dataframe, 2, column_id="id")
+
+        self.assertEqual(list(extended_dataframe["id"]), ["0,1", "0,1", "1,1", "1,1", "0,2", "0,2", "1,2", "1,2", "2,2"])
+        assert_series_equal(dataframe["value"], extended_dataframe["value"])
+
+    def test_kind_parameters(self):
+        dataframe = pd.DataFrame({"value": [1, 2, 3, 4, 5, 6, 7, 8, 9],
+                                  "id": [1, 1, 1, 1, 2, 2, 2, 2, 2],
+                                  "kind": [0, 1, 0, 1, 0, 1, 0, 1, 0]})
+
+        extended_dataframe = dataframe_functions.add_sub_time_series_index(dataframe, 2, column_id="id", column_kind="kind")
+
+        self.assertEqual(list(extended_dataframe["id"]), ["0,1", "0,1", "0,1", "0,1", "0,2", "0,2", "0,2", "0,2", "1,2"])
+        assert_series_equal(dataframe["value"], extended_dataframe["value"])
+        assert_series_equal(dataframe["kind"], extended_dataframe["kind"])

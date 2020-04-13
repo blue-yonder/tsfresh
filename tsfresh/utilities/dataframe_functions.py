@@ -553,3 +553,80 @@ def make_forecasting_frame(x, kind, max_timeshift, rolling_direction):
     df_shift = df_shift[mask]
 
     return df_shift, df["value"][1:]
+
+
+def add_sub_time_series_index(df_or_dict, sub_length, column_id=None, column_sort=None, column_kind=None):
+    """
+    Add a column "id" which contains:
+    1. if column_id is None: for each kind (or if column_kind is None for the full dataframe) a new index built by
+       "sub-packaging" the data in packages of length "sub_length". For example if you have data with the
+       length of 11 and sub_length is 2, you will get 6 new packages: 0, 0; 1, 1; 2, 2; 3, 3; 4, 4; 5.
+    2. if column_id is not None: the same as before, just for each id seperately. The old column_id values are added
+       to the new "id" column after a comma
+
+    You can use this functions to turn a long measurement into sub-packages, where you want to extract features on.
+
+    :param df_or_dict: a pandas DataFrame or a dictionary. The required shape/form of the object depends on the rest of
+        the passed arguments.
+    :type df_or_dict: pandas.DataFrame or dict
+    :param column_id: it must be present in the pandas DataFrame or in all DataFrames in the dictionary.
+        It is not allowed to have NaN values in this column.
+    :type column_id: basestring or None
+    :param column_sort: if not None, sort the rows by this column. It is not allowed to
+        have NaN values in this column.
+    :type column_sort: basestring or None
+    :param column_kind: It can only be used when passing a pandas DataFrame (the dictionary is already assumed to be
+        grouped by the kind). Is must be present in the DataFrame and no NaN values are allowed.
+        If the kind column is not passed, it is assumed that each column in the pandas DataFrame (except the id or
+        sort column) is a possible kind.
+    :type column_kind: basestring or None
+
+    :return: The data frame or dictionary of data frames with a column "id" added
+    :rtype: the one from df_or_dict
+    """
+
+    if isinstance(df_or_dict, dict):
+        if column_kind is not None:
+            raise ValueError("You passed in a dictionary and gave a column name for the kind. Both are not possible.")
+
+        return {key: add_sub_time_series_index(df_or_dict=df_or_dict[key],
+                                               sub_length=sub_length,
+                                               column_id=column_id,
+                                               column_sort=column_sort,
+                                               column_kind=column_kind)
+                for key in df_or_dict}
+
+    df = df_or_dict
+
+    grouper = []
+
+    if column_id is not None:
+        grouper.append(column_id)
+    if column_kind is not None:
+        grouper.append(column_kind)
+
+    def _add_id_column(df_chunk):
+        chunk_length = len(df_chunk)
+        last_chunk_number = chunk_length // sub_length
+        reminder = chunk_length % sub_length
+
+        indices = np.concatenate([np.repeat(np.arange(last_chunk_number), sub_length),
+                                  np.repeat(last_chunk_number, reminder)])
+        assert(len(indices) == chunk_length)
+
+        if column_id:
+            indices = [f"{id},{old_id}" for id, old_id in zip(indices, df_chunk[column_id])]
+
+        if column_sort:
+            df_chunk = df_chunk.sort_values(column_sort)
+
+        df_chunk["id"] = indices
+
+        return df_chunk
+
+    if grouper:
+        df = df.groupby(grouper).apply(_add_id_column)
+    else:
+        df = _add_id_column(df)
+
+    return df
