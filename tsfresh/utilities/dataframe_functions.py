@@ -372,7 +372,7 @@ def _normalize_input_to_internal_representation(timeseries_container, column_id,
     return timeseries_container, column_id, column_kind, column_value
 
 
-def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_direction, max_timeshift=None):
+def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_direction, max_timeshift=None, min_timeshift=1):
     """
     This method creates sub windows of the time series. It rolls the (sorted) data frames for each kind and each id
     separately in the "time" domain (which is represented by the sort order of the sort column given by `column_sort`).
@@ -406,6 +406,8 @@ def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_di
     :type rolling_direction: int
     :param max_timeshift: If not None, shift only up to max_timeshift. If None, shift as often as possible.
     :type max_timeshift: int
+    :param min_timeshift: Throw away all extracted forecast windows smaller than this. Must be larger than 0.
+    :type min_timeshift: int
 
     :return: The rolled data frame or dictionary of data frames
     :rtype: the one from df_or_dict
@@ -413,6 +415,12 @@ def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_di
 
     if rolling_direction == 0:
         raise ValueError("Rolling direction of 0 is not possible")
+
+    if max_timeshift is not None and max_timeshift <= 0:
+        raise ValueError("max_timeshift needs to be positive!")
+
+    if min_timeshift <= 0:
+        raise ValueError("min_timeshift needs to be positive!")
 
     if isinstance(df_or_dict, dict):
         if column_kind is not None:
@@ -423,7 +431,8 @@ def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_di
                                       column_sort=column_sort,
                                       column_kind=column_kind,
                                       rolling_direction=rolling_direction,
-                                      max_timeshift=max_timeshift)
+                                      max_timeshift=max_timeshift,
+                                      min_timeshift=min_timeshift)
                 for key in df_or_dict}
 
     # Now we know that this is a pandas data frame
@@ -440,7 +449,7 @@ def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_di
     else:
         grouper = [column_id, ]
 
-    if column_sort is not None and df[column_sort].dtype != np.object:
+    if column_sort is not None:
 
         # Require no Nans in column
         if df[column_sort].isnull().any():
@@ -448,32 +457,29 @@ def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_di
 
         df = df.sort_values(column_sort)
 
-        # if rolling is enabled, the data should be uniformly sampled in this column
-        # Build the differences between consecutive time sort values
+        if df[column_sort].dtype != np.object:
+            # if rolling is enabled, the data should be uniformly sampled in this column
+            # Build the differences between consecutive time sort values
 
-        differences = df.groupby(grouper)[column_sort].apply(
-            lambda x: x.values[:-1] - x.values[1:])
-        # Write all of them into one big list
-        differences = sum(map(list, differences), [])
-        # Test if all differences are the same
-        if differences and min(differences) != max(differences):
-            warnings.warn("Your time stamps are not uniformly sampled, which makes rolling "
-                          "nonsensical in some domains.")
+            differences = df.groupby(grouper)[column_sort].apply(
+                lambda x: x.values[:-1] - x.values[1:])
+            # Write all of them into one big list
+            differences = sum(map(list, differences), [])
+            # Test if all differences are the same
+            if differences and min(differences) != max(differences):
+                warnings.warn("Your time stamps are not uniformly sampled, which makes rolling "
+                            "nonsensical in some domains.")
 
     # Roll the data frames if requested
     rolling_direction = np.sign(rolling_direction)
 
     grouped_data = df.groupby(grouper)
-    max_timeshift = max_timeshift or grouped_data.count().max().max()
+    prediction_steps = grouped_data.count().max().max()
 
-    if np.isnan(max_timeshift):
+    if np.isnan(prediction_steps):
         raise ValueError("Somehow the maximum length of your time series is NaN (Does your time series container have "
                          "only one row?). Can not perform rolling.")
-
-    if rolling_direction > 0:
-        range_of_shifts = range(max_timeshift, -1, -1)
-    else:
-        range_of_shifts = range(-max_timeshift, 1)
+    max_timeshift = max_timeshift or prediction_steps
 
     # Todo: not default for columns_sort to be None
     if column_sort is None:
@@ -481,14 +487,26 @@ def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_di
         df[column_sort] = range(df.shape[0])
 
     def roll_out_time_series(time_shift):
-        # Shift out only the first "time_shift" rows
-        df_temp = grouped_data.shift(time_shift)
-        df_temp[column_id] = df[column_sort]
-        if column_kind:
-            df_temp[column_kind] = df[column_kind]
-        return df_temp.dropna()
+        # Now comes the fun part.
+        # This function has the task to extract the rolled forecast data frame of the number `time_shift`.
+        # This means it is `time_shift` in the future - starting counting from the first row
+        # for each id (and kind).
+        # This means we cut out the data until `time_shift`.
+        # The first row we cut out is either 0 or given by the maximal allowed length of `max_timeshift`.
+        shift_until = time_shift
+        shift_from = max(shift_until - max_timeshift - 1, 0)
+        df_temp = grouped_data.apply(lambda x: x.iloc[shift_from:shift_until] if shift_until <= len(x) else None)
 
-    df_shift = pd.concat([roll_out_time_series(time_shift) for time_shift in range_of_shifts], ignore_index=True)
+        # Make sure we keep the old column id values
+        old_column_id = df_temp[column_id]
+        # and now create new ones out of the old ones
+        df_temp[column_id] = df_temp.apply(lambda row: f"id={row[column_id]},shift={time_shift - 1}", axis=1)
+
+        return df_temp
+
+    range_of_shifts = range(min_timeshift, prediction_steps + 1)
+    shifted_chunks = map(lambda time_shift: roll_out_time_series(time_shift), range_of_shifts)
+    df_shift = pd.concat(shifted_chunks, ignore_index=True)
 
     return df_shift.sort_values(by=[column_id, column_sort])
 
