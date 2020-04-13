@@ -278,19 +278,19 @@ class RollingTestCase(TestCase):
         5  11  13    21   2
         """
         correct_indices = [
-                'id=1,shift=0',
-                'id=1,shift=1',
-                'id=1,shift=1',
-                'id=1,shift=2',
-                'id=1,shift=2',
-                'id=1,shift=2',
-                'id=1,shift=3',
-                'id=1,shift=3',
-                'id=1,shift=3',
-                'id=1,shift=3',
-                'id=2,shift=0',
-                'id=2,shift=1',
-                'id=2,shift=1'
+                'id=1,timeshift=0',
+                'id=1,timeshift=1',
+                'id=1,timeshift=1',
+                'id=1,timeshift=2',
+                'id=1,timeshift=2',
+                'id=1,timeshift=2',
+                'id=1,timeshift=3',
+                'id=1,timeshift=3',
+                'id=1,timeshift=3',
+                'id=1,timeshift=3',
+                'id=2,timeshift=20',
+                'id=2,timeshift=21',
+                'id=2,timeshift=21'
             ]
         correct_values_a = [1.0, 1.0, 2.0, 1.0, 2.0, 3.0, 1.0, 2.0, 3.0, 4.0, 10.0, 10.0, 11.0]
         correct_values_b = [5.0, 5.0, 6.0, 5.0, 6.0, 7.0, 5.0, 6.0, 7.0, 8.0, 12.0, 12.0, 13.0]
@@ -315,18 +315,18 @@ class RollingTestCase(TestCase):
                                                   max_timeshift=2)
 
         correct_indices = [
-            'id=1,shift=0',
-            'id=1,shift=1',
-            'id=1,shift=1',
-            'id=1,shift=2',
-            'id=1,shift=2',
-            'id=1,shift=2',
-            'id=1,shift=3',
-            'id=1,shift=3',
-            'id=1,shift=3',
-            'id=2,shift=0',
-            'id=2,shift=1',
-            'id=2,shift=1'
+            'id=1,timeshift=0',
+            'id=1,timeshift=1',
+            'id=1,timeshift=1',
+            'id=1,timeshift=2',
+            'id=1,timeshift=2',
+            'id=1,timeshift=2',
+            'id=1,timeshift=3',
+            'id=1,timeshift=3',
+            'id=1,timeshift=3',
+            'id=2,timeshift=20',
+            'id=2,timeshift=21',
+            'id=2,timeshift=21'
         ]
         correct_values_a = [1.0, 1.0, 2.0, 1.0, 2.0, 3.0, 2.0, 3.0, 4.0, 10.0, 10.0, 11.0]
         correct_values_b = [5.0, 5.0, 6.0, 5.0, 6.0, 7.0, 6.0, 7.0, 8.0, 12.0, 12.0, 13.0]
@@ -354,19 +354,19 @@ class RollingTestCase(TestCase):
         """
 
         correct_indices = [
-            'id=1,shift=0',
-            'id=1,shift=0',
-            'id=1,shift=0',
-            'id=1,shift=0',
-            'id=1,shift=1',
-            'id=1,shift=1',
-            'id=1,shift=1',
-            'id=1,shift=2',
-            'id=1,shift=2',
-            'id=1,shift=3',
-            'id=2,shift=0',
-            'id=2,shift=0',
-            'id=2,shift=1'
+            'id=1,timeshift=0',
+            'id=1,timeshift=0',
+            'id=1,timeshift=0',
+            'id=1,timeshift=0',
+            'id=1,timeshift=1',
+            'id=1,timeshift=1',
+            'id=1,timeshift=1',
+            'id=1,timeshift=2',
+            'id=1,timeshift=2',
+            'id=1,timeshift=3',
+            'id=2,timeshift=20',
+            'id=2,timeshift=20',
+            'id=2,timeshift=21'
         ]
         correct_values_a = [1.0, 2.0, 3.0, 4.0, 2.0, 3.0, 4.0, 3.0, 4.0, 4.0, 10.0, 11.0, 11.0]
         correct_values_b = [5.0, 6.0, 7.0, 8.0, 6.0, 7.0, 8.0, 7.0, 8.0, 8.0, 12.0, 13.0, 13.0]
@@ -391,16 +391,16 @@ class RollingTestCase(TestCase):
                                                   max_timeshift=1)
 
         correct_indices = [
-            'id=1,shift=0',
-            'id=1,shift=0',
-            'id=1,shift=1',
-            'id=1,shift=1',
-            'id=1,shift=2',
-            'id=1,shift=2',
-            'id=1,shift=3',
-            'id=2,shift=0',
-            'id=2,shift=0',
-            'id=2,shift=1'
+            'id=1,timeshift=0',
+            'id=1,timeshift=0',
+            'id=1,timeshift=1',
+            'id=1,timeshift=1',
+            'id=1,timeshift=2',
+            'id=1,timeshift=2',
+            'id=1,timeshift=3',
+            'id=2,timeshift=20',
+            'id=2,timeshift=20',
+            'id=2,timeshift=21'
         ]
         correct_values_a = [1.0, 2.0, 2.0, 3.0, 3.0, 4.0, 4.0, 10.0, 11.0, 11.0]
         correct_values_b = [5.0, 6.0, 6.0, 7.0, 7.0, 8.0, 8.0, 12.0, 13.0, 13.0]
@@ -414,18 +414,18 @@ class RollingTestCase(TestCase):
                                                   max_timeshift=2)
 
         correct_indices = [
-            'id=1,shift=0',
-            'id=1,shift=0',
-            'id=1,shift=0',
-            'id=1,shift=1',
-            'id=1,shift=1',
-            'id=1,shift=1',
-            'id=1,shift=2',
-            'id=1,shift=2',
-            'id=1,shift=3',
-            'id=2,shift=0',
-            'id=2,shift=0',
-            'id=2,shift=1'
+            'id=1,timeshift=0',
+            'id=1,timeshift=0',
+            'id=1,timeshift=0',
+            'id=1,timeshift=1',
+            'id=1,timeshift=1',
+            'id=1,timeshift=1',
+            'id=1,timeshift=2',
+            'id=1,timeshift=2',
+            'id=1,timeshift=3',
+            'id=2,timeshift=20',
+            'id=2,timeshift=20',
+            'id=2,timeshift=21'
         ]
         correct_values_a = [1.0, 2.0, 3.0, 2.0, 3.0, 4.0, 3.0, 4.0, 4.0, 10.0, 11.0, 11.0]
         correct_values_b = [5.0, 6.0, 7.0, 6.0, 7.0, 8.0, 7.0, 8.0, 8.0, 12.0, 13.0, 13.0]
@@ -439,19 +439,19 @@ class RollingTestCase(TestCase):
                                                   max_timeshift=4)
 
         correct_indices = [
-            'id=1,shift=0',
-            'id=1,shift=0',
-            'id=1,shift=0',
-            'id=1,shift=0',
-            'id=1,shift=1',
-            'id=1,shift=1',
-            'id=1,shift=1',
-            'id=1,shift=2',
-            'id=1,shift=2',
-            'id=1,shift=3',
-            'id=2,shift=0',
-            'id=2,shift=0',
-            'id=2,shift=1'
+            'id=1,timeshift=0',
+            'id=1,timeshift=0',
+            'id=1,timeshift=0',
+            'id=1,timeshift=0',
+            'id=1,timeshift=1',
+            'id=1,timeshift=1',
+            'id=1,timeshift=1',
+            'id=1,timeshift=2',
+            'id=1,timeshift=2',
+            'id=1,timeshift=3',
+            'id=2,timeshift=20',
+            'id=2,timeshift=20',
+            'id=2,timeshift=21'
         ]
         correct_values_a = [1.0, 2.0, 3.0, 4.0, 2.0, 3.0, 4.0, 3.0, 4.0, 4.0, 10.0, 11.0, 11.0]
         correct_values_b = [5.0, 6.0, 7.0, 8.0, 6.0, 7.0, 8.0, 7.0, 8.0, 8.0, 12.0, 13.0, 13.0]
@@ -493,12 +493,12 @@ class RollingTestCase(TestCase):
                                                   column_kind="kind", rolling_direction=-1)
 
         correct_indices = (
-            ['id=1,shift=0'] * 2 * 4 +
-            ['id=1,shift=1'] * 2 * 3 +
-            ['id=1,shift=2'] * 2 * 2 +
-            ['id=1,shift=3'] * 2 * 1 +
-            ['id=2,shift=0'] * 2 * 2 +
-            ['id=2,shift=1'] * 2 * 1
+            ['id=1,timeshift=0'] * 2 * 4 +
+            ['id=1,timeshift=1'] * 2 * 3 +
+            ['id=1,timeshift=2'] * 2 * 2 +
+            ['id=1,timeshift=3'] * 2 * 1 +
+            ['id=2,timeshift=20'] * 2 * 2 +
+            ['id=2,timeshift=21'] * 2 * 1
         )
         self.assertListEqual(list(df["id"].values), correct_indices)
 
@@ -534,19 +534,19 @@ class RollingTestCase(TestCase):
         """
 
         correct_indices = [
-            'id=1,shift=0',
-            'id=1,shift=0',
-            'id=1,shift=0',
-            'id=1,shift=0',
-            'id=1,shift=1',
-            'id=1,shift=1',
-            'id=1,shift=1',
-            'id=1,shift=2',
-            'id=1,shift=2',
-            'id=1,shift=3',
-            'id=2,shift=0',
-            'id=2,shift=0',
-            'id=2,shift=1'
+            'id=1,timeshift=0',
+            'id=1,timeshift=0',
+            'id=1,timeshift=0',
+            'id=1,timeshift=0',
+            'id=1,timeshift=1',
+            'id=1,timeshift=1',
+            'id=1,timeshift=1',
+            'id=1,timeshift=2',
+            'id=1,timeshift=2',
+            'id=1,timeshift=3',
+            'id=2,timeshift=0',
+            'id=2,timeshift=0',
+            'id=2,timeshift=1'
         ]
         self.assertListEqual(list(df["a"]["id"].values), correct_indices)
 
@@ -584,16 +584,16 @@ class RollingTestCase(TestCase):
         """
 
         correct_indices = [
-            'id=1,shift=0',
-            'id=1,shift=0',
-            'id=1,shift=1',
-            'id=1,shift=1',
-            'id=1,shift=2',
-            'id=1,shift=2',
-            'id=1,shift=3',
-            'id=2,shift=0',
-            'id=2,shift=0',
-            'id=2,shift=1'
+            'id=1,timeshift=0',
+            'id=1,timeshift=0',
+            'id=1,timeshift=1',
+            'id=1,timeshift=1',
+            'id=1,timeshift=2',
+            'id=1,timeshift=2',
+            'id=1,timeshift=3',
+            'id=2,timeshift=0',
+            'id=2,timeshift=0',
+            'id=2,timeshift=1'
         ]
 
         self.assertListEqual(list(df["a"]["id"].values), correct_indices)
@@ -831,17 +831,23 @@ class MakeForecastingFrameTestCase(TestCase):
     def test_make_forecasting_frame_list(self):
         df, y = dataframe_functions.make_forecasting_frame(x=range(4), kind="test",
                                                            max_timeshift=1, rolling_direction=1)
-        expected_df = pd.DataFrame({"id": [1, 2, 3], "kind": ["test"] * 3, "value": [0., 1., 2.], "time": [0., 1., 2.]})
+        expected_df = pd.DataFrame({"id": ["id=id,timeshift=1", "id=id,timeshift=2", "id=id,timeshift=3"],
+                                    "kind": ["test"] * 3,
+                                    "value": [0, 1, 2],
+                                    "time": [0, 1, 2]})
 
         expected_y = pd.Series(data=[1, 2, 3], index=[1, 2, 3], name="value")
-        assert_frame_equal(df.sort_index(axis=1), expected_df.sort_index(axis=1))
+        assert_frame_equal(df.sort_index(axis=1).reset_index(drop=True), expected_df.sort_index(axis=1))
         assert_series_equal(y, expected_y)
 
     def test_make_forecasting_frame_range(self):
         df, y = dataframe_functions.make_forecasting_frame(x=np.arange(4), kind="test",
                                                            max_timeshift=1, rolling_direction=1)
-        expected_df = pd.DataFrame({"id": [1, 2, 3], "kind": ["test"] * 3, "value": [0., 1., 2.], "time": [0., 1., 2.]})
-        assert_frame_equal(df.sort_index(axis=1), expected_df.sort_index(axis=1))
+        expected_df = pd.DataFrame({"id": ["id=id,timeshift=1", "id=id,timeshift=2", "id=id,timeshift=3"],
+                                    "kind": ["test"] * 3,
+                                    "value": [0, 1, 2],
+                                    "time": [0, 1, 2]})
+        assert_frame_equal(df.sort_index(axis=1).reset_index(drop=True), expected_df.sort_index(axis=1))
 
     def test_make_forecasting_frame_pdSeries(self):
 
@@ -851,13 +857,13 @@ class MakeForecastingFrameTestCase(TestCase):
 
         expected_y = pd.Series(data=[1, 2, 3], index=pd.DatetimeIndex(["2011-01-01 01:00:00", "2011-01-01 02:00:00",
                                                                        "2011-01-01 03:00:00"]), name="value")
-        expected_df = pd.DataFrame({"id": pd.DatetimeIndex(["2011-01-01 01:00:00", "2011-01-01 02:00:00",
-                                                            "2011-01-01 03:00:00"]),
-                                    "kind": ["test"] * 3, "value": [0., 1., 2.],
+        expected_df = pd.DataFrame({"id": ["id=id,timeshift=2011-01-01 01:00:00", "id=id,timeshift=2011-01-01 02:00:00",
+                                           "id=id,timeshift=2011-01-01 03:00:00"],
+                                    "kind": ["test"] * 3, "value": [0, 1, 2],
                                     "time": pd.DatetimeIndex(["2011-01-01 00:00:00", "2011-01-01 01:00:00",
                                                               "2011-01-01 02:00:00"])
                                     })
-        assert_frame_equal(df.sort_index(axis=1), expected_df.sort_index(axis=1))
+        assert_frame_equal(df.sort_index(axis=1).reset_index(drop=True), expected_df.sort_index(axis=1))
         assert_series_equal(y, expected_y)
 
 

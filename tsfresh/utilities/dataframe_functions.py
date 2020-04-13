@@ -482,8 +482,7 @@ def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_di
 
     # Todo: not default for columns_sort to be None
     if column_sort is None:
-        column_sort = "sort"
-        df[column_sort] = range(df.shape[0])
+        df["sort"] = range(df.shape[0])
 
     def roll_out_time_series(time_shift):
         # Now comes the fun part.
@@ -493,32 +492,42 @@ def roll_time_series(df_or_dict, column_id, column_sort, column_kind, rolling_di
         # This means we cut out the data until `time_shift`.
         # The first row we cut out is either 0 or given by the maximal allowed length of `max_timeshift`.
         # for a negative rolling direction it is reversed
-        if rolling_direction > 0:
-            shift_until = time_shift
-            shift_from = max(shift_until - max_timeshift - 1, 0)
+        def _f(x):
+            if rolling_direction > 0:
+                shift_until = time_shift
+                shift_from = max(shift_until - max_timeshift - 1, 0)
 
-            df_temp = grouped_data.apply(lambda x: x.iloc[shift_from:shift_until] if shift_until <= len(x) else None)
-        else:
-            shift_from = max(time_shift - 1, 0)
-            shift_until = shift_from + max_timeshift + 1
+                df_temp = x.iloc[shift_from:shift_until] if shift_until <= len(x) else None
+            else:
+                shift_from = max(time_shift - 1, 0)
+                shift_until = shift_from + max_timeshift + 1
 
-            df_temp = grouped_data.apply(lambda x: x.iloc[shift_from:shift_until])
+                df_temp = x.iloc[shift_from:shift_until]
 
-        if len(df_temp) == 0:
-            return
+            if df_temp is None or len(df_temp) == 0:
+                return
 
-        # Make sure we keep the old column id values
-        old_column_id = df_temp[column_id]
-        # and now create new ones out of the old ones
-        df_temp[column_id] = df_temp.apply(lambda row: f"id={row[column_id]},shift={time_shift - 1}", axis=1)
+            df_temp = df_temp.copy()
 
-        return df_temp
+            # and set the shift correctly
+            if column_sort and rolling_direction > 0:
+                shift_string = f"timeshift={df_temp[column_sort].iloc[-1]}"
+            elif column_sort and rolling_direction < 0:
+                shift_string = f"timeshift={df_temp[column_sort].iloc[0]}"
+            else:
+                shift_string = f"timeshift={time_shift - 1}"
+            # and now create new ones ids out of the old ones
+            df_temp[column_id] = df_temp.apply(lambda row: f"id={row[column_id]},{shift_string}", axis=1)
+
+            return df_temp
+
+        return grouped_data.apply(_f)
 
     range_of_shifts = range(min_timeshift, prediction_steps + 1)
     shifted_chunks = map(lambda time_shift: roll_out_time_series(time_shift), range_of_shifts)
     df_shift = pd.concat(shifted_chunks, ignore_index=True)
 
-    return df_shift.sort_values(by=[column_id, column_sort])
+    return df_shift.sort_values(by=[column_id, column_sort or "sort"])
 
 
 def make_forecasting_frame(x, kind, max_timeshift, rolling_direction):
