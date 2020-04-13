@@ -799,7 +799,8 @@ class AddSubIdTestCase(TestCase):
 
         extended_dataframe = dataframe_functions.add_sub_time_series_index(dataframe, 2, column_id="id")
 
-        self.assertEqual(list(extended_dataframe["id"]), ["0,1", "0,1", "1,1", "1,1", "0,2", "0,2", "1,2", "1,2", "2,2"])
+        self.assertEqual(list(extended_dataframe["id"]),
+                         ["0,1", "0,1", "1,1", "1,1", "0,2", "0,2", "1,2", "1,2", "2,2"])
         assert_series_equal(dataframe["value"], extended_dataframe["value"])
 
     def test_kind_parameters(self):
@@ -807,8 +808,11 @@ class AddSubIdTestCase(TestCase):
                                   "id": [1, 1, 1, 1, 2, 2, 2, 2, 2],
                                   "kind": [0, 1, 0, 1, 0, 1, 0, 1, 0]})
 
-        extended_dataframe = dataframe_functions.add_sub_time_series_index(dataframe, 2, column_id="id", column_kind="kind")
+        extended_dataframe = dataframe_functions.add_sub_time_series_index(dataframe, 2,
+                                                                           column_id="id",
+                                                                           column_kind="kind")
 
-        self.assertEqual(list(extended_dataframe["id"]), ["0,1", "0,1", "0,1", "0,1", "0,2", "0,2", "0,2", "0,2", "1,2"])
+        self.assertEqual(list(extended_dataframe["id"]),
+                         ["0,1", "0,1", "0,1", "0,1", "0,2", "0,2", "0,2", "0,2", "1,2"])
         assert_series_equal(dataframe["value"], extended_dataframe["value"])
         assert_series_equal(dataframe["kind"], extended_dataframe["kind"])
