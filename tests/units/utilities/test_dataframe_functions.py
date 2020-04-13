@@ -335,6 +335,25 @@ class RollingTestCase(TestCase):
         self.assertListEqual(list(df["a"].values), correct_values_a)
         self.assertListEqual(list(df["b"].values), correct_values_b)
 
+        df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
+                                                  column_kind=None, rolling_direction=1,
+                                                  max_timeshift=2, min_timeshift=2)
+
+        correct_indices = [
+            'id=1,timeshift=2',
+            'id=1,timeshift=2',
+            'id=1,timeshift=2',
+            'id=1,timeshift=3',
+            'id=1,timeshift=3',
+            'id=1,timeshift=3',
+        ]
+        correct_values_a = [1.0, 2.0, 3.0, 2.0, 3.0, 4.0]
+        correct_values_b = [5.0, 6.0, 7.0, 6.0, 7.0, 8.0]
+
+        self.assertListEqual(list(df["id"]), correct_indices)
+        self.assertListEqual(list(df["a"].values), correct_values_a)
+        self.assertListEqual(list(df["b"].values), correct_values_b)
+
     def test_negative_rolling(self):
         first_class = pd.DataFrame({"a": [1, 2, 3, 4], "b": [5, 6, 7, 8], "time": range(4)})
         second_class = pd.DataFrame({"a": [10, 11], "b": [12, 13], "time": range(20, 22)})
@@ -455,6 +474,28 @@ class RollingTestCase(TestCase):
         ]
         correct_values_a = [1.0, 2.0, 3.0, 4.0, 2.0, 3.0, 4.0, 3.0, 4.0, 4.0, 10.0, 11.0, 11.0]
         correct_values_b = [5.0, 6.0, 7.0, 8.0, 6.0, 7.0, 8.0, 7.0, 8.0, 8.0, 12.0, 13.0, 13.0]
+
+        self.assertListEqual(list(df["id"].values), correct_indices)
+        self.assertListEqual(list(df["a"].values), correct_values_a)
+        self.assertListEqual(list(df["b"].values), correct_values_b)
+
+
+        df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
+                                                  column_kind=None, rolling_direction=-1,
+                                                  min_timeshift=2,
+                                                  max_timeshift=3)
+
+        correct_indices = [
+            'id=1,timeshift=0',
+            'id=1,timeshift=0',
+            'id=1,timeshift=0',
+            'id=1,timeshift=0',
+            'id=1,timeshift=1',
+            'id=1,timeshift=1',
+            'id=1,timeshift=1'
+        ]
+        correct_values_a = [1.0, 2.0, 3.0, 4.0, 2.0, 3.0, 4.0]
+        correct_values_b = [5.0, 6.0, 7.0, 8.0, 6.0, 7.0, 8.0]
 
         self.assertListEqual(list(df["id"].values), correct_indices)
         self.assertListEqual(list(df["a"].values), correct_values_a)
