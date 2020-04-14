@@ -629,4 +629,9 @@ def add_sub_time_series_index(df_or_dict, sub_length, column_id=None, column_sor
     else:
         df = _add_id_column(df)
 
+    if column_sort:
+        df = df.sort_values(column_sort)
+
+    df = df.set_index(df.index.get_level_values(-1))
+
     return df
