@@ -836,3 +836,18 @@ class AddSubIdTestCase(TestCase):
                          [0, 1, 0, 1, 0, 1, 0, 1, 0])
         self.assertEqual(list(extended_dataframe["sort"]),
                          [1, 2, 3, 4, 5, 6, 7, 8, 9])
+
+    def test_dict_input(self):
+        dataframe = pd.DataFrame({"value": [1, 2, 3, 4, 5, 6, 7, 8, 9],
+                                  "id": [1, 1, 1, 1, 2, 2, 2, 2, 2]})
+
+        extended_dataframe = dataframe_functions.add_sub_time_series_index({"1": dataframe}, 2,
+                                                                           column_id="id")
+
+        self.assertIn("1", extended_dataframe)
+
+        extended_dataframe = extended_dataframe["1"]
+
+        self.assertEqual(list(extended_dataframe["id"]),
+                         ["0,1", "0,1", "1,1", "1,1", "0,2", "0,2", "1,2", "1,2", "2,2"])
+        assert_series_equal(dataframe["value"], extended_dataframe["value"])
