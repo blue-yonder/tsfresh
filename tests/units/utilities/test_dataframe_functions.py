@@ -816,3 +816,23 @@ class AddSubIdTestCase(TestCase):
                          ["0,1", "0,1", "0,1", "0,1", "0,2", "0,2", "0,2", "0,2", "1,2"])
         assert_series_equal(dataframe["value"], extended_dataframe["value"])
         assert_series_equal(dataframe["kind"], extended_dataframe["kind"])
+
+    def test_sort_parameters(self):
+        dataframe = pd.DataFrame({"value": [1, 2, 3, 4, 5, 6, 7, 8, 9],
+                                  "id": [1, 1, 1, 1, 2, 2, 2, 2, 2],
+                                  "kind": [0, 1, 0, 1, 0, 1, 0, 1, 0],
+                                  "sort": [9, 8, 7, 6, 5, 4, 3, 2, 1]})
+
+        extended_dataframe = dataframe_functions.add_sub_time_series_index(dataframe, 2,
+                                                                           column_id="id",
+                                                                           column_kind="kind",
+                                                                           column_sort="sort")
+
+        self.assertEqual(list(extended_dataframe["id"]),
+                         ["0,2", "0,2", "0,2", "0,2", "1,2", "0,1", "0,1", "0,1", "0,1"])
+        self.assertEqual(list(extended_dataframe["value"]),
+                         [9, 8, 7, 6, 5, 4, 3, 2, 1])
+        self.assertEqual(list(extended_dataframe["kind"]),
+                         [0, 1, 0, 1, 0, 1, 0, 1, 0])
+        self.assertEqual(list(extended_dataframe["sort"]),
+                         [1, 2, 3, 4, 5, 6, 7, 8, 9])
