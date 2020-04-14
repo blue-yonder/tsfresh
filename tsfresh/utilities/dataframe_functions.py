@@ -404,13 +404,13 @@ def _roll_out_time_series(time_shift, grouped_data, rolling_direction, max_times
 
         # and set the shift correctly
         if column_sort and rolling_direction > 0:
-            shift_string = f"timeshift={df_temp[column_sort].iloc[-1]}"
+            shift_string = "timeshift=" + str(df_temp[column_sort].iloc[-1])
         elif column_sort and rolling_direction < 0:
-            shift_string = f"timeshift={df_temp[column_sort].iloc[0]}"
+            shift_string = "timeshift=" + str(df_temp[column_sort].iloc[0])
         else:
-            shift_string = f"timeshift={time_shift - 1}"
+            shift_string = "timeshift=" + str(time_shift - 1)
         # and now create new ones ids out of the old ones
-        df_temp["id"] = df_temp.apply(lambda row: f"id={row[column_id]},{shift_string}", axis=1)
+        df_temp["id"] = df_temp.apply(lambda row: "id=" + str(row[column_id]) + "," + str(shift_string), axis=1)
 
         return df_temp
 
