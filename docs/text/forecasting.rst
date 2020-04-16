@@ -32,7 +32,7 @@ The following image illustrates the process:
 
 
 Another example can be found in streaming data, e.g. in Industry 4.0 applications.
-Here you typically get one new data row at a time and use this to for example predict machine failures. To train your model,
+Here you typically get one new data row at a time and use this to, for example, predict machine failures. To train your model,
 you could act as if you would stream the data, by feeding your classifier the data after one time step,
 the data after the first two time steps etc.
 
@@ -45,14 +45,7 @@ Let's walk through an example to see how it works:
 The rolling mechanism
 ---------------------
 
-The rolling mechanism takes a time series :math:`x` with its data rows :math:`[x_1, x_2, x_3, ..., x_n]`
-and creates :math:`n` new time series :math:`\hat x^k`, each of them with a different consecutive part
-of :math:`x`:
-
-.. math::
-    \hat x^k = [x_k, x_{k-1}, x_{k-2}, ..., x_1]
-
-To see what this does in real-world applications, we look into the following example flat DataFrame in tsfresh format
+We look into the following example flat DataFrame in tsfresh format
 
 +----+------+----+----+
 | id | time | x  | y  |
@@ -88,6 +81,7 @@ If you want to follow along, here is the python code to generate this data:
 Now, we can use :func:`tsfresh.utilities.dataframe_functions.roll_time_series` to get consecutive sub-time series.
 You could think of having a window sliding over your time series data and extracting out every data you can see through this window.
 There are three parameters to tune the window:
+
 * `rolling_direction`: if you want to slide in positive (increasing sort) or negative (decreasing sort) direction. Default is positive.
 * `max_timeshift` defines, how large the window size will grow. This means the extracted time series will have at maximum `max_timeshift + 1` steps in the past (or future). Default is infinite.
 * `min_timeshift` defines the minimal size. Defaults to 0.
