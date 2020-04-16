@@ -570,11 +570,11 @@ def roll_time_series(df_or_dict, column_id, column_sort=None, column_kind=None,
     if distributor is None:
         if n_jobs == 0:
             distributor = MapDistributor(disable_progressbar=disable_progressbar,
-                                         progressbar_title="Feature Extraction")
+                                         progressbar_title="Rolling")
         else:
             distributor = MultiprocessingDistributor(n_workers=n_jobs,
                                                      disable_progressbar=disable_progressbar,
-                                                     progressbar_title="Feature Extraction",
+                                                     progressbar_title="Rolling",
                                                      show_warnings=show_warnings)
 
     if not isinstance(distributor, DistributorBaseClass):
