@@ -375,7 +375,8 @@ def _normalize_input_to_internal_representation(timeseries_container, column_id,
     return timeseries_container, column_id, column_kind, column_value
 
 
-def _roll_out_time_series(time_shift, grouped_data, rolling_direction, max_timeshift, min_timeshift, column_sort, column_id):
+def _roll_out_time_series(time_shift, grouped_data, rolling_direction, max_timeshift, min_timeshift,
+                          column_sort, column_id):
     """
     Internal helper function for roll_time_series.
     This function has the task to extract the rolled forecast data frame of the number `time_shift`.
@@ -545,7 +546,7 @@ def roll_time_series(df_or_dict, column_id, column_sort=None, column_kind=None,
             # Test if all differences are the same
             if differences and min(differences) != max(differences):
                 warnings.warn("Your time stamps are not uniformly sampled, which makes rolling "
-                            "nonsensical in some domains.")
+                              "nonsensical in some domains.")
 
     # Roll the data frames if requested
     rolling_direction = np.sign(rolling_direction)

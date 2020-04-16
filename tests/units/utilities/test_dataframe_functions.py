@@ -479,7 +479,6 @@ class RollingTestCase(TestCase):
         self.assertListEqual(list(df["a"].values), correct_values_a)
         self.assertListEqual(list(df["b"].values), correct_values_b)
 
-
         df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
                                                   column_kind=None, rolling_direction=-1,
                                                   min_timeshift=2,
