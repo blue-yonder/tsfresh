@@ -1597,7 +1597,6 @@ def autocorrelation(x, lag):
 
 
 @set_property("fctype", "simple")
-@set_property("input", "pd.Series")
 def quantile(x, q):
     """
     Calculates the q quantile of x. This is the value of x greater than q% of the ordered values from x.
@@ -1609,9 +1608,9 @@ def quantile(x, q):
     :return: the value of this feature
     :return type: float
     """
-    if not isinstance(x, pd.Series):
-        x = pd.Series(x)
-    return pd.Series.quantile(x, q)
+    if len(x) == 0:
+        return np.NaN
+    return np.quantile(x, q)
 
 
 @set_property("fctype", "simple")
