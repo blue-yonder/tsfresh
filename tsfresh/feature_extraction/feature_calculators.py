@@ -1516,40 +1516,26 @@ def sample_entropy(x):
     """
     x = np.array(x)
 
-    sample_length = 1  # number of sequential points of the time series
-    tolerance = 0.2 * np.std(x)  # 0.2 is a common value for r - why?
+    m = 2  #  common value for m, according to wikipedia...
+    tolerance = 0.2 * np.std(x)  # 0.2 is a common value for r, according to wikipedia...
 
-    n = len(x)
-    prev = np.zeros(n)
-    curr = np.zeros(n)
-    A = np.zeros((1, 1))  # number of matches for m = [1,...,template_length - 1]
-    B = np.zeros((1, 1))  # number of matches for m = [1,...,template_length]
+    N = len(x)
 
-    for i in range(n - 1):
-        nj = n - i - 1
-        ts1 = x[i]
-        for jj in range(nj):
-            j = jj + i + 1
-            if abs(x[j] - ts1) < tolerance:  # distance between two vectors
-                curr[jj] = prev[jj] + 1
-                temp_ts_length = min(sample_length, curr[jj])
-                for m in range(int(temp_ts_length)):
-                    A[m] += 1
-                    if j < n - 1:
-                        B[m] += 1
-            else:
-                curr[jj] = 0
-        for j in range(nj):
-            prev[j] = curr[j]
+    # Split time series and save all templates of length m
+    xmi = np.array([x[i:i + m] for i in range(N - m)])
+    xmj = np.array([x[i:i + m] for i in range(N - m + 1)])
 
-    N = n * (n - 1) / 2
-    B = np.vstack(([N], B[0]))
+    # Save all matches minus the self-match, compute B
+    B = np.sum([np.sum(np.abs(xmii - xmj).max(axis=1) <= tolerance) - 1 for xmii in xmi])
 
-    # sample entropy = -1 * (log (A/B))
-    similarity_ratio = A / B
-    se = -1 * np.log(similarity_ratio)
-    se = np.reshape(se, -1)
-    return se[0]
+    # Similar for computing A
+    m += 1
+    xm = np.array([x[i:i + m] for i in range(N - m + 1)])
+
+    A = np.sum([np.sum(np.abs(xmi - xm).max(axis=1) <= tolerance) - 1 for xmi in xm])
+
+    # Return SampEn
+    return -np.log(A / B)
 
 
 @set_property("fctype", "simple")
