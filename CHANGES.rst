@@ -4,6 +4,23 @@ Changelog
 
 tsfresh uses `Semantic Versioning <http://semver.org/>`_
 
+Unreleased
+==========
+
+- Breaking Change
+    - Fix the sorting of the parameters in the feature names (#656)
+      The feature names consist of a sorted list of all parameters now.
+      That used to be true for all non-combiner features, and is now also true for combiner features.
+      If you relied on the actual feature name, this is a breaking change.
+- Added Features
+    - Added variation coefficient (#654)
+    - Added the datetimeindex explanation from the notebook to the docs (#661)
+    - Optimize RelevantFeatureAugmenter to avoid re-extraction (#669)
+- Bugfixes
+    - Increase the extracted `ar` coefficients to the full parameter range. (#662)
+    - Documentation fixes (#663, #664, #665)
+
+
 Version 0.15.1
 ==============
 

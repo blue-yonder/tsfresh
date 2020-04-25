@@ -254,52 +254,7 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
         :return: the fitted estimator with the information, which features are relevant.
         :rtype: RelevantFeatureAugmenter
         """
-        if self.timeseries_container is None:
-            raise RuntimeError("You have to provide a time series using the set_timeseries_container function before.")
-
-        self.feature_extractor = FeatureAugmenter(
-            default_fc_parameters=self.default_fc_parameters,
-            kind_to_fc_parameters=self.kind_to_fc_parameters,
-            column_id=self.column_id,
-            column_sort=self.column_sort,
-            column_kind=self.column_kind,
-            column_value=self.column_value,
-            timeseries_container=self.timeseries_container,
-            chunksize=self.chunksize,
-            n_jobs=self.n_jobs,
-            show_warnings=self.show_warnings,
-            disable_progressbar=self.disable_progressbar,
-            profile=self.profile,
-            profiling_filename=self.profiling_filename,
-            profiling_sorting=self.profiling_sorting
-        )
-
-        self.feature_selector = FeatureSelector(
-            test_for_binary_target_binary_feature=self.test_for_binary_target_binary_feature,
-            test_for_binary_target_real_feature=self.test_for_binary_target_real_feature,
-            test_for_real_target_binary_feature=self.test_for_real_target_binary_feature,
-            test_for_real_target_real_feature=self.test_for_real_target_real_feature,
-            fdr_level=self.fdr_level,
-            hypotheses_independent=self.hypotheses_independent,
-            n_jobs=self.n_jobs,
-            chunksize=self.chunksize,
-            ml_task=self.ml_task
-        )
-
-        if self.filter_only_tsfresh_features:
-            # Do not merge the time series features to the old features
-            X_tmp = pd.DataFrame(index=X.index)
-        else:
-            X_tmp = X
-
-        X_augmented = self.feature_extractor.transform(X_tmp)
-
-        self.col_to_max, self.col_to_min, self.col_to_median = get_range_values_per_column(X_augmented)
-        X_augmented = impute_dataframe_range(X_augmented, col_to_max=self.col_to_max, col_to_median=self.col_to_median,
-                                             col_to_min=self.col_to_min)
-
-        self.feature_selector.fit(X_augmented, y)
-
+        self._fit_and_augment(X, y)
         return self
 
     def transform(self, X):
@@ -359,3 +314,89 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
             return X_augmented.copy().loc[:, self.feature_selector.relevant_features + X.columns.tolist()]
         else:
             return X_augmented.copy().loc[:, self.feature_selector.relevant_features]
+
+    def fit_transform(self, X, y):
+        """
+        Equivalent to :func:`~fit` followed by :func:`~transform`; however, this is faster than performing those steps
+        separately, because it avoids re-extracting relevant features for training data.
+
+        :param X: The data frame without the time series features. The index rows should be present in the timeseries
+           and in the target vector.
+        :type X: pandas.DataFrame or numpy.array
+
+        :param y: The target vector to define, which features are relevant.
+        :type y: pandas.Series or numpy.array
+
+        :return: a data sample with the same information as X, but with added relevant time series features and
+            deleted irrelevant information (only if filter_only_tsfresh_features is False).
+        :rtype: pandas.DataFrame
+        """
+        X_augmented = self._fit_and_augment(X, y)
+
+        if self.filter_only_tsfresh_features:
+            return X_augmented.copy().loc[:, self.feature_selector.relevant_features + X.columns.tolist()]
+        else:
+            return X_augmented.copy().loc[:, self.feature_selector.relevant_features]
+
+    def _fit_and_augment(self, X, y):
+        """
+        Helper for the :func:`~fit` and :func:`~fit_transform` functions, which does most of the work described in
+        :func:`~fit`.
+
+        :param X: The data frame without the time series features. The index rows should be present in the timeseries
+           and in the target vector.
+        :type X: pandas.DataFrame or numpy.array
+
+        :param y: The target vector to define, which features are relevant.
+        :type y: pandas.Series or numpy.array
+
+        :return: the fitted estimator with the information, which features are relevant.
+        :rtype: RelevantFeatureAugmenter
+        """
+        if self.timeseries_container is None:
+            raise RuntimeError("You have to provide a time series using the set_timeseries_container function before.")
+
+        self.feature_extractor = FeatureAugmenter(
+            default_fc_parameters=self.default_fc_parameters,
+            kind_to_fc_parameters=self.kind_to_fc_parameters,
+            column_id=self.column_id,
+            column_sort=self.column_sort,
+            column_kind=self.column_kind,
+            column_value=self.column_value,
+            timeseries_container=self.timeseries_container,
+            chunksize=self.chunksize,
+            n_jobs=self.n_jobs,
+            show_warnings=self.show_warnings,
+            disable_progressbar=self.disable_progressbar,
+            profile=self.profile,
+            profiling_filename=self.profiling_filename,
+            profiling_sorting=self.profiling_sorting
+        )
+
+        self.feature_selector = FeatureSelector(
+            test_for_binary_target_binary_feature=self.test_for_binary_target_binary_feature,
+            test_for_binary_target_real_feature=self.test_for_binary_target_real_feature,
+            test_for_real_target_binary_feature=self.test_for_real_target_binary_feature,
+            test_for_real_target_real_feature=self.test_for_real_target_real_feature,
+            fdr_level=self.fdr_level,
+            hypotheses_independent=self.hypotheses_independent,
+            n_jobs=self.n_jobs,
+            chunksize=self.chunksize,
+            ml_task=self.ml_task
+        )
+
+        if self.filter_only_tsfresh_features:
+            # Do not merge the time series features to the old features
+            X_tmp = pd.DataFrame(index=X.index)
+        else:
+            X_tmp = X
+
+        X_augmented = self.feature_extractor.transform(X_tmp)
+
+        self.col_to_max, self.col_to_min, self.col_to_median = get_range_values_per_column(X_augmented)
+        X_augmented = impute_dataframe_range(X_augmented, col_to_max=self.col_to_max, col_to_median=self.col_to_median,
+                                             col_to_min=self.col_to_min)
+
+        self.feature_selector.fit(X_augmented, y)
+
+        return X_augmented
