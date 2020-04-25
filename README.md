@@ -53,8 +53,8 @@ The  *TSFRESH* package is described in the following open access paper
 
 The FRESH algorithm is described in the following whitepaper
 
-* Christ, M., Kempa-Liehr, A.W. and Feindt, M. (2017).  
-    _Distributed and parallel time series feature extraction for industrial big data applications._  
+* Christ, M., Kempa-Liehr, A.W. and Feindt, M. (2017).
+    _Distributed and parallel time series feature extraction for industrial big data applications._
     ArXiv e-print 1610.07717,  [https://arxiv.org/abs/1610.07717](https://arxiv.org/abs/1610.07717).
 
 
@@ -79,6 +79,10 @@ The algorithm, especially the filtering part are also described in the paper men
 If you have some questions or feedback you can find the developers in the [gitter chatroom.](https://gitter.im/tsfresh/Lobby?utm_source=share-link&utm_medium=link&utm_campaign=share-link)
 
 We appreciate any contributions, if you are interested in helping us to make *TSFRESH* the biggest archive of feature extraction methods in python, just head over to our [How-To-Contribute](http://tsfresh.readthedocs.io/en/latest/text/how_to_contribute.html) instructions.
+
+If you want to try out `tsfresh` quickly or if you want to integrate it into your workflow, we also have a docker image available:
+
+    docker pull nbraun/tsfresh
 
 ## Acknowledgements
 

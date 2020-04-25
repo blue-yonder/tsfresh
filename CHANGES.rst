@@ -17,6 +17,7 @@ Unreleased
     - Added the datetimeindex explanation from the notebook to the docs (#661)
     - Optimize RelevantFeatureAugmenter to avoid re-extraction (#669)
     - Added a function `add_sub_time_series_index` (#666)
+    - Added Dockerfile
 - Bugfixes
     - Increase the extracted `ar` coefficients to the full parameter range. (#662)
     - Documentation fixes (#663, #664, #665)
