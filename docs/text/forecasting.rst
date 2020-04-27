@@ -51,11 +51,11 @@ We look into the following example flat DataFrame in tsfresh format
 +====+======+====+====+
 | 1  |  1   | 1  | 5  |
 +----+------+----+----+
-| 1  |  2   | 2	 | 6  |
+| 1  |  2   | 2  | 6  |
 +----+------+----+----+
-| 1  |  3   | 3	 | 7  |
+| 1  |  3   | 3  | 7  |
 +----+------+----+----+
-| 1  |  4   | 4	 | 8  |
+| 1  |  4   | 4  | 8  |
 +----+------+----+----+
 | 2  |  8   | 10 | 12 |
 +----+------+----+----+
@@ -63,7 +63,7 @@ We look into the following example flat DataFrame in tsfresh format
 +----+------+----+----+
 
 where you have measured the values from two sensors x and y for two different entities (id 1 and 2) in 4 or 2 time
-steps (1 to 9).
+steps (1, 2, 3, 4, 8, 9).
 
 If you want to follow along, here is the python code to generate this data:
 
@@ -174,6 +174,8 @@ You will end up with features generated for each of the parts above, which you c
 +------------------+----------------+-----------------------------+-----+
 | id=2,timeshift=9 |          221.0 |                         1.0 | ... |
 +------------------+----------------+-----------------------------+-----+
+
+The features for e.g. ``id=1,timeshift=3`` are extracted using the data up to and including ``t=3`` (so ``t=1``, ``t=2`` and ``t=3``).
 
 If you want to train for a forecasting, `tsfresh` also offers the function :func:`tsfresh.utilities.dataframe_functions.make_forecasting_frame`, which will also help you match the target vector properly.
 This process is also visualized by the following figure.
