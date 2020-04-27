@@ -383,7 +383,8 @@ def _roll_out_time_series(timeshift, grouped_data, rolling_direction, max_timesh
     This means it has shifted a virtual window if size `max_timeshift` (or infinite)
     `timeshift` times in the positive direction (for positive `rolling_direction`) or in negative direction
     (for negative `rolling_direction`).
-    It starts counting from the first data point for each id (and kind) (or the last one for negative `rolling_direction`).
+    It starts counting from the first data point for each id (and kind) (or the last one for negative
+    `rolling_direction`).
     The rolling happens for each `id` and `kind` separately.
     Extracted data smaller than `min_timeshift` + 1 are removed.
 
@@ -455,9 +456,10 @@ def roll_time_series(df_or_dict, column_id, column_sort=None, column_kind=None,
     This method creates sub windows of the time series. It rolls the (sorted) data frames for each kind and each id
     separately in the "time" domain (which is represented by the sort order of the sort column given by `column_sort`).
 
-    For each rolling step, a new id is created by the scheme "id={id}, timeshift={shift}", here id is the former id of the
-    column and shift is the amount of "time" shifts.
-    You can think of it as having a window of fixed length (the max_timeshift) moving one step at a time over your time series.
+    For each rolling step, a new id is created by the scheme "id={id}, timeshift={shift}", here id is the former id of
+    the column and shift is the amount of "time" shifts.
+    You can think of it as having a window of fixed length (the max_timeshift) moving one step at a time over
+    your time series.
     Each cut-out seen by the window is a new time series with a new identifier.
 
     A few remarks:
@@ -496,10 +498,12 @@ def roll_time_series(df_or_dict, column_id, column_sort=None, column_kind=None,
     :param rolling_direction: The sign decides, if to shift our cut-out window backwards or forwards in "time".
     :type rolling_direction: int
 
-    :param max_timeshift: If not None, the cut-out window is at maximum `max_timeshift` large. If none, it grows infinitely.
+    :param max_timeshift: If not None, the cut-out window is at maximum `max_timeshift` large. If none, it grows
+         infinitely.
     :type max_timeshift: int
 
-    :param min_timeshift: Throw away all extracted forecast windows smaller or equal than this. Must be larger than or equal 0.
+    :param min_timeshift: Throw away all extracted forecast windows smaller or equal than this. Must be larger
+         than or equal 0.
     :type min_timeshift: int
 
     :param n_jobs: The number of processes to use for parallelization. If zero, no parallelization is used.
