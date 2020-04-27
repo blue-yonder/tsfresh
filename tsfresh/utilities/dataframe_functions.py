@@ -375,13 +375,13 @@ def _normalize_input_to_internal_representation(timeseries_container, column_id,
     return timeseries_container, column_id, column_kind, column_value
 
 
-def _roll_out_time_series(time_shift, grouped_data, rolling_direction, max_timeshift, min_timeshift,
+def _roll_out_time_series(timeshift, grouped_data, rolling_direction, max_timeshift, min_timeshift,
                           column_sort, column_id):
     """
     Internal helper function for roll_time_series.
-    This function has the task to extract the rolled forecast data frame of the number `time_shift`.
+    This function has the task to extract the rolled forecast data frame of the number `timeshift`.
     This means it has shifted a virtual window if size `max_timeshift` (or infinite)
-    `time_shift` times in the positive direction (for positive `rolling_direction`) or in negative direction
+    `timeshift` times in the positive direction (for positive `rolling_direction`) or in negative direction
     (for negative `rolling_direction`).
     It starts counting from the first data point for each id (and kind) (or the last one for negative `rolling_direction`).
     The rolling happens for each `id` and `kind` separately.
@@ -389,23 +389,23 @@ def _roll_out_time_series(time_shift, grouped_data, rolling_direction, max_times
 
     Implementation note:
     Even though negative rolling direction means, we let the window shift in negative direction over the data,
-    the counting of `time_shift` still happens from the first row onwards. Example:
+    the counting of `timeshift` still happens from the first row onwards. Example:
 
         1   2   3   4
 
     If we do positive rolling, we extract the sub time series
 
-      [ 1 ]               input parameter: time_shift=1, new id: id=X,timeshift=1
-      [ 1   2 ]           input parameter: time_shift=2, new id: id=X,timeshift=2
-      [ 1   2   3 ]       input parameter: time_shift=3, new id: id=X,timeshift=3
-      [ 1   2   3   4 ]   input parameter: time_shift=4, new id: id=X,timeshift=4
+      [ 1 ]               input parameter: timeshift=1, new id: id=X,timeshift=1
+      [ 1   2 ]           input parameter: timeshift=2, new id: id=X,timeshift=2
+      [ 1   2   3 ]       input parameter: timeshift=3, new id: id=X,timeshift=3
+      [ 1   2   3   4 ]   input parameter: timeshift=4, new id: id=X,timeshift=4
 
     If we do negative rolling:
 
-      [ 1   2   3   4 ]   input parameter: time_shift=1, new id: id=X,timeshift=1
-          [ 2   3   4 ]   input parameter: time_shift=2, new id: id=X,timeshift=2
-              [ 3   4 ]   input parameter: time_shift=3, new id: id=X,timeshift=3
-                  [ 4 ]   input parameter: time_shift=4, new id: id=X,timeshift=4
+      [ 1   2   3   4 ]   input parameter: timeshift=1, new id: id=X,timeshift=1
+          [ 2   3   4 ]   input parameter: timeshift=2, new id: id=X,timeshift=2
+              [ 3   4 ]   input parameter: timeshift=3, new id: id=X,timeshift=3
+                  [ 4 ]   input parameter: timeshift=4, new id: id=X,timeshift=4
 
     If you now reverse the order of the negative examples, it looks like shifting the
     window from the back (but it is implemented to start counting from the beginning).
@@ -413,14 +413,14 @@ def _roll_out_time_series(time_shift, grouped_data, rolling_direction, max_times
     """
     def _f(x):
         if rolling_direction > 0:
-            # For positive rolling, the right side of the window moves with `time_shift`
-            shift_until = time_shift
+            # For positive rolling, the right side of the window moves with `timeshift`
+            shift_until = timeshift
             shift_from = max(shift_until - max_timeshift - 1, 0)
 
             df_temp = x.iloc[shift_from:shift_until] if shift_until <= len(x) else None
         else:
-            # For negative rolling, the left side of the window moves with `time_shift`
-            shift_from = max(time_shift - 1, 0)
+            # For negative rolling, the left side of the window moves with `timeshift`
+            shift_from = max(timeshift - 1, 0)
             shift_until = shift_from + max_timeshift + 1
 
             df_temp = x.iloc[shift_from:shift_until]
@@ -436,7 +436,7 @@ def _roll_out_time_series(time_shift, grouped_data, rolling_direction, max_times
         elif column_sort and rolling_direction < 0:
             shift_string = "timeshift=" + str(df_temp[column_sort].iloc[0])
         else:
-            shift_string = "timeshift=" + str(time_shift - 1)
+            shift_string = "timeshift=" + str(timeshift - 1)
         # and now create new ones ids out of the old ones
         df_temp["id"] = df_temp.apply(lambda row: "id=" + str(row[column_id]) + "," + str(shift_string), axis=1)
 
