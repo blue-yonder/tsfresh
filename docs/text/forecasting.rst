@@ -1,22 +1,26 @@
 .. _forecasting-label:
 
-Time series forecasting
-=======================
+Time series forecasting/Rolling
+===============================
 
 Features that are extracted with *tsfresh* can be used for many different tasks, such as time series classification,
 compression or forecasting.
 This section explains how one can use the features for time series forecasting tasks.
 
-The "sort" column of a DataFrame in the supported :ref:`data-formats-label` gives a sequential state to the
-individual measurements. In the case of time series this can be the *time* dimension while in the case of spectra the
-order is given by the *wavelength* or *frequency* dimensions.
-We can exploit this sequence to generate more input data out of a single time series, by *rolling* over the data.
-
 Lets say you have the price of a certain stock, e.g. Apple, for 100 time steps.
 Now, you want to build a feature-based model to forecast future prices of the Apple stock.
-So you will have to extract features in every time step of the original time series while looking at
-a certain number of past values.
-A rolling mechanism will give you the sub time series of last *m* time steps to construct the features.
+You could remove the last price value (of today) and extract features from the time series until today to predict the price of today.
+But this would only give you a single example to train.
+However, you can repeat this process: for every day in your stock price time series, remove the current value, extract features for the time until this value and train to predict the value of the day (which you removed).
+In `tsfresh`, this is called *rolling*.
+
+Rolling is a way, to turn a single time series into multiple time series, each of them ending (or starting, depending on the roll direction) one time step later than the one before.
+The rolling utilities implemented in `tsfresh` help you in this process of reshaping (and rolling) your data into a form, so that you can apply the usual :func:`tsfresh.extract_features` method.
+
+Please note that "time" does not necessarily mean clock time here.
+The "sort" column of a DataFrame in the supported :ref:`data-formats-label` gives a sequential state to the
+individual measurements.
+In the case of time series this can be the *time* dimension while in other cases, this can be a location, a frequency. etc.
 
 The following image illustrates the process:
 
@@ -26,290 +30,205 @@ The following image illustrates the process:
    :align: center
 
 
-
-So, we move the window that extract the features and then predict the next time step (which was not used to extract features) forward.
-In the above image, the window moves from left to right.
-
 Another example can be found in streaming data, e.g. in Industry 4.0 applications.
-Here you typically get one new data row at a time and use this to for example predict machine failures. To train your model,
+Here you typically get one new data row at a time and use this to, for example, predict machine failures. To train your model,
 you could act as if you would stream the data, by feeding your classifier the data after one time step,
 the data after the first two time steps etc.
 
-Both examples imply, that you extract the features not only on the full data set, but also
-on all temporal coherent subsets of data, which is the process of *rolling*. In tsfresh, this is implemented in the
-function :func:`tsfresh.utilities.dataframe_functions.roll_time_series`.
+In tsfresh, rolling is implemented via the helper function :func:`tsfresh.utilities.dataframe_functions.roll_time_series`.
 Further, we provide the :func:`tsfresh.utilities.dataframe_functions.make_forecasting_frame` method as a convenient
 wrapper to fast construct the container and target vector for a given sequence.
+
+Let's walk through an example to see how it works:
 
 The rolling mechanism
 ---------------------
 
-The rolling mechanism takes a time series :math:`x` with its data rows :math:`[x_1, x_2, x_3, ..., x_n]`
-and creates :math:`n` new time series :math:`\hat x^k`, each of them with a different consecutive part
-of :math:`x`:
-
-.. math::
-    \hat x^k = [x_k, x_{k-1}, x_{k-2}, ..., x_1]
-
-To see what this does in real-world applications, we look into the following example flat DataFrame in tsfresh format
+We look into the following example flat DataFrame in tsfresh format
 
 +----+------+----+----+
 | id | time | x  | y  |
 +====+======+====+====+
-| 1  | t1   | 1  | 5  |
+| 1  |  1   | 1  | 5  |
 +----+------+----+----+
-| 1  | t2   | 2	 | 6  |
+| 1  |  2   | 2  | 6  |
 +----+------+----+----+
-| 1  | t3   | 3	 | 7  |
+| 1  |  3   | 3  | 7  |
 +----+------+----+----+
-| 1  | t4   | 4	 | 8  |
+| 1  |  4   | 4  | 8  |
 +----+------+----+----+
-| 2  | t8   | 10 | 12 |
+| 2  |  8   | 10 | 12 |
 +----+------+----+----+
-| 2  | t9   | 11 | 13 |
+| 2  |  9   | 11 | 13 |
 +----+------+----+----+
 
 where you have measured the values from two sensors x and y for two different entities (id 1 and 2) in 4 or 2 time
-steps (t1 to t9).
+steps (1, 2, 3, 4, 8, 9).
+
+If you want to follow along, here is the python code to generate this data:
+
+.. code:: python
+
+   import pandas as pd
+   df = pd.DataFrame({
+      "id": [1, 1, 1, 1, 2, 2],
+      "time": [1, 2, 3, 4, 8, 9],
+      "x": [1, 2, 3, 4, 10, 11],
+      "y": [5, 6, 7, 8, 12, 13],
+   })
 
 Now, we can use :func:`tsfresh.utilities.dataframe_functions.roll_time_series` to get consecutive sub-time series.
-E.g. if you set `rolling` to 0, the feature extraction works on the original time series without any rolling.
+You could think of having a window sliding over your time series data and extracting out every data you can see through this window.
+There are three parameters to tune the window:
 
-So it extracts 2 set of features,
+* `max_timeshift` defines, how large the window size will grow. This means the extracted time series will have at maximum `max_timeshift + 1` steps in the past (or future).
+* `min_timeshift` defines the minimal size.
+* Advanced: `rolling_direction`: if you want to slide in positive (increasing sort) or negative (decreasing sort) direction. You barely need negative direction, so you probably not want to change the default.
 
-+----+------+----+----+
-| id | time | x  | y  |
-+====+======+====+====+
-| 1  | t1   | 1  | 5  |
-+----+------+----+----+
-| 1  | t2   | 2	 | 6  |
-+----+------+----+----+
-| 1  | t3   | 3	 | 7  |
-+----+------+----+----+
-| 1  | t4   | 4	 | 8  |
-+----+------+----+----+
+The column parameters are the same as in the usual :ref:`data-formats-label`.
 
-and
+Let's see what will happen with our data sample:
 
-+----+------+----+----+
-| id | time | x  | y  |
-+====+======+====+====+
-| 2  | t8   | 10 | 12 |
-+----+------+----+----+
-| 2  | t9   | 11 | 13 |
-+----+------+----+----+
+.. code:: python
 
-If you set rolling to 1, the feature extraction works with all of the following time series:
+   from tsfresh.utilities.dataframe_functions import roll_time_series
+   df_rolled = roll_time_series(df, column_id="id", column_sort="time")
 
-+----+------+----+----+
-| id | time | x  | y  |
-+====+======+====+====+
-| 1  | t1   | 1  | 5  |
-+----+------+----+----+
+The new data set consists only of values from the old data set, but with new indices.
+If you group by index, you will end up with the following parts:
 
-+----+------+----+----+
-| id | time | x  | y  |
-+====+======+====+====+
-| 1  | t1   | 1  | 5  |
-+----+------+----+----+
-| 1  | t2   | 2  | 6  |
-+----+------+----+----+
++-----------------+-------+---+----+
+|id               | time  | x |  y |
++=================+=======+===+====+
+|id=1,timeshift=1 |    1  | 1 |  5 |
++-----------------+-------+---+----+
 
-+----+------+----+----+
-| id | time | x  | y  |
-+====+======+====+====+
-| 1  | t1   | 1  | 5  |
-+----+------+----+----+
-| 1  | t2   | 2  | 6  |
-+----+------+----+----+
-| 1  | t3   | 3  | 7  |
-+----+------+----+----+
-| 2  | t8   | 10 | 12 |
-+----+------+----+----+
++-----------------+-------+---+----+
+|id               | time  | x |  y |
++=================+=======+===+====+
+|id=1,timeshift=2 |    1  | 1 |  5 |
++-----------------+-------+---+----+
+|id=1,timeshift=2 |    2  | 2 |  6 |
++-----------------+-------+---+----+
 
-+----+------+----+----+
-| id | time | x  | y  |
-+====+======+====+====+
-| 1  | t1   | 1  | 5  |
-+----+------+----+----+
-| 1  | t2   | 2  | 6  |
-+----+------+----+----+
-| 1  | t3   | 3  | 7  |
-+----+------+----+----+
-| 1  | t4   | 4  | 8  |
-+----+------+----+----+
-| 2  | t8   | 10 | 12 |
-+----+------+----+----+
-| 2  | t9   | 11 | 13 |
-+----+------+----+----+
++-----------------+-------+---+----+
+|id               | time  | x |  y |
++=================+=======+===+====+
+|id=1,timeshift=3 |    1  | 1 |  5 |
++-----------------+-------+---+----+
+|id=1,timeshift=3 |    2  | 2 |  6 |
++-----------------+-------+---+----+
+|id=1,timeshift=3 |    3  | 3 |  7 |
++-----------------+-------+---+----+
 
-If you set rolling to -1, you end up with features for the time series, rolled in the other direction
++-----------------+-------+---+----+
+|id               | time  | x |  y |
++=================+=======+===+====+
+|id=1,timeshift=4 |    1  | 1 |  5 |
++-----------------+-------+---+----+
+|id=1,timeshift=4 |    2  | 2 |  6 |
++-----------------+-------+---+----+
+|id=1,timeshift=4 |    3  | 3 |  7 |
++-----------------+-------+---+----+
+|id=1,timeshift=4 |    4  | 4 |  8 |
++-----------------+-------+---+----+
 
-+----+------+----+----+
-| id | time | x  | y  |
-+====+======+====+====+
-| 1  | t4   | 4  | 8  |
-+----+------+----+----+
++-----------------+-------+---+----+
+|id               | time  | x |  y |
++=================+=======+===+====+
+|id=2,timeshift=8 |    8  |10 | 12 |
++-----------------+-------+---+----+
 
-+----+------+----+----+
-| id | time | x  | y  |
-+====+======+====+====+
-| 1  | t3   | 3  | 7  |
-+----+------+----+----+
-| 1  | t4   | 4  | 8  |
-+----+------+----+----+
++-----------------+-------+---+----+
+|id               | time  | x |  y |
++=================+=======+===+====+
+|id=2,timeshift=9 |    8  |10 | 12 |
++-----------------+-------+---+----+
+|id=2,timeshift=9 |    9  |11 | 13 |
++-----------------+-------+---+----+
 
-+----+------+----+----+
-| id | time | x  | y  |
-+====+======+====+====+
-| 1  | t2   | 2  | 6  |
-+----+------+----+----+
-| 1  | t3   | 3  | 7  |
-+----+------+----+----+
-| 1  | t4   | 4  | 8  |
-+----+------+----+----+
-| 2  | t9   | 11 | 13 |
-+----+------+----+----+
+Each of those parts can now be treated independently.
+For example, you could run the usual feature extraction on them:
 
-+----+------+----+----+
-| id | time | x  | y  |
-+====+======+====+====+
-| 1  | t1   | 1  | 5  |
-+----+------+----+----+
-| 1  | t2   | 2  | 6  |
-+----+------+----+----+
-| 1  | t3   | 3  | 7  |
-+----+------+----+----+
-| 1  | t4   | 4  | 8  |
-+----+------+----+----+
-| 2  | t8   | 10 | 12 |
-+----+------+----+----+
-| 2  | t9   | 11 | 13 |
-+----+------+----+----+
+.. code:: python
 
-We only gave an example for the flat DataFrame format, but rolling actually works on all 3 :ref:`data-formats-label`
-that are supported by tsfresh.
+   from tsfresh import extract_features
+   df_features = extract_features(df_rolled, column_id="id", column_sort="time")
 
+You will end up with features generated for each of the parts above, which you can then use for training your forecasting model.
+
++------------------+----------------+-----------------------------+-----+
+| variable         |  x__abs_energy |  x__absolute_sum_of_changes | ... |
++==================+================+=============================+=====+
+| id               |                |                             | ... |
++------------------+----------------+-----------------------------+-----+
+| id=1,timeshift=1 |            1.0 |                         0.0 | ... |
++------------------+----------------+-----------------------------+-----+
+| id=1,timeshift=2 |            5.0 |                         1.0 | ... |
++------------------+----------------+-----------------------------+-----+
+| id=1,timeshift=3 |           14.0 |                         2.0 | ... |
++------------------+----------------+-----------------------------+-----+
+| id=1,timeshift=4 |           30.0 |                         3.0 | ... |
++------------------+----------------+-----------------------------+-----+
+| id=2,timeshift=8 |          100.0 |                         0.0 | ... |
++------------------+----------------+-----------------------------+-----+
+| id=2,timeshift=9 |          221.0 |                         1.0 | ... |
++------------------+----------------+-----------------------------+-----+
+
+The features for e.g. ``id=1,timeshift=3`` are extracted using the data up to and including ``t=3`` (so ``t=1``, ``t=2`` and ``t=3``).
+
+If you want to train for a forecasting, `tsfresh` also offers the function :func:`tsfresh.utilities.dataframe_functions.make_forecasting_frame`, which will also help you match the target vector properly.
 This process is also visualized by the following figure.
 It shows how the purple, rolled sub-timeseries are used as base for the construction of the feature matrix *X*
-(after calculation of the features by *f*).
+(if *f* is the `extract_features` function).
 The green data points need to be predicted by the model and are used as rows in the target vector *y*.
+Be aware that this only works for a one-dimensional time series of a single `id` and `kind`.
 
 .. image:: ../images/rolling_mechanism_2.png
    :scale: 100 %
    :alt: The rolling mechanism
    :align: center
 
-
-
 Parameters and Implementation Notes
 -----------------------------------
 
 The above example demonstrates the overall rolling mechanism, which creates new time series.
-Now we discuss the naming convention for such new time series:
+Now we discuss the naming convention for such new time series.
 
-For identifying every subsequence, tsfresh uses the time stamp of the point that will be predicted as new "id".
-The above example with rolling set to 1 yields the following sub-time series:
+For identifying every subsequence, `tsfresh` uses the time stamp of the point that will be predicted together with the old identifier as "id".
+For positive rolling, this `timeshift` is the last time stamp in the subsequence.
+For negative rolling, it is the first one, for example the above dataframe rolled in negative direction gives us:
 
-+-----------+------+----+----+
-| id        | time | x  | y  |
-+===========+======+====+====+
-| t1        | t1   | 1  | 5  |
-+-----------+------+----+----+
++------------------+------+----+----+
+|id                | time |  x |  y |
++==================+======+====+====+
+|id=1,timeshift=1  |    1 |  1 |  5 |
++------------------+------+----+----+
+|id=1,timeshift=1  |    2 |  2 |  6 |
++------------------+------+----+----+
+|id=1,timeshift=1  |    3 |  3 |  7 |
++------------------+------+----+----+
+|id=1,timeshift=1  |    4 |  4 |  8 |
++------------------+------+----+----+
+|id=1,timeshift=2  |    2 |  2 |  6 |
++------------------+------+----+----+
+|id=1,timeshift=2  |    3 |  3 |  7 |
++------------------+------+----+----+
+|id=1,timeshift=2  |    4 |  4 |  8 |
++------------------+------+----+----+
+|id=1,timeshift=3  |    3 |  3 |  7 |
++------------------+------+----+----+
+|id=1,timeshift=3  |    4 |  4 |  8 |
++------------------+------+----+----+
+|id=1,timeshift=4  |    4 |  4 |  8 |
++------------------+------+----+----+
+|id=2,timeshift=8  |    8 | 10 | 12 |
++------------------+------+----+----+
+|id=2,timeshift=8  |    9 | 11 | 13 |
++------------------+------+----+----+
+|id=2,timeshift=9  |    9 | 11 | 13 |
++------------------+------+----+----+
 
-+-----------+------+----+----+
-| id        | time | x  | y  |
-+===========+======+====+====+
-| t2        | t1   | 1  | 5  |
-+-----------+------+----+----+
-| t2        | t2   | 2  | 6  |
-+-----------+------+----+----+
+which you could use to predict the current value using the future time series values (if that makes sense in your case).
 
-+-----------+------+----+----+
-| id        | time | x  | y  |
-+===========+======+====+====+
-| t3        | t1   | 1  | 5  |
-+-----------+------+----+----+
-| t3        | t2   | 2  | 6  |
-+-----------+------+----+----+
-| t3        | t3   | 3  | 7  |
-+-----------+------+----+----+
-
-+-----------+------+----+----+
-| id        | time | x  | y  |
-+===========+======+====+====+
-| t4        | t1   | 1  | 5  |
-+-----------+------+----+----+
-| t4        | t2   | 2  | 6  |
-+-----------+------+----+----+
-| t4        | t3   | 3  | 7  |
-+-----------+------+----+----+
-| t4        | t4   | 4  | 8  |
-+-----------+------+----+----+
-
-+-----------+------+----+----+
-| id        | time | x  | y  |
-+===========+======+====+====+
-| t8        | t8   | 10 | 12 |
-+-----------+------+----+----+
-
-+-----------+------+----+----+
-| id        | time | x  | y  |
-+===========+======+====+====+
-| t9        | t8   | 10 | 12 |
-+-----------+------+----+----+
-| t9        | t9   | 11 | 13 |
-+-----------+------+----+----+
-
-The new id is the time stamp where the shift ended.
-So above, every table represents a sub-time series.
-The higher the shift value, the more steps the time series was moved into the specified direction (into the past in
-this example).
-
-If you want to limit how far the time series shall be shifted into the specified direction, you can set the
-*max_timeshift* parameter to the maximum time steps to be shifted.
-In our example, setting *max_timeshift* to 1 yields the following result (setting it to 0 will create all possible shifts):
-
-+-----------+------+----+----+
-| id        | time | x  | y  |
-+===========+======+====+====+
-| t1        | t1   | 1  | 5  |
-+-----------+------+----+----+
-
-+-----------+------+----+----+
-| id        | time | x  | y  |
-+===========+======+====+====+
-| t2        | t1   | 1  | 5  |
-+-----------+------+----+----+
-| t2        | t2   | 2  | 6  |
-+-----------+------+----+----+
-
-+-----------+------+----+----+
-| id        | time | x  | y  |
-+===========+======+====+====+
-| t3        | t2   | 2  | 6  |
-+-----------+------+----+----+
-| t3        | t3   | 3  | 7  |
-+-----------+------+----+----+
-
-+-----------+------+----+----+
-| id        | time | x  | y  |
-+===========+======+====+====+
-| t4        | t3   | 3  | 7  |
-+-----------+------+----+----+
-| t4        | t4   | 4  | 8  |
-+-----------+------+----+----+
-
-+-----------+------+----+----+
-| id        | time | x  | y  |
-+===========+======+====+====+
-| t8        | t8   | 10 | 12 |
-+-----------+------+----+----+
-
-+-----------+------+----+----+
-| id        | time | x  | y  |
-+===========+======+====+====+
-| t9        | t8   | 10 | 12 |
-+-----------+------+----+----+
-| t9        | t9   | 11 | 13 |
-+-----------+------+----+----+
+Choosing a non-default `max_timeshift` or `min_timeshift` would make the extracted sub-time-series smaller or even remove them completely (e.g. with `min_timeshift = 1` the `id=1,timeshift=1` of the positive rolling case would disappear).
