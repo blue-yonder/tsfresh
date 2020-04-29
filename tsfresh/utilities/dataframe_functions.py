@@ -557,8 +557,8 @@ def roll_time_series(df_or_dict, column_id, column_sort=None, column_kind=None,
     # Now we know that this is a pandas data frame
     df = df_or_dict
 
-    if len(df) == 0:
-        raise ValueError("Your time series container has zero rows!. Can not perform rolling.")
+    if len(df) <= 1:
+        raise ValueError("Your time series container has zero or one rows!. Can not perform rolling.")
 
     if column_id is not None:
         if column_id not in df:
