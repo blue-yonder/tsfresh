@@ -482,7 +482,7 @@ def roll_time_series(df_or_dict, column_id, column_sort=None, column_kind=None,
 
     :param column_id: it must be present in the pandas DataFrame or in all DataFrames in the dictionary.
         It is not allowed to have NaN values in this column.
-    :type column_id: basestring or None
+    :type column_id: basestring
 
     :param column_sort: if not None, sort the rows by this column. It is not allowed to
         have NaN values in this column. If not given, will be filled by an increasing number,

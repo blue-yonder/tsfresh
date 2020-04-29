@@ -12,6 +12,11 @@ Unreleased
       The feature names consist of a sorted list of all parameters now.
       That used to be true for all non-combiner features, and is now also true for combiner features.
       If you relied on the actual feature name, this is a breaking change.
+    - Change the id after the rolling (#668)
+      Now, the old id of your data is still kept. Additionally, we improved the way
+      dataframes without a time column are rolled and how the new sub-time series
+      are named.
+      Also, the documentation was improved a lot.
 - Added Features
     - Added variation coefficient (#654)
     - Added the datetimeindex explanation from the notebook to the docs (#661)
