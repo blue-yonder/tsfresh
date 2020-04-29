@@ -557,6 +557,9 @@ def roll_time_series(df_or_dict, column_id, column_sort=None, column_kind=None,
     # Now we know that this is a pandas data frame
     df = df_or_dict
 
+    if len(df) == 0:
+        raise ValueError("Your time series container has zero rows!. Can not perform rolling.")
+
     if column_id is not None:
         if column_id not in df:
             raise AttributeError("The given column for the id is not present in the data.")
@@ -594,9 +597,6 @@ def roll_time_series(df_or_dict, column_id, column_sort=None, column_kind=None,
     grouped_data = df.groupby(grouper)
     prediction_steps = grouped_data.count().max().max()
 
-    if np.isnan(prediction_steps):
-        raise ValueError("Somehow the maximum length of your time series is NaN (Does your time series container have "
-                         "zero rows?). Can not perform rolling.")
     max_timeshift = max_timeshift or prediction_steps
 
     # Todo: not default for columns_sort to be None
