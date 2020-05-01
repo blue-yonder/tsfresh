@@ -375,25 +375,53 @@ def _normalize_input_to_internal_representation(timeseries_container, column_id,
     return timeseries_container, column_id, column_kind, column_value
 
 
-def _roll_out_time_series(time_shift, grouped_data, rolling_direction, max_timeshift, min_timeshift,
+def _roll_out_time_series(timeshift, grouped_data, rolling_direction, max_timeshift, min_timeshift,
                           column_sort, column_id):
     """
     Internal helper function for roll_time_series.
-    This function has the task to extract the rolled forecast data frame of the number `time_shift`.
-    This means it is `time_shift` in the future - starting counting from the first row
-    for each id (and kind).
-    This means we cut out the data until `time_shift`.
-    The first row we cut out is either 0 or given by the maximal allowed length of `max_timeshift`.
-    for a negative rolling direction it is reversed
+    This function has the task to extract the rolled forecast data frame of the number `timeshift`.
+    This means it has shifted a virtual window if size `max_timeshift` (or infinite)
+    `timeshift` times in the positive direction (for positive `rolling_direction`) or in negative direction
+    (for negative `rolling_direction`).
+    It starts counting from the first data point for each id (and kind) (or the last one for negative
+    `rolling_direction`).
+    The rolling happens for each `id` and `kind` separately.
+    Extracted data smaller than `min_timeshift` + 1 are removed.
+
+    Implementation note:
+    Even though negative rolling direction means, we let the window shift in negative direction over the data,
+    the counting of `timeshift` still happens from the first row onwards. Example:
+
+        1   2   3   4
+
+    If we do positive rolling, we extract the sub time series
+
+      [ 1 ]               input parameter: timeshift=1, new id: id=X,timeshift=1
+      [ 1   2 ]           input parameter: timeshift=2, new id: id=X,timeshift=2
+      [ 1   2   3 ]       input parameter: timeshift=3, new id: id=X,timeshift=3
+      [ 1   2   3   4 ]   input parameter: timeshift=4, new id: id=X,timeshift=4
+
+    If we do negative rolling:
+
+      [ 1   2   3   4 ]   input parameter: timeshift=1, new id: id=X,timeshift=1
+          [ 2   3   4 ]   input parameter: timeshift=2, new id: id=X,timeshift=2
+              [ 3   4 ]   input parameter: timeshift=3, new id: id=X,timeshift=3
+                  [ 4 ]   input parameter: timeshift=4, new id: id=X,timeshift=4
+
+    If you now reverse the order of the negative examples, it looks like shifting the
+    window from the back (but it is implemented to start counting from the beginning).
+
     """
     def _f(x):
         if rolling_direction > 0:
-            shift_until = time_shift
+            # For positive rolling, the right side of the window moves with `timeshift`
+            shift_until = timeshift
             shift_from = max(shift_until - max_timeshift - 1, 0)
 
             df_temp = x.iloc[shift_from:shift_until] if shift_until <= len(x) else None
         else:
-            shift_from = max(time_shift - 1, 0)
+            # For negative rolling, the left side of the window moves with `timeshift`
+            shift_from = max(timeshift - 1, 0)
             shift_until = shift_from + max_timeshift + 1
 
             df_temp = x.iloc[shift_from:shift_until]
@@ -409,7 +437,7 @@ def _roll_out_time_series(time_shift, grouped_data, rolling_direction, max_times
         elif column_sort and rolling_direction < 0:
             shift_string = "timeshift=" + str(df_temp[column_sort].iloc[0])
         else:
-            shift_string = "timeshift=" + str(time_shift - 1)
+            shift_string = "timeshift=" + str(timeshift - 1)
         # and now create new ones ids out of the old ones
         df_temp["id"] = df_temp.apply(lambda row: "id=" + str(row[column_id]) + "," + str(shift_string), axis=1)
 
@@ -428,14 +456,23 @@ def roll_time_series(df_or_dict, column_id, column_sort=None, column_kind=None,
     This method creates sub windows of the time series. It rolls the (sorted) data frames for each kind and each id
     separately in the "time" domain (which is represented by the sort order of the sort column given by `column_sort`).
 
-    For each rolling step, a new id is created by the scheme "id={id}, shift={shift}", here id is the former id of the
-    column and shift is the amount of "time" shifts.
+    For each rolling step, a new id is created by the scheme "id={id}, timeshift={shift}", here id is the former id of
+    the column and shift is the amount of "time" shifts.
+    You can think of it as having a window of fixed length (the max_timeshift) moving one step at a time over
+    your time series.
+    Each cut-out seen by the window is a new time series with a new identifier.
 
     A few remarks:
 
      * This method will create new IDs!
-     * The sign of rolling defines the direction of time rolling, a positive value means we are going back in time
-     * It is possible to shift time series of different lengths but
+     * The sign of rolling defines the direction of time rolling, a positive value means we are shifting
+       the cut-out window foreward in time. The name of each new sub time series is given by the last time point.
+       This means, the time series named `id=4,timeshift=5` with a `max_timeshift` of 3 includes the data
+       of the times 3, 4 and 5.
+       A negative rolling direction means, you go in negative time direction over your data.
+       The time series named `id=4,timeshift=5` with `max_timeshift` of 3 would then include the data
+       of the times 5, 6 and 7.
+     * It is possible to shift time series of different lengths, but:
      * We assume that the time series are uniformly sampled
      * For more information, please see :ref:`forecasting-label`.
 
@@ -445,10 +482,11 @@ def roll_time_series(df_or_dict, column_id, column_sort=None, column_kind=None,
 
     :param column_id: it must be present in the pandas DataFrame or in all DataFrames in the dictionary.
         It is not allowed to have NaN values in this column.
-    :type column_id: basestring or None
+    :type column_id: basestring
 
     :param column_sort: if not None, sort the rows by this column. It is not allowed to
-        have NaN values in this column. If not given, will be filled by an increasing number.
+        have NaN values in this column. If not given, will be filled by an increasing number,
+        meaning that the order of the passed dataframes are used as "time" for the time series.
     :type column_sort: basestring or None
 
     :param column_kind: It can only be used when passing a pandas DataFrame (the dictionary is already assumed to be
@@ -457,13 +495,15 @@ def roll_time_series(df_or_dict, column_id, column_sort=None, column_kind=None,
         sort column) is a possible kind.
     :type column_kind: basestring or None
 
-    :param rolling_direction: The sign decides, if to roll backwards or forwards in "time"
+    :param rolling_direction: The sign decides, if to shift our cut-out window backwards or forwards in "time".
     :type rolling_direction: int
 
-    :param max_timeshift: If not None, shift only up to max_timeshift. If None, shift as often as possible.
+    :param max_timeshift: If not None, the cut-out window is at maximum `max_timeshift` large. If none, it grows
+         infinitely.
     :type max_timeshift: int
 
-    :param min_timeshift: Throw away all extracted forecast windows smaller than this. Must be larger than or equal 0.
+    :param min_timeshift: Throw away all extracted forecast windows smaller or equal than this. Must be larger
+         than or equal 0.
     :type min_timeshift: int
 
     :param n_jobs: The number of processes to use for parallelization. If zero, no parallelization is used.
@@ -517,6 +557,9 @@ def roll_time_series(df_or_dict, column_id, column_sort=None, column_kind=None,
     # Now we know that this is a pandas data frame
     df = df_or_dict
 
+    if len(df) <= 1:
+        raise ValueError("Your time series container has zero or one rows!. Can not perform rolling.")
+
     if column_id is not None:
         if column_id not in df:
             raise AttributeError("The given column for the id is not present in the data.")
@@ -554,19 +597,13 @@ def roll_time_series(df_or_dict, column_id, column_sort=None, column_kind=None,
     grouped_data = df.groupby(grouper)
     prediction_steps = grouped_data.count().max().max()
 
-    if np.isnan(prediction_steps):
-        raise ValueError("Somehow the maximum length of your time series is NaN (Does your time series container have "
-                         "only one row?). Can not perform rolling.")
     max_timeshift = max_timeshift or prediction_steps
 
     # Todo: not default for columns_sort to be None
     if column_sort is None:
         df["sort"] = range(df.shape[0])
 
-    if rolling_direction > 0:
-        range_of_shifts = range(1, prediction_steps + 1)
-    else:
-        range_of_shifts = range(1, prediction_steps + 1)
+    range_of_shifts = range(1, prediction_steps + 1)
 
     if distributor is None:
         if n_jobs == 0:
@@ -660,3 +697,85 @@ def make_forecasting_frame(x, kind, max_timeshift, rolling_direction):
     df_shift = df_shift[mask]
 
     return df_shift, df["value"][1:]
+
+
+def add_sub_time_series_index(df_or_dict, sub_length, column_id=None, column_sort=None, column_kind=None):
+    """
+    Add a column "id" which contains:
+    1. if column_id is None: for each kind (or if column_kind is None for the full dataframe) a new index built by
+       "sub-packaging" the data in packages of length "sub_length". For example if you have data with the
+       length of 11 and sub_length is 2, you will get 6 new packages: 0, 0; 1, 1; 2, 2; 3, 3; 4, 4; 5.
+    2. if column_id is not None: the same as before, just for each id seperately. The old column_id values are added
+       to the new "id" column after a comma
+
+    You can use this functions to turn a long measurement into sub-packages, where you want to extract features on.
+
+    :param df_or_dict: a pandas DataFrame or a dictionary. The required shape/form of the object depends on the rest of
+        the passed arguments.
+    :type df_or_dict: pandas.DataFrame or dict
+    :param column_id: it must be present in the pandas DataFrame or in all DataFrames in the dictionary.
+        It is not allowed to have NaN values in this column.
+    :type column_id: basestring or None
+    :param column_sort: if not None, sort the rows by this column. It is not allowed to
+        have NaN values in this column.
+    :type column_sort: basestring or None
+    :param column_kind: It can only be used when passing a pandas DataFrame (the dictionary is already assumed to be
+        grouped by the kind). Is must be present in the DataFrame and no NaN values are allowed.
+        If the kind column is not passed, it is assumed that each column in the pandas DataFrame (except the id or
+        sort column) is a possible kind.
+    :type column_kind: basestring or None
+
+    :return: The data frame or dictionary of data frames with a column "id" added
+    :rtype: the one from df_or_dict
+    """
+
+    if isinstance(df_or_dict, dict):
+        if column_kind is not None:
+            raise ValueError("You passed in a dictionary and gave a column name for the kind. Both are not possible.")
+
+        return {key: add_sub_time_series_index(df_or_dict=df_or_dict[key],
+                                               sub_length=sub_length,
+                                               column_id=column_id,
+                                               column_sort=column_sort,
+                                               column_kind=column_kind)
+                for key in df_or_dict}
+
+    df = df_or_dict
+
+    grouper = []
+
+    if column_id is not None:
+        grouper.append(column_id)
+    if column_kind is not None:
+        grouper.append(column_kind)
+
+    def _add_id_column(df_chunk):
+        chunk_length = len(df_chunk)
+        last_chunk_number = chunk_length // sub_length
+        reminder = chunk_length % sub_length
+
+        indices = np.concatenate([np.repeat(np.arange(last_chunk_number), sub_length),
+                                  np.repeat(last_chunk_number, reminder)])
+        assert(len(indices) == chunk_length)
+
+        if column_id:
+            indices = [str(id) + "," + str(old_id) for id, old_id in zip(indices, df_chunk[column_id])]
+
+        if column_sort:
+            df_chunk = df_chunk.sort_values(column_sort)
+
+        df_chunk["id"] = indices
+
+        return df_chunk
+
+    if grouper:
+        df = df.groupby(grouper).apply(_add_id_column)
+    else:
+        df = _add_id_column(df)
+
+    if column_sort:
+        df = df.sort_values(column_sort)
+
+    df = df.set_index(df.index.get_level_values(-1))
+
+    return df

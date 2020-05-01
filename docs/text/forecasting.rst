@@ -20,8 +20,7 @@ The rolling utilities implemented in `tsfresh` help you in this process of resha
 Please note that "time" does not necessarily mean clock time here.
 The "sort" column of a DataFrame in the supported :ref:`data-formats-label` gives a sequential state to the
 individual measurements.
-In the case of time series this can be the *time* dimension while in the case of spectra the
-order is given by the *wavelength* or *frequency* dimensions.
+In the case of time series this can be the *time* dimension while in other cases, this can be a location, a frequency. etc.
 
 The following image illustrates the process:
 
@@ -52,11 +51,11 @@ We look into the following example flat DataFrame in tsfresh format
 +====+======+====+====+
 | 1  |  1   | 1  | 5  |
 +----+------+----+----+
-| 1  |  2   | 2	 | 6  |
+| 1  |  2   | 2  | 6  |
 +----+------+----+----+
-| 1  |  3   | 3	 | 7  |
+| 1  |  3   | 3  | 7  |
 +----+------+----+----+
-| 1  |  4   | 4	 | 8  |
+| 1  |  4   | 4  | 8  |
 +----+------+----+----+
 | 2  |  8   | 10 | 12 |
 +----+------+----+----+
@@ -64,7 +63,7 @@ We look into the following example flat DataFrame in tsfresh format
 +----+------+----+----+
 
 where you have measured the values from two sensors x and y for two different entities (id 1 and 2) in 4 or 2 time
-steps (t1 to t9).
+steps (1, 2, 3, 4, 8, 9).
 
 If you want to follow along, here is the python code to generate this data:
 
@@ -82,9 +81,9 @@ Now, we can use :func:`tsfresh.utilities.dataframe_functions.roll_time_series` t
 You could think of having a window sliding over your time series data and extracting out every data you can see through this window.
 There are three parameters to tune the window:
 
-* `rolling_direction`: if you want to slide in positive (increasing sort) or negative (decreasing sort) direction. Default is positive.
-* `max_timeshift` defines, how large the window size will grow. This means the extracted time series will have at maximum `max_timeshift + 1` steps in the past (or future). Default is infinite.
-* `min_timeshift` defines the minimal size. Defaults to 0.
+* `max_timeshift` defines, how large the window size will grow. This means the extracted time series will have at maximum `max_timeshift + 1` steps in the past (or future).
+* `min_timeshift` defines the minimal size.
+* Advanced: `rolling_direction`: if you want to slide in positive (increasing sort) or negative (decreasing sort) direction. You barely need negative direction, so you probably not want to change the default.
 
 The column parameters are the same as in the usual :ref:`data-formats-label`.
 
@@ -175,6 +174,8 @@ You will end up with features generated for each of the parts above, which you c
 +------------------+----------------+-----------------------------+-----+
 | id=2,timeshift=9 |          221.0 |                         1.0 | ... |
 +------------------+----------------+-----------------------------+-----+
+
+The features for e.g. ``id=1,timeshift=3`` are extracted using the data up to and including ``t=3`` (so ``t=1``, ``t=2`` and ``t=3``).
 
 If you want to train for a forecasting, `tsfresh` also offers the function :func:`tsfresh.utilities.dataframe_functions.make_forecasting_frame`, which will also help you match the target vector properly.
 This process is also visualized by the following figure.

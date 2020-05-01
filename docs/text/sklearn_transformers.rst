@@ -33,6 +33,11 @@ transformer and the classifier in one step.
     from sklearn.ensemble import RandomForestClassifier
     from tsfresh.examples import load_robot_execution_failures
     from tsfresh.transformers import RelevantFeatureAugmenter
+    import pandas as pd
+
+    # Download dataset
+    from tsfresh.examples.robot_execution_failures import download_robot_execution_failures
+    download_robot_execution_failures()
 
     pipeline = Pipeline([('augmenter', RelevantFeatureAugmenter(column_id='id', column_sort='time')),
                 ('classifier', RandomForestClassifier())])

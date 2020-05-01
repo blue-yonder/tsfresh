@@ -36,7 +36,7 @@ Often the features give new insights into time series and their dynamics.
 The tsfresh package has been used successfully in projects involving
 
     * the prediction of the life span of machines
-    * the prediction of the quality of steel billets during a continuous casting process
+    * the prediction of the quality of steel billets during a continuous casting process [1]_
 
 What not to do with tsfresh?
 ----------------------------
@@ -58,3 +58,10 @@ There is a matlab package called `hctsa <https://github.com/benfulcher/hctsa>`_ 
 extract features from time series.
 It is also possible to use hctsa from within python by means of the `pyopy <https://github.com/strawlab/pyopy>`_
 package.
+
+References
+----------
+
+   .. [1] Christ, M., Kempa-Liehr, A.W. and Feindt, M. (2016).
+         Distributed and parallel time series feature extraction for industrial big data applications.
+         ArXiv e-prints: 1610.07717 URL: http://adsabs.harvard.edu/abs/2016arXiv161007717C

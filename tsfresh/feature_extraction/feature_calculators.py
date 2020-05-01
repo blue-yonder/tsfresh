@@ -12,6 +12,9 @@ There are two types of features:
 They are specified using the "fctype" parameter of each feature calculator, which is added using the
 set_property function. Only functions in this python module, which have a parameter called  "fctype" are
 seen by tsfresh as a feature calculator. Others will not be calculated.
+
+Feature calculators of type combiner should return the concatenated parameters sorted
+alphabetically ascending.
 """
 
 import itertools
@@ -452,7 +455,7 @@ def augmented_dickey_fuller(x, param):
         autolag = config.get("autolag", "AIC")
 
         adf = compute_adf(autolag)
-        index = 'autolag_"{}"__attr_"{}"'.format(autolag, config["attr"])
+        index = 'attr_"{}"__autolag_"{}"'.format(config["attr"], autolag)
 
         if config["attr"] == "teststat":
             res.append((index, adf[0]))
@@ -898,6 +901,17 @@ def sum_of_reoccurring_values(x):
     Returns the sum of all values, that are present in the time series
     more than once.
 
+    For example
+
+        sum_of_reoccurring_values([2, 2, 2, 2, 1]) = 2
+
+    as 2 is a reoccurring value, so it is summed up with all
+    other reoccuring values (there is none), so the result is 2.
+
+    This is in contrast to ``sum_of_reoccurring_data_points``,
+    where each reoccuring value is only counted as often as
+    it is present in the data.
+
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
     :return: the value of this feature
@@ -914,6 +928,15 @@ def sum_of_reoccurring_data_points(x):
     """
     Returns the sum of all data points, that are present in the time series
     more than once.
+
+    For example
+
+        sum_of_reoccurring_data_points([2, 2, 2, 2, 1]) = 8
+
+    as 2 is a reoccurring value, so all 2's are summed up.
+
+    This is in contrast to ``sum_of_reoccurring_values``,
+    where each reoccuring value is only counted once.
 
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
@@ -987,7 +1010,7 @@ def fft_coefficient(x, param):
 
     res = [complex_agg(fft[config["coeff"]], config["attr"]) if config["coeff"] < len(fft)
            else np.NaN for config in param]
-    index = ['coeff_{}__attr_"{}"'.format(config["coeff"], config["attr"]) for config in param]
+    index = ['attr_"{}"__coeff_{}'.format(config["attr"], config["coeff"]) for config in param]
     return zip(index, res)
 
 
@@ -1244,7 +1267,7 @@ def cwt_coefficients(x, param):
 
         calculated_cwt_for_widths = calculated_cwt[widths]
 
-        indices += ["widths_{}__coeff_{}__w_{}".format(widths, coeff, w)]
+        indices += ["coeff_{}__w_{}__widths_{}".format(coeff, w, widths)]
 
         i = widths.index(w)
         if calculated_cwt_for_widths.shape[1] <= coeff:
@@ -1319,7 +1342,7 @@ def ar_coefficient(x, param):
         k = parameter_combination["k"]
         p = parameter_combination["coeff"]
 
-        column_name = "k_{}__coeff_{}".format(k, p)
+        column_name = "coeff_{}__k_{}".format(p, k)
 
         if k not in calculated_ar_params:
             try:
@@ -1781,9 +1804,9 @@ def friedrich_coefficients(x, param):
             calculated[m][r] = _estimate_friedrich_coefficients(x, m, r)
 
         try:
-            res["m_{}__r_{}__coeff_{}".format(m, r, coeff)] = calculated[m][r][coeff]
+            res["coeff_{}__m_{}__r_{}".format(coeff, m, r)] = calculated[m][r][coeff]
         except IndexError:
-            res["m_{}__r_{}__coeff_{}".format(m, r, coeff)] = np.NaN
+            res["coeff_{}__m_{}__r_{}".format(coeff, m, r)] = np.NaN
     return [(key, value) for key, value in res.items()]
 
 
@@ -1872,7 +1895,7 @@ def agg_linear_trend(x, param):
         else:
             res_data.append(getattr(calculated_agg[f_agg][chunk_len], attr))
 
-        res_index.append("f_agg_\"{}\"__chunk_len_{}__attr_\"{}\"".format(f_agg, chunk_len, attr))
+        res_index.append("attr_\"{}\"__chunk_len_{}__f_agg_\"{}\"".format(attr, chunk_len, f_agg))
 
     return zip(res_index, res_data)
 
