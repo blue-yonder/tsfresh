@@ -901,6 +901,17 @@ def sum_of_reoccurring_values(x):
     Returns the sum of all values, that are present in the time series
     more than once.
 
+    For example
+
+        sum_of_reoccurring_values([2, 2, 2, 2, 1]) = 2
+
+    as 2 is a reoccurring value, so it is summed up with all
+    other reoccuring values (there is none), so the result is 2.
+
+    This is in contrast to `sum_of_reoccurring_data_points`,
+    where each reoccuring value is only counted as often as
+    it is present in the data.
+
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
     :return: the value of this feature
@@ -917,6 +928,15 @@ def sum_of_reoccurring_data_points(x):
     """
     Returns the sum of all data points, that are present in the time series
     more than once.
+
+    For example
+
+        sum_of_reoccurring_data_points([2, 2, 2, 2, 1]) = 8
+
+    as 2 is a reoccurring value, so all 2's are summed up.
+
+    This is in contrast to `sum_of_reoccurring_values`,
+    where each reoccuring value is only counted once.
 
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
