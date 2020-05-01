@@ -1,10 +1,16 @@
+# This script extracts the execution time for
+# various different settings of tsfresh
+# using different input data
+# Attention: it will run for ~half a day
+# Do these calculations in a controlled environment
+# (e.g. a cloud provider VM)
+# You will need to have b2luigi installed.
 from tsfresh.feature_extraction import ComprehensiveFCParameters, MinimalFCParameters, extract_features
 
 import pandas as pd
 import numpy as np
 from time import time
-from tqdm import tqdm
-import matplotlib.pylab as plt
+from luigi.contrib import gcs
 import b2luigi as luigi
 import json
 
@@ -12,6 +18,7 @@ np.random.seed(42)
 
 
 class DataCreationTask(luigi.Task):
+    """Create random data for testing"""
     num_ids = luigi.IntParameter(default=100)
     time_series_length = luigi.IntParameter()
 
@@ -28,11 +35,13 @@ class DataCreationTask(luigi.Task):
             for i in range(self.num_ids)
         ])
 
-        df.to_csv(self.get_output_file_name("data.csv"))
+        with self._get_output_target("data.csv").open("w") as f:
+            df.to_csv(f)
 
 
 @luigi.requires(DataCreationTask)
 class TimingTask(luigi.Task):
+    """Run tsfresh with the given parameters"""
     feature_parameter = luigi.DictParameter(hashed=True)
     n_jobs = luigi.IntParameter()
     try_number = luigi.IntParameter()
@@ -41,9 +50,10 @@ class TimingTask(luigi.Task):
         yield self.add_to_output("result.json")
 
     def run(self):
-        input_file = self.get_input_file_names("data.csv")[0]
+        input_file = self._get_input_targets("data.csv")[0]
 
-        df = pd.read_csv(input_file)
+        with input_file.open("r") as f:
+            df = pd.read_csv(f)
 
         start_time = time()
         extract_features(df, column_id="id", column_sort="time", n_jobs=self.n_jobs,
@@ -64,21 +74,23 @@ class TimingTask(luigi.Task):
             "try_number": self.try_number,
         }
 
-        with open(self.get_output_file_name("result.json"), "w") as f:
+        with self._get_output_target("result.json").open("w") as f:
             json.dump(result_json, f)
 
 
 @luigi.requires(DataCreationTask)
 class FullTimingTask(luigi.Task):
+    """Run tsfresh with all calculators for comparison"""
     n_jobs = luigi.IntParameter()
 
     def output(self):
         yield self.add_to_output("result.json")
 
     def run(self):
-        input_file = self.get_input_file_names("data.csv")[0]
+        input_file = self._get_input_targets("data.csv")[0]
 
-        df = pd.read_csv(input_file)
+        with input_file.open("r") as f:
+            df = pd.read_csv(f)
 
         start_time = time()
         extract_features(df, column_id="id", column_sort="time", n_jobs=self.n_jobs,
@@ -92,11 +104,12 @@ class FullTimingTask(luigi.Task):
             "time_series_length": int((df["id"] == 0).sum()),
         }
 
-        with open(self.get_output_file_name("result.json"), "w") as f:
+        with self._get_output_target("result.json").open("w") as f:
             json.dump(result_json, f)
 
 
 class CombinerTask(luigi.Task):
+    """Collect all tasks into a single result.csv file"""
     def complete(self):
         return False
 
@@ -135,12 +148,14 @@ class CombinerTask(luigi.Task):
     def run(self):
         results = []
 
-        for input_file in self.get_input_file_names("result.json"):
-            with open(input_file, "r") as f:
+        for input_file in self._get_input_targets("result.json"):
+            with input_file.open("r") as f:
                 results.append(json.load(f))
 
         df = pd.DataFrame(results)
-        df.to_csv(self.get_output_file_name("results.csv"))
+
+        with self._get_output_target("results.csv").open("w") as f:
+            df.to_csv(f)
 
 
 if __name__ == "__main__":
