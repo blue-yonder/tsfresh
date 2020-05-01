@@ -908,7 +908,7 @@ def sum_of_reoccurring_values(x):
     as 2 is a reoccurring value, so it is summed up with all
     other reoccuring values (there is none), so the result is 2.
 
-    This is in contrast to `sum_of_reoccurring_data_points`,
+    This is in contrast to ``sum_of_reoccurring_data_points``,
     where each reoccuring value is only counted as often as
     it is present in the data.
 
@@ -935,7 +935,7 @@ def sum_of_reoccurring_data_points(x):
 
     as 2 is a reoccurring value, so all 2's are summed up.
 
-    This is in contrast to `sum_of_reoccurring_values`,
+    This is in contrast to ``sum_of_reoccurring_values``,
     where each reoccuring value is only counted once.
 
     :param x: the time series to calculate the feature of
