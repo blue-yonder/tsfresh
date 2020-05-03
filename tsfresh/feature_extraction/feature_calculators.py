@@ -1946,7 +1946,6 @@ def energy_ratio_by_chunks(x, param):
 @set_property("fctype", "combiner")
 @set_property("input", "pd.Series")
 @set_property("index_type", pd.DatetimeIndex)
-@set_property("high_comp_cost", True)
 def linear_trend_timewise(x, param):
     """
     Calculate a linear least-squares regression for the values of the time series versus the sequence from 0 to
