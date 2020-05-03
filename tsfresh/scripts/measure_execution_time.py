@@ -10,7 +10,6 @@ from tsfresh.feature_extraction import ComprehensiveFCParameters, MinimalFCParam
 import pandas as pd
 import numpy as np
 from time import time
-from luigi.contrib import gcs
 import b2luigi as luigi
 import json
 
