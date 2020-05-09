@@ -1539,23 +1539,39 @@ def sample_entropy(x):
     """
     x = np.array(x)
 
+    # if one of the values is NaN, we can not compute anything meaningful
+    if np.isnan(x).any():
+        return np.nan
+
     m = 2  # common value for m, according to wikipedia...
     tolerance = 0.2 * np.std(x)  # 0.2 is a common value for r, according to wikipedia...
 
     N = len(x)
 
     # Split time series and save all templates of length m
-    xmi = np.array([x[i:i + m] for i in range(N - m)])
-    xmj = np.array([x[i:i + m] for i in range(N - m + 1)])
+    # Basically we turn [1, 2, 3, 4] into [1, 2], [2, 3], [3, 4]
+    xm = np.array([x[i:i + m] for i in range(N - m + 1)])
 
-    # Save all matches minus the self-match, compute B
-    B = np.sum([np.sum(np.abs(xmii - xmj).max(axis=1) <= tolerance) - 1 for xmii in xmi])
+    # Now calculate the maximum distance between each of those pairs
+    #   np.abs(xmi - xm).max(axis=1)
+    # and check how many are below the tolerance.
+    # For speed reasons, we are not doing this in a nested for loop,
+    # but with numpy magic.
+    # Example:
+    # if x = [1, 2, 3]
+    # then xm = [[1, 2], [2, 3]]
+    # so we will substract xm from [1, 2] => [[0, 0], [-1, -1]]
+    # and from [2, 3] => [[1, 1], [0, 0]]
+    # taking the abs and max gives us:
+    # [0, 1] and [1, 0]
+    # as the diagonal elements are always 0, we substract 1.
+    B = np.sum([np.sum(np.abs(xmi - xm).max(axis=1) <= tolerance) - 1 for xmi in xm])
 
     # Similar for computing A
     m += 1
-    xm = np.array([x[i:i + m] for i in range(N - m + 1)])
+    xmp1 = np.array([x[i:i + m] for i in range(N - m + 1)])
 
-    A = np.sum([np.sum(np.abs(xmi - xm).max(axis=1) <= tolerance) - 1 for xmi in xm])
+    A = np.sum([np.sum(np.abs(xmi - xmp1).max(axis=1) <= tolerance) - 1 for xmi in xmp1])
 
     # Return SampEn
     return -np.log(A / B)
