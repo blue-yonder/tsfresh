@@ -13,18 +13,19 @@ from time import time
 import b2luigi as luigi
 import json
 
-np.random.seed(42)
-
 
 class DataCreationTask(luigi.Task):
     """Create random data for testing"""
     num_ids = luigi.IntParameter(default=100)
     time_series_length = luigi.IntParameter()
+    random_seed = luigi.IntParameter()
 
     def output(self):
         yield self.add_to_output("data.csv")
 
     def run(self):
+        np.random.seed(self.random_seed)
+
         df = pd.concat([
             pd.DataFrame({
                 "id": [i] * self.time_series_length,
@@ -118,10 +119,12 @@ class CombinerTask(luigi.Task):
             for time_series_length in [100, 500, 1000, 5000]:
                 yield FullTimingTask(time_series_length=time_series_length,
                                      n_jobs=job,
-                                     num_ids=10)
+                                     num_ids=10,
+                                     random_seed=42)
                 yield FullTimingTask(time_series_length=time_series_length,
                                      n_jobs=job,
-                                     num_ids=100)
+                                     num_ids=100,
+                                     random_seed=42)
 
                 for feature_name in settings:
                     yield TimingTask(
@@ -130,6 +133,7 @@ class CombinerTask(luigi.Task):
                         n_jobs=job,
                         num_ids=100,
                         try_number=0,
+                        random_seed=42
                     )
 
                     for try_number in range(3):
@@ -138,7 +142,8 @@ class CombinerTask(luigi.Task):
                             n_jobs=job,
                             try_number=try_number,
                             num_ids=10,
-                            time_series_length=time_series_length
+                            time_series_length=time_series_length,
+                            random_seed=42
                         )
 
     def output(self):
