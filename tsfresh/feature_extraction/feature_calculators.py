@@ -1539,40 +1539,42 @@ def sample_entropy(x):
     """
     x = np.array(x)
 
-    sample_length = 1  # number of sequential points of the time series
-    tolerance = 0.2 * np.std(x)  # 0.2 is a common value for r - why?
+    # if one of the values is NaN, we can not compute anything meaningful
+    if np.isnan(x).any():
+        return np.nan
 
-    n = len(x)
-    prev = np.zeros(n)
-    curr = np.zeros(n)
-    A = np.zeros((1, 1))  # number of matches for m = [1,...,template_length - 1]
-    B = np.zeros((1, 1))  # number of matches for m = [1,...,template_length]
+    m = 2  # common value for m, according to wikipedia...
+    tolerance = 0.2 * np.std(x)  # 0.2 is a common value for r, according to wikipedia...
 
-    for i in range(n - 1):
-        nj = n - i - 1
-        ts1 = x[i]
-        for jj in range(nj):
-            j = jj + i + 1
-            if abs(x[j] - ts1) < tolerance:  # distance between two vectors
-                curr[jj] = prev[jj] + 1
-                temp_ts_length = min(sample_length, curr[jj])
-                for m in range(int(temp_ts_length)):
-                    A[m] += 1
-                    if j < n - 1:
-                        B[m] += 1
-            else:
-                curr[jj] = 0
-        for j in range(nj):
-            prev[j] = curr[j]
+    N = len(x)
 
-    N = n * (n - 1) / 2
-    B = np.vstack(([N], B[0]))
+    # Split time series and save all templates of length m
+    # Basically we turn [1, 2, 3, 4] into [1, 2], [2, 3], [3, 4]
+    xm = np.array([x[i:i + m] for i in range(N - m + 1)])
 
-    # sample entropy = -1 * (log (A/B))
-    similarity_ratio = A / B
-    se = -1 * np.log(similarity_ratio)
-    se = np.reshape(se, -1)
-    return se[0]
+    # Now calculate the maximum distance between each of those pairs
+    #   np.abs(xmi - xm).max(axis=1)
+    # and check how many are below the tolerance.
+    # For speed reasons, we are not doing this in a nested for loop,
+    # but with numpy magic.
+    # Example:
+    # if x = [1, 2, 3]
+    # then xm = [[1, 2], [2, 3]]
+    # so we will substract xm from [1, 2] => [[0, 0], [-1, -1]]
+    # and from [2, 3] => [[1, 1], [0, 0]]
+    # taking the abs and max gives us:
+    # [0, 1] and [1, 0]
+    # as the diagonal elements are always 0, we substract 1.
+    B = np.sum([np.sum(np.abs(xmi - xm).max(axis=1) <= tolerance) - 1 for xmi in xm])
+
+    # Similar for computing A
+    m += 1
+    xmp1 = np.array([x[i:i + m] for i in range(N - m + 1)])
+
+    A = np.sum([np.sum(np.abs(xmi - xmp1).max(axis=1) <= tolerance) - 1 for xmi in xmp1])
+
+    # Return SampEn
+    return -np.log(A / B)
 
 
 @set_property("fctype", "simple")
@@ -1620,7 +1622,6 @@ def autocorrelation(x, lag):
 
 
 @set_property("fctype", "simple")
-@set_property("input", "pd.Series")
 def quantile(x, q):
     """
     Calculates the q quantile of x. This is the value of x greater than q% of the ordered values from x.
@@ -1632,9 +1633,9 @@ def quantile(x, q):
     :return: the value of this feature
     :return type: float
     """
-    if not isinstance(x, pd.Series):
-        x = pd.Series(x)
-    return pd.Series.quantile(x, q)
+    if len(x) == 0:
+        return np.NaN
+    return np.quantile(x, q)
 
 
 @set_property("fctype", "simple")
@@ -1961,7 +1962,6 @@ def energy_ratio_by_chunks(x, param):
 @set_property("fctype", "combiner")
 @set_property("input", "pd.Series")
 @set_property("index_type", pd.DatetimeIndex)
-@set_property("high_comp_cost", True)
 def linear_trend_timewise(x, param):
     """
     Calculate a linear least-squares regression for the values of the time series versus the sequence from 0 to

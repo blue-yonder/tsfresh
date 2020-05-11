@@ -791,10 +791,29 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqualOnAllArrayTypes(binned_entropy, list(range(100)), - np.math.log(1 / 2), 2)
 
     def test_sample_entropy(self):
+        # "random" list -> large entropy
         ts = [1, 4, 5, 1, 7, 3, 1, 2, 5, 8, 9, 7, 3, 7, 9, 5, 4, 3, 9, 1, 2, 3, 4, 2, 9, 6, 7, 4, 9, 2, 9, 9, 6, 5, 1,
               3, 8, 1, 5, 3, 8, 4, 1, 2, 2, 1, 6, 5, 3, 6, 5, 4, 8, 9, 6, 7, 5, 3, 2, 5, 4, 2, 5, 1, 6, 5, 3, 5, 6, 7,
               8, 5, 2, 8, 6, 3, 8, 2, 7, 1, 7, 3, 5, 6, 2, 1, 3, 7, 3, 5, 3, 7, 6, 7, 7, 2, 3, 1, 7, 8]
-        self.assertAlmostEqualOnAllArrayTypes(sample_entropy, ts, 2.21187685)
+        self.assertAlmostEqualOnAllArrayTypes(sample_entropy, ts, 2.38262780)
+        # This is not very complex, so it gives a small value
+        ts = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+        self.assertAlmostEqualOnAllArrayTypes(sample_entropy, ts, 0.25131442)
+        # however adding a 2 increases complexity
+        ts = [1, 1, 2, 1, 1, 1, 1, 1, 1, 1]
+        self.assertAlmostEqualOnAllArrayTypes(sample_entropy, ts, 0.74193734)
+        # and it does not matter where
+        ts = [1, 1, 1, 2, 1, 1, 1, 1, 1, 1]
+        self.assertAlmostEqualOnAllArrayTypes(sample_entropy, ts, 0.74193734)
+        # negative numbers also work
+        ts = [1, -1, 1, -1, 1, -1]
+        self.assertAlmostEqualOnAllArrayTypes(sample_entropy, ts, 0.69314718)
+        # nan gives nan
+        ts = [1, -1, 1, np.nan, 1, -1]
+        self.assertIsNanOnAllArrayTypes(sample_entropy, ts)
+        # this is not a very "random" list, so it should give a small entropy
+        ts = list(range(1000))
+        self.assertAlmostEqualOnAllArrayTypes(sample_entropy, ts, 0.0010314596066622707)
 
     def test_autocorrelation(self):
         self.assertAlmostEqualOnAllArrayTypes(autocorrelation, [1, 2, 1, 2, 1, 2], -1, 1)

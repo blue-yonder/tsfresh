@@ -23,9 +23,13 @@ Unreleased
     - Optimize RelevantFeatureAugmenter to avoid re-extraction (#669)
     - Added a function `add_sub_time_series_index` (#666)
     - Added Dockerfile
+    - Speed optimizations and speed testing script (#681)
 - Bugfixes
     - Increase the extracted `ar` coefficients to the full parameter range. (#662)
     - Documentation fixes (#663, #664, #665)
+    - Rewrote the `sample_entropy` feature calculator (#681)
+      It is now faster and (hopefully) more correct.
+      But your results will change!
 
 
 Version 0.15.1
