@@ -132,9 +132,9 @@ def sample_tau(n=10, kappa_3=0.3, ratio=0.5, rel_increase=0.15):
     return tau.tolist()
 
 
-def load_driftbif(n, l, m=2, classification=True, kappa_3=0.3, seed=False):
+def load_driftbif(n, length, m=2, classification=True, kappa_3=0.3, seed=False):
     """
-    Simulates n time-series with l time steps each for the m-dimensional velocity of a dissipative soliton
+    Simulates n time-series with length time steps each for the m-dimensional velocity of a dissipative soliton
 
     classification=True:
     target 0 means tau<=1/0.3, Dissipative Soliton with Brownian motion (purely noise driven)
@@ -145,8 +145,8 @@ def load_driftbif(n, l, m=2, classification=True, kappa_3=0.3, seed=False):
 
     :param n: number of samples
     :type n: int
-    :param l: length of the time series
-    :type l: int
+    :param length: length of the time series
+    :type length: int
     :param m: number of spatial dimensions (default m=2) the dissipative soliton is propagating in
     :type m: int
     :param classification: distinguish between classification (default True) and regression target
@@ -166,8 +166,8 @@ def load_driftbif(n, l, m=2, classification=True, kappa_3=0.3, seed=False):
         logging.warning("You set the dimension parameter for the dissipative soliton to m={}, however it is only"
                         "properly defined for m=1 or m=2.".format(m))
 
-    id = np.repeat(range(n), l * m)
-    dimensions = list(np.repeat(range(m), l)) * n
+    id = np.repeat(range(n), length * m)
+    dimensions = list(np.repeat(range(m), length)) * n
 
     labels = list()
     values = list()
@@ -180,8 +180,8 @@ def load_driftbif(n, l, m=2, classification=True, kappa_3=0.3, seed=False):
             labels.append(ds.label)
         else:
             labels.append(ds.tau)
-        values.append(ds.simulate(l, v0=np.zeros(m)).transpose().flatten())
-    time = np.stack([ds.delta_t * np.arange(l)] * n * m).flatten()
+        values.append(ds.simulate(length, v0=np.zeros(m)).transpose().flatten())
+    time = np.stack([ds.delta_t * np.arange(length)] * n * m).flatten()
 
     df = pd.DataFrame({'id': id, "time": time, "value": np.stack(values).flatten(), "dimension": dimensions})
     y = pd.Series(labels)
