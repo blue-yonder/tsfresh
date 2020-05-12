@@ -4,8 +4,8 @@ Changelog
 
 tsfresh uses `Semantic Versioning <http://semver.org/>`_
 
-Unreleased
-==========
+Version 0.16.0
+==============
 
 - Breaking Change
     - Fix the sorting of the parameters in the feature names (#656)
