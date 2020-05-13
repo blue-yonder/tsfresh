@@ -14,37 +14,33 @@ All three input format options consist of :class:`pandas.DataFrame` objects. The
 make up those DataFrames. Each will be described with an example from the robot failures dataset
 (see :ref:`quick-start-label`).
 
-Mandatory:
-
 :`column_id`: This column indicates which entities the time series belong to. Features will be extracted individually
-    for each entity. The resulting feature matrix will contain one row per entity.
+    for each entity (id). The resulting feature matrix will contain one row per id.
     Each robot is a different entity, so each of it has a different id.
+    After rolling, each window will be a distinct entity, so it has a distinct id.
+
+:`column_sort`: This column contains values which allow to sort the time series (e.g. time stamps).
+    In general, it is not required to have equidistant time steps or the same time scale for the different ids and/or kinds.
+    Some features might make however only sense for equidistant time stamps.
+    If you omit this column, the DataFrame is assumed to be already sorted in ascending order.
+    The robot sensor measurements each have a time stamp which is used in this column.
+
+Need only to be specified on some data formats (see below):
+
 :`column_value`: This column contains the actual values of the time series.
     This corresponds to the measured values for different the sensors on the robots.
 
-Optional (but strongly recommended to specify if you have this column):
-
-:`column_sort`: This column contains values which allow to sort the time series (e.g. time stamps). It is not required
-    to have equidistant time steps or the same time scale for the different ids and/or kinds.
-    If you omit this column, the DataFrame is assumed to be already sorted in increasing order.
-    The robot sensor measurements each have a time stamp which is used in this column.
-
-    Please note that none of the algorithms of tsfresh uses the actual values in this time column - but only their
-    sorting order.
-
-Optional:
-
-:`column_kind`: This column indicates the names of the different time series types (E.g. different sensors in an
+:`column_kind`: This column indicates the names of the different time series types (e.g. different sensors in an
     industrial application as in the robot dataset).
     For each kind of time series the features are calculated individually.
-
 
 Important: None of these columns is allowed to contain any ``NaN``, ``Inf`` or ``-Inf`` values.
 
 In the following we describe the different input formats, that are build on those columns:
-    * A flat DataFrame
-    * A stacked DataFrame
-    * A dictionary of flat DataFrames
+
+* A flat DataFrame
+* A stacked DataFrame
+* A dictionary of flat DataFrames
 
 The difference between a flat and a stacked DataFrame is indicated by specifying or not specifying the parameters
 `column_value` and `column_kind` in the :func:`tsfresh.extract_features` function.
@@ -54,7 +50,7 @@ If you do not know which one to choose, you probably want to try out the flat or
 Input Option 1. Flat DataFrame
 ------------------------------
 
-If both `column_value` and `column_kind` are set to ``None``, the time series data is assumed to be in a flat
+If both ``column_value`` and ``column_kind`` are set to ``None``, the time series data is assumed to be in a flat
 DataFrame. This means that each different time series must be saved as its own column.
 
 Example: Imagine you record the values of time series x and y for different objects A and B for three different
@@ -84,11 +80,12 @@ and you would pass
     column_id="id", column_sort="time", column_kind=None, column_value=None
 
 to the extraction functions, to extract features separately for all ids and separately for the x and y values.
+You can also omit the ``column_kind=None, column_value=None`` as this is the default.
 
 Input Option 2. Stacked DataFrame
 ---------------------------------
 
-If both `column_value` and `column_kind` are set, the time series data is assumed to be a stacked DataFrame.
+If both ``column_value`` and ``column_kind`` are set, the time series data is assumed to be a stacked DataFrame.
 This means that there are no different columns for the different types of time series.
 This representation has several advantages over the flat Data Frame.
 For example, the time stamps of the different time series do not have to align.
