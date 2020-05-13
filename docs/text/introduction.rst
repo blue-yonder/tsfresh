@@ -12,6 +12,8 @@ your computer over one day as the following time series:
    :alt: the time series
    :align: center
 
+(and yes, it is pretty cold!)
+
 Now you want to calculate different characteristics such as the maximal or minimal temperature, the average temperature
 or the number of temporary temperature peaks:
 
@@ -45,6 +47,7 @@ Currently, tsfresh is not suitable
 
     * for usage with streaming data
     * for batch processing over a distributed architecture when different time series are fragmented over different computational units
+      (but see how to use ``tsfresh`` on a cluster in :ref:`tsfresh-on-a-cluster-label`)
     * to train models on the features (we do not want to reinvent the wheel, check out the python package
       `scikit-learn <http://scikit-learn.org/stable/>`_ for example)
 

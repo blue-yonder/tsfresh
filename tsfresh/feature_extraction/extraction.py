@@ -47,7 +47,8 @@ def extract_features(timeseries_container, default_fc_parameters=None,
     :class:`~tsfresh.feature_extraction.settings.ComprehensiveFCParameters` class,
     which is used to control which features with which parameters are calculated.
 
-    For a detailed explanation of the different parameters and data formats please see :ref:`data-formats-label`.
+    For a detailed explanation of the different parameters (e.g. the columns) and data formats
+    please see :ref:`data-formats-label`.
 
     Examples
     ========
@@ -72,16 +73,17 @@ def extract_features(timeseries_container, default_fc_parameters=None,
             which kind_of_fc_parameters doe not have any entries, will be ignored by the feature selection.
     :type kind_to_fc_parameters: dict
 
-    :param column_id: The name of the id column to group by.
+    :param column_id: The name of the id column to group by. Please see :ref:`data-formats-label`.
     :type column_id: str
 
-    :param column_sort: The name of the sort column.
+    :param column_sort: The name of the sort column. Please see :ref:`data-formats-label`.
     :type column_sort: str
 
     :param column_kind: The name of the column keeping record on the kind of the value.
+            Please see :ref:`data-formats-label`.
     :type column_kind: str
 
-    :param column_value: The name for the column keeping the value itself.
+    :param column_value: The name for the column keeping the value itself. Please see :ref:`data-formats-label`.
     :type column_value: str
 
     :param n_jobs: The number of processes to use for parallelization. If zero, no parallelization is used.

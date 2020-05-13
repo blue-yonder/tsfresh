@@ -325,13 +325,13 @@ def sum_values(x):
 
 @set_property("fctype", "combiner")
 def agg_autocorrelation(x, param):
-    r"""
+    """
     Calculates the value of an aggregation function :math:`f_{agg}` (e.g. the variance or the mean) over the
     autocorrelation :math:`R(l)` for different lags. The autocorrelation :math:`R(l)` for lag :math:`l` is defined as
 
     .. math::
 
-        R(l) = \\frac{1}{(n-l)\\sigma^{2}} \\sum_{t=1}^{n-l}(X_{t}-\\mu )(X_{t+l}-\\mu)
+        R(l) = \\frac{1}{(n-l)\\sigma^2} \\sum_{t=1}^{n-l}(X_{t}-\\mu )(X_{t+l}-\\mu)
 
     where :math:`X_i` are the values of the time series, :math:`n` its length. Finally, :math:`\\sigma^2` and
     :math:`\\mu` are estimators for its variance and mean
@@ -1032,7 +1032,7 @@ def fft_aggregated(x, param):
         'Attribute must be "centroid", "variance", "skew", "kurtosis"'
 
     def get_moment(y, moment):
-        r"""
+        """
         Returns the (non centered) moment of the distribution y:
         E[y**moment] = \\sum_i[index(y_i)^moment * y_i] / \\sum_i[y_i]
 
@@ -1777,7 +1777,7 @@ def approximate_entropy(x, m, r):
 
 @set_property("fctype", "combiner")
 def friedrich_coefficients(x, param):
-    r"""
+    """
     Coefficients of polynomial :math:`h(x)`, which has been fitted to
     the deterministic dynamics of Langevin model
 
@@ -1828,7 +1828,7 @@ def friedrich_coefficients(x, param):
 
 @set_property("fctype", "simple")
 def max_langevin_fixed_point(x, r, m):
-    r"""
+    """
     Largest fixed point of dynamics  :math:argmax_x {h(x)=0}` estimated from polynomial :math:`h(x)`,
     which has been fitted to the deterministic dynamics of Langevin model
 

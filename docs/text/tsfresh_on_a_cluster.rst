@@ -1,3 +1,5 @@
+.. _tsfresh-on-a-cluster-label:
+
 .. role:: python(code)
     :language: python
 
