@@ -63,16 +63,17 @@ def extract_relevant_features(timeseries_container, y, X=None,
             object (which is the value), will be used instead of the default_fc_parameters.
     :type kind_to_fc_parameters: dict
 
-    :param column_id: The name of the id column to group by.
+    :param column_id: The name of the id column to group by. Please see :ref:`data-formats-label`.
     :type column_id: str
 
-    :param column_sort: The name of the sort column.
+    :param column_sort: The name of the sort column. Please see :ref:`data-formats-label`.
     :type column_sort: str
 
     :param column_kind: The name of the column keeping record on the kind of the value.
+            Please see :ref:`data-formats-label`.
     :type column_kind: str
 
-    :param column_value: The name for the column keeping the value itself.
+    :param column_value: The name for the column keeping the value itself. Please see :ref:`data-formats-label`.
     :type column_value: str
 
     :param chunksize: The size of one chunk that is submitted to the worker
