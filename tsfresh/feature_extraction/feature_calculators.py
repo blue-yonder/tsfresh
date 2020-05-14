@@ -525,6 +525,47 @@ def cid_ce(x, normalize):
 
 
 @set_property("fctype", "simple")
+def lempel_ziv_complexity(x, bins):
+    """
+    Calculate a complexity estimate based on the Lempel-Ziv compression
+    algorithm.
+
+    The complexity is defined as the number of dictionary entries (or sub-words) needed
+    to encode the time series when viewed from left to right.
+    FOr this, the time series is first binned into the given number of bins.
+    Then it is converted into sub-words with different prefixes.
+    The number of sub-words needed for this divided by the length of the time
+    series is the complexity estimate.
+
+    For example, if the time series (after binning in only 2 bins) would look like "100111",
+    the different sub-words would be 1, 0, 01 and 11 and therefore the result is 4/6 = 0.66.
+
+    Ref: https://github.com/Naereen/Lempel-Ziv_Complexity/blob/master/src/lempel_ziv_complexity.py
+
+    """
+    x = np.asarray(x)
+
+    bins = np.linspace(np.min(x), np.max(x), bins)
+    sequence = np.searchsorted(bins, x, side='left')
+
+    sub_strings = set()
+    n = len(sequence)
+
+    ind = 0
+    inc = 1
+    while ind + inc <= n:
+        # convert tu tuple to make it hashable
+        sub_str = tuple(sequence[ind:ind + inc])
+        if sub_str in sub_strings:
+            inc += 1
+        else:
+            sub_strings.add(sub_str)
+            ind += inc
+            inc = 1
+    return len(sub_strings) / n
+
+
+@set_property("fctype", "simple")
 def mean_abs_change(x):
     """
     Returns the mean over the absolute differences between subsequent time series values which is

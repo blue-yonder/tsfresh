@@ -148,7 +148,8 @@ class ComprehensiveFCParameters(dict):
             "linear_trend_timewise": [{"attr": "pvalue"}, {"attr": "rvalue"}, {"attr": "intercept"},
                                       {"attr": "slope"}, {"attr": "stderr"}],
             "count_above": [{"t": 0}],
-            "count_below": [{"t": 0}]
+            "count_below": [{"t": 0}],
+            "lempel_ziv_entropy": [{"bins": x} for x in [2, 3, 5, 10]]
 
         })
 
