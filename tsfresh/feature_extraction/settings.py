@@ -149,7 +149,7 @@ class ComprehensiveFCParameters(dict):
                                       {"attr": "slope"}, {"attr": "stderr"}],
             "count_above": [{"t": 0}],
             "count_below": [{"t": 0}],
-            "lempel_ziv_entropy": [{"bins": x} for x in [2, 3, 5, 10]]
+            "lempel_ziv_complexity": [{"bins": x} for x in [2, 3, 5, 10, 100]],
 
         })
 
