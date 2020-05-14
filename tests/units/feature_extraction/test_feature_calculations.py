@@ -326,11 +326,17 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqualOnAllArrayTypes(lempel_ziv_complexity, [1, 1, 1], 2./3, bins=2)
         self.assertAlmostEqualOnAllArrayTypes(lempel_ziv_complexity, [1, 1, 1], 2./3, bins=5)
 
-        self.assertAlmostEqualOnAllArrayTypes(lempel_ziv_complexity, [1, 1, 1, 1, 1, 1, 1], 0.4285714285, bins=2)
-        self.assertAlmostEqualOnAllArrayTypes(lempel_ziv_complexity, [1, 1, 1, 2, 1, 1, 1], 0.5714285714, bins=2)
+        self.assertAlmostEqualOnAllArrayTypes(lempel_ziv_complexity, [1, 1, 1, 1, 1, 1, 1],
+                                              0.4285714285, bins=2)
+        self.assertAlmostEqualOnAllArrayTypes(lempel_ziv_complexity, [1, 1, 1, 2, 1, 1, 1],
+                                               0.5714285714, bins=2)
 
-        self.assertAlmostEqualOnAllArrayTypes(lempel_ziv_complexity, [-1, 4.3, 5, 1, -4.5, 1, 5, 7, -3.4, 6], 0.8, bins=10)
-        self.assertAlmostEqualOnAllArrayTypes(lempel_ziv_complexity, [-1, np.nan, 5, 1, -4.5, 1, 5, 7, -3.4, 6], 0.4, bins=10)
+        self.assertAlmostEqualOnAllArrayTypes(lempel_ziv_complexity,
+                                              [-1, 4.3, 5, 1, -4.5, 1, 5, 7, -3.4, 6],
+                                              0.8, bins=10)
+        self.assertAlmostEqualOnAllArrayTypes(lempel_ziv_complexity,
+                                              [-1, np.nan, 5, 1, -4.5, 1, 5, 7, -3.4, 6],
+                                              0.4, bins=10)
 
 
     def test_ratio_beyond_r_sigma(self):
