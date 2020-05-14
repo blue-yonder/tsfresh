@@ -525,6 +525,20 @@ def cid_ce(x, normalize):
 
 
 @set_property("fctype", "simple")
+def fourier_entropy(x, bins):
+    """
+    Calculate the binned entropy of the power spectral density of the time series
+    (using the welch method).
+
+    Ref: https://hackaday.io/project/707-complexity-of-a-time-series/details
+    Ref: https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.signal.welch.html
+
+    """
+    _, pxx = welch(x, nperseg=min(len(x), 256))
+    return binned_entropy(pxx / np.max(pxx), bins)
+
+
+@set_property("fctype", "simple")
 def lempel_ziv_complexity(x, bins):
     """
     Calculate a complexity estimate based on the Lempel-Ziv compression
@@ -1553,6 +1567,11 @@ def binned_entropy(x, max_bins):
     """
     if not isinstance(x, (np.ndarray, pd.Series)):
         x = np.asarray(x)
+
+    # nan makes no sense here
+    if np.isnan(x).any():
+        return np.nan
+
     hist, bin_edges = np.histogram(x, bins=max_bins)
     probs = hist / x.size
     probs[probs == 0] = 1.0
