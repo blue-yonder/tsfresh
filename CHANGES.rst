@@ -4,6 +4,11 @@ Changelog
 
 tsfresh uses `Semantic Versioning <http://semver.org/>`_
 
+Unreleased
+==========
+- Added Features
+    - Implemented the Lempel-Ziv-Complexity (#688)
+
 Version 0.16.0
 ==============
 
