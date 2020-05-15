@@ -2084,23 +2084,27 @@ def count_below(x, t):
     """
     return np.sum(x <= t)/len(x)
 
+
 @set_property("fctype", "simple")
 def benford_correlation(x):
     """
-    Useful for anomaly detection applications [1][2]. Returns the correlation from first digit distribution when compared to the Newcomb-Benford's Law distribution [3][4].
+    Useful for anomaly detection applications [1][2]. Returns the correlation from first digit distribution when
+    compared to the Newcomb-Benford's Law distribution [3][4].
 
     .. math::
-         
+
         P(d)=\\log_{10}\\left(1+\\frac{1}{d}\\right)
 
-    where :math:`P(d)` is the Newcomb-Benford distribution for :math:`d` that is the leading digit of the number {1, 2, 3, 4, 5, 6, 7, 8, 9}.
+    where :math:`P(d)` is the Newcomb-Benford distribution for :math:`d` that is the leading digit of the number {1, 2,
+    3, 4, 5, 6, 7, 8, 9}.
        
     .. rubric:: References
 
     |  [1] A Statistical Derivation of the Significant-Digit Law, Theodore P. Hill, Statistical Science, 1995
     |  [2] The significant-digit phenomenon, Theodore P. Hill, The American Mathematical Monthly, 1995
     |  [3] The law of anomalous numbers, Frank Benford, Proceedings of the American philosophical society, 1938
-    |  [4] Note on the frequency of use of the different digits in natural numbers, Simon Newcomb, American Journal of mathematics, 1881
+    |  [4] Note on the frequency of use of the different digits in natural numbers, Simon Newcomb, American Journal of
+    |  mathematics, 1881
  
    :param x: the time series to calculate the feature of
    :type x: numpy.ndarray
@@ -2109,11 +2113,13 @@ def benford_correlation(x):
    """
     if not isinstance(x, (np.ndarray, pd.Series)):
         x = np.asarray(x)
-   
-    x = np.trunc(x) # retrieve first digit from data
-   
-    benford_distribution = np.array([0.301, 0.176, 0.125, 0.097, 0.079, 0.067, 0.058, 0.051, 0.046]) # benford distribution
- 
-    data_distribution = np.array([(x == 1).mean(), (x == 2).mean(), (x == 3).mean(), (x == 4).mean(), (x == 5).mean(), (x == 6).mean(), (x == 7).mean(), (x == 8).mean(), (x == 9).mean()])
-   
-    return np.corrcoef(benford_distribution,data_distribution)[0, 1]
+
+    x = np.trunc(x)  # retrieve first digit from data
+
+    # benford distribution
+    benford_distribution = np.array([0.301, 0.176, 0.125, 0.097, 0.079, 0.067, 0.058, 0.051, 0.046])
+
+    data_distribution = np.array([(x == 1).mean(), (x == 2).mean(), (x == 3).mean(), (x == 4).mean(), (x == 5).mean(),
+                                  (x == 6).mean(), (x == 7).mean(), (x == 8).mean(), (x == 9).mean()])
+
+    return np.corrcoef(benford_distribution, data_distribution)[0, 1]
