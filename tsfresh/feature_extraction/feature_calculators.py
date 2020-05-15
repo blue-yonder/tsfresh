@@ -2083,3 +2083,44 @@ def count_below(x, t):
     :return type: float
     """
     return np.sum(x <= t)/len(x)
+
+@set_property("fctype", "simple")
+def benford_correlation(x):
+    """
+   Returns the correlation from first digit distribution when compared to the Newcomb-Benford's Law distribution
+ 
+   .. math::
+         
+       P(d)=\log_{10}\left(1+\frac{1}{d}\right)
+       
+    d = leading digits = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    P(1)=0.301
+    P(2)=0.176
+    P(3)=0.125
+    P(4)=0.097
+    P(5)=0.079
+    P(6)=0.067
+    P(7)=0.058
+    P(8)=0.051
+    P(9)=0.046
+       
+    Ref: A Statistical Derivation of the Significant-Digit Law, Theodore P. Hill, Statistical Science, 1995
+    Ref: The significant-digit phenomenon, Theodore P. Hill, The American Mathematical Monthly, 1995
+    Ref: The law of anomalous numbers, Frank Benford, Proceedings of the American philosophical society, 1938
+    Ref: Note on the frequency of use of the different digits in natural numbers, Simon Newcomb, American Journal of mathematics, 1881
+ 
+   :param x: the time series to calculate the feature of
+   :type x: numpy.ndarray
+   :return: the value of this feature
+   :return type: float
+   """
+    if not isinstance(x, (np.ndarray, pd.Series)):
+        x = np.asarray(x)
+   
+    x = np.trunc(x) # retrieve first digit from data
+   
+    benford_distribution = np.array([0.301, 0.176, 0.125, 0.097, 0.079, 0.067, 0.058, 0.051, 0.046]) # benford distribution
+ 
+    data_distribution = np.array([(x == 1).mean(), (x == 2).mean(), (x == 3).mean(), (x == 4).mean(), (x == 5).mean(), (x == 6).mean(), (x == 7).mean(), (x == 8).mean(), (x == 9).mean()])
+   
+    return np.corrcoef(benford_distribution,data_distribution)[0, 1]
