@@ -2097,7 +2097,7 @@ def benford_correlation(x):
 
     where :math:`P(d)` is the Newcomb-Benford distribution for :math:`d` that is the leading digit of the number {1, 2,
     3, 4, 5, 6, 7, 8, 9}.
-       
+
     .. rubric:: References
 
     |  [1] A Statistical Derivation of the Significant-Digit Law, Theodore P. Hill, Statistical Science, 1995
@@ -2105,7 +2105,7 @@ def benford_correlation(x):
     |  [3] The law of anomalous numbers, Frank Benford, Proceedings of the American philosophical society, 1938
     |  [4] Note on the frequency of use of the different digits in natural numbers, Simon Newcomb, American Journal of
     |  mathematics, 1881
- 
+
    :param x: the time series to calculate the feature of
    :type x: numpy.ndarray
    :return: the value of this feature
