@@ -2087,27 +2087,20 @@ def count_below(x, t):
 @set_property("fctype", "simple")
 def benford_correlation(x):
     """
-   Returns the correlation from first digit distribution when compared to the Newcomb-Benford's Law distribution
- 
-   .. math::
+    Useful for anomaly detection applications [1][2]. Returns the correlation from first digit distribution when compared to the Newcomb-Benford's Law distribution [3][4].
+
+    .. math::
          
-       P(d)=\log_{10}\left(1+\frac{1}{d}\right)
+        P(d)=\\log_{10}\\left(1+\\frac{1}{d}\\right)
+
+    where :math:`P(d)` is the Newcomb-Benford distribution for :math:`d` that is the leading digit of the number {1, 2, 3, 4, 5, 6, 7, 8, 9}.
        
-    d = leading digits = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-    P(1)=0.301
-    P(2)=0.176
-    P(3)=0.125
-    P(4)=0.097
-    P(5)=0.079
-    P(6)=0.067
-    P(7)=0.058
-    P(8)=0.051
-    P(9)=0.046
-       
-    Ref: A Statistical Derivation of the Significant-Digit Law, Theodore P. Hill, Statistical Science, 1995
-    Ref: The significant-digit phenomenon, Theodore P. Hill, The American Mathematical Monthly, 1995
-    Ref: The law of anomalous numbers, Frank Benford, Proceedings of the American philosophical society, 1938
-    Ref: Note on the frequency of use of the different digits in natural numbers, Simon Newcomb, American Journal of mathematics, 1881
+    .. rubric:: References
+
+    |  [1] A Statistical Derivation of the Significant-Digit Law, Theodore P. Hill, Statistical Science, 1995
+    |  [2] The significant-digit phenomenon, Theodore P. Hill, The American Mathematical Monthly, 1995
+    |  [3] The law of anomalous numbers, Frank Benford, Proceedings of the American philosophical society, 1938
+    |  [4] Note on the frequency of use of the different digits in natural numbers, Simon Newcomb, American Journal of mathematics, 1881
  
    :param x: the time series to calculate the feature of
    :type x: numpy.ndarray
