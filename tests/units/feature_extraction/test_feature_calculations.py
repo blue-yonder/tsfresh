@@ -369,7 +369,6 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqualOnAllArrayTypes(permutation_entropy, [1, -1, 1, -1, 1,  1, 1, -1],
                                               1.3296613488547582, dimension=3, tau=1)
 
-
         self.assertAlmostEqualOnAllArrayTypes(permutation_entropy,
                                               [-1, 4.3, 5, 1, -4.5, 1, 5, 7, -3.4, 6],
                                               1.0397207708399179, dimension=3, tau=2)
