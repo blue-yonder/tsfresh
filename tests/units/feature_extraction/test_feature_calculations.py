@@ -359,6 +359,25 @@ class FeatureCalculationTestCase(TestCase):
                                         [-1, np.nan, 5, 1, -4.5, 1, 5, 7, -3.4, 6],
                                         bins=10)
 
+    def test_permutation_entropy(self):
+        self.assertAlmostEqualOnAllArrayTypes(permutation_entropy, [4, 7, 9, 10, 6, 11, 3], 1.054920167,
+                                              dimension=3, tau=1)
+
+        # should grow
+        self.assertAlmostEqualOnAllArrayTypes(permutation_entropy, [1, -1, 1, -1, 1, -1, 1, -1],
+                                              0.6931471805599453, dimension=3, tau=1)
+        self.assertAlmostEqualOnAllArrayTypes(permutation_entropy, [1, -1, 1, -1, 1,  1, 1, -1],
+                                              1.3296613488547582, dimension=3, tau=1)
+
+
+        self.assertAlmostEqualOnAllArrayTypes(permutation_entropy,
+                                              [-1, 4.3, 5, 1, -4.5, 1, 5, 7, -3.4, 6],
+                                              1.0397207708399179, dimension=3, tau=2)
+        # nan is treated like any other number
+        self.assertAlmostEqualOnAllArrayTypes(permutation_entropy,
+                                              [-1, 4.3, 5, 1, -4.5, 1, 5, np.nan, -3.4, 6],
+                                              1.0397207708399179, dimension=3, tau=2)
+
     def test_ratio_beyond_r_sigma(self):
 
         x = [0, 1] * 10 + [10, 20, -30]  # std of x is 7.21, mean 3.04

@@ -182,8 +182,10 @@ def _into_subchunks(x, subchunk_length, every_n=1):
 
     with the settings subchunk_length = 3 and every_n = 2
     """
-    # 0, 1, 2
     len_x = len(x)
+
+    assert subchunk_length > 1
+    assert every_n > 0
 
     # how often can we shift a window of size subchunk_length over the input?
     num_shifts = (len_x - subchunk_length) // every_n + 1
@@ -1705,6 +1707,56 @@ def lempel_ziv_complexity(x, bins):
             ind += inc
             inc = 1
     return len(sub_strings) / n
+
+
+@set_property("fctype", "simple")
+def permutation_entropy(x, tau, dimension):
+    """
+    Calculate the permutation entropy.
+
+    Three steps are needed for this:
+    1. chunk the data into sub-windows of length D starting every tau.
+       Following the example from the reference, a vector
+
+        x = [4, 7, 9, 10, 6, 11, 3
+
+       with D = 3 and tau = 1 is turned into
+
+           [[ 4,  7,  9],
+            [ 7,  9, 10],
+            [ 9, 10,  6],
+            [10,  6, 11],
+            [ 6, 11,  3]]
+
+    2. replace each D-window by the permutation, that
+       captures the ordinal ranking of the data.
+       That gives
+
+           [[0, 1, 2],
+            [0, 1, 2],
+            [1, 2, 0],
+            [1, 0, 2],
+            [1, 2, 0]]
+
+    3. Now we just need to count the frequencies of every permutation
+       and return their entropy (we use log_e and not log_2).
+
+    Ref: https://www.aptech.com/blog/permutation-entropy/
+         Bandt, Christoph and Bernd Pompe.
+         “Permutation entropy: a natural complexity measure for time series.”
+         Physical review letters 88 17 (2002): 174102 .
+    """
+
+    X = _into_subchunks(x, dimension, tau)
+    # Now that is clearly black, magic, but see here:
+    # https://stackoverflow.com/questions/54459554/numpy-find-index-in-sorted-array-in-an-efficient-way
+    permutations = np.argsort(np.argsort(X))
+    # Count the number of occurences
+    _, counts = np.unique(permutations, axis=0, return_counts=True)
+    # turn them into frequencies
+    probs = counts / len(permutations)
+    # and return their entropy
+    return -np.sum(probs * np.log(probs))
 
 
 @set_property("fctype", "simple")
