@@ -525,61 +525,6 @@ def cid_ce(x, normalize):
 
 
 @set_property("fctype", "simple")
-def fourier_entropy(x, bins):
-    """
-    Calculate the binned entropy of the power spectral density of the time series
-    (using the welch method).
-
-    Ref: https://hackaday.io/project/707-complexity-of-a-time-series/details
-    Ref: https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.signal.welch.html
-
-    """
-    _, pxx = welch(x, nperseg=min(len(x), 256))
-    return binned_entropy(pxx / np.max(pxx), bins)
-
-
-@set_property("fctype", "simple")
-def lempel_ziv_complexity(x, bins):
-    """
-    Calculate a complexity estimate based on the Lempel-Ziv compression
-    algorithm.
-
-    The complexity is defined as the number of dictionary entries (or sub-words) needed
-    to encode the time series when viewed from left to right.
-    FOr this, the time series is first binned into the given number of bins.
-    Then it is converted into sub-words with different prefixes.
-    The number of sub-words needed for this divided by the length of the time
-    series is the complexity estimate.
-
-    For example, if the time series (after binning in only 2 bins) would look like "100111",
-    the different sub-words would be 1, 0, 01 and 11 and therefore the result is 4/6 = 0.66.
-
-    Ref: https://github.com/Naereen/Lempel-Ziv_Complexity/blob/master/src/lempel_ziv_complexity.py
-
-    """
-    x = np.asarray(x)
-
-    bins = np.linspace(np.min(x), np.max(x), bins)
-    sequence = np.searchsorted(bins, x, side='left')
-
-    sub_strings = set()
-    n = len(sequence)
-
-    ind = 0
-    inc = 1
-    while ind + inc <= n:
-        # convert tu tuple to make it hashable
-        sub_str = tuple(sequence[ind:ind + inc])
-        if sub_str in sub_strings:
-            inc += 1
-        else:
-            sub_strings.add(sub_str)
-            ind += inc
-            inc = 1
-    return len(sub_strings) / n
-
-
-@set_property("fctype", "simple")
 def mean_abs_change(x):
     """
     Returns the mean over the absolute differences between subsequent time series values which is
@@ -1638,6 +1583,110 @@ def sample_entropy(x):
 
 
 @set_property("fctype", "simple")
+@set_property("high_comp_cost", True)
+def approximate_entropy(x, m, r):
+    """
+    Implements a vectorized Approximate entropy algorithm.
+
+        https://en.wikipedia.org/wiki/Approximate_entropy
+
+    For short time-series this method is highly dependent on the parameters,
+    but should be stable for N > 2000, see:
+
+        Yentes et al. (2012) -
+        *The Appropriate Use of Approximate Entropy and Sample Entropy with Short Data Sets*
+
+
+    Other shortcomings and alternatives discussed in:
+
+        Richman & Moorman (2000) -
+        *Physiological time-series analysis using approximate entropy and sample entropy*
+
+    :param x: the time series to calculate the feature of
+    :type x: numpy.ndarray
+    :param m: Length of compared run of data
+    :type m: int
+    :param r: Filtering level, must be positive
+    :type r: float
+
+    :return: Approximate entropy
+    :return type: float
+    """
+    if not isinstance(x, (np.ndarray, pd.Series)):
+        x = np.asarray(x)
+
+    N = x.size
+    r *= np.std(x)
+    if r < 0:
+        raise ValueError("Parameter r must be positive.")
+    if N <= m + 1:
+        return 0
+
+    def _phi(m):
+        x_re = np.array([x[i:i + m] for i in range(N - m + 1)])
+        C = np.sum(np.max(np.abs(x_re[:, np.newaxis] - x_re[np.newaxis, :]),
+                          axis=2) <= r, axis=0) / (N - m + 1)
+        return np.sum(np.log(C)) / (N - m + 1.0)
+
+    return np.abs(_phi(m) - _phi(m + 1))
+
+
+@set_property("fctype", "simple")
+def fourier_entropy(x, bins):
+    """
+    Calculate the binned entropy of the power spectral density of the time series
+    (using the welch method).
+
+    Ref: https://hackaday.io/project/707-complexity-of-a-time-series/details
+    Ref: https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.signal.welch.html
+
+    """
+    _, pxx = welch(x, nperseg=min(len(x), 256))
+    return binned_entropy(pxx / np.max(pxx), bins)
+
+
+@set_property("fctype", "simple")
+def lempel_ziv_complexity(x, bins):
+    """
+    Calculate a complexity estimate based on the Lempel-Ziv compression
+    algorithm.
+
+    The complexity is defined as the number of dictionary entries (or sub-words) needed
+    to encode the time series when viewed from left to right.
+    FOr this, the time series is first binned into the given number of bins.
+    Then it is converted into sub-words with different prefixes.
+    The number of sub-words needed for this divided by the length of the time
+    series is the complexity estimate.
+
+    For example, if the time series (after binning in only 2 bins) would look like "100111",
+    the different sub-words would be 1, 0, 01 and 11 and therefore the result is 4/6 = 0.66.
+
+    Ref: https://github.com/Naereen/Lempel-Ziv_Complexity/blob/master/src/lempel_ziv_complexity.py
+
+    """
+    x = np.asarray(x)
+
+    bins = np.linspace(np.min(x), np.max(x), bins)
+    sequence = np.searchsorted(bins, x, side='left')
+
+    sub_strings = set()
+    n = len(sequence)
+
+    ind = 0
+    inc = 1
+    while ind + inc <= n:
+        # convert tu tuple to make it hashable
+        sub_str = tuple(sequence[ind:ind + inc])
+        if sub_str in sub_strings:
+            inc += 1
+        else:
+            sub_strings.add(sub_str)
+            ind += inc
+            inc = 1
+    return len(sub_strings) / n
+
+
+@set_property("fctype", "simple")
 def autocorrelation(x, lag):
     """
     Calculates the autocorrelation of the specified lag, according to the formula [1]
@@ -1784,55 +1833,6 @@ def range_count(x, min, max):
     :rtype: int
     """
     return np.sum((x >= min) & (x < max))
-
-
-@set_property("fctype", "simple")
-@set_property("high_comp_cost", True)
-def approximate_entropy(x, m, r):
-    """
-    Implements a vectorized Approximate entropy algorithm.
-
-        https://en.wikipedia.org/wiki/Approximate_entropy
-
-    For short time-series this method is highly dependent on the parameters,
-    but should be stable for N > 2000, see:
-
-        Yentes et al. (2012) -
-        *The Appropriate Use of Approximate Entropy and Sample Entropy with Short Data Sets*
-
-
-    Other shortcomings and alternatives discussed in:
-
-        Richman & Moorman (2000) -
-        *Physiological time-series analysis using approximate entropy and sample entropy*
-
-    :param x: the time series to calculate the feature of
-    :type x: numpy.ndarray
-    :param m: Length of compared run of data
-    :type m: int
-    :param r: Filtering level, must be positive
-    :type r: float
-
-    :return: Approximate entropy
-    :return type: float
-    """
-    if not isinstance(x, (np.ndarray, pd.Series)):
-        x = np.asarray(x)
-
-    N = x.size
-    r *= np.std(x)
-    if r < 0:
-        raise ValueError("Parameter r must be positive.")
-    if N <= m + 1:
-        return 0
-
-    def _phi(m):
-        x_re = np.array([x[i:i + m] for i in range(N - m + 1)])
-        C = np.sum(np.max(np.abs(x_re[:, np.newaxis] - x_re[np.newaxis, :]),
-                          axis=2) <= r, axis=0) / (N - m + 1)
-        return np.sum(np.log(C)) / (N - m + 1.0)
-
-    return np.abs(_phi(m) - _phi(m + 1))
 
 
 @set_property("fctype", "combiner")
