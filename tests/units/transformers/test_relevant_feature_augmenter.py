@@ -110,7 +110,6 @@ class RelevantFeatureAugmenterTestCase(DataTestCase):
         assert calculate_relevance_table_mock.call_count == 1
         assert not calculate_relevance_table_mock.call_args[0][0].isnull().any().any()
 
-
     def test_no_ids_present(self):
         augmenter = RelevantFeatureAugmenter(kind_to_fc_parameters=self.kind_to_fc_parameters,
                                              filter_only_tsfresh_features=False,
@@ -121,7 +120,8 @@ class RelevantFeatureAugmenterTestCase(DataTestCase):
 
         augmenter.set_timeseries_container(df)
 
-        self.assertRaisesRegex(AttributeError, r"The ids of the time series container", augmenter.fit, X_with_wrong_ids, y)
+        self.assertRaisesRegex(AttributeError, r"The ids of the time series container",
+                               augmenter.fit, X_with_wrong_ids, y)
 
 
 def test_relevant_augmentor_cross_validated():

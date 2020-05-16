@@ -90,5 +90,5 @@ class FeatureAugmenterTestCase(DataTestCase):
         augmenter.set_timeseries_container(self.test_df)
 
         X_with_not_all_ids = pd.DataFrame([{"feature_1": 1}], index=[-999])
-        self.assertRaisesRegex(AttributeError, r"The ids of the time series container", augmenter.transform, X_with_not_all_ids)
-
+        self.assertRaisesRegex(AttributeError, r"The ids of the time series container",
+                               augmenter.transform, X_with_not_all_ids)
