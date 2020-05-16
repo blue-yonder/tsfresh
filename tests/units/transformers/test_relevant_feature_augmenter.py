@@ -111,6 +111,19 @@ class RelevantFeatureAugmenterTestCase(DataTestCase):
         assert not calculate_relevance_table_mock.call_args[0][0].isnull().any().any()
 
 
+    def test_no_ids_present(self):
+        augmenter = RelevantFeatureAugmenter(kind_to_fc_parameters=self.kind_to_fc_parameters,
+                                             filter_only_tsfresh_features=False,
+                                             column_value="val", column_id="id", column_sort="sort", column_kind="kind")
+
+        df, y = self.create_test_data_sample_with_target()
+        X_with_wrong_ids = pd.DataFrame(index=[-999])
+
+        augmenter.set_timeseries_container(df)
+
+        self.assertRaisesRegex(AttributeError, r"The ids of the time series container", augmenter.fit, X_with_wrong_ids, y)
+
+
 def test_relevant_augmentor_cross_validated():
     """Validates that the RelevantFeatureAugmenter can cloned in pipelines, see issue 537
     """

@@ -79,3 +79,16 @@ class FeatureAugmenterTestCase(DataTestCase):
             print((index, row))
             self.assertFalse(np.isnan(row["a__length"]))
             self.assertFalse(np.isnan(row["b__length"]))
+
+    def test_no_ids_present(self):
+        augmenter = FeatureAugmenter(column_value="val", column_id="id", column_sort="sort",
+                                     column_kind="kind",
+                                     kind_to_fc_parameters=self.kind_to_fc_parameters,
+                                     n_jobs=0,
+                                     disable_progressbar=True)
+
+        augmenter.set_timeseries_container(self.test_df)
+
+        X_with_not_all_ids = pd.DataFrame([{"feature_1": 1}], index=[-999])
+        self.assertRaisesRegex(AttributeError, r"The ids of the time series container", augmenter.transform, X_with_not_all_ids)
+
