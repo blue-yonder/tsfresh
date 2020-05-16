@@ -9,6 +9,7 @@ from tsfresh.feature_extraction.feature_calculators import _roll
 from tsfresh.feature_extraction.feature_calculators import _get_length_sequences_where
 from tsfresh.feature_extraction.feature_calculators import _estimate_friedrich_coefficients
 from tsfresh.feature_extraction.feature_calculators import _aggregate_on_chunks
+from tsfresh.feature_extraction.feature_calculators import _into_subchunks
 from tsfresh.examples.driftbif_simulation import velocity
 import math
 
@@ -86,6 +87,10 @@ class FeatureCalculationTestCase(TestCase):
                                         [0, True, 0, 0, 1, True, 1, 0, 0, True, 0, 1, True], [1, 3, 1, 2])
         self.assertEqualOnAllArrayTypes(_get_length_sequences_where, [0] * 10, [0])
         self.assertEqualOnAllArrayTypes(_get_length_sequences_where, [], [0])
+
+    def test__into_subchunks(self):
+        np.testing.assert_array_equal(_into_subchunks(range(7), 3, 2), np.array([[0, 1, 2], [2, 3, 4], [4, 5, 6]]))
+        np.testing.assert_array_equal(_into_subchunks(range(5), 3), np.array([[0, 1, 2], [1, 2, 3], [2, 3, 4]]))
 
     def test_variance_larger_than_standard_deviation(self):
         self.assertFalseOnAllArrayTypes(variance_larger_than_standard_deviation, [-1, -1, 1, 1, 1])

@@ -170,6 +170,30 @@ def _aggregate_on_chunks(x, f_agg, chunk_len):
     return [getattr(x[i * chunk_len: (i + 1) * chunk_len], f_agg)() for i in range(int(np.ceil(len(x) / chunk_len)))]
 
 
+def _into_subchunks(x, subchunk_length, every_n=1):
+    """
+    Split the time series x into subwindows of length "subchunk_length", starting every "every_n".
+
+    For example, the input data if [0, 1, 2, 3, 4, 5, 6] will be turned into a matrix
+
+        0  2  4
+        1  3  5
+        2  4  6
+
+    with the settings subchunk_length = 3 and every_n = 2
+    """
+    # 0, 1, 2
+    len_x = len(x)
+
+    # how often can we shift a window of size subchunk_length over the input?
+    num_shifts = (len_x - subchunk_length) // every_n + 1
+    shift_starts = every_n * np.arange(num_shifts)
+    indices = np.arange(subchunk_length)
+
+    indexer = np.expand_dims(indices, axis=0) + np.expand_dims(shift_starts, axis=1)
+    return np.asarray(x)[indexer]
+
+
 def set_property(key, value):
     """
     This method returns a decorator that sets the property key of the function to value
@@ -1551,11 +1575,9 @@ def sample_entropy(x):
     m = 2  # common value for m, according to wikipedia...
     tolerance = 0.2 * np.std(x)  # 0.2 is a common value for r, according to wikipedia...
 
-    N = len(x)
-
     # Split time series and save all templates of length m
     # Basically we turn [1, 2, 3, 4] into [1, 2], [2, 3], [3, 4]
-    xm = np.array([x[i:i + m] for i in range(N - m + 1)])
+    xm = _into_subchunks(x, m)
 
     # Now calculate the maximum distance between each of those pairs
     #   np.abs(xmi - xm).max(axis=1)
@@ -1573,8 +1595,7 @@ def sample_entropy(x):
     B = np.sum([np.sum(np.abs(xmi - xm).max(axis=1) <= tolerance) - 1 for xmi in xm])
 
     # Similar for computing A
-    m += 1
-    xmp1 = np.array([x[i:i + m] for i in range(N - m + 1)])
+    xmp1 = _into_subchunks(x, m + 1)
 
     A = np.sum([np.sum(np.abs(xmi - xmp1).max(axis=1) <= tolerance) - 1 for xmi in xmp1])
 
