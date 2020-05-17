@@ -200,9 +200,16 @@ def restrict_input_to_index(df_or_dict, column_id, index):
     :raise: ``TypeError`` if df_or_dict is not of type dict or pandas.DataFrame
     """
     if isinstance(df_or_dict, pd.DataFrame):
+        ids_in_df = set(df_or_dict[column_id])
+        ids_in_index = set(index)
+        present_ids = ids_in_index & ids_in_df
+        if not present_ids:
+            msg = "The ids of the time series container and the index of the input data X do not share any identifier!"
+            raise AttributeError(msg)
+
         df_or_dict_restricted = df_or_dict[df_or_dict[column_id].isin(index)]
     elif isinstance(df_or_dict, dict):
-        df_or_dict_restricted = {kind: df[df[column_id].isin(index)]
+        df_or_dict_restricted = {kind: restrict_input_to_index(df, column_id, index)
                                  for kind, df in df_or_dict.items()}
     else:
         raise TypeError("df_or_dict should be of type dict or pandas.DataFrame")

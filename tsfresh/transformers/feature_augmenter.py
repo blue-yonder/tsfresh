@@ -24,23 +24,26 @@ class FeatureAugmenter(BaseEstimator, TransformerMixin):
     1. the time series container with the timeseries data. This container (for the format see :ref:`data-formats-label`)
        contains the data which is used for calculating the
        features. It must be groupable by ids which are used to identify which feature should be attached to which row
-       in the second dataframe:
+       in the second dataframe.
 
-    2. the input data, where the features will be added to.
+    2. the input data X, where the features will be added to. Its rows are identifies by the index and each index in
+       X must be present as an id in the time series container.
 
     Imagine the following situation: You want to classify 10 different financial shares and you have their development
     in the last year as a time series. You would then start by creating features from the metainformation of the
     shares, e.g. how long they were on the market etc. and filling up a table - the features of one stock in one row.
+    This is the input array X, which each row identified by e.g. the stock name as an index.
 
-    >>> df = pandas.DataFrame()
+    >>> df = pandas.DataFrame(index=["AAA", "BBB", ...])
     >>> # Fill in the information of the stocks
-    >>> df["started_since_days"] = 0 # add a feature
+    >>> df["started_since_days"] = ... # add a feature
 
-    You can then extract all the features from the time development of the shares, by using this estimator:
+    You can then extract all the features from the time development of the shares, by using this estimator.
+    The time series container must include a column of ids, which are the same as the index of X.
 
     >>> time_series = read_in_timeseries() # get the development of the shares
     >>> from tsfresh.transformers import FeatureAugmenter
-    >>> augmenter = FeatureAugmenter()
+    >>> augmenter = FeatureAugmenter(column_id="id")
     >>> augmenter.set_timeseries_container(time_series)
     >>> df_with_time_series_features = augmenter.transform(df)
 
