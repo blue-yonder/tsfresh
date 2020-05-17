@@ -151,6 +151,7 @@ class ComprehensiveFCParameters(dict):
             "count_below": [{"t": 0}],
             "lempel_ziv_complexity": [{"bins": x} for x in [2, 3, 5, 10, 100]],
             "fourier_entropy":  [{"bins": x} for x in [2, 3, 5, 10, 100]],
+            "permutation_entropy":  [{"tau": 1, "dimension": x} for x in [3, 4, 5, 6, 7]],
 
         })
 

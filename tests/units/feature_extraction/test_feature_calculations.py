@@ -9,6 +9,7 @@ from tsfresh.feature_extraction.feature_calculators import _roll
 from tsfresh.feature_extraction.feature_calculators import _get_length_sequences_where
 from tsfresh.feature_extraction.feature_calculators import _estimate_friedrich_coefficients
 from tsfresh.feature_extraction.feature_calculators import _aggregate_on_chunks
+from tsfresh.feature_extraction.feature_calculators import _into_subchunks
 from tsfresh.examples.driftbif_simulation import velocity
 import math
 
@@ -86,6 +87,10 @@ class FeatureCalculationTestCase(TestCase):
                                         [0, True, 0, 0, 1, True, 1, 0, 0, True, 0, 1, True], [1, 3, 1, 2])
         self.assertEqualOnAllArrayTypes(_get_length_sequences_where, [0] * 10, [0])
         self.assertEqualOnAllArrayTypes(_get_length_sequences_where, [], [0])
+
+    def test__into_subchunks(self):
+        np.testing.assert_array_equal(_into_subchunks(range(7), 3, 2), np.array([[0, 1, 2], [2, 3, 4], [4, 5, 6]]))
+        np.testing.assert_array_equal(_into_subchunks(range(5), 3), np.array([[0, 1, 2], [1, 2, 3], [2, 3, 4]]))
 
     def test_variance_larger_than_standard_deviation(self):
         self.assertFalseOnAllArrayTypes(variance_larger_than_standard_deviation, [-1, -1, 1, 1, 1])
@@ -353,6 +358,27 @@ class FeatureCalculationTestCase(TestCase):
         self.assertIsNanOnAllArrayTypes(fourier_entropy,
                                         [-1, np.nan, 5, 1, -4.5, 1, 5, 7, -3.4, 6],
                                         bins=10)
+
+    def test_permutation_entropy(self):
+        self.assertAlmostEqualOnAllArrayTypes(permutation_entropy, [4, 7, 9, 10, 6, 11, 3], 1.054920167,
+                                              dimension=3, tau=1)
+
+        # should grow
+        self.assertAlmostEqualOnAllArrayTypes(permutation_entropy, [1, -1, 1, -1, 1, -1, 1, -1],
+                                              0.6931471805599453, dimension=3, tau=1)
+        self.assertAlmostEqualOnAllArrayTypes(permutation_entropy, [1, -1, 1, -1, 1,  1, 1, -1],
+                                              1.3296613488547582, dimension=3, tau=1)
+
+        self.assertAlmostEqualOnAllArrayTypes(permutation_entropy,
+                                              [-1, 4.3, 5, 1, -4.5, 1, 5, 7, -3.4, 6],
+                                              1.0397207708399179, dimension=3, tau=2)
+        # nan is treated like any other number
+        self.assertAlmostEqualOnAllArrayTypes(permutation_entropy,
+                                              [-1, 4.3, 5, 1, -4.5, 1, 5, np.nan, -3.4, 6],
+                                              1.0397207708399179, dimension=3, tau=2)
+
+        # if too short, return nan
+        self.assertIsNanOnAllArrayTypes(permutation_entropy, [1, -1], dimension=3, tau=1)
 
     def test_ratio_beyond_r_sigma(self):
 
