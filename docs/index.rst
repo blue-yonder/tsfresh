@@ -1,3 +1,8 @@
+.. image:: images/tsfresh_logo.svg
+   :width: 70 %
+   :alt: some characteristics of the time series
+   :align: center
+
 =======
 tsfresh
 =======
