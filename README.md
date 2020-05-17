@@ -8,6 +8,12 @@
 [![Downloads](https://pepy.tech/badge/tsfresh)](https://pepy.tech/project/tsfresh)
 
 
+<div align="center">
+  <img src="./docs/images/tsfresh_logo.svg">
+</div>
+
+-----------------
+
 # tsfresh
 
 This repository contains the *TSFRESH* python package. The abbreviation stands for
