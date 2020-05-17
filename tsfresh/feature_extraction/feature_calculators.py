@@ -1715,6 +1715,7 @@ def permutation_entropy(x, tau, dimension):
     Calculate the permutation entropy.
 
     Three steps are needed for this:
+
     1. chunk the data into sub-windows of length D starting every tau.
        Following the example from the reference, a vector
 

@@ -1,3 +1,4 @@
 Sphinx==1.6.4
 sphinx_rtd_theme>=0.2.4
+b2luigi
 -r requirements.txt
