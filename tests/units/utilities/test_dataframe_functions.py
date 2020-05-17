@@ -250,6 +250,19 @@ class RollingTestCase(TestCase):
                           column_sort=None, column_kind=None,
                           rolling_direction=0, n_jobs=0)
 
+        test_df = pd.DataFrame({"id": [0, 0], "kind": ["a", "b"], "value": [3, 3], "sort": [1, 1]})
+        self.assertRaises(ValueError, dataframe_functions.roll_time_series,
+                          df_or_dict=test_df, column_id="id",
+                          column_kind="kind", column_sort="sort",
+                          max_timeshift=0,
+                          rolling_direction=1, n_jobs=0)
+
+        self.assertRaises(ValueError, dataframe_functions.roll_time_series,
+                          df_or_dict=test_df, column_id="id",
+                          column_kind="kind", column_sort="sort",
+                          min_timeshift=-1,
+                          rolling_direction=1, n_jobs=0)
+
     def test_assert_single_row(self):
         test_df = pd.DataFrame([{"id": np.NaN, "kind": "a", "value": 3, "sort": 1}])
         self.assertRaises(ValueError, dataframe_functions.roll_time_series,
