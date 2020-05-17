@@ -10,6 +10,7 @@ Unreleased
     - Implemented the Lempel-Ziv-Complexity and the Fourier Entropy (#688)
     - Prevent #524 by adding an assert for common identifiers (#690)
     - Added permutation entropy (#691)
+    - Added a logo :-) (#694)
 
 Version 0.16.0
 ==============
