@@ -216,46 +216,46 @@ class RollingTestCase(TestCase):
         self.assertRaises(ValueError, dataframe_functions.roll_time_series,
                           df_or_dict=test_df, column_id="id",
                           column_sort="sort", column_kind="kind",
-                          rolling_direction=1)
+                          rolling_direction=1, n_jobs=0)
 
         test_df = pd.DataFrame({"id": [0, 0], "kind": ["a", "b"], "value": [3, 3], "sort": [1, 1]})
         self.assertRaises(AttributeError, dataframe_functions.roll_time_series,
                           df_or_dict=test_df, column_id="strange_id",
                           column_sort="sort", column_kind="kind",
-                          rolling_direction=1)
+                          rolling_direction=1, n_jobs=0)
 
         self.assertRaises(ValueError, dataframe_functions.roll_time_series,
                           df_or_dict=test_df, column_id=None,
                           column_sort="sort", column_kind="kind",
-                          rolling_direction=1)
+                          rolling_direction=1, n_jobs=0)
 
         test_df = {"a": pd.DataFrame([{"id": 0}])}
         self.assertRaises(ValueError, dataframe_functions.roll_time_series,
                           df_or_dict=test_df, column_id="id",
                           column_sort=None, column_kind="kind",
-                          rolling_direction=1)
+                          rolling_direction=1, n_jobs=0)
 
         self.assertRaises(ValueError, dataframe_functions.roll_time_series,
                           df_or_dict=test_df, column_id=None,
                           column_sort=None, column_kind="kind",
-                          rolling_direction=1)
+                          rolling_direction=1, n_jobs=0)
 
         self.assertRaises(ValueError, dataframe_functions.roll_time_series,
                           df_or_dict=test_df, column_id="id",
                           column_sort=None, column_kind=None,
-                          rolling_direction=0)
+                          rolling_direction=0, n_jobs=0)
 
         self.assertRaises(ValueError, dataframe_functions.roll_time_series,
                           df_or_dict=test_df, column_id=None,
                           column_sort=None, column_kind=None,
-                          rolling_direction=0)
+                          rolling_direction=0, n_jobs=0)
 
     def test_assert_single_row(self):
         test_df = pd.DataFrame([{"id": np.NaN, "kind": "a", "value": 3, "sort": 1}])
         self.assertRaises(ValueError, dataframe_functions.roll_time_series,
                           df_or_dict=test_df, column_id="id",
                           column_sort="sort", column_kind="kind",
-                          rolling_direction=1)
+                          rolling_direction=1, n_jobs=0)
 
     def test_positive_rolling(self):
         first_class = pd.DataFrame({"a": [1, 2, 3, 4], "b": [5, 6, 7, 8], "time": range(4)})
@@ -294,7 +294,7 @@ class RollingTestCase(TestCase):
         correct_values_b = [5.0, 5.0, 6.0, 5.0, 6.0, 7.0, 5.0, 6.0, 7.0, 8.0, 12.0, 12.0, 13.0]
 
         df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
-                                                  column_kind=None, rolling_direction=1)
+                                                  column_kind=None, rolling_direction=1, n_jobs=0)
 
         self.assertListEqual(list(df["id"]), correct_indices)
         self.assertListEqual(list(df["a"].values), correct_values_a)
@@ -302,7 +302,7 @@ class RollingTestCase(TestCase):
 
         df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
                                                   column_kind=None, rolling_direction=1,
-                                                  max_timeshift=4)
+                                                  max_timeshift=4, n_jobs=0)
 
         self.assertListEqual(list(df["id"]), correct_indices)
         self.assertListEqual(list(df["a"].values), correct_values_a)
@@ -310,7 +310,7 @@ class RollingTestCase(TestCase):
 
         df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
                                                   column_kind=None, rolling_direction=1,
-                                                  max_timeshift=2)
+                                                  max_timeshift=2, n_jobs=0)
 
         correct_indices = [
             'id=1,timeshift=0',
@@ -335,7 +335,7 @@ class RollingTestCase(TestCase):
 
         df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
                                                   column_kind=None, rolling_direction=1,
-                                                  max_timeshift=2, min_timeshift=2)
+                                                  max_timeshift=2, min_timeshift=2, n_jobs=0)
 
         correct_indices = [
             'id=1,timeshift=2',
@@ -389,7 +389,7 @@ class RollingTestCase(TestCase):
         correct_values_b = [5.0, 6.0, 7.0, 8.0, 6.0, 7.0, 8.0, 7.0, 8.0, 8.0, 12.0, 13.0, 13.0]
 
         df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
-                                                  column_kind=None, rolling_direction=-1)
+                                                  column_kind=None, rolling_direction=-1, n_jobs=0)
 
         self.assertListEqual(list(df["id"].values), correct_indices)
         self.assertListEqual(list(df["a"].values), correct_values_a)
@@ -397,7 +397,7 @@ class RollingTestCase(TestCase):
 
         df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
                                                   column_kind=None, rolling_direction=-1,
-                                                  max_timeshift=None)
+                                                  max_timeshift=None, n_jobs=0)
 
         self.assertListEqual(list(df["id"].values), correct_indices)
         self.assertListEqual(list(df["a"].values), correct_values_a)
@@ -405,7 +405,7 @@ class RollingTestCase(TestCase):
 
         df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
                                                   column_kind=None, rolling_direction=-1,
-                                                  max_timeshift=1)
+                                                  max_timeshift=1, n_jobs=0)
 
         correct_indices = [
             'id=1,timeshift=0',
@@ -428,7 +428,7 @@ class RollingTestCase(TestCase):
 
         df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
                                                   column_kind=None, rolling_direction=-1,
-                                                  max_timeshift=2)
+                                                  max_timeshift=2, n_jobs=0)
 
         correct_indices = [
             'id=1,timeshift=0',
@@ -453,7 +453,7 @@ class RollingTestCase(TestCase):
 
         df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
                                                   column_kind=None, rolling_direction=-1,
-                                                  max_timeshift=4)
+                                                  max_timeshift=4, n_jobs=0)
 
         correct_indices = [
             'id=1,timeshift=0',
@@ -479,8 +479,7 @@ class RollingTestCase(TestCase):
 
         df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
                                                   column_kind=None, rolling_direction=-1,
-                                                  min_timeshift=2,
-                                                  max_timeshift=3)
+                                                  min_timeshift=2, max_timeshift=3, n_jobs=0)
 
         correct_indices = [
             'id=1,timeshift=0',
@@ -528,7 +527,7 @@ class RollingTestCase(TestCase):
         """
 
         df = dataframe_functions.roll_time_series(df_stacked, column_id="id", column_sort="time",
-                                                  column_kind="kind", rolling_direction=-1)
+                                                  column_kind="kind", rolling_direction=-1, n_jobs=0)
 
         correct_indices = (
             ['id=1,timeshift=0'] * 2 * 4 +
@@ -551,7 +550,7 @@ class RollingTestCase(TestCase):
             "b": pd.DataFrame({"_value": [5, 6, 7, 8, 12, 13], "id": [1, 1, 1, 1, 2, 2]})
         }
         df = dataframe_functions.roll_time_series(df_dict, column_id="id", column_sort=None, column_kind=None,
-                                                  rolling_direction=-1)
+                                                  rolling_direction=-1, n_jobs=0)
         """ df is
         {a: _value  id
               1.0   1
@@ -601,7 +600,7 @@ class RollingTestCase(TestCase):
             "b": pd.DataFrame({"_value": [5, 6, 7, 8, 12, 13], "id": [1, 1, 1, 1, 2, 2]})
         }
         df = dataframe_functions.roll_time_series(df_dict, column_id="id", column_sort=None, column_kind=None,
-                                                  rolling_direction=-1, max_timeshift=1)
+                                                  rolling_direction=-1, max_timeshift=1, n_jobs=0)
         """ df is
         {a: _value  id
               1.0   1
@@ -651,12 +650,63 @@ class RollingTestCase(TestCase):
             df_full = pd.concat([first_class, second_class], ignore_index=True)
 
             dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
-                                                 column_kind=None, rolling_direction=1)
+                                                 column_kind=None, rolling_direction=1, n_jobs=0)
 
             self.assertEqual(len(w), 1)
             self.assertEqual(str(w[0].message),
                              "Your time stamps are not uniformly sampled, which makes rolling "
                              "nonsensical in some domains.")
+
+    def test_multicore_rolling(self):
+        first_class = pd.DataFrame({"a": [1, 2, 3, 4], "b": [5, 6, 7, 8], "time": range(4)})
+        second_class = pd.DataFrame({"a": [10, 11], "b": [12, 13], "time": range(20, 22)})
+
+        first_class["id"] = 1
+        second_class["id"] = 2
+
+        df_full = pd.concat([first_class, second_class], ignore_index=True)
+
+        """ df_full is
+            a   b  time  id
+        0   1   5     0   1
+        1   2   6     1   1
+        2   3   7     2   1
+        3   4   8     3   1
+        4  10  12    20   2
+        5  11  13    21   2
+        """
+        correct_indices = [
+                'id=1,timeshift=0',
+                'id=1,timeshift=1',
+                'id=1,timeshift=1',
+                'id=1,timeshift=2',
+                'id=1,timeshift=2',
+                'id=1,timeshift=2',
+                'id=1,timeshift=3',
+                'id=1,timeshift=3',
+                'id=1,timeshift=3',
+                'id=1,timeshift=3',
+                'id=2,timeshift=20',
+                'id=2,timeshift=21',
+                'id=2,timeshift=21'
+            ]
+        correct_values_a = [1.0, 1.0, 2.0, 1.0, 2.0, 3.0, 1.0, 2.0, 3.0, 4.0, 10.0, 10.0, 11.0]
+        correct_values_b = [5.0, 5.0, 6.0, 5.0, 6.0, 7.0, 5.0, 6.0, 7.0, 8.0, 12.0, 12.0, 13.0]
+
+        df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
+                                                  column_kind=None, rolling_direction=1)
+
+        self.assertListEqual(list(df["id"]), correct_indices)
+        self.assertListEqual(list(df["a"].values), correct_values_a)
+        self.assertListEqual(list(df["b"].values), correct_values_b)
+
+
+        df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
+                                                  column_kind=None, rolling_direction=1, n_jobs=0)
+
+        self.assertListEqual(list(df["id"]), correct_indices)
+        self.assertListEqual(list(df["a"].values), correct_values_a)
+        self.assertListEqual(list(df["b"].values), correct_values_b)
 
 
 class CheckForNanTestCase(TestCase):
