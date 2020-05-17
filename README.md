@@ -9,7 +9,7 @@
 
 
 <div align="center">
-  <img src="./docs/images/tsfresh_logo.svg">
+  <img width="70%" src="./docs/images/tsfresh_logo.svg">
 </div>
 
 -----------------
