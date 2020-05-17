@@ -36,9 +36,9 @@ To start, we load the data into python
 and end up with a pandas.DataFrame `timeseries` having the following shape
 
 .. code:: python
-   
+
    print(timeseries.head())
-   
+
 +-----+-----+-----+-----+-----+-----+-----+-----+-----+
 |     | id  | time| F_x | F_y | F_z | T_x | T_y | T_z |
 +=====+=====+=====+=====+=====+=====+=====+=====+=====+
@@ -85,7 +85,6 @@ In the following we illustrate the time series of the sample id 3 reporting no f
     plt.show()
 
 .. image:: ../images/ts_example_robot_failures_nofail.png
-   :scale: 100 %
    :alt: the time series for id 3 (no failure)
    :align: center
 
@@ -98,7 +97,6 @@ And for id 20 reporting a failure:
     plt.show()
 
 .. image:: ../images/ts_example_robot_failures_fail.png
-   :scale: 100 %
    :alt: the time series for id 20 (failure)
    :align: center
 
