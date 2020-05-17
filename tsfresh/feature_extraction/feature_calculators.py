@@ -1748,6 +1748,8 @@ def permutation_entropy(x, tau, dimension):
     """
 
     X = _into_subchunks(x, dimension, tau)
+    if len(X) == 0:
+        return np.nan
     # Now that is clearly black, magic, but see here:
     # https://stackoverflow.com/questions/54459554/numpy-find-index-in-sorted-array-in-an-efficient-way
     permutations = np.argsort(np.argsort(X))

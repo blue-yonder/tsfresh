@@ -377,6 +377,9 @@ class FeatureCalculationTestCase(TestCase):
                                               [-1, 4.3, 5, 1, -4.5, 1, 5, np.nan, -3.4, 6],
                                               1.0397207708399179, dimension=3, tau=2)
 
+        # if too short, return nan
+        self.assertIsNanOnAllArrayTypes(permutation_entropy, [1, -1], dimension=3, tau=1)
+
     def test_ratio_beyond_r_sigma(self):
 
         x = [0, 1] * 10 + [10, 20, -30]  # std of x is 7.21, mean 3.04
