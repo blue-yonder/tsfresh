@@ -1241,6 +1241,26 @@ class FeatureCalculationTestCase(TestCase):
         self.assertEqualPandasSeriesWrapper(count_below, [np.NINF, 0, np.PINF] * 3, 1/3, t=np.NINF)
         self.assertEqualPandasSeriesWrapper(count_below, [np.PINF, 0, 1] * 3, 1, t=np.PINF)
 
+    def test_benford_correlation(self):
+        # A test with list of random values
+        np.random.seed(42)
+        random_list = np.random.uniform(size=100)
+
+        # Fibonacci series is known to match the Newcomb-Benford's Distribution
+        fibonacci_list = [0, 1]
+        for i in range(2, 200):
+            fibonacci_list.append(fibonacci_list[i - 1] + fibonacci_list[i - 2])
+
+        # A list of equally distributed digits (returns NaN)
+        equal_list = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+        # A list containing NaN
+        list_with_nan = [1.354, 0.058, 0.055, 0.99, 3.15, np.nan, 0.3, 2.3, 0, 0.59, 0.74]
+
+        self.assertAlmostEqual(benford_correlation, x, 0.39458056)
+        self.assertAlmostEqual(benford_correlation, fibonacci, 0.998)
+        self.assertAlmostEqual(benford_correlation, list_with_nan, 0.10357511)
+        self.assertIsNaN(benford_correlation(equal_list))
 
 class FriedrichTestCase(TestCase):
 
