@@ -1258,9 +1258,9 @@ class FeatureCalculationTestCase(TestCase):
         # A list containing NaN
         list_with_nan = [1.354, 0.058, 0.055, 0.99, 3.15, np.nan, 0.3, 2.3, 0, 0.59, 0.74]
 
-        self.assertAlmostEqual(benford_correlation, random_list, 0.39458056)
-        self.assertAlmostEqual(benford_correlation, fibonacci, 0.998)
-        self.assertAlmostEqual(benford_correlation, list_with_nan, 0.10357511)
+        self.assertAlmostEqual(benford_correlation(random_list), 0.39458056)
+        self.assertAlmostEqual(benford_correlation(fibonacci_list), 0.998003988)
+        self.assertAlmostEqual(benford_correlation(list_with_nan), 0.10357511)
         self.assertIsNaN(benford_correlation(equal_list))
 
 
