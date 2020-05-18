@@ -2095,8 +2095,8 @@ def benford_correlation(x):
 
         P(d)=\\log_{10}\\left(1+\\frac{1}{d}\\right)
 
-    where :math:`P(d)` is the Newcomb-Benford distribution for :math:`d` that is the leading digit of the number {1, 2,
-    3, 4, 5, 6, 7, 8, 9}.
+    where :math:`P(d)` is the Newcomb-Benford distribution for :math:`d` that is the leading digit of the number
+    {1, 2, 3, 4, 5, 6, 7, 8, 9}.
 
     .. rubric:: References
 
@@ -2111,15 +2111,16 @@ def benford_correlation(x):
    :return: the value of this feature
    :return type: float
    """
-    if not isinstance(x, (np.ndarray, pd.Series)):
-        x = np.asarray(x)
+    x = np.asarray(x)
 
-    x = np.trunc(x)  # retrieve first digit from data
+    # retrieve first digit from data
+    x = np.array([int(str(np.format_float_scientific(i))[:1]) for i in np.abs(np.nan_to_num(x))])
 
     # benford distribution
-    benford_distribution = np.array([0.301, 0.176, 0.125, 0.097, 0.079, 0.067, 0.058, 0.051, 0.046])
+    benford_distribution = np.array([np.log10(1+1/n) for n in range(1, 10)])
 
-    data_distribution = np.array([(x == 1).mean(), (x == 2).mean(), (x == 3).mean(), (x == 4).mean(), (x == 5).mean(),
-                                  (x == 6).mean(), (x == 7).mean(), (x == 8).mean(), (x == 9).mean()])
+    data_distribution = np.array([(x == n).mean() for n in range(1, 10)])
 
+    # np.corrcoef outputs the normalized covariance (correlation) between benford_distribution and data_distribution.
+    # In this case returns a 2x2 matrix, the  [0, 1] and [1, 1] are the values between the two arrays
     return np.corrcoef(benford_distribution, data_distribution)[0, 1]
