@@ -2117,7 +2117,7 @@ def benford_correlation(x):
     x = np.array([int(str(np.format_float_scientific(i))[:1]) for i in np.abs(np.nan_to_num(x))])
 
     # benford distribution
-    benford_distribution = np.array([np.log10(1+1/n) for n in range(1, 10)])
+    benford_distribution = np.array([np.log10(1 + 1/n) for n in range(1, 10)])
 
     data_distribution = np.array([(x == n).mean() for n in range(1, 10)])
 
