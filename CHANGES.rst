@@ -11,6 +11,7 @@ Unreleased
     - Prevent #524 by adding an assert for common identifiers (#690)
     - Added permutation entropy (#691)
     - Added a logo :-) (#694)
+    - Implemented the benford distribution feature (#689)
 - Bugfixes:
     - Fixed readthedocs (#695, #696)
 
