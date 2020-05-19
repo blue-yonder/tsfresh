@@ -24,10 +24,10 @@ class FeatureCalculationTestCase(TestCase):
                          msg="Not equal for lists: {} != {}".format(f(input_to_f, *args, **kwargs), result))
         self.assertEqual(f(np.array(input_to_f), *args, **kwargs), result,
                          msg="Not equal for numpy.arrays: {} != {}".format(
-                         f(np.array(input_to_f), *args, **kwargs), result))
+                             f(np.array(input_to_f), *args, **kwargs), result))
         self.assertEqual(f(pd.Series(input_to_f), *args, **kwargs), result,
                          msg="Not equal for pandas.Series: {} != {}".format(
-                         f(pd.Series(input_to_f), *args, **kwargs), result))
+                             f(pd.Series(input_to_f), *args, **kwargs), result))
 
     def assertTrueOnAllArrayTypes(self, f, input_to_f, *args, **kwargs):
         self.assertTrue(f(input_to_f, *args, **kwargs), msg="Not true for lists")
@@ -328,8 +328,8 @@ class FeatureCalculationTestCase(TestCase):
         self.assertEqualOnAllArrayTypes(cid_ce, [-4.33, -1.33, 2.67], 5, normalize=False)
 
     def test_lempel_ziv_complexity(self):
-        self.assertAlmostEqualOnAllArrayTypes(lempel_ziv_complexity, [1, 1, 1], 2./3, bins=2)
-        self.assertAlmostEqualOnAllArrayTypes(lempel_ziv_complexity, [1, 1, 1], 2./3, bins=5)
+        self.assertAlmostEqualOnAllArrayTypes(lempel_ziv_complexity, [1, 1, 1], 2. / 3, bins=2)
+        self.assertAlmostEqualOnAllArrayTypes(lempel_ziv_complexity, [1, 1, 1], 2. / 3, bins=5)
 
         self.assertAlmostEqualOnAllArrayTypes(lempel_ziv_complexity, [1, 1, 1, 1, 1, 1, 1],
                                               0.4285714285, bins=2)
@@ -429,7 +429,7 @@ class FeatureCalculationTestCase(TestCase):
         self.assertIsNanOnAllArrayTypes(standard_deviation, [])
 
     def test_variation_coefficient(self):
-        self.assertIsNanOnAllArrayTypes(variation_coefficient, [1, 1, -1, -1],)
+        self.assertIsNanOnAllArrayTypes(variation_coefficient, [1, 1, -1, -1], )
         self.assertAlmostEqualOnAllArrayTypes(variation_coefficient, [1, 2, -3, -1], -7.681145747868608)
         self.assertAlmostEqualOnAllArrayTypes(variation_coefficient, [1, 2, 4, -1], 1.2018504251546631)
         self.assertIsNanOnAllArrayTypes(variation_coefficient, [])
@@ -632,6 +632,7 @@ class FeatureCalculationTestCase(TestCase):
         # Gaussian test:
         def normal(y, mean_, sigma_):
             return 1 / (2 * np.pi * sigma_ ** 2) * np.exp(-(y - mean_) ** 2 / (2 * sigma_ ** 2))
+
         mean_ = 500.
         sigma_ = 1.
         range_ = int(2 * mean_)
@@ -641,7 +642,7 @@ class FeatureCalculationTestCase(TestCase):
         # Hand calculated values of centroid and variance based for the half-normal dist:
         # (Ref: https://en.wikipedia.org/wiki/Half-normal_distribution)
         expected_fft_centroid = (range_ / (2 * np.pi * sigma_)) * np.sqrt(2 / np.pi)
-        expected_fft_var = (range_ / (2 * np.pi * sigma_))**2 * (1 - 2 / np.pi)
+        expected_fft_var = (range_ / (2 * np.pi * sigma_)) ** 2 * (1 - 2 / np.pi)
 
         # Calculate values for unit test:
         res = pd.Series(dict(fft_aggregated(x, param)))
@@ -1247,25 +1248,46 @@ class FeatureCalculationTestCase(TestCase):
         self.assertEqualPandasSeriesWrapper(count_above, [1] * 10, 1, t=1)
         self.assertEqualPandasSeriesWrapper(count_above, list(range(10)), 1, t=0)
         self.assertEqualPandasSeriesWrapper(count_above, list(range(10)), 0.5, t=5)
-        self.assertEqualPandasSeriesWrapper(count_above, [0.1, 0.2, 0.3] * 3, 2/3, t=0.2)
-        self.assertEqualPandasSeriesWrapper(count_above, [np.NaN, 0, 1] * 3, 2/3, t=0)
-        self.assertEqualPandasSeriesWrapper(count_above, [np.NINF, 0, 1] * 3, 2/3, t=0)
+        self.assertEqualPandasSeriesWrapper(count_above, [0.1, 0.2, 0.3] * 3, 2 / 3, t=0.2)
+        self.assertEqualPandasSeriesWrapper(count_above, [np.NaN, 0, 1] * 3, 2 / 3, t=0)
+        self.assertEqualPandasSeriesWrapper(count_above, [np.NINF, 0, 1] * 3, 2 / 3, t=0)
         self.assertEqualPandasSeriesWrapper(count_above, [np.PINF, 0, 1] * 3, 1, t=0)
         self.assertEqualPandasSeriesWrapper(count_above, [np.NaN, 0, 1] * 3, 0, t=np.NaN)
         self.assertEqualPandasSeriesWrapper(count_above, [np.NINF, 0, np.PINF] * 3, 1, t=np.NINF)
-        self.assertEqualPandasSeriesWrapper(count_above, [np.PINF, 0, 1] * 3, 1/3, t=np.PINF)
+        self.assertEqualPandasSeriesWrapper(count_above, [np.PINF, 0, 1] * 3, 1 / 3, t=np.PINF)
 
     def test_count_below(self):
         self.assertEqualPandasSeriesWrapper(count_below, [1] * 10, 1, t=1)
-        self.assertEqualPandasSeriesWrapper(count_below, list(range(10)), 1/10, t=0)
-        self.assertEqualPandasSeriesWrapper(count_below, list(range(10)), 6/10, t=5)
-        self.assertEqualPandasSeriesWrapper(count_below, [0.1, 0.2, 0.3] * 3, 2/3, t=0.2)
-        self.assertEqualPandasSeriesWrapper(count_below, [np.NaN, 0, 1] * 3, 1/3, t=0)
-        self.assertEqualPandasSeriesWrapper(count_below, [np.NINF, 0, 1] * 3, 2/3, t=0)
-        self.assertEqualPandasSeriesWrapper(count_below, [np.PINF, 0, 1] * 3, 1/3, t=0)
+        self.assertEqualPandasSeriesWrapper(count_below, list(range(10)), 1 / 10, t=0)
+        self.assertEqualPandasSeriesWrapper(count_below, list(range(10)), 6 / 10, t=5)
+        self.assertEqualPandasSeriesWrapper(count_below, [0.1, 0.2, 0.3] * 3, 2 / 3, t=0.2)
+        self.assertEqualPandasSeriesWrapper(count_below, [np.NaN, 0, 1] * 3, 1 / 3, t=0)
+        self.assertEqualPandasSeriesWrapper(count_below, [np.NINF, 0, 1] * 3, 2 / 3, t=0)
+        self.assertEqualPandasSeriesWrapper(count_below, [np.PINF, 0, 1] * 3, 1 / 3, t=0)
         self.assertEqualPandasSeriesWrapper(count_below, [np.NaN, 0, 1] * 3, 0, t=np.NaN)
-        self.assertEqualPandasSeriesWrapper(count_below, [np.NINF, 0, np.PINF] * 3, 1/3, t=np.NINF)
+        self.assertEqualPandasSeriesWrapper(count_below, [np.NINF, 0, np.PINF] * 3, 1 / 3, t=np.NINF)
         self.assertEqualPandasSeriesWrapper(count_below, [np.PINF, 0, 1] * 3, 1, t=np.PINF)
+
+    def test_benford_correlation(self):
+        # A test with list of random values
+        np.random.seed(42)
+        random_list = np.random.uniform(size=100)
+
+        # Fibonacci series is known to match the Newcomb-Benford's Distribution
+        fibonacci_list = [0, 1]
+        for i in range(2, 200):
+            fibonacci_list.append(fibonacci_list[i - 1] + fibonacci_list[i - 2])
+
+        # A list of equally distributed digits (returns NaN)
+        equal_list = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+        # A list containing NaN
+        list_with_nan = [1.354, 0.058, 0.055, 0.99, 3.15, np.nan, 0.3, 2.3, 0, 0.59, 0.74]
+
+        self.assertAlmostEqual(benford_correlation(random_list), 0.39458056)
+        self.assertAlmostEqual(benford_correlation(fibonacci_list), 0.998003988)
+        self.assertAlmostEqual(benford_correlation(list_with_nan), 0.10357511)
+        self.assertIsNaN(benford_correlation(equal_list))
 
 
 class FriedrichTestCase(TestCase):
