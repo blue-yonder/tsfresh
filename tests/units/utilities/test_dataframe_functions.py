@@ -289,20 +289,20 @@ class RollingTestCase(TestCase):
         5  11  13    21   2
         """
         correct_indices = [
-                'id=1,timeshift=0',
-                'id=1,timeshift=1',
-                'id=1,timeshift=1',
-                'id=1,timeshift=2',
-                'id=1,timeshift=2',
-                'id=1,timeshift=2',
-                'id=1,timeshift=3',
-                'id=1,timeshift=3',
-                'id=1,timeshift=3',
-                'id=1,timeshift=3',
-                'id=2,timeshift=20',
-                'id=2,timeshift=21',
-                'id=2,timeshift=21'
-            ]
+            (1, 0),
+            (1, 1),
+            (1, 1),
+            (1, 2),
+            (1, 2),
+            (1, 2),
+            (1, 3),
+            (1, 3),
+            (1, 3),
+            (1, 3),
+            (2, 20),
+            (2, 21),
+            (2, 21)
+        ]
         correct_values_a = [1.0, 1.0, 2.0, 1.0, 2.0, 3.0, 1.0, 2.0, 3.0, 4.0, 10.0, 10.0, 11.0]
         correct_values_b = [5.0, 5.0, 6.0, 5.0, 6.0, 7.0, 5.0, 6.0, 7.0, 8.0, 12.0, 12.0, 13.0]
 
@@ -324,20 +324,19 @@ class RollingTestCase(TestCase):
         df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
                                                   column_kind=None, rolling_direction=1,
                                                   max_timeshift=2, n_jobs=0)
-
         correct_indices = [
-            'id=1,timeshift=0',
-            'id=1,timeshift=1',
-            'id=1,timeshift=1',
-            'id=1,timeshift=2',
-            'id=1,timeshift=2',
-            'id=1,timeshift=2',
-            'id=1,timeshift=3',
-            'id=1,timeshift=3',
-            'id=1,timeshift=3',
-            'id=2,timeshift=20',
-            'id=2,timeshift=21',
-            'id=2,timeshift=21'
+            (1, 0),
+            (1, 1),
+            (1, 1),
+            (1, 2),
+            (1, 2),
+            (1, 2),
+            (1, 3),
+            (1, 3),
+            (1, 3),
+            (2, 20),
+            (2, 21),
+            (2, 21)
         ]
         correct_values_a = [1.0, 1.0, 2.0, 1.0, 2.0, 3.0, 2.0, 3.0, 4.0, 10.0, 10.0, 11.0]
         correct_values_b = [5.0, 5.0, 6.0, 5.0, 6.0, 7.0, 6.0, 7.0, 8.0, 12.0, 12.0, 13.0]
@@ -351,12 +350,12 @@ class RollingTestCase(TestCase):
                                                   max_timeshift=2, min_timeshift=2, n_jobs=0)
 
         correct_indices = [
-            'id=1,timeshift=2',
-            'id=1,timeshift=2',
-            'id=1,timeshift=2',
-            'id=1,timeshift=3',
-            'id=1,timeshift=3',
-            'id=1,timeshift=3',
+            (1, 2),
+            (1, 2),
+            (1, 2),
+            (1, 3),
+            (1, 3),
+            (1, 3)
         ]
         correct_values_a = [1.0, 2.0, 3.0, 2.0, 3.0, 4.0]
         correct_values_b = [5.0, 6.0, 7.0, 6.0, 7.0, 8.0]
@@ -384,19 +383,19 @@ class RollingTestCase(TestCase):
         """
 
         correct_indices = [
-            'id=1,timeshift=0',
-            'id=1,timeshift=0',
-            'id=1,timeshift=0',
-            'id=1,timeshift=0',
-            'id=1,timeshift=1',
-            'id=1,timeshift=1',
-            'id=1,timeshift=1',
-            'id=1,timeshift=2',
-            'id=1,timeshift=2',
-            'id=1,timeshift=3',
-            'id=2,timeshift=20',
-            'id=2,timeshift=20',
-            'id=2,timeshift=21'
+            (1, 0),
+            (1, 0),
+            (1, 0),
+            (1, 0),
+            (1, 1),
+            (1, 1),
+            (1, 1),
+            (1, 2),
+            (1, 2),
+            (1, 3),
+            (2, 20),
+            (2, 20),
+            (2, 21)
         ]
         correct_values_a = [1.0, 2.0, 3.0, 4.0, 2.0, 3.0, 4.0, 3.0, 4.0, 4.0, 10.0, 11.0, 11.0]
         correct_values_b = [5.0, 6.0, 7.0, 8.0, 6.0, 7.0, 8.0, 7.0, 8.0, 8.0, 12.0, 13.0, 13.0]
@@ -421,16 +420,16 @@ class RollingTestCase(TestCase):
                                                   max_timeshift=1, n_jobs=0)
 
         correct_indices = [
-            'id=1,timeshift=0',
-            'id=1,timeshift=0',
-            'id=1,timeshift=1',
-            'id=1,timeshift=1',
-            'id=1,timeshift=2',
-            'id=1,timeshift=2',
-            'id=1,timeshift=3',
-            'id=2,timeshift=20',
-            'id=2,timeshift=20',
-            'id=2,timeshift=21'
+            (1, 0),
+            (1, 0),
+            (1, 1),
+            (1, 1),
+            (1, 2),
+            (1, 2),
+            (1, 3),
+            (2, 20),
+            (2, 20),
+            (2, 21),
         ]
         correct_values_a = [1.0, 2.0, 2.0, 3.0, 3.0, 4.0, 4.0, 10.0, 11.0, 11.0]
         correct_values_b = [5.0, 6.0, 6.0, 7.0, 7.0, 8.0, 8.0, 12.0, 13.0, 13.0]
@@ -444,18 +443,18 @@ class RollingTestCase(TestCase):
                                                   max_timeshift=2, n_jobs=0)
 
         correct_indices = [
-            'id=1,timeshift=0',
-            'id=1,timeshift=0',
-            'id=1,timeshift=0',
-            'id=1,timeshift=1',
-            'id=1,timeshift=1',
-            'id=1,timeshift=1',
-            'id=1,timeshift=2',
-            'id=1,timeshift=2',
-            'id=1,timeshift=3',
-            'id=2,timeshift=20',
-            'id=2,timeshift=20',
-            'id=2,timeshift=21'
+            (1, 0),
+            (1, 0),
+            (1, 0),
+            (1, 1),
+            (1, 1),
+            (1, 1),
+            (1, 2),
+            (1, 2),
+            (1, 3),
+            (2, 20),
+            (2, 20),
+            (2, 21)
         ]
         correct_values_a = [1.0, 2.0, 3.0, 2.0, 3.0, 4.0, 3.0, 4.0, 4.0, 10.0, 11.0, 11.0]
         correct_values_b = [5.0, 6.0, 7.0, 6.0, 7.0, 8.0, 7.0, 8.0, 8.0, 12.0, 13.0, 13.0]
@@ -469,19 +468,19 @@ class RollingTestCase(TestCase):
                                                   max_timeshift=4, n_jobs=0)
 
         correct_indices = [
-            'id=1,timeshift=0',
-            'id=1,timeshift=0',
-            'id=1,timeshift=0',
-            'id=1,timeshift=0',
-            'id=1,timeshift=1',
-            'id=1,timeshift=1',
-            'id=1,timeshift=1',
-            'id=1,timeshift=2',
-            'id=1,timeshift=2',
-            'id=1,timeshift=3',
-            'id=2,timeshift=20',
-            'id=2,timeshift=20',
-            'id=2,timeshift=21'
+            (1, 0),
+            (1, 0),
+            (1, 0),
+            (1, 0),
+            (1, 1),
+            (1, 1),
+            (1, 1),
+            (1, 2),
+            (1, 2),
+            (1, 3),
+            (2, 20),
+            (2, 20),
+            (2, 21)
         ]
         correct_values_a = [1.0, 2.0, 3.0, 4.0, 2.0, 3.0, 4.0, 3.0, 4.0, 4.0, 10.0, 11.0, 11.0]
         correct_values_b = [5.0, 6.0, 7.0, 8.0, 6.0, 7.0, 8.0, 7.0, 8.0, 8.0, 12.0, 13.0, 13.0]
@@ -495,13 +494,13 @@ class RollingTestCase(TestCase):
                                                   min_timeshift=2, max_timeshift=3, n_jobs=0)
 
         correct_indices = [
-            'id=1,timeshift=0',
-            'id=1,timeshift=0',
-            'id=1,timeshift=0',
-            'id=1,timeshift=0',
-            'id=1,timeshift=1',
-            'id=1,timeshift=1',
-            'id=1,timeshift=1'
+            (1, 0),
+            (1, 0),
+            (1, 0),
+            (1, 0),
+            (1, 1),
+            (1, 1),
+            (1, 1)
         ]
         correct_values_a = [1.0, 2.0, 3.0, 4.0, 2.0, 3.0, 4.0]
         correct_values_b = [5.0, 6.0, 7.0, 8.0, 6.0, 7.0, 8.0]
@@ -543,12 +542,12 @@ class RollingTestCase(TestCase):
                                                   column_kind="kind", rolling_direction=-1, n_jobs=0)
 
         correct_indices = (
-            ['id=1,timeshift=0'] * 2 * 4 +
-            ['id=1,timeshift=1'] * 2 * 3 +
-            ['id=1,timeshift=2'] * 2 * 2 +
-            ['id=1,timeshift=3'] * 2 * 1 +
-            ['id=2,timeshift=20'] * 2 * 2 +
-            ['id=2,timeshift=21'] * 2 * 1
+            [(1, 0)] * 2 * 4 +
+            [(1, 1)] * 2 * 3 +
+            [(1, 2)] * 2 * 2 +
+            [(1, 3)] * 2 * 1 +
+            [(2, 20)] * 2 * 2 +
+            [(2, 21)] * 2 * 1
         )
         self.assertListEqual(list(df["id"].values), correct_indices)
 
@@ -584,19 +583,19 @@ class RollingTestCase(TestCase):
         """
 
         correct_indices = [
-            'id=1,timeshift=0',
-            'id=1,timeshift=0',
-            'id=1,timeshift=0',
-            'id=1,timeshift=0',
-            'id=1,timeshift=1',
-            'id=1,timeshift=1',
-            'id=1,timeshift=1',
-            'id=1,timeshift=2',
-            'id=1,timeshift=2',
-            'id=1,timeshift=3',
-            'id=2,timeshift=0',
-            'id=2,timeshift=0',
-            'id=2,timeshift=1'
+            (1, 0),
+            (1, 0),
+            (1, 0),
+            (1, 0),
+            (1, 1),
+            (1, 1),
+            (1, 1),
+            (1, 2),
+            (1, 2),
+            (1, 3),
+            (2, 0),
+            (2, 0),
+            (2, 1)
         ]
         self.assertListEqual(list(df["a"]["id"].values), correct_indices)
 
@@ -634,16 +633,16 @@ class RollingTestCase(TestCase):
         """
 
         correct_indices = [
-            'id=1,timeshift=0',
-            'id=1,timeshift=0',
-            'id=1,timeshift=1',
-            'id=1,timeshift=1',
-            'id=1,timeshift=2',
-            'id=1,timeshift=2',
-            'id=1,timeshift=3',
-            'id=2,timeshift=0',
-            'id=2,timeshift=0',
-            'id=2,timeshift=1'
+            (1, 0),
+            (1, 0),
+            (1, 1),
+            (1, 1),
+            (1, 2),
+            (1, 2),
+            (1, 3),
+            (2, 0),
+            (2, 0),
+            (2, 1)
         ]
 
         self.assertListEqual(list(df["a"]["id"].values), correct_indices)
@@ -651,6 +650,46 @@ class RollingTestCase(TestCase):
 
         self.assertListEqual(list(df["a"]["_value"].values), [1.0, 2.0, 2.0, 3.0, 3.0, 4.0, 4.0, 10.0, 11.0, 11.0])
         self.assertListEqual(list(df["b"]["_value"].values), [5.0, 6.0, 6.0, 7.0, 7.0, 8.0, 8.0, 12.0, 13.0, 13.0])
+
+    def test_order_rolling(self):
+
+        first_class = pd.DataFrame({"x": [1, 2, 3, 4], "time": [1, 15, 132, 145]})
+        second_class = pd.DataFrame({"x": [5, 6, 7], "time": [16, 133, 146]})
+
+        first_class["initial_id"] = 1
+        second_class["initial_id"] = 2
+        df_full = pd.concat([first_class, second_class], ignore_index=True)
+
+        window_size = 2
+        df_rolled = dataframe_functions.roll_time_series(
+            df_full, column_id="initial_id", column_sort="time",
+            min_timeshift=window_size-1, max_timeshift=window_size-1)
+        """ df is
+        {x: _value  id
+              1.0   1
+              2.0   1
+              3.0   1
+              4.0   1
+              5.0   2
+              6.0   2
+              7.0   2,
+         }
+        """
+
+        correct_indices = [
+            (1, 15),
+            (1, 15),
+            (1, 132),
+            (1, 132),
+            (1, 145),
+            (1, 145),
+            (2, 133),
+            (2, 133),
+            (2, 146),
+            (2, 146)
+        ]
+
+        self.assertListEqual(list(df_rolled["id"]), correct_indices)
 
     def test_warning_on_non_uniform_time_steps(self):
         with warnings.catch_warnings(record=True) as w:
@@ -689,20 +728,20 @@ class RollingTestCase(TestCase):
         5  11  13    21   2
         """
         correct_indices = [
-                'id=1,timeshift=0',
-                'id=1,timeshift=1',
-                'id=1,timeshift=1',
-                'id=1,timeshift=2',
-                'id=1,timeshift=2',
-                'id=1,timeshift=2',
-                'id=1,timeshift=3',
-                'id=1,timeshift=3',
-                'id=1,timeshift=3',
-                'id=1,timeshift=3',
-                'id=2,timeshift=20',
-                'id=2,timeshift=21',
-                'id=2,timeshift=21'
-            ]
+            (1, 0),
+            (1, 1),
+            (1, 1),
+            (1, 2),
+            (1, 2),
+            (1, 2),
+            (1, 3),
+            (1, 3),
+            (1, 3),
+            (1, 3),
+            (2, 20),
+            (2, 21),
+            (2, 21)
+        ]
         correct_values_a = [1.0, 1.0, 2.0, 1.0, 2.0, 3.0, 1.0, 2.0, 3.0, 4.0, 10.0, 10.0, 11.0]
         correct_values_b = [5.0, 5.0, 6.0, 5.0, 6.0, 7.0, 5.0, 6.0, 7.0, 8.0, 12.0, 12.0, 13.0]
 

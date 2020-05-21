@@ -440,13 +440,13 @@ def _roll_out_time_series(timeshift, grouped_data, rolling_direction, max_timesh
 
         # and set the shift correctly
         if column_sort and rolling_direction > 0:
-            shift_string = "timeshift=" + str(df_temp[column_sort].iloc[-1])
+            timeshift_value = df_temp[column_sort].iloc[-1]
         elif column_sort and rolling_direction < 0:
-            shift_string = "timeshift=" + str(df_temp[column_sort].iloc[0])
+            timeshift_value = df_temp[column_sort].iloc[0]
         else:
-            shift_string = "timeshift=" + str(timeshift - 1)
+            timeshift_value = timeshift - 1
         # and now create new ones ids out of the old ones
-        df_temp["id"] = df_temp.apply(lambda row: "id=" + str(row[column_id]) + "," + str(shift_string), axis=1)
+        df_temp["id"] = df_temp.apply(lambda row: (row[column_id], timeshift_value), axis=1)
 
         return df_temp
 
@@ -641,7 +641,7 @@ def roll_time_series(df_or_dict, column_id, column_sort=None, column_kind=None,
 
     df_shift = pd.concat(shifted_chunks, ignore_index=True)
 
-    return df_shift.sort_values(by=[column_id, column_sort or "sort"])
+    return df_shift.sort_values(by=["id", column_sort or "sort"])
 
 
 def make_forecasting_frame(x, kind, max_timeshift, rolling_direction):
