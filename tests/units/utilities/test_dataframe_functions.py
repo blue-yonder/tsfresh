@@ -970,7 +970,7 @@ class MakeForecastingFrameTestCase(TestCase):
     def test_make_forecasting_frame_list(self):
         df, y = dataframe_functions.make_forecasting_frame(x=range(4), kind="test",
                                                            max_timeshift=1, rolling_direction=1)
-        expected_df = pd.DataFrame({"id": ["id=id,timeshift=1", "id=id,timeshift=2", "id=id,timeshift=3"],
+        expected_df = pd.DataFrame({"id": [("id", 1), ("id", 2), ("id", 3)],
                                     "kind": ["test"] * 3,
                                     "value": [0, 1, 2],
                                     "time": [0, 1, 2]})
@@ -982,9 +982,9 @@ class MakeForecastingFrameTestCase(TestCase):
     def test_make_forecasting_frame_range(self):
         df, y = dataframe_functions.make_forecasting_frame(x=np.arange(4), kind="test",
                                                            max_timeshift=1, rolling_direction=1)
-        expected_df = pd.DataFrame({"id": ["id=id,timeshift=1", "id=id,timeshift=2", "id=id,timeshift=3"],
+        expected_df = pd.DataFrame({"id": list(zip(["id"] * 3, np.arange(1, 4))),
                                     "kind": ["test"] * 3,
-                                    "value": [0, 1, 2],
+                                    "value": np.arange(3),
                                     "time": [0, 1, 2]})
         assert_frame_equal(df.sort_index(axis=1).reset_index(drop=True), expected_df.sort_index(axis=1))
 
@@ -996,8 +996,9 @@ class MakeForecastingFrameTestCase(TestCase):
 
         expected_y = pd.Series(data=[1, 2, 3], index=pd.DatetimeIndex(["2011-01-01 01:00:00", "2011-01-01 02:00:00",
                                                                        "2011-01-01 03:00:00"]), name="value")
-        expected_df = pd.DataFrame({"id": ["id=id,timeshift=2011-01-01 01:00:00", "id=id,timeshift=2011-01-01 02:00:00",
-                                           "id=id,timeshift=2011-01-01 03:00:00"],
+        expected_df = pd.DataFrame({"id": list(zip(["id"] * 3, pd.DatetimeIndex(["2011-01-01 01:00:00",
+                                                                                "2011-01-01 02:00:00",
+                                                                                "2011-01-01 03:00:00"]))),
                                     "kind": ["test"] * 3, "value": [0, 1, 2],
                                     "time": pd.DatetimeIndex(["2011-01-01 00:00:00", "2011-01-01 01:00:00",
                                                               "2011-01-01 02:00:00"])
