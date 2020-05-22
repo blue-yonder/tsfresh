@@ -997,8 +997,8 @@ class MakeForecastingFrameTestCase(TestCase):
         expected_y = pd.Series(data=[1, 2, 3], index=pd.DatetimeIndex(["2011-01-01 01:00:00", "2011-01-01 02:00:00",
                                                                        "2011-01-01 03:00:00"]), name="value")
         expected_df = pd.DataFrame({"id": list(zip(["id"] * 3, pd.DatetimeIndex(["2011-01-01 01:00:00",
-                                                                                "2011-01-01 02:00:00",
-                                                                                "2011-01-01 03:00:00"]))),
+                                                                                 "2011-01-01 02:00:00",
+                                                                                 "2011-01-01 03:00:00"]))),
                                     "kind": ["test"] * 3, "value": [0, 1, 2],
                                     "time": pd.DatetimeIndex(["2011-01-01 00:00:00", "2011-01-01 01:00:00",
                                                               "2011-01-01 02:00:00"])
