@@ -403,17 +403,17 @@ def _roll_out_time_series(timeshift, grouped_data, rolling_direction, max_timesh
 
     If we do positive rolling, we extract the sub time series
 
-      [ 1 ]               input parameter: timeshift=1, new id: id=X,timeshift=1
-      [ 1   2 ]           input parameter: timeshift=2, new id: id=X,timeshift=2
-      [ 1   2   3 ]       input parameter: timeshift=3, new id: id=X,timeshift=3
-      [ 1   2   3   4 ]   input parameter: timeshift=4, new id: id=X,timeshift=4
+      [ 1 ]               input parameter: timeshift=1, new id: ([id=]X,[timeshift=]1)
+      [ 1   2 ]           input parameter: timeshift=2, new id: ([id=]X,[timeshift=]2)
+      [ 1   2   3 ]       input parameter: timeshift=3, new id: ([id=]X,[timeshift=]3)
+      [ 1   2   3   4 ]   input parameter: timeshift=4, new id: ([id=]X,[timeshift=]4)
 
     If we do negative rolling:
 
-      [ 1   2   3   4 ]   input parameter: timeshift=1, new id: id=X,timeshift=1
-          [ 2   3   4 ]   input parameter: timeshift=2, new id: id=X,timeshift=2
-              [ 3   4 ]   input parameter: timeshift=3, new id: id=X,timeshift=3
-                  [ 4 ]   input parameter: timeshift=4, new id: id=X,timeshift=4
+      [ 1   2   3   4 ]   input parameter: timeshift=1, new id: ([id=]X,[timeshift=]1)
+          [ 2   3   4 ]   input parameter: timeshift=2, new id: ([id=]X,[timeshift=]2)
+              [ 3   4 ]   input parameter: timeshift=3, new id: ([id=]X,[timeshift=]3)
+                  [ 4 ]   input parameter: timeshift=4, new id: ([id=]X,[timeshift=]4)
 
     If you now reverse the order of the negative examples, it looks like shifting the
     window from the back (but it is implemented to start counting from the beginning).
@@ -463,7 +463,7 @@ def roll_time_series(df_or_dict, column_id, column_sort=None, column_kind=None,
     This method creates sub windows of the time series. It rolls the (sorted) data frames for each kind and each id
     separately in the "time" domain (which is represented by the sort order of the sort column given by `column_sort`).
 
-    For each rolling step, a new id is created by the scheme "id={id}, timeshift={shift}", here id is the former id of
+    For each rolling step, a new id is created by the scheme ({id}, {shift}), here id is the former id of
     the column and shift is the amount of "time" shifts.
     You can think of it as having a window of fixed length (the max_timeshift) moving one step at a time over
     your time series.
@@ -474,10 +474,10 @@ def roll_time_series(df_or_dict, column_id, column_sort=None, column_kind=None,
      * This method will create new IDs!
      * The sign of rolling defines the direction of time rolling, a positive value means we are shifting
        the cut-out window foreward in time. The name of each new sub time series is given by the last time point.
-       This means, the time series named `id=4,timeshift=5` with a `max_timeshift` of 3 includes the data
+       This means, the time series named `([id=]4,[timeshift=]5)` with a `max_timeshift` of 3 includes the data
        of the times 3, 4 and 5.
        A negative rolling direction means, you go in negative time direction over your data.
-       The time series named `id=4,timeshift=5` with `max_timeshift` of 3 would then include the data
+       The time series named `([id=]4,[timeshift=]5)` with `max_timeshift` of 3 would then include the data
        of the times 5, 6 and 7.
      * It is possible to shift time series of different lengths, but:
      * We assume that the time series are uniformly sampled
