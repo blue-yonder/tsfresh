@@ -9,6 +9,7 @@ import logging
 import warnings
 
 import pandas as pd
+import itertools
 
 from tsfresh import defaults
 from tsfresh.feature_extraction import feature_calculators
@@ -127,12 +128,7 @@ def extract_features(timeseries_container, default_fc_parameters=None,
 
     # Always use the standardized way of storing the data.
     # See the function normalize_input_to_internal_representation for more information.
-    df_melt, column_id, column_kind, column_value = \
-        dataframe_functions._normalize_input_to_internal_representation(
-            timeseries_container=timeseries_container,
-            column_id=column_id, column_kind=column_kind,
-            column_sort=column_sort,
-            column_value=column_value)
+
     # Use the standard setting if the user did not supply ones himself.
     if default_fc_parameters is None and kind_to_fc_parameters is None:
         default_fc_parameters = ComprehensiveFCParameters()
@@ -149,9 +145,10 @@ def extract_features(timeseries_container, default_fc_parameters=None,
         else:
             warnings.simplefilter("default")
 
-        result = _do_extraction(df=df_melt,
+        result = _do_extraction(df=timeseries_container,
                                 column_id=column_id, column_value=column_value,
                                 column_kind=column_kind,
+                                column_sort=column_sort,
                                 n_jobs=n_jobs, chunk_size=chunksize,
                                 disable_progressbar=disable_progressbar,
                                 show_warnings=show_warnings,
@@ -171,7 +168,7 @@ def extract_features(timeseries_container, default_fc_parameters=None,
     return result
 
 
-def generate_data_chunk_format(df, column_id, column_kind, column_value):
+def generate_data_chunk_format(df, column_id, column_kind, column_value, column_sort):
     """Converts the dataframe df in into a list of individual time seriess.
 
     E.g. the DataFrame
@@ -215,25 +212,18 @@ def generate_data_chunk_format(df, column_id, column_kind, column_value):
     """
     MAX_VALUES_GROUPBY = 2147483647
 
-    if df[[column_id, column_kind]].nunique().prod() >= MAX_VALUES_GROUPBY:
-        _logger.error(
-            "The time series container has {} different ids and {} different kind of time series, "
-            "in total {} possible combinations. "
-            "Due to a limitation in pandas we can only process a maximum of {} id/kind combinations. "
-            "Please reduce your time series container and restart "
-            "the calculation".format(
-                df[column_id].nunique(), df[column_kind].nunique(),
-                df[[column_id, column_kind]].nunique().prod(), MAX_VALUES_GROUPBY)
-        )
-        raise ValueError(
-            "Number of ids/kinds are too high. Please reduce your data size and run feature extraction again.")
-    data_in_chunks = [x + (y,) for x, y in
-                      df.groupby([column_id, column_kind], as_index=True)[column_value]]
+    kinds = df.drop(columns=[col for col in df.columns if col in [column_id, column_sort]]).columns
+    unique_ids = df[column_id].unique()
 
-    return data_in_chunks
+    def to_internal(df, column_id, column_kind, column_sort, column_value):
+        for id, id_group in df.groupby([column_id]):
+            for kind in kinds:
+                yield (id, kind, id_group.sort_values([column_sort])[kind])
+
+    return to_internal(df, column_id, column_kind, column_sort, column_value), len(unique_ids) * len(kinds)
 
 
-def _do_extraction(df, column_id, column_value, column_kind,
+def _do_extraction(df, column_id, column_value, column_kind, column_sort,
                    default_fc_parameters, kind_to_fc_parameters,
                    n_jobs, chunk_size, disable_progressbar, show_warnings, distributor):
     """
@@ -288,7 +278,7 @@ def _do_extraction(df, column_id, column_value, column_kind,
     :rtype: pd.DataFrame
     """
 
-    data_in_chunks = generate_data_chunk_format(df, column_id, column_kind, column_value)
+    data_in_chunks, data_length = generate_data_chunk_format(df, column_id, column_kind, column_value, column_sort)
 
     if distributor is None:
         if n_jobs == 0:
@@ -308,6 +298,7 @@ def _do_extraction(df, column_id, column_value, column_kind,
 
     result = distributor.map_reduce(_do_extraction_on_chunk, data=data_in_chunks,
                                     chunk_size=chunk_size,
+                                    data_length=data_length,
                                     function_kwargs=kwargs)
     distributor.close()
 
