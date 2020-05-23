@@ -6,6 +6,9 @@ tsfresh uses `Semantic Versioning <http://semver.org/>`_
 
 Unreleased
 ==========
+
+- Breaking Change
+    - Changed constructed id in roll_time_series from string to tuple (#700)
 - Added Features
     - Implemented the Lempel-Ziv-Complexity and the Fourier Entropy (#688)
     - Prevent #524 by adding an assert for common identifiers (#690)
