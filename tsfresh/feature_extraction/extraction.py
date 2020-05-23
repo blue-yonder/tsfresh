@@ -216,9 +216,10 @@ def generate_data_chunk_format(df, column_id, column_kind, column_value, column_
     unique_ids = df[column_id].unique()
 
     def to_internal(df, column_id, column_kind, column_sort, column_value):
-        for id, id_group in df.groupby([column_id]):
+        df_grouped = df.sort_values([column_id, column_sort]).groupby([column_id], sort=False, as_index=False)
+        for id, id_group in df_grouped:
             for kind in kinds:
-                yield (id, kind, id_group.sort_values([column_sort])[kind])
+                yield (id, kind, id_group[kind])
 
     return to_internal(df, column_id, column_kind, column_sort, column_value), len(unique_ids) * len(kinds)
 
