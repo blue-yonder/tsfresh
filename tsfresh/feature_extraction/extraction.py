@@ -210,18 +210,45 @@ def generate_data_chunk_format(df, column_id, column_kind, column_value, column_
     :return: the data in chunks
     :rtype: list
     """
-    MAX_VALUES_GROUPBY = 2147483647
 
-    kinds = df.drop(columns=[col for col in df.columns if col in [column_id, column_sort]]).columns
-    unique_ids = df[column_id].unique()
+    if isinstance(df, pd.DataFrame):
 
-    def to_internal(df, column_id, column_kind, column_sort, column_value):
-        df_grouped = df.sort_values([column_id, column_sort]).groupby([column_id], sort=False, as_index=False)
-        for id, id_group in df_grouped:
-            for kind in kinds:
-                yield (id, kind, id_group[kind])
+        # Check ID column
+        if column_id is None:
+            raise ValueError("You have to set the column_id which contains the ids of the different time series")
 
-    return to_internal(df, column_id, column_kind, column_sort, column_value), len(unique_ids) * len(kinds)
+        if column_id not in df.columns:
+            raise AttributeError("The given column for the id is not present in the data.")
+
+        if df[column_id].isnull().any():
+            raise ValueError("You have NaN values in your id column.")
+
+        # Check sort column
+        if column_sort is not None:
+            if df[column_sort].isnull().any():
+                raise ValueError("You have NaN values in your sort column.")
+
+        if column_kind is None and column_value is None:
+
+            kinds = df.drop(columns=[col for col in df.columns if col in [column_id, column_sort]]).columns
+            unique_ids = df[column_id].unique()
+
+            def transform_wide():
+                df_grouped = df.sort_values([column_id, column_sort]).groupby([column_id], sort=False, as_index=False)
+                for id, id_group in df_grouped:
+                    for kind in kinds:
+                        yield (id, kind, id_group[kind])
+
+            return transform_wide(), len(unique_ids) * len(kinds)
+
+        else:
+            raise NotImplementedError("TODO")
+
+    if isinstance(timeseries_container, dict):
+        raise NotImplementedError("TODO")
+
+    else:
+        raise ValueError("df must be a DataFrame or a dict")
 
 
 def _do_extraction(df, column_id, column_value, column_kind, column_sort,
