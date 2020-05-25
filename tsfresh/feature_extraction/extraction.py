@@ -168,7 +168,124 @@ def extract_features(timeseries_container, default_fc_parameters=None,
     return result
 
 
-def generate_data_chunk_format(df, column_id, column_kind, column_value, column_sort):
+class TsData:
+    def __iter__(self):
+        raise NotImplementedError
+
+    def __len__(self):
+        return sum(1 for _ in self)
+
+    def slice(self, offset, length):
+        return itertools.islice(self, offset, offset + length)
+
+    def partition(self, chunk_size):
+        x, y = divmod(len(self), chunk_size)
+        chunk_info = [(i * chunk_size, chunk_size) for i in range(x)]
+        if y > 0:
+            chunk_info += [(x * chunk_size, y)]
+
+        for offset, length in chunk_info:
+            yield self.slice(offset, length)
+
+
+class WideTsFrameAdapter(TsData):
+
+    def __init__(self, df, column_id, column_sort=None, value_columns=None, offset=0, length=None):
+        self.df = df
+        self.column_id = column_id
+        self.column_sort = column_sort
+        self.value_columns = value_columns
+        self.offset = offset
+        self.length = length
+
+        self.df_grouped = df.groupby([column_id], sort=False, as_index=False)
+        self.kinds = value_columns
+        if self.kinds is None:
+            self.kinds = [col for col in df.columns if col not in [column_id, column_sort]]
+        self.size = df[column_id].nunique() * len(self.kinds)
+
+    def __iter__(self):
+        group_offset, kinds_offset = divmod(self.offset, len(self.kinds))
+        kinds = self.kinds[kinds_offset:]
+
+        i = 0
+        for ts_id, group in itertools.islice(self.df_grouped, group_offset, None):
+            if self.column_sort is not None:
+                group_sorted = group.sort_values([self.column_sort])
+            else:
+                group_sorted = group
+
+            for kind in kinds:
+                i += 1
+                if self.length is not None and i > self.length:
+                    return
+                else:
+                    yield ts_id, kind, group_sorted[kind]
+            kinds = self.kinds
+
+    def __len__(self):
+        return self.size
+
+    def slice(self, offset, length):
+        return WideTsFrameAdapter(self.df, self.column_id, self.column_sort, self.value_columns, offset=offset, length=length)
+
+
+class LongTsFrameAdapter(TsData):
+
+    def __init__(self, df, column_id, column_kind, column_value, column_sort=None, offset=0, length=None):
+        self.df = df
+        self.column_id = column_id
+        self.column_kind = column_kind
+        self.column_value = column_value
+        self.column_sort = column_sort
+        self.length = length
+        self.offset = offset
+
+        self.df_grouped = df.groupby([column_id, column_kind], sort=False, as_index=False)
+        self.size = len(self.df_grouped)
+
+    def __iter__(self):
+        length_or_none = None if self.length is None else self.offset + self.length
+        for ts_id_kind, group in itertools.islice(self.df_grouped, self.offset, length_or_none):
+            if self.column_sort is not None:
+                group_sorted = group.sort_values([self.column_sort])
+            else:
+                group_sorted = group
+
+            yield ts_id_kind + (group_sorted[self.column_value],)
+
+    def __len__(self):
+        return self.size
+
+    def slice(self, offset, length):
+        return LongTsFrameAdapter(self.df, self.column_id, self.column_kind, self.column_value, self.column_sort,
+                                  offset, length)
+
+
+class TsDictAdapter(TsData):
+    def __init__(self, ts_dict, column_id, column_value, column_sort=None, offset=0, length=None):
+        self.ts_dict = ts_dict
+        self.column_id = column_id
+        self.column_value = column_value
+        self.column_sort = column_sort
+        self.offset = offset
+        self.length = length
+
+    def __iter__(self):
+        for kind, df in self.ts_dict.items():
+            for ts_id, group in df.groupby(self.column_id):
+                if self.column_sort is not None:
+                    group_sorted = group.sort_values([self.column_sort])
+                else:
+                    group_sorted = group
+
+                yield ts_id, kind, group_sorted[self.column_value]
+
+    def __len__(self):
+        return sum(df[self.column_id].nunique() for df in self.ts_dict.values())
+
+
+def generate_data_chunk_format(df, column_id, column_kind, column_value, column_sort=None):
     """Converts the dataframe df in into a list of individual time seriess.
 
     E.g. the DataFrame
@@ -185,8 +302,8 @@ def generate_data_chunk_format(df, column_id, column_kind, column_value, column_
 
     into
 
-        [(1, 'a', pd.Series([-0.217610, -0.613667, -2.073386]),
-         (2, 'b', pd.Series([-0.576254, -1.219238])]
+        Iterable((1, 'a', pd.Series([-0.217610, -0.613667, -2.073386]),
+         (2, 'b', pd.Series([-0.576254, -1.219238]))
 
 
     The data is separated out into those single time series and the _do_extraction_on_chunk is
@@ -207,8 +324,11 @@ def generate_data_chunk_format(df, column_id, column_kind, column_value, column_
     :param column_value: The name for the column keeping the value itself.
     :type column_value: str
 
-    :return: the data in chunks
-    :rtype: list
+    :param column_sort: The name for the column to sort on.
+    :type column_sort: str
+
+    :return: a data adapter
+    :rtype: TsData
     """
 
     if isinstance(df, pd.DataFrame):
@@ -228,27 +348,34 @@ def generate_data_chunk_format(df, column_id, column_kind, column_value, column_
             if df[column_sort].isnull().any():
                 raise ValueError("You have NaN values in your sort column.")
 
-        if column_kind is None and column_value is None:
+        if column_value is not None:
+            # Check value column
+            if column_value not in df.columns:
+                raise ValueError("The given column for the value is not present in the data.")
 
-            kinds = df.drop(columns=[col for col in df.columns if col in [column_id, column_sort]]).columns
-            unique_ids = df[column_id].unique()
+            if df[column_value].isnull().any():
+                raise ValueError("You have NaN values in your value column.")
 
-            def transform_wide():
-                df_grouped = df.sort_values([column_id, column_sort]).groupby([column_id], sort=False, as_index=False)
-                for id, id_group in df_grouped:
-                    for kind in kinds:
-                        yield (id, kind, id_group[kind])
+            # Check kind column
+            if column_kind is not None:
+                if column_kind not in df.columns:
+                    raise AttributeError("The given column for the kind is not present in the data.")
 
-            return transform_wide(), len(unique_ids) * len(kinds)
+                if df[column_kind].isnull().any():
+                    raise ValueError("You have NaN values in your kind column.")
 
+                return LongTsFrameAdapter(df, column_id, column_kind, column_value, column_sort)
+            else:
+                return WideTsFrameAdapter(df, column_id, column_sort, [column_value])
         else:
-            raise NotImplementedError("TODO")
+            return WideTsFrameAdapter(df, column_id, column_sort)
 
-    if isinstance(timeseries_container, dict):
-        raise NotImplementedError("TODO")
+    elif isinstance(df, dict):
+        raise TsDictAdapter(df, column_id, column_value, column_sort)
 
     else:
-        raise ValueError("df must be a DataFrame or a dict")
+        raise ValueError("df must be a DataFrame or a dict of DataFrames. "
+                         "See https://tsfresh.readthedocs.io/en/latest/text/data_formats.html")
 
 
 def _do_extraction(df, column_id, column_value, column_kind, column_sort,
@@ -306,7 +433,7 @@ def _do_extraction(df, column_id, column_value, column_kind, column_sort,
     :rtype: pd.DataFrame
     """
 
-    data_in_chunks, data_length = generate_data_chunk_format(df, column_id, column_kind, column_value, column_sort)
+    data_in_chunks = generate_data_chunk_format(df, column_id, column_kind, column_value, column_sort)
 
     if distributor is None:
         if n_jobs == 0:
@@ -326,7 +453,6 @@ def _do_extraction(df, column_id, column_value, column_kind, column_sort,
 
     result = distributor.map_reduce(_do_extraction_on_chunk, data=data_in_chunks,
                                     chunk_size=chunk_size,
-                                    data_length=data_length,
                                     function_kwargs=kwargs)
     distributor.close()
 

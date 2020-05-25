@@ -293,7 +293,7 @@ class GenerateDataChunkTestCase(DataTestCase):
         df.index.name = None
         df.sort_values(by=["id", "kind", "sort"], inplace=True)
 
-        result = generate_data_chunk_format(df, "id", "kind", "val")
+        result = generate_data_chunk_format(df, "id", "kind", "val", "sort")
         expected = [(10, 'a', pd.Series([36, 71, 27, 62, 56, 58, 67, 11, 2, 24, 45, 30, 0,
                                         9, 41, 28, 33, 19, 29, 43],
                                         index=[10] * 20, name="val")),

@@ -152,7 +152,7 @@ class DistributorBaseClass:
         if not chunk_size:
             chunk_size = self.calculate_best_chunk_size(data_length)
 
-        chunk_generator = self.partition(data, chunk_size=chunk_size)
+        chunk_generator = data.partition(chunk_size=chunk_size)
 
         map_kwargs = {"map_function": map_function, "kwargs": function_kwargs}
 
