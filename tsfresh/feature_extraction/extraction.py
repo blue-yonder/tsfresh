@@ -7,6 +7,7 @@ This module contains the main function to interact with tsfresh: extract feature
 
 import logging
 import warnings
+from collections import defaultdict
 
 import pandas as pd
 
@@ -313,16 +314,21 @@ def _do_extraction(df, column_id, column_value, column_kind,
                                     function_kwargs=kwargs)
     distributor.close()
 
-    # Return a dataframe in the typical form (id as index and feature names as columns)
-    result = pd.DataFrame(result)
-    if "value" in result.columns:
-        result["value"] = result["value"].astype(float)
+    return_df_dict = defaultdict(dict)
+    for result_entry in result:
+        # the result_entry is a dictionary with the id, the variable and the value
+        # we turn it into a mapping variable -> id -> value
+        return_df_dict[result_entry["variable"]][result_entry["id"]] = result_entry["value"]
 
-    if len(result) != 0:
-        result = result.pivot("id", "variable", "value")
-        result.index = result.index.astype(df[column_id].dtype)
+    return_df = pd.DataFrame(return_df_dict)
 
-    return result
+    # All the features are floats
+    return_df = return_df.astype(float)
+
+    # Sort by index to be backward compatible
+    return_df = return_df.sort_index()
+
+    return return_df
 
 
 def _do_extraction_on_chunk(chunk, default_fc_parameters, kind_to_fc_parameters):
