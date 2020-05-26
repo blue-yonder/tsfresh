@@ -54,51 +54,50 @@ def _notebook_run(path, timeout=default_timeout):
 
 
 class NotebooksTestCase(TestCase):
-
-    def test_basic_pipeline_example(self):
-        nb, errors = _notebook_run('notebooks/basic_pipeline_example.ipynb', default_timeout)
+    def test_basic_example(self):
+        nb, errors = _notebook_run('notebooks/examples/01 Feature Extraction and Selection.ipynb', default_timeout)
         self.assertEqual(errors, [])
 
-    def test_friedrich_coefficients(self):
-        nb, errors = _notebook_run('notebooks/friedrich_coefficients.ipynb', default_timeout)
+    def test_pipeline_example(self):
+        nb, errors = _notebook_run('notebooks/examples/02 sklearn Pipeline.ipynb', default_timeout)
         self.assertEqual(errors, [])
 
-    def test_human_activity_recognition_multi_class_example(self):
-        nb, errors = _notebook_run('notebooks/human_activity_recognition_multi_class_example.ipynb', default_timeout)
+    def test_extraction_settings(self):
+        nb, errors = _notebook_run('notebooks/examples/03 Feature Extraction Settings.ipynb', default_timeout)
+        self.assertEqual(errors, [])
+
+    def test_multiclass_selection_example(self):
+        nb, errors = _notebook_run('notebooks/examples/04 Multiclass Selection Example.ipynb', default_timeout)
+        self.assertEqual(errors, [])
+
+    def test_timeseries_forecasting(self):
+        nb, errors = _notebook_run('notebooks/examples/05 Timeseries Forecasting.ipynb', default_timeout)
+        self.assertEqual(errors, [])
+
+    def test_timeseries_forecasting_exprt(self):
+        nb, errors = _notebook_run('notebooks/advanced/05 Timeseries Forecasting (multiple ids).ipynb', default_timeout)
         self.assertEqual(errors, [])
 
     def test_inspect_dft_features(self):
-        nb, errors = _notebook_run('notebooks/inspect_dft_features.ipynb', default_timeout)
-        self.assertEqual(errors, [])
-
-    def test_pipeline_with_two_datasets(self):
-        nb, errors = _notebook_run('notebooks/pipeline_with_two_datasets.ipynb', default_timeout)
-        self.assertEqual(errors, [])
-
-    def test_robot_failure_example(self):
-        nb, errors = _notebook_run('notebooks/robot_failure_example.ipynb', default_timeout)
-        self.assertEqual(errors, [])
-
-    def test_perform_PCA_on_extracted_features(self):
-        nb, errors = _notebook_run('notebooks/perform-PCA-on-extracted-features.ipynb', default_timeout)
-        self.assertEqual(errors, [])
-
-    def test_fc_parameters_extraction_dictionary(self):
-        nb, errors = _notebook_run('notebooks/the-fc_parameters-extraction-dictionary.ipynb', default_timeout)
-        self.assertEqual(errors, [])
-
-    def test_timeseries_forecasting_basic_example(self):
-        nb, errors = _notebook_run('notebooks/timeseries_forecasting_basic_example.ipynb', default_timeout)
-        self.assertEqual(errors, [])
-
-    def test_timeseries_forecasting_google_stock(self):
-        nb, errors = _notebook_run('notebooks/timeseries_forecasting_google_stock.ipynb', default_timeout)
-        self.assertEqual(errors, [])
-
-    def test_visualize_benjamini_yekutieli_procedure(self):
-        nb, errors = _notebook_run('notebooks/visualize-benjamini-yekutieli-procedure.ipynb', default_timeout)
+        nb, errors = _notebook_run('notebooks/advanced/inspect_dft_features.ipynb', default_timeout)
         self.assertEqual(errors, [])
 
     def test_feature_extraction_with_datetime_index(self):
-        nb, errors = _notebook_run('notebooks/feature_extraction_with_datetime_index.ipynb', default_timeout)
+        nb, errors = _notebook_run('notebooks/advanced/feature_extraction_with_datetime_index.ipynb', default_timeout)
+        self.assertEqual(errors, [])
+
+    def test_friedrich_coefficients(self):
+        nb, errors = _notebook_run('notebooks/advanced/friedrich_coefficients.ipynb', default_timeout)
+        self.assertEqual(errors, [])
+
+    def test_inspect_dft_features(self):
+        nb, errors = _notebook_run('notebooks/advanced/inspect_dft_features.ipynb', default_timeout)
+        self.assertEqual(errors, [])
+
+    def test_perform_PCA_on_extracted_features(self):
+        nb, errors = _notebook_run('notebooks/advanced/perform-PCA-on-extracted-features.ipynb', default_timeout)
+        self.assertEqual(errors, [])
+
+    def test_visualize_benjamini_yekutieli_procedure(self):
+        nb, errors = _notebook_run('notebooks/advanced/visualize-benjamini-yekutieli-procedure.ipynb', default_timeout)
         self.assertEqual(errors, [])
