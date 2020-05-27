@@ -319,6 +319,9 @@ def _do_extraction(df, column_id, column_value, column_kind,
     # All the features are floats
     return_df = return_df.astype(float)
 
+    # copy the type of the index
+    return_df.index = return_df.index.astype(df[column_id].dtype)
+
     # Sort by index to be backward compatible
     return_df = return_df.sort_index()
 
