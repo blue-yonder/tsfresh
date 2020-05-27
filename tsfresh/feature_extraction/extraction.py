@@ -196,8 +196,14 @@ class WideTsFrameAdapter(TsData):
 
     def __init__(self, df, column_id, column_sort=None, value_columns=None, offset=0, length=None):
         """
+        Adapter for Pandas DataFrames in wide format, where multiple columns contain different time series for
+        the same id.
 
         :type df: pd.DataFrame
+        :type column_id: str
+        :type value_columns: list[str]
+        :type offset: int
+        :type length: int|None
         """
         self.df = df
         self.column_id = column_id
@@ -236,6 +242,18 @@ class WideTsFrameAdapter(TsData):
 class LongTsFrameAdapter(TsData):
 
     def __init__(self, df, column_id, column_kind, column_value, column_sort=None, offset=0, length=None):
+        """
+        Adapter for Pandas DataFrames in long format, where different time series for the same id are
+        labeled by column `column_kind`.
+
+        :type df: pd.DataFrame
+        :type column_id: str
+        :type column_kind: str
+        :type column_value: str
+        :type column_sort: str|None
+        :type offset: int
+        :type length: int|None
+        """
         self.df = df
         self.column_id = column_id
         self.column_kind = column_kind
@@ -265,6 +283,16 @@ class LongTsFrameAdapter(TsData):
 
 class TsDictAdapter(TsData):
     def __init__(self, ts_dict, column_id, column_value, column_sort=None, offset=0, length=None):
+        """
+        Adapter for a dict of Pandas DataFrames, which maps different time series kinds to Pandas DataFrames.
+
+        :type ts_dict: dict
+        :type column_id: str
+        :type column_value: str
+        :type column_sort: str|None
+        :type offset: int
+        :type length: int|None
+        """
         self.ts_dict = ts_dict
         self.column_id = column_id
         self.column_value = column_value
