@@ -7,6 +7,7 @@ Utility functions for handling the DataFrame conversions to the internal normali
 """
 import gc
 import warnings
+from collections import defaultdict
 
 from tsfresh import defaults
 from tsfresh.utilities.distribution import MapDistributor, MultiprocessingDistributor, DistributorBaseClass
@@ -787,3 +788,25 @@ def add_sub_time_series_index(df_or_dict, sub_length, column_id=None, column_sor
     df = df.set_index(df.index.get_level_values(-1))
 
     return df
+
+
+def pivot_list(list_of_tuples):
+    """
+    Helper function to turn an iterable of tuples with three entries into a dataframe.
+
+    The input ``list_of_tuples`` needs to be an iterable with tuples containing three
+    entries: (a, b, c).
+    Out of this, a pandas dataframe will be created with all a's as index,
+    all b's as columns and all c's as values.
+
+    It basically does a pd.pivot(first entry, second entry, third entry),
+    but optimized for non-pandas input (= python list of tuples).
+    """
+    return_df_dict = defaultdict(dict)
+    for result_entry in list_of_tuples:
+        # the result_entry is a tuple with the id, the variable and the value
+        # we turn it into a mapping variable -> id -> value
+        chunk_id, variable, value = result_entry
+        return_df_dict[variable][chunk_id] = value
+
+    return pd.DataFrame(return_df_dict)

@@ -7,7 +7,6 @@ This module contains the main function to interact with tsfresh: extract feature
 
 import logging
 import warnings
-from collections import defaultdict
 
 import pandas as pd
 
@@ -18,6 +17,7 @@ from tsfresh.utilities import dataframe_functions, profiling
 from tsfresh.utilities.distribution import MapDistributor, MultiprocessingDistributor, \
     DistributorBaseClass
 from tsfresh.utilities.string_manipulation import convert_to_output_format
+from tsfresh.utilities.dataframe_functions import pivot_list
 
 _logger = logging.getLogger(__name__)
 
@@ -314,13 +314,7 @@ def _do_extraction(df, column_id, column_value, column_kind,
                                     function_kwargs=kwargs)
     distributor.close()
 
-    return_df_dict = defaultdict(dict)
-    for result_entry in result:
-        # the result_entry is a dictionary with the id, the variable and the value
-        # we turn it into a mapping variable -> id -> value
-        return_df_dict[result_entry["variable"]][result_entry["id"]] = result_entry["value"]
-
-    return_df = pd.DataFrame(return_df_dict)
+    return_df = pivot_list(result)
 
     # All the features are floats
     return_df = return_df.astype(float)
@@ -340,10 +334,10 @@ def _do_extraction_on_chunk(chunk, default_fc_parameters, kind_to_fc_parameters)
     The chunk consists of the chunk id, the chunk kind and the data (as a Series),
     which is then converted to a numpy array - so a single time series.
 
-    Returned is a list of the extracted features. Each one is a dictionary consisting of
-    { "variable": the feature name in the format <kind>__<feature>__<parameters>,
-      "value": the number value of the feature,
-      "id": the id of the chunk }
+    Returned is a list of the extracted features. Each one is a tuple consisting of
+    { the id of the chunk,
+      the feature name in the format <kind>__<feature>__<parameters>,
+      the number value of the feature, }
 
     The <parameters> are in the form described in :mod:`~tsfresh.utilities.string_manipulation`.
 
@@ -393,6 +387,6 @@ def _do_extraction_on_chunk(chunk, default_fc_parameters, kind_to_fc_parameters)
                 feature_name = str(kind) + "__" + func.__name__
                 if key:
                     feature_name += "__" + str(key)
-                yield {"variable": feature_name, "value": item, "id": sample_id}
+                yield (sample_id, feature_name, item)
 
     return list(_f())
