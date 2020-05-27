@@ -11,6 +11,8 @@ import warnings
 import pandas as pd
 import itertools
 
+from collections import Iterable
+
 from tsfresh import defaults
 from tsfresh.feature_extraction import feature_calculators
 from tsfresh.feature_extraction.settings import ComprehensiveFCParameters
@@ -168,7 +170,7 @@ def extract_features(timeseries_container, default_fc_parameters=None,
     return result
 
 
-class TsData:
+class TsData(Iterable):
     """
     TsData implementations provide access to time series tuples
     """
@@ -180,6 +182,16 @@ class TsData:
         return sum(1 for _ in self)
 
     def slice(self, offset, length):
+        """
+
+        :param offset:
+        :type int
+
+        :param length:
+        :type int
+
+        :return: Iterable
+        """
         return itertools.islice(self, offset, offset + length)
 
     def partition(self, chunk_size):
@@ -194,7 +206,7 @@ class TsData:
 
 class WideTsFrameAdapter(TsData):
 
-    def __init__(self, df, column_id, column_sort=None, value_columns=None, offset=0, length=None):
+    def __init__(self, df, column_id, column_sort=None, value_columns=None):
         """
         Adapter for Pandas DataFrames in wide format, where multiple columns contain different time series for
         the same id.
@@ -202,46 +214,62 @@ class WideTsFrameAdapter(TsData):
         :type df: pd.DataFrame
         :type column_id: str
         :type value_columns: list[str]
-        :type offset: int
-        :type length: int|None
         """
-        self.df = df
-        self.column_id = column_id
         self.column_sort = column_sort
         if value_columns is None:
-            value_columns = [col for col in self.df.columns if col not in [self.column_id, self.column_sort]]
+            value_columns = [col for col in df.columns if col not in [column_id, self.column_sort]]
         self.value_columns = value_columns
-        self.offset = offset
-        self.length = length
+        self.df_grouped = df.groupby([column_id], sort=False, as_index=False)
+        self.group_names = list(self.df_grouped.groups.keys())
 
     def __iter__(self):
-        df_grouped = self.df.groupby([self.column_id], sort=False, as_index=False)
-        group_offset, column_offset = divmod(self.offset, len(self.value_columns))
+        return self.iter_slice(0, None)
+
+    def iter_slice(self, offset, length):
+        group_offset, column_offset = divmod(offset, len(self.value_columns))
         kinds = self.value_columns[column_offset:]
 
         i = 0
-        for ts_id, group in itertools.islice(df_grouped, group_offset, None):
+        for group_name in self.group_names[group_offset:]:
+            group = self.df_grouped.get_group(group_name)
+
             if self.column_sort is not None:
                 group = group.sort_values([self.column_sort])
 
             for kind in kinds:
                 i += 1
-                if self.length is not None and i > self.length:
+                if length is not None and i > length:
                     return
                 else:
-                    yield ts_id, kind, group[kind]
+                    yield group_name, kind, group[kind]
             kinds = self.value_columns
 
     def __len__(self):
-        return self.df[self.column_id].nunique() * len(self.value_columns)
+        return len(self.group_names) * len(self.value_columns)
 
     def slice(self, offset, length):
-        return WideTsFrameAdapter(self.df, self.column_id, self.column_sort, self.value_columns, offset, length)
+        return _WideTsFrameAdapterSlice(self, offset, length)
+
+
+class _WideTsFrameAdapterSlice(Iterable):
+    def __init__(self, adapter, offset, length):
+        """
+        Wraps the iter_slice generator function so it can be pickled
+        """
+        self.adapter = adapter
+        self.offset = offset
+        self.length = length
+
+    def __iter__(self):
+        return self.adapter.iter_slice(self.offset, self.length)
+
+    def __len__(self):
+        return self.length
 
 
 class LongTsFrameAdapter(TsData):
 
-    def __init__(self, df, column_id, column_kind, column_value, column_sort=None, offset=0, length=None):
+    def __init__(self, df, column_id, column_kind, column_value, column_sort=None):
         """
         Adapter for Pandas DataFrames in long format, where different time series for the same id are
         labeled by column `column_kind`.
@@ -251,34 +279,47 @@ class LongTsFrameAdapter(TsData):
         :type column_kind: str
         :type column_value: str
         :type column_sort: str|None
-        :type offset: int
-        :type length: int|None
         """
-        self.df = df
-        self.column_id = column_id
-        self.column_kind = column_kind
         self.column_value = column_value
         self.column_sort = column_sort
-        self.length = length
-        self.offset = offset
+        self.df_grouped = df.groupby([column_id, column_kind], sort=False, as_index=False)
+        self.group_keys = list(self.df_grouped.groups.keys())
 
     def __iter__(self):
-        length_or_none = None if self.length is None else self.offset + self.length
-        df_grouped = self.df.groupby([self.column_id, self.column_kind], sort=False, as_index=False)
+        return self.iter_slice(0, None)
 
-        for ts_id_kind, group in itertools.islice(df_grouped, self.offset, length_or_none):
+    def iter_slice(self, offset, length):
+        length_or_none = None if length is None else offset + length
+
+        for group_key in self.group_keys[offset:length_or_none]:
+            group = self.df_grouped.get_group(group_key)
+
             if self.column_sort is not None:
                 group = group.sort_values([self.column_sort])
 
-            yield ts_id_kind + (group[self.column_value],)
+            yield group_key + (group[self.column_value],)
 
     def __len__(self):
-        df_grouped = self.df.groupby([self.column_id, self.column_kind], sort=False, as_index=False)
-        return len(df_grouped)
+        return len(self.df_grouped)
 
     def slice(self, offset, length):
-        return LongTsFrameAdapter(self.df, self.column_id, self.column_kind, self.column_value, self.column_sort,
-                                  offset, length)
+        return _LongTsFrameAdapterSlice(self, offset, length)
+
+
+class _LongTsFrameAdapterSlice(Iterable):
+    def __init__(self, adapter, offset, length):
+        """
+        Wraps the iter_slice generator function so it can be pickled
+        """
+        self.adapter = adapter
+        self.offset = offset
+        self.length = length
+
+    def __iter__(self):
+        return self.adapter.iter_slice(self.offset, self.length)
+
+    def __len__(self):
+        return self.length
 
 
 class TsDictAdapter(TsData):
@@ -300,16 +341,18 @@ class TsDictAdapter(TsData):
         self.offset = offset
         self.length = length
 
+        self.grouped_dict = {key: df.groupby(column_id) for key, df in ts_dict.items()}
+
     def __iter__(self):
-        for kind, df in self.ts_dict.items():
-            for ts_id, group in df.groupby(self.column_id):
+        for kind, grouped_df in self.grouped_dict.items():
+            for ts_id, group in grouped_df:
                 if self.column_sort is not None:
                     group = group.sort_values([self.column_sort])
 
                 yield ts_id, kind, group[self.column_value]
 
     def __len__(self):
-        return sum(df[self.column_id].nunique() for df in self.ts_dict.values())
+        return sum(grouped_df.ngroups for grouped_df in self.grouped_dict.values())
 
 
 def generate_data_chunk_format(df, column_id, column_kind, column_value, column_sort=None):
