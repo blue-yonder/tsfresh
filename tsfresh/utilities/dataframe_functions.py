@@ -804,9 +804,16 @@ def pivot_list(list_of_tuples):
     """
     return_df_dict = defaultdict(dict)
     for result_entry in list_of_tuples:
-        # the result_entry is a tuple with the id, the variable and the value
-        # we turn it into a mapping variable -> id -> value
+        # we turn it into a mapping column -> index -> value
         chunk_id, variable, value = result_entry
         return_df_dict[variable][chunk_id] = value
 
+    # the mapping column -> {index -> value}
+    # is now a dict of dicts. The pandas dataframe
+    # constructor will peel this off:
+    # first, the keys of the outer dict (the column)
+    # will turn into a column header and the rest into a column
+    # the rest is {index -> value} which will be turned into a
+    # column with index.
+    # All index will be aligned.
     return pd.DataFrame(return_df_dict)
