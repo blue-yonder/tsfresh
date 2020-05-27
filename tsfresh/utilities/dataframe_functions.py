@@ -803,9 +803,8 @@ def pivot_list(list_of_tuples):
     but optimized for non-pandas input (= python list of tuples).
     """
     return_df_dict = defaultdict(dict)
-    for result_entry in list_of_tuples:
+    for chunk_id, variable, value in list_of_tuples:
         # we turn it into a mapping column -> index -> value
-        chunk_id, variable, value = result_entry
         return_df_dict[variable][chunk_id] = value
 
     # the mapping column -> {index -> value}
