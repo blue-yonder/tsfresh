@@ -1130,6 +1130,6 @@ class PivotListTestCase(TestCase):
         self.assertEqual(len(return_df), 100)
         self.assertEqual(len(return_df.columns), 100)
         # every cell should be filled
-        self.assertEqual(return_df.isnan().sum().sum(), 0)
+        self.assertEqual(np.sum(np.sum(np.isnan(return_df))), 0)
         # test if all entries are there
         self.assertEqual(return_df.sum().sum(), 24502500)
