@@ -220,7 +220,6 @@ class WideTsFrameAdapter(TsData):
             value_columns = [col for col in df.columns if col not in [column_id, self.column_sort]]
         self.value_columns = value_columns
         self.df_grouped = df.groupby([column_id], sort=False, as_index=False)
-        self.group_names = list(self.df_grouped.groups.keys())
 
     def __iter__(self):
         return self.iter_slice(0, None)
@@ -230,8 +229,7 @@ class WideTsFrameAdapter(TsData):
         kinds = self.value_columns[column_offset:]
 
         i = 0
-        for group_name in self.group_names[group_offset:]:
-            group = self.df_grouped.get_group(group_name)
+        for group_name, group in itertools.islice(self.df_grouped, offset, None):
 
             if self.column_sort is not None:
                 group = group.sort_values([self.column_sort])
@@ -245,7 +243,7 @@ class WideTsFrameAdapter(TsData):
             kinds = self.value_columns
 
     def __len__(self):
-        return len(self.group_names) * len(self.value_columns)
+        return self.df_grouped.ngroups * len(self.value_columns)
 
     def slice(self, offset, length):
         return _WideTsFrameAdapterSlice(self, offset, length)
@@ -283,7 +281,6 @@ class LongTsFrameAdapter(TsData):
         self.column_value = column_value
         self.column_sort = column_sort
         self.df_grouped = df.groupby([column_id, column_kind], sort=False, as_index=False)
-        self.group_keys = list(self.df_grouped.groups.keys())
 
     def __iter__(self):
         return self.iter_slice(0, None)
@@ -291,8 +288,7 @@ class LongTsFrameAdapter(TsData):
     def iter_slice(self, offset, length):
         length_or_none = None if length is None else offset + length
 
-        for group_key in self.group_keys[offset:length_or_none]:
-            group = self.df_grouped.get_group(group_key)
+        for group_key, group in itertools.islice(self.df_grouped, offset, length_or_none):
 
             if self.column_sort is not None:
                 group = group.sort_values([self.column_sort])
