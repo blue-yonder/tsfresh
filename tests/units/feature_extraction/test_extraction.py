@@ -308,3 +308,30 @@ class GenerateDataChunkTestCase(DataTestCase):
                                          index=[500] * 20, name="val"))]
 
         self.assert_data_chunk_object_equal(result, expected)
+
+    def test_with_dictionaries_two_rows(self):
+        test_df = pd.DataFrame([{"value": 2, "sort": 2, "id": "id_1"},
+                                {"value": 1, "sort": 1, "id": "id_1"}])
+        test_dict = {"a": test_df, "b": test_df}
+
+        result = generate_data_chunk_format(test_dict, column_id="id", column_value="value", column_sort="sort")
+        expected = [("id_1", 'a', pd.Series([1, 2], index=[1, 0], name="value")),
+                    ("id_1", 'b', pd.Series([1, 2], index=[1, 0], name="value"))]
+        self.assert_data_chunk_object_equal(result, expected)
+
+    def test_wide_dataframe_order_preserved_with_sort_column(self):
+        """ verifies that the order of the sort column from a wide time series container is preserved
+        """
+
+        test_df = pd.DataFrame({'id': ["a", "a", "b"],
+                                'v1': [3, 2, 1],
+                                'v2': [13, 12, 11],
+                                'sort': [103, 102, 101]})
+
+        result = generate_data_chunk_format(test_df, column_id="id", column_sort="sort")
+        expected = [("a", 'v1', pd.Series([2, 3], index=[1, 0], name="v1")),
+                    ("a", 'v2', pd.Series([12, 13], index=[1, 0], name="v2")),
+                    ("b", 'v1', pd.Series([1], index=[2], name="v1")),
+                    ("b", 'v2', pd.Series([11], index=[2], name="v2"))]
+        self.assert_data_chunk_object_equal(result, expected)
+

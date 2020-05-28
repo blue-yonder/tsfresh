@@ -351,7 +351,7 @@ class TsDictAdapter(TsData):
         return sum(grouped_df.ngroups for grouped_df in self.grouped_dict.values())
 
 
-def generate_data_chunk_format(df, column_id, column_kind, column_value, column_sort=None):
+def generate_data_chunk_format(df, column_id=None, column_kind=None, column_value=None, column_sort=None):
     """Converts df in into an iterable of individual time series.
 
     E.g. the DataFrame
@@ -379,7 +379,7 @@ def generate_data_chunk_format(df, column_id, column_kind, column_value, column_
     on the given flags.
 
     :param df: The dataframe in the normalized format which is used for extraction.
-    :type df: pd.DataFrame
+    :type df: pd.DataFrame|dict
 
     :param column_id: The name of the id column to group by.
     :type column_id: str
@@ -440,7 +440,7 @@ def generate_data_chunk_format(df, column_id, column_kind, column_value, column_
             return WideTsFrameAdapter(df, column_id, column_sort)
 
     elif isinstance(df, dict):
-        raise TsDictAdapter(df, column_id, column_value, column_sort)
+        return TsDictAdapter(df, column_id, column_value, column_sort)
 
     else:
         raise ValueError("df must be a DataFrame or a dict of DataFrames. "
