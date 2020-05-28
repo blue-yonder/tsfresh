@@ -92,13 +92,15 @@ class DistributorBaseClass:
         if isinstance(data, TsData):
             return data.partition(chunk_size)
         else:
-            iterable = iter(data)
-            while True:
-                next_chunk = list(itertools.islice(iterable, chunk_size))
-                if not next_chunk:
-                    return
+            def partition_iterable():
+                iterable = iter(data)
+                while True:
+                    next_chunk = list(itertools.islice(iterable, chunk_size))
+                    if not next_chunk:
+                        return
 
-                yield next_chunk
+                    yield next_chunk
+            return partition_iterable()
 
     def __init__(self):
         """
