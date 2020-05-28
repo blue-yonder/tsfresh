@@ -314,10 +314,7 @@ def _do_extraction(df, column_id, column_value, column_kind,
                                     function_kwargs=kwargs)
     distributor.close()
 
-    return_df = pivot_list(result)
-
-    # All the features are floats
-    return_df = return_df.astype(float)
+    return_df = pivot_list(result, dtype=float)
 
     # copy the type of the index
     return_df.index = return_df.index.astype(df[column_id].dtype)

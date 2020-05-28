@@ -790,7 +790,7 @@ def add_sub_time_series_index(df_or_dict, sub_length, column_id=None, column_sor
     return df
 
 
-def pivot_list(list_of_tuples):
+def pivot_list(list_of_tuples, **kwargs):
     """
     Helper function to turn an iterable of tuples with three entries into a dataframe.
 
@@ -815,4 +815,4 @@ def pivot_list(list_of_tuples):
     # the rest is {index -> value} which will be turned into a
     # column with index.
     # All index will be aligned.
-    return pd.DataFrame(return_df_dict)
+    return pd.DataFrame(return_df_dict, **kwargs)
