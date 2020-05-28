@@ -193,7 +193,7 @@ class LongTsFrameAdapter(TsData):
             if self.column_sort is not None:
                 group = group.sort_values([self.column_sort])
 
-            yield group_key + (group[self.column_value],)
+            yield tuple(map(str, group_key)) + (group[self.column_value],)
 
     def __len__(self):
         return len(self.df_grouped)
@@ -271,7 +271,7 @@ class TsDictAdapter(TsData):
                 if self.column_sort is not None:
                     group = group.sort_values([self.column_sort])
 
-                yield ts_id, kind, group[self.column_value]
+                yield ts_id, str(kind), group[self.column_value]
 
     def __len__(self):
         return sum(grouped_df.ngroups for grouped_df in self.grouped_dict.values())
