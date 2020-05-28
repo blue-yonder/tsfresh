@@ -804,7 +804,7 @@ def pivot_list(list_of_tuples):
     """
     return_df_dict = defaultdict(dict)
     for chunk_id, variable, value in list_of_tuples:
-        # we turn it into a mapping column -> index -> value
+        # we turn it into a nested mapping `column -> index -> value`
         return_df_dict[variable][chunk_id] = value
 
     # the mapping column -> {index -> value}
