@@ -30,6 +30,13 @@ class DataTestCase(TestCase):
         df.index.name = None
         return df
 
+    def create_test_data_sample_wide(self):
+        df = self.create_test_data_sample()
+        df["sort"] = list(range(20)) * 4
+        df = df.pivot_table(index=["id", "sort"], columns=["kind"], values=["val"], aggfunc="first").reset_index()
+        df.columns = df.columns.get_level_values(0)
+        return df
+
     def create_test_data_sample_with_time_index(self):
         cid = np.repeat([10, 500], 40)
         ckind = np.repeat(["a", "b", "a", "b"], 20)

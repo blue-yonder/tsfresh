@@ -8,13 +8,16 @@ Essentially, a Distributor organizes the application of feature calculators to d
 Design of this module by Nils Braun
 """
 
-import math
 import itertools
+import math
 import warnings
 from collections import Iterable
 from functools import partial
 from multiprocessing import Pool
+
 from tqdm import tqdm
+
+from tsfresh.feature_extraction.data import TsData
 
 
 def _function_with_partly_reduce(chunk_list, map_function, kwargs):
@@ -86,13 +89,16 @@ class DistributorBaseClass:
         :rtype: generator
         """
 
-        iterable = iter(data)
-        while True:
-            next_chunk = list(itertools.islice(iterable, chunk_size))
-            if not next_chunk:
-                return
+        if isinstance(data, TsData):
+            return data.partition(chunk_size)
+        else:
+            iterable = iter(data)
+            while True:
+                next_chunk = list(itertools.islice(iterable, chunk_size))
+                if not next_chunk:
+                    return
 
-            yield next_chunk
+                yield next_chunk
 
     def __init__(self):
         """
@@ -152,7 +158,7 @@ class DistributorBaseClass:
         if not chunk_size:
             chunk_size = self.calculate_best_chunk_size(data_length)
 
-        chunk_generator = data.partition(chunk_size=chunk_size)
+        chunk_generator = self.partition(data, chunk_size=chunk_size)
 
         map_kwargs = {"map_function": map_function, "kwargs": function_kwargs}
 
