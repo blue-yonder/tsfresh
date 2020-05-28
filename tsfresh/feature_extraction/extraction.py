@@ -229,7 +229,7 @@ class WideTsFrameAdapter(TsData):
         kinds = self.value_columns[column_offset:]
         i = 0
 
-        for group_name, group in itertools.islice(self.df_grouped, offset, None):
+        for group_name, group in itertools.islice(self.df_grouped, group_offset, None):
 
             if self.column_sort is not None:
                 group = group.sort_values([self.column_sort])
