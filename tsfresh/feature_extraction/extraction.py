@@ -219,7 +219,7 @@ class WideTsFrameAdapter(TsData):
         if value_columns is None:
             value_columns = [col for col in df.columns if col not in [column_id, self.column_sort]]
         self.value_columns = value_columns
-        self.df_grouped = df.groupby([column_id], sort=False, as_index=False)
+        self.df_grouped = df.groupby([column_id])
 
     def __iter__(self):
         return self.iter_slice(0, None)
@@ -227,8 +227,8 @@ class WideTsFrameAdapter(TsData):
     def iter_slice(self, offset, length):
         group_offset, column_offset = divmod(offset, len(self.value_columns))
         kinds = self.value_columns[column_offset:]
-
         i = 0
+
         for group_name, group in itertools.islice(self.df_grouped, offset, None):
 
             if self.column_sort is not None:
@@ -280,7 +280,7 @@ class LongTsFrameAdapter(TsData):
         """
         self.column_value = column_value
         self.column_sort = column_sort
-        self.df_grouped = df.groupby([column_id, column_kind], sort=False, as_index=False)
+        self.df_grouped = df.groupby([column_id, column_kind])
 
     def __iter__(self):
         return self.iter_slice(0, None)
