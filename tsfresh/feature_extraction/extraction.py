@@ -340,7 +340,7 @@ def _do_extraction_on_chunk(chunk, default_fc_parameters, kind_to_fc_parameters)
     Returned is a list of the extracted features. Each one is a tuple consisting of
     { the id of the chunk,
       the feature name in the format <kind>__<feature>__<parameters>,
-      the number value of the feature, }
+      the numeric value of the feature or np.nan , }
 
     The <parameters> are in the form described in :mod:`~tsfresh.utilities.string_manipulation`.
 
