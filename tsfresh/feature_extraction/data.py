@@ -12,7 +12,7 @@ class TsData(Iterable):
     (id, kind, pd.Series). Make sure `kind` is of type `str` to allow inference
     of feature settings in `feature_extraction.settings.from_columns`.
 
-    Other methods should be overwritten if a more efficient solution exists for the underlying data.
+    Other methods should be overwritten if a more efficient solution exists for the underlying data store.
     """
 
     def __iter__(self):
@@ -21,20 +21,38 @@ class TsData(Iterable):
     def __len__(self):
         return sum(1 for _ in self)
 
+    def partition(self, chunk_size):
+        """
+        Split the data into iterable chunks of given `chunk_size`.
+
+        :param chunk_size: the size of the chunks
+        :type chunk_size int
+
+        :return: Generator of iterables
+        """
+        iterable = iter(self)
+        while True:
+            next_chunk = list(itertools.islice(iterable, chunk_size))
+            if not next_chunk:
+                return
+
+            yield next_chunk
+
+
+class SliceableTsData(TsData):
     def slice(self, offset, length=None):
         """
-        Get an iterable which iterates the data with given length starting at given offset
+        Get a slice of the data
 
-        :param offset: the position of the first element to return
-        :type offset int
+        :type offset: int
+        :type length: int
 
-        :param length: the maximum number of elements to iterate
-        :type length int|None
-
-        :return: Iterable
+        :return Iterable
         """
-        end = offset + length if length is not None else None
-        return itertools.islice(self, offset, end)
+        raise NotImplementedError
+
+    def __iter__(self):
+        return self.slice(0)
 
     def partition(self, chunk_size):
         """
@@ -51,10 +69,29 @@ class TsData(Iterable):
             chunk_info += [(x * chunk_size, y)]
 
         for offset, length in chunk_info:
-            yield self.slice(offset, length)
+            yield _Slice(self, offset, length)
 
 
-class WideTsFrameAdapter(TsData):
+class _Slice(Iterable):
+    def __init__(self, data, offset, length):
+        """
+        Wraps the `slice` generator function so it can be pickled
+        :type data: SliceableTsData
+        :type offset: int
+        :type length: int
+        """
+        self.data = data
+        self.offset = offset
+        self.length = length
+
+    def __iter__(self):
+        return self.data.slice(self.offset, self.length)
+
+    def __len__(self):
+        return self.length
+
+
+class WideTsFrameAdapter(SliceableTsData):
 
     def __init__(self, df, column_id, column_sort=None, value_columns=None):
         """
@@ -102,10 +139,10 @@ class WideTsFrameAdapter(TsData):
         else:
             self.df_grouped = df.groupby([column_id])
 
-    def __iter__(self):
-        return self.iter_slice(0)
+    def __len__(self):
+        return self.df_grouped.ngroups * len(self.value_columns)
 
-    def iter_slice(self, offset, length=None):
+    def slice(self, offset, length=None):
         group_offset, column_offset = divmod(offset, len(self.value_columns))
         kinds = self.value_columns[column_offset:]
         i = 0
@@ -119,30 +156,8 @@ class WideTsFrameAdapter(TsData):
                     yield group_name, kind, group[kind]
             kinds = self.value_columns
 
-    def __len__(self):
-        return self.df_grouped.ngroups * len(self.value_columns)
 
-    def slice(self, offset, length=None):
-        return _WideTsFrameAdapterSlice(self, offset, length)
-
-
-class _WideTsFrameAdapterSlice(Iterable):
-    def __init__(self, adapter, offset, length):
-        """
-        Wraps the `iter_slice` generator function so it can be pickled
-        """
-        self.adapter = adapter
-        self.offset = offset
-        self.length = length
-
-    def __iter__(self):
-        return self.adapter.iter_slice(self.offset, self.length)
-
-    def __len__(self):
-        return self.length
-
-
-class LongTsFrameAdapter(TsData):
+class LongTsFrameAdapter(SliceableTsData):
 
     def __init__(self, df, column_id, column_kind, column_value, column_sort=None):
         """
@@ -200,10 +215,10 @@ class LongTsFrameAdapter(TsData):
         self.column_sort = column_sort
         self.df_grouped = df.groupby([column_id, column_kind])
 
-    def __iter__(self):
-        return self.iter_slice(0)
+    def __len__(self):
+        return len(self.df_grouped)
 
-    def iter_slice(self, offset, length=None):
+    def slice(self, offset, length=None):
         length_or_none = None if length is None else offset + length
 
         for group_key, group in itertools.islice(self.df_grouped, offset, length_or_none):
@@ -212,28 +227,6 @@ class LongTsFrameAdapter(TsData):
                 group = group.sort_values([self.column_sort])
 
             yield group_key[0], str(group_key[1]), group[self.column_value]
-
-    def __len__(self):
-        return len(self.df_grouped)
-
-    def slice(self, offset, length=None):
-        return _LongTsFrameAdapterSlice(self, offset, length)
-
-
-class _LongTsFrameAdapterSlice(Iterable):
-    def __init__(self, adapter, offset, length):
-        """
-        Wraps the `iter_slice` generator function so it can be pickled
-        """
-        self.adapter = adapter
-        self.offset = offset
-        self.length = length
-
-    def __iter__(self):
-        return self.adapter.iter_slice(self.offset, self.length)
-
-    def __len__(self):
-        return self.length
 
 
 class TsDictAdapter(TsData):
