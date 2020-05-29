@@ -34,7 +34,8 @@ class DataTestCase(TestCase):
         df = self.create_test_data_sample()
         df["sort"] = list(range(20)) * 4
         df = df.pivot_table(index=["id", "sort"], columns=["kind"], values=["val"], aggfunc="first").reset_index()
-        df.columns = df.columns.get_level_values(0)
+        df.columns = df.columns.to_flat_index()
+        df = df.rename(columns={col: [level for level in col if level][-1] for col in df.columns})
         return df
 
     def create_test_data_sample_with_time_index(self):
