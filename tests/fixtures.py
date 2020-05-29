@@ -34,7 +34,7 @@ class DataTestCase(TestCase):
         df = self.create_test_data_sample()
         df["sort"] = list(range(20)) * 4
         df = df.pivot_table(index=["id", "sort"], columns=["kind"], values=["val"], aggfunc="first").reset_index()
-        df.columns = df.columns.to_flat_index()
+        df.columns = pd.Index(df.columns.values, tupleize_cols=False)
         df = df.rename(columns={col: [level for level in col if level][-1] for col in df.columns})
         return df
 
