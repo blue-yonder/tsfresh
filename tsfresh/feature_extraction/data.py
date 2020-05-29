@@ -6,7 +6,13 @@ import pandas as pd
 
 class TsData(Iterable):
     """
-    TsData implementations provide access to time series tuples
+    TsData provides access to time series data for internal usage.
+
+    Implementations must at least overwrite `__iter__` which must yield tuples containing
+    (id, kind, pd.Series). Make sure `kind` is of type `str` to allow inference
+    of feature settings in `feature_extraction.settings.from_columns`.
+
+    Other methods should be overwritten if a more efficient solution exists for the underlying data.
     """
 
     def __iter__(self):
@@ -17,7 +23,7 @@ class TsData(Iterable):
 
     def slice(self, offset, length=None):
         """
-        Get an iterable which iterates the data with given length from given offset
+        Get an iterable which iterates the data with given length starting at given offset
 
         :param offset: the position of the first element to return
         :type offset int
@@ -32,9 +38,9 @@ class TsData(Iterable):
 
     def partition(self, chunk_size):
         """
-        Split the data into iterable chunks of given chunk_size
+        Split the data into iterable chunks of given `chunk_size`.
 
-        :param chunk_size:
+        :param chunk_size: the size of the chunks
         :type chunk_size int
 
         :return: Generator of iterables
@@ -55,9 +61,15 @@ class WideTsFrameAdapter(TsData):
         Adapter for Pandas DataFrames in wide format, where multiple columns contain different time series for
         the same id.
 
+        :param df: the data frame
         :type df: pd.DataFrame
+
+        :param column_id: the name of the column containing time series group ids
         :type column_id: str
-        :type value_columns: list[str]
+
+        :param value_columns: list of column names to treat as time series values.
+            If `None`, all columns except `column_id` and `column_sort` will be used.
+        :type value_columns: list[str]|None
         """
 
         if column_id is None:
@@ -72,7 +84,6 @@ class WideTsFrameAdapter(TsData):
         if value_columns is None:
             value_columns = [col for col in df.columns if col not in [column_id, column_sort]]
         else:
-            # Check value column
             for column_value in value_columns:
                 if column_value not in df.columns:
                     raise ValueError(
@@ -118,7 +129,7 @@ class WideTsFrameAdapter(TsData):
 class _WideTsFrameAdapterSlice(Iterable):
     def __init__(self, adapter, offset, length):
         """
-        Wraps the iter_slice generator function so it can be pickled
+        Wraps the `iter_slice` generator function so it can be pickled
         """
         self.adapter = adapter
         self.offset = offset
@@ -138,10 +149,19 @@ class LongTsFrameAdapter(TsData):
         Adapter for Pandas DataFrames in long format, where different time series for the same id are
         labeled by column `column_kind`.
 
+        :param df: the data frame
         :type df: pd.DataFrame
+
+        :param column_id: the name of the column containing time series group ids
         :type column_id: str
+
+        :param column_kind: the name of the column containing time series kinds for each id
         :type column_kind: str
+
+        :param column_value: the name of the column containing time series values
         :type column_value: str
+
+        :param column_sort: the name of the column to sort on
         :type column_sort: str|None
         """
 
@@ -166,14 +186,12 @@ class LongTsFrameAdapter(TsData):
         if column_value is None:
             raise ValueError("You have to set the column_value which contains the values of the different time series")
 
-        # Check value column
         if column_value not in df.columns:
             raise ValueError("The given column for the value is not present in the data.")
 
         if df[column_value].isnull().any():
             raise ValueError("You have NaN values in your value column.")
 
-        # Check sort column
         if column_sort is not None:
             if df[column_sort].isnull().any():
                 raise ValueError("You have NaN values in your sort column.")
@@ -193,7 +211,7 @@ class LongTsFrameAdapter(TsData):
             if self.column_sort is not None:
                 group = group.sort_values([self.column_sort])
 
-            yield tuple(map(str, group_key)) + (group[self.column_value],)
+            yield group_key[0], str(group_key[1]), group[self.column_value]
 
     def __len__(self):
         return len(self.df_grouped)
@@ -205,7 +223,7 @@ class LongTsFrameAdapter(TsData):
 class _LongTsFrameAdapterSlice(Iterable):
     def __init__(self, adapter, offset, length):
         """
-        Wraps the iter_slice generator function so it can be pickled
+        Wraps the `iter_slice` generator function so it can be pickled
         """
         self.adapter = adapter
         self.offset = offset
@@ -219,16 +237,21 @@ class _LongTsFrameAdapterSlice(Iterable):
 
 
 class TsDictAdapter(TsData):
-    def __init__(self, ts_dict, column_id, column_value, column_sort=None, offset=0, length=None):
+    def __init__(self, ts_dict, column_id, column_value, column_sort=None):
         """
-        Adapter for a dict of Pandas DataFrames, which maps different time series kinds to Pandas DataFrames.
+        Adapter for a dict, which maps different time series kinds to Pandas DataFrames.
 
-        :type ts_dict: dict
+        :param ts_dict: a dict of data frames
+        :type ts_dict: dict[str, pd.DataFrame]
+
+        :param column_id: the name of the column containing time series group ids
         :type column_id: str
+
+        :param column_value: the name of the column containing time series values
         :type column_value: str
+
+        :param column_sort: the name of the column to sort on
         :type column_sort: str|None
-        :type offset: int
-        :type length: int|None
         """
 
         if column_id is None:
@@ -239,38 +262,35 @@ class TsDictAdapter(TsData):
 
         for key, df in ts_dict.items():
             if column_id not in df.columns:
-                raise AttributeError("The given column for the id is not present in the data for key {}.".format(key))
+                raise AttributeError("Column {} is not present in dataframe {}.".format(column_id, key))
 
             if df[column_id].isnull().any():
-                raise ValueError("You have NaN values in your id column in data for key {}.".format(key))
-
-            if column_id not in df.columns:
-                raise AttributeError("The given column for the id is not present in data for key {}.".format(key))
-
-            if df[column_id].isnull().any():
-                raise ValueError("You have NaN values in your id column in data for key {}.".format(key))
+                raise ValueError("You have NaN values in column {} of dataframe {}.".format(column_id, key))
 
             if column_value not in df.columns:
-                raise ValueError("The given column for the value is not present in data for key {}.".format(key))
+                raise ValueError("Column {} is not present in dataframe {}.".format(column_value, key))
 
             if df[column_value].isnull().any():
-                raise ValueError("You have NaN values in your value column in data for key {}.".format(key))
+                raise ValueError("You have NaN values in column {} of dataframe {}.".format(column_value, key))
 
-        self.ts_dict = ts_dict
-        self.column_id = column_id
         self.column_value = column_value
-        self.column_sort = column_sort
-        self.offset = offset
-        self.length = length
 
-        self.grouped_dict = {key: df.groupby(column_id) for key, df in ts_dict.items()}
+        if column_sort is not None:
+            for key, df in ts_dict.items():
+                if column_sort not in df.columns:
+                    raise AttributeError("Column {} is not present in dataframe {}.".format(column_sort, key))
+
+                if df[column_sort].isnull().any():
+                    raise ValueError("You have NaN values in column {} of dataframe {}.".format(column_sort, key))
+
+            self.grouped_dict = {key: df.sort_values([column_sort]).groupby(column_id)
+                                 for key, df in ts_dict.items()}
+        else:
+            self.grouped_dict = {key: df.groupby(column_id) for key, df in ts_dict.items()}
 
     def __iter__(self):
         for kind, grouped_df in self.grouped_dict.items():
             for ts_id, group in grouped_df:
-                if self.column_sort is not None:
-                    group = group.sort_values([self.column_sort])
-
                 yield ts_id, str(kind), group[self.column_value]
 
     def __len__(self):
@@ -278,7 +298,8 @@ class TsDictAdapter(TsData):
 
 
 def to_tsdata(df, column_id=None, column_kind=None, column_value=None, column_sort=None):
-    """Converts df in into an iterable of individual time series.
+    """
+    Wrap supported data formats as a TsData object, i.e. an iterable of individual time series.
 
     E.g. the DataFrame
 
@@ -321,7 +342,6 @@ def to_tsdata(df, column_id=None, column_kind=None, column_value=None, column_so
 
     elif isinstance(df, pd.DataFrame):
         if column_value is not None:
-            # Check kind column
             if column_kind is not None:
                 return LongTsFrameAdapter(df, column_id, column_kind, column_value, column_sort)
             else:
