@@ -129,10 +129,10 @@ class WideTsFrameAdapter(SliceableTsData):
                 raise ValueError(
                     "The given column for the value is not present in the data: {}.".format(column_value))
 
-            if column_value.endswith("_"):
+            if str(column_value).endswith("_"):
                 raise ValueError("Value columns are not allowed to end with '_': {}".format(column_value))
 
-            if "__" in column_value:
+            if "__" in str(column_value):
                 raise ValueError("Value columns are not allowed to contain '__': {}".format(column_value))
 
         if True in df[value_columns].isnull().any().values:
@@ -207,10 +207,10 @@ class LongTsFrameAdapter(SliceableTsData):
         if df[column_kind].isnull().any():
             raise ValueError("You have NaN values in your kind column.")
 
-        if column_kind.endswith("_"):
+        if str(column_kind).endswith("_"):
             raise ValueError("The kind column is not allowed to end with '_': {}".format(column_kind))
 
-        if "__" in column_kind:
+        if "__" in str(column_kind):
             raise ValueError("The kind column is not allowed to contain '__': {}".format(column_kind))
 
         if column_value is None:
@@ -281,10 +281,10 @@ class TsDictAdapter(TsData):
             if df[column_value].isnull().any():
                 raise ValueError("You have NaN values in column {} of dataframe {}.".format(column_value, key))
 
-            if key.endswith("_"):
+            if str(key).endswith("_"):
                 raise ValueError("Dict keys are not allowed to end with '_': {}".format(key))
 
-            if "__" in key:
+            if "__" in str(key):
                 raise ValueError("Dict keys are not allowed to contain '__': {}".format(key))
 
         self.column_value = column_value
