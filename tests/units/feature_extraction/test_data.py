@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 
 from tests.fixtures import DataTestCase
@@ -111,3 +112,62 @@ class DataAdapterTestCase(DataTestCase):
                     ("b", 'v1', pd.Series([1], index=[2], name="v1")),
                     ("b", 'v2', pd.Series([11], index=[2], name="v2"))]
         self.assert_data_chunk_object_equal(result, expected)
+
+    def test_with_wrong_input(self):
+        test_df = pd.DataFrame([{"id": 0, "kind": "a", "value": 3, "sort": np.NaN}])
+        self.assertRaises(ValueError, to_tsdata, test_df,
+                          "id", "kind", "value", "sort")
+
+        test_df = pd.DataFrame([{"id": 0, "kind": "a", "value": 3, "sort": 1}])
+        self.assertRaises(AttributeError, to_tsdata, test_df,
+                          "strange_id", "kind", "value", "sort")
+
+        test_df = pd.DataFrame([{"id": 0, "kind": "a", "value": 3, "sort": 1}])
+        self.assertRaises(AttributeError, to_tsdata, test_df,
+                          "id", "strange_kind", "value", "sort")
+
+        test_df = pd.DataFrame([{"id": np.NaN, "kind": "a", "value": 3, "sort": 1}])
+        self.assertRaises(ValueError, to_tsdata, test_df,
+                          "id", "kind", "value", "sort")
+
+        test_df = pd.DataFrame([{"id": 0, "kind": np.NaN, "value": 3, "sort": 1}])
+        self.assertRaises(ValueError, to_tsdata, test_df,
+                          "id", "kind", "value", "sort")
+
+        test_df = pd.DataFrame([{"id": 2}, {"id": 1}])
+        test_dict = {"a": test_df, "b": test_df}
+
+        # If there are more than one column, the algorithm can not choose the correct column
+        self.assertRaises(ValueError, to_tsdata, test_dict,
+                          "id", None, None, None)
+
+        test_dict = {"a": pd.DataFrame([{"id": 2, "value_a": 3}, {"id": 1, "value_a": 4}]),
+                     "b": pd.DataFrame([{"id": 2}, {"id": 1}])}
+
+        # If there are more than one column, the algorithm can not choose the correct column
+        self.assertRaises(ValueError, to_tsdata, test_dict,
+                          "id", None, None, None)
+
+        test_df = pd.DataFrame([{"id": 0, "value": np.NaN}])
+        self.assertRaises(ValueError, to_tsdata, test_df,
+                          "id", None, "value", None)
+
+        test_df = pd.DataFrame([{"id": 0, "value": np.NaN}])
+        self.assertRaises(ValueError, to_tsdata, test_df,
+                          None, None, "value", None)
+
+        test_df = pd.DataFrame([{"id": 0, "a_": 3, "b": 5, "sort": 1}])
+        self.assertRaises(ValueError,
+            to_tsdata, test_df, "id", None, None, "sort")
+
+        test_df = pd.DataFrame([{"id": 0, "a__c": 3, "b": 5, "sort": 1}])
+        self.assertRaises(ValueError,
+            to_tsdata, test_df, "id", None, None, "sort")
+
+        test_df = pd.DataFrame([{"id": 0}])
+        self.assertRaises(ValueError, to_tsdata, test_df,
+                          "id", None, None, None)
+
+        test_df = pd.DataFrame([{"id": 0, "sort": 0}])
+        self.assertRaises(ValueError, to_tsdata, test_df,
+                          "id", None, None, "sort")

@@ -120,11 +120,20 @@ class WideTsFrameAdapter(SliceableTsData):
 
         if value_columns is None:
             value_columns = [col for col in df.columns if col not in [column_id, column_sort]]
-        else:
-            for column_value in value_columns:
-                if column_value not in df.columns:
-                    raise ValueError(
-                        "The given column for the value is not present in the data: {}.".format(column_value))
+
+        if len(value_columns) == 0:
+            raise ValueError("You must provide at least one value column")
+
+        for column_value in value_columns:
+            if column_value not in df.columns:
+                raise ValueError(
+                    "The given column for the value is not present in the data: {}.".format(column_value))
+
+            if column_value.endswith("_"):
+                raise ValueError("Value columns are not allowed to end with '_': {}".format(column_value))
+
+            if "__" in column_value:
+                raise ValueError("Value columns are not allowed to contain '__': {}".format(column_value))
 
         if True in df[value_columns].isnull().any().values:
             raise ValueError("You have NaN values in your value columns.")
@@ -198,6 +207,12 @@ class LongTsFrameAdapter(SliceableTsData):
         if df[column_kind].isnull().any():
             raise ValueError("You have NaN values in your kind column.")
 
+        if column_kind.endswith("_"):
+            raise ValueError("The kind column is not allowed to end with '_': {}".format(column_kind))
+
+        if "__" in column_kind:
+            raise ValueError("The kind column is not allowed to contain '__': {}".format(column_kind))
+
         if column_value is None:
             raise ValueError("You have to set the column_value which contains the values of the different time series")
 
@@ -265,6 +280,12 @@ class TsDictAdapter(TsData):
 
             if df[column_value].isnull().any():
                 raise ValueError("You have NaN values in column {} of dataframe {}.".format(column_value, key))
+
+            if key.endswith("_"):
+                raise ValueError("Dict keys are not allowed to end with '_': {}".format(key))
+
+            if "__" in key:
+                raise ValueError("Dict keys are not allowed to contain '__': {}".format(key))
 
         self.column_value = column_value
 
