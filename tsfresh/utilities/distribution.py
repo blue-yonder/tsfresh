@@ -11,7 +11,7 @@ Design of this module by Nils Braun
 import itertools
 import math
 import warnings
-from collections import Iterable
+from collections import Generator, Iterable
 from functools import partial
 from multiprocessing import Pool
 
@@ -77,16 +77,16 @@ class DistributorBaseClass:
     @staticmethod
     def partition(data, chunk_size):
         """
-        This generator chunks a list of data into slices of length chunk_size. If the chunk_size is not a divider of the
-        data length, the last slice will be shorter than chunk_size.
+        This generator partitions an iterable into slices of length `chunk_size`.
+        If the chunk size is not a divider of the data length, the last slice will be shorter.
 
-        :param data: The data to chunk.
-        :type data: list
-        :param chunk_size: Each chunks size. The last chunk may be smaller.
+        :param data: The data to partition.
+        :type data: Iterable
+        :param chunk_size: The chunk size. The last chunk might be smaller.
         :type chunk_size: int
 
         :return: A generator producing the chunks of data.
-        :rtype: generator
+        :rtype: Generator[Iterable]
         """
 
         if isinstance(data, TsData):
@@ -98,8 +98,8 @@ class DistributorBaseClass:
                     next_chunk = list(itertools.islice(iterable, chunk_size))
                     if not next_chunk:
                         return
-
                     yield next_chunk
+
             return partition_iterable()
 
     def __init__(self):

@@ -3,34 +3,35 @@ import pandas as pd
 
 from tests.fixtures import DataTestCase
 from tsfresh.feature_extraction.data import to_tsdata, LongTsFrameAdapter, WideTsFrameAdapter, TsDictAdapter
+from tsfresh.utilities.distribution import MultiprocessingDistributor
 
 TEST_DATA_EXPECTED_TUPLES = \
     [(10, 'a', pd.Series([36, 71, 27, 62, 56, 58, 67, 11, 2, 24, 45, 30, 0,
                           9, 41, 28, 33, 19, 29, 43],
-                         index=[10] * 20, name="val")),
+                         index=[10] * 20)),
      (10, 'b', pd.Series([78, 37, 23, 44, 6, 3, 21, 61, 39, 31, 53, 16, 66,
                           50, 40, 47, 7, 42, 38, 55],
-                         index=[10] * 20, name="val")),
+                         index=[10] * 20)),
      (500, 'a', pd.Series([76, 72, 74, 75, 32, 64, 46, 35, 15, 70, 57, 65,
                            51, 26, 5, 25, 10, 69, 73, 77],
-                          index=[500] * 20, name="val")),
+                          index=[500] * 20)),
      (500, 'b', pd.Series([8, 60, 12, 68, 22, 17, 18, 63, 49, 34, 20, 52,
                            48, 14, 79, 4, 1, 59, 54, 13],
-                          index=[500] * 20, name="val"))]
+                          index=[500] * 20))]
 
 WIDE_TEST_DATA_EXPECTED_TUPLES = \
     [(10, 'a', pd.Series([11, 9, 67, 45, 30, 58, 62, 19, 56, 29, 0, 27, 36,
                           43, 33, 2, 24, 71, 41, 28],
-                         index=list(range(20)), name="a")),
+                         index=list(range(20)))),
      (10, 'b', pd.Series([50, 40, 39, 7, 53, 23, 16, 37, 66, 38, 6, 47, 3,
                           61, 44, 42, 78, 31, 21, 55],
-                         index=list(range(20)), name="b")),
+                         index=list(range(20)))),
      (500, 'a', pd.Series([15, 35, 25, 32, 69, 65, 70, 64, 51, 46, 5, 77,
                            26, 73, 76, 75, 72, 74, 10, 57],
-                          index=list(range(20, 40)), name="a")),
+                          index=list(range(20, 40)))),
      (500, 'b', pd.Series([4, 14, 68, 22, 18, 52, 54, 60, 79, 12, 49, 63,
                            8, 59, 1, 13, 20, 17, 48, 34],
-                          index=list(range(20, 40)), name="b"))]
+                          index=list(range(20, 40))))]
 
 
 class DataAdapterTestCase(DataTestCase):
@@ -64,7 +65,7 @@ class DataAdapterTestCase(DataTestCase):
         dic_result = {str(x[0]) + "_" + str(x[1]): x[2] for x in result}
         dic_expected = {str(x[0]) + "_" + str(x[1]): x[2] for x in expected}
         for k in dic_result.keys():
-            pd.testing.assert_series_equal(dic_result[k], dic_expected[k])
+            pd.testing.assert_series_equal(dic_result[k], dic_expected[k], check_names=False)
 
     def test_simple_data_sample_two_timeseries(self):
         df = pd.DataFrame({"id": [10] * 4, "kind": ["a"] * 2 + ["b"] * 2, "val": [36, 71, 78, 37]})
@@ -78,7 +79,6 @@ class DataAdapterTestCase(DataTestCase):
 
     def test_simple_data_sample_four_timeseries(self):
         df = self.create_test_data_sample()
-        # todo: investigate the names that are given
         df.index.name = None
         df.sort_values(by=["id", "kind", "sort"], inplace=True)
 

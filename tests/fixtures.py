@@ -11,6 +11,8 @@ import pandas as pd
 # todo: add test cases for float data
 # todo: add test cases for nans, -infs, infs
 # todo: add test cases with time series of length one
+
+
 class DataTestCase(TestCase):
     def create_test_data_sample(self):
         cid = np.repeat([10, 500], 40)
@@ -31,11 +33,50 @@ class DataTestCase(TestCase):
         return df
 
     def create_test_data_sample_wide(self):
-        df = self.create_test_data_sample()
-        df["sort"] = list(range(20)) * 4
-        df = df.pivot_table(index=["id", "sort"], columns=["kind"], values=["val"], aggfunc="first").reset_index()
-        df.columns = pd.Index(df.columns.values, tupleize_cols=False)
-        df = df.rename(columns={col: [level for level in col if level][-1] for col in df.columns})
+        rec = np.rec.array([
+            (0, 10, 0, 11, 50),
+            (1, 10, 1, 9, 40),
+            (2, 10, 2, 67, 39),
+            (3, 10, 3, 45, 7),
+            (4, 10, 4, 30, 53),
+            (5, 10, 5, 58, 23),
+            (6, 10, 6, 62, 16),
+            (7, 10, 7, 19, 37),
+            (8, 10, 8, 56, 66),
+            (9, 10, 9, 29, 38),
+            (10, 10, 10, 0, 6),
+            (11, 10, 11, 27, 47),
+            (12, 10, 12, 36, 3),
+            (13, 10, 13, 43, 61),
+            (14, 10, 14, 33, 44),
+            (15, 10, 15, 2, 42),
+            (16, 10, 16, 24, 78),
+            (17, 10, 17, 71, 31),
+            (18, 10, 18, 41, 21),
+            (19, 10, 19, 28, 55),
+            (20, 500, 0, 15, 4),
+            (21, 500, 1, 35, 14),
+            (22, 500, 2, 25, 68),
+            (23, 500, 3, 32, 22),
+            (24, 500, 4, 69, 18),
+            (25, 500, 5, 65, 52),
+            (26, 500, 6, 70, 54),
+            (27, 500, 7, 64, 60),
+            (28, 500, 8, 51, 79),
+            (29, 500, 9, 46, 12),
+            (30, 500, 10, 5, 49),
+            (31, 500, 11, 77, 63),
+            (32, 500, 12, 26, 8),
+            (33, 500, 13, 73, 59),
+            (34, 500, 14, 76, 1),
+            (35, 500, 15, 75, 13),
+            (36, 500, 16, 72, 20),
+            (37, 500, 17, 74, 17),
+            (38, 500, 18, 10, 48),
+            (39, 500, 19, 57, 34)],
+            dtype=[('index', '<i8'), ('id', '<i8'), ('sort', '<i8'), ('a', '<i8'), ('b', '<i8')])
+        df = pd.DataFrame.from_records(rec)
+        df = df.set_index("index", drop=True)
         return df
 
     def create_test_data_sample_with_time_index(self):
