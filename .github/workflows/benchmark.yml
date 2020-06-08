@@ -16,9 +16,12 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v1
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -r test-requirements.txt
       - name: Run benchmark
         run: |
-          pip install -r requirements.txt -r test-requirements.txt
           cd tests
           pytest benchmark.py --benchmark-only -n 0 --no-cov --benchmark-json output.json
       - name: Store benchmark result

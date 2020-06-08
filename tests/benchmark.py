@@ -23,14 +23,14 @@ def create_data(time_series_length, num_ids, random_seed=42):
 
 
 def test_benchmark_small_data(benchmark):
-    df = create_data(5, 1000)
+    df = create_data(5, 100)
 
     benchmark(extract_features, df, column_id="id", column_sort="time", n_jobs=0,
               disable_progressbar=True)
 
 
 def test_benchmark_large_data(benchmark):
-    df = create_data(500, 100)
+    df = create_data(500, 10)
 
     benchmark(extract_features, df, column_id="id", column_sort="time", n_jobs=0,
               disable_progressbar=True)
