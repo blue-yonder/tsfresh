@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1591648586475,
+  "lastUpdate": 1591648921937,
   "repoUrl": "https://github.com/blue-yonder/tsfresh",
   "entries": {
     "Python Benchmark with pytest-benchmark": [
@@ -45,6 +45,47 @@ window.BENCHMARK_DATA = {
             "unit": "iter/sec",
             "range": "stddev: 0.13031391785748234",
             "extra": "mean: 5.286802530999978 sec\nrounds: 2"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "blue-yonder",
+            "username": "blue-yonder"
+          },
+          "committer": {
+            "name": "blue-yonder",
+            "username": "blue-yonder"
+          },
+          "id": "97bea63a09346e3c098912f6be19761fb63b1553",
+          "message": "Add benchmarking test",
+          "timestamp": "2020-06-08T09:07:28Z",
+          "url": "https://github.com/blue-yonder/tsfresh/pull/710/commits/97bea63a09346e3c098912f6be19761fb63b1553"
+        },
+        "date": 1591648921084,
+        "tool": "pytest",
+        "benches": [
+          {
+            "name": "tests/benchmark.py::test_benchmark_small_data",
+            "value": 0.2001063187483521,
+            "unit": "iter/sec",
+            "range": "stddev: 0.07774186298673909",
+            "extra": "mean: 4.997343443500007 sec\nrounds: 2"
+          },
+          {
+            "name": "tests/benchmark.py::test_benchmark_large_data",
+            "value": 0.34781510271361843,
+            "unit": "iter/sec",
+            "range": "stddev: 0.016463188884254368",
+            "extra": "mean: 2.875090794500011 sec\nrounds: 2"
+          },
+          {
+            "name": "tests/benchmark.py::test_benchmark_with_selection",
+            "value": 0.2097995181180121,
+            "unit": "iter/sec",
+            "range": "stddev: 0.0009091646652443717",
+            "extra": "mean: 4.766455180499989 sec\nrounds: 2"
           }
         ]
       }
