@@ -1,0 +1,36 @@
+# Store benchmark results
+# Taken and adapted from https://github.com/rhysd/github-action-benchmark/blob/master/.github/workflows/pytest.yml
+name: Benchmark
+on:
+  # Trigger the workflow on push or pull request,
+  # but only for the master branch
+  push: {}
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  benchmark:
+    name: Run pytest-benchmark benchmark example
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+      - name: Run benchmark
+        run: |
+          pip install -r requirements.txt -r test-requirements.txt
+          cd tests
+          pytest benchmark.py --benchmark-only -n 0 --no-cov --benchmark-json output.json
+      - name: Store benchmark result
+        uses: rhysd/github-action-benchmark@v1
+        with:
+          name: Python Benchmark with pytest-benchmark
+          tool: 'pytest'
+          output-file-path: tests/output.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+          # Show alert with commit comment on detecting possible performance regression
+          alert-threshold: '200%'
+          comment-on-alert: true
+          fail-on-alert: true
+          alert-comment-cc-users: '@nils-braun'

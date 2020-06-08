@@ -1,6 +1,7 @@
 pytest>=4.4.0
 pytest-cov>=2.6.1
 pytest-xdist>=1.26.1
+pytest-benchmark>=3.0.0
 mock>=2.0.0
 matplotlib>=2.0.0
 seaborn>=0.7.1
