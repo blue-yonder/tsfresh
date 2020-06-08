@@ -119,11 +119,11 @@ class DataAdapterTestCase(DataTestCase):
                           "id", "kind", "value", "sort")
 
         test_df = pd.DataFrame([{"id": 0, "kind": "a", "value": 3, "sort": 1}])
-        self.assertRaises(AttributeError, to_tsdata, test_df,
+        self.assertRaises(ValueError, to_tsdata, test_df,
                           "strange_id", "kind", "value", "sort")
 
         test_df = pd.DataFrame([{"id": 0, "kind": "a", "value": 3, "sort": 1}])
-        self.assertRaises(AttributeError, to_tsdata, test_df,
+        self.assertRaises(ValueError, to_tsdata, test_df,
                           "id", "strange_kind", "value", "sort")
 
         test_df = pd.DataFrame([{"id": np.NaN, "kind": "a", "value": 3, "sort": 1}])

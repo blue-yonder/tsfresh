@@ -1,10 +1,17 @@
 import itertools
-from typing import Iterable
+from collections import namedtuple
+from typing import Generator, Iterable, Sized
 
 import pandas as pd
 
 
-class TsData(Iterable):
+class Timeseries(namedtuple('Timeseries', ['id', 'kind', 'data'])):
+    """
+    Timeseries tuple used for feature extraction
+    """
+
+
+class TsData(Iterable[Timeseries], Sized):
     """
     TsData provides access to time series data for internal usage.
 
@@ -26,9 +33,10 @@ class TsData(Iterable):
         Split the data into iterable chunks of given `chunk_size`.
 
         :param chunk_size: the size of the chunks
-        :type chunk_size int
+        :type chunk_size: int
 
-        :return: Generator of iterables
+        :return: chunks with at most `chunk_size` items
+        :rtype: Generator[Iterable[Timeseries]]
         """
         iterable = iter(self)
         while True:
@@ -47,7 +55,8 @@ class SliceableTsData(TsData):
         :type offset: int
         :type length: int
 
-        :return Iterable
+        :return: a slice of the data
+        :rtype: Iterable[Timeseries]
         """
         raise NotImplementedError
 
@@ -55,14 +64,6 @@ class SliceableTsData(TsData):
         return self.slice(0)
 
     def partition(self, chunk_size):
-        """
-        Split the data into iterable chunks of given `chunk_size`.
-
-        :param chunk_size: the size of the chunks
-        :type chunk_size int
-
-        :return: Generator of iterables
-        """
         x, y = divmod(len(self), chunk_size)
         chunk_info = [(i * chunk_size, chunk_size) for i in range(x)]
         if y > 0:
@@ -72,10 +73,12 @@ class SliceableTsData(TsData):
             yield _Slice(self, offset, length)
 
 
-class _Slice(Iterable):
+class _Slice(Iterable[Timeseries]):
     def __init__(self, data, offset, length):
         """
-        Wraps the `slice` generator function so it can be pickled
+        Wraps the `slice` generator function as an iterable object which can be pickled and passed to the distributor
+        backend.
+
         :type data: SliceableTsData
         :type offset: int
         :type length: int
@@ -91,6 +94,48 @@ class _Slice(Iterable):
         return self.length
 
 
+def _check_colname(*columns):
+    """
+    Check if given column names conflict with `settings.from_columns` (ends with '_' or contains '__').
+
+    :param columns: the column names to check
+    :type columns: str
+
+    :return: None
+    :rtype: None
+    :raise: ``ValueError`` if column names are invalid.
+    """
+
+    for col in columns:
+        if str(col).endswith("_"):
+            raise ValueError("Dict keys are not allowed to end with '_': {}".format(col))
+
+        if "__" in str(col):
+            raise ValueError("Dict keys are not allowed to contain '__': {}".format(col))
+
+
+def _check_nan(df, *columns):
+    """
+    Raise a ``ValueError`` if one of the columns does not exist or contains NaNs.
+
+    :param df: the pandas DataFrame to test for NaNs
+    :type df: pandas.DataFrame
+    :param columns: a list of columns to test for NaNs. If left empty, all columns of the DataFrame will be tested.
+    :type columns: str
+
+    :return: None
+    :rtype: None
+    :raise: ``ValueError`` if ``NaNs`` are found in the DataFrame.
+    """
+
+    for col in columns:
+        if col not in df.columns:
+            raise ValueError("Column not found: {}".format(col))
+
+        if df[col].isnull().any():
+            raise ValueError("Column must not contain NaN values: {}".format(col))
+
+
 class WideTsFrameAdapter(SliceableTsData):
 
     def __init__(self, df, column_id, column_sort=None, value_columns=None):
@@ -104,19 +149,15 @@ class WideTsFrameAdapter(SliceableTsData):
         :param column_id: the name of the column containing time series group ids
         :type column_id: str
 
+        :param column_sort: the name of the column to sort on
+        :type column_sort: str|None
+
         :param value_columns: list of column names to treat as time series values.
             If `None`, all columns except `column_id` and `column_sort` will be used.
         :type value_columns: list[str]|None
         """
 
-        if column_id is None:
-            raise ValueError("You have to set the column_id which contains the ids of the different time series")
-
-        if column_id not in df.columns:
-            raise AttributeError("The given column for the id is not present in the data.")
-
-        if df[column_id].isnull().any():
-            raise ValueError("You have NaN values in your id column.")
+        _check_nan(df, column_id)
 
         if value_columns is None:
             value_columns = [col for col in df.columns if col not in [column_id, column_sort]]
@@ -124,26 +165,14 @@ class WideTsFrameAdapter(SliceableTsData):
         if len(value_columns) == 0:
             raise ValueError("You must provide at least one value column")
 
-        for column_value in value_columns:
-            if column_value not in df.columns:
-                raise ValueError(
-                    "The given column for the value is not present in the data: {}.".format(column_value))
-
-            if str(column_value).endswith("_"):
-                raise ValueError("Value columns are not allowed to end with '_': {}".format(column_value))
-
-            if "__" in str(column_value):
-                raise ValueError("Value columns are not allowed to contain '__': {}".format(column_value))
-
-        if True in df[value_columns].isnull().any().values:
-            raise ValueError("You have NaN values in your value columns.")
+        _check_nan(df, *value_columns)
+        _check_colname(*value_columns)
 
         self.value_columns = value_columns
         self.column_sort = column_sort
 
         if self.column_sort is not None:
-            if df[column_sort].isnull().any():
-                raise ValueError("You have NaN values in your sort column.")
+            _check_nan(df, column_sort)
             self.df_grouped = df.sort_values([self.column_sort]).groupby([column_id])
         else:
             self.df_grouped = df.groupby([column_id])
@@ -162,7 +191,7 @@ class WideTsFrameAdapter(SliceableTsData):
                 if length is not None and i > length:
                     return
                 else:
-                    yield group_name, kind, group[kind]
+                    yield Timeseries(group_name, kind, group[kind])
             kinds = self.value_columns
 
 
@@ -189,42 +218,10 @@ class LongTsFrameAdapter(SliceableTsData):
         :type column_sort: str|None
         """
 
-        if column_id is None:
-            raise ValueError("You have to set the column_id which contains the ids of the different time series")
-
-        if column_id not in df.columns:
-            raise AttributeError("The given column for the id is not present in the data.")
-
-        if df[column_id].isnull().any():
-            raise ValueError("You have NaN values in your id column.")
-
-        if column_kind is None:
-            raise ValueError("You have to set the column_kind which contains the kinds of the different time series")
-
-        if column_kind not in df.columns:
-            raise AttributeError("The given column for the kind is not present in the data.")
-
-        if df[column_kind].isnull().any():
-            raise ValueError("You have NaN values in your kind column.")
-
-        if str(column_kind).endswith("_"):
-            raise ValueError("The kind column is not allowed to end with '_': {}".format(column_kind))
-
-        if "__" in str(column_kind):
-            raise ValueError("The kind column is not allowed to contain '__': {}".format(column_kind))
-
-        if column_value is None:
-            raise ValueError("You have to set the column_value which contains the values of the different time series")
-
-        if column_value not in df.columns:
-            raise ValueError("The given column for the value is not present in the data.")
-
-        if df[column_value].isnull().any():
-            raise ValueError("You have NaN values in your value column.")
-
+        _check_nan(df, column_id, column_kind, column_value)
+        _check_colname(column_kind)
         if column_sort is not None:
-            if df[column_sort].isnull().any():
-                raise ValueError("You have NaN values in your sort column.")
+            _check_nan(df, column_sort)
 
         self.column_value = column_value
         self.column_sort = column_sort
@@ -241,7 +238,7 @@ class LongTsFrameAdapter(SliceableTsData):
             if self.column_sort is not None:
                 group = group.sort_values([self.column_sort])
 
-            yield group_key[0], str(group_key[1]), group[self.column_value]
+            yield Timeseries(group_key[0], str(group_key[1]), group[self.column_value])
 
 
 class TsDictAdapter(TsData):
@@ -262,40 +259,15 @@ class TsDictAdapter(TsData):
         :type column_sort: str|None
         """
 
-        if column_id is None:
-            raise ValueError("You have to set the column_id which contains the ids of the different time series")
-
-        if column_value is None:
-            raise ValueError("You have to set the column_value which contains the values of the different time series")
-
-        for key, df in ts_dict.items():
-            if column_id not in df.columns:
-                raise AttributeError("Column {} is not present in dataframe {}.".format(column_id, key))
-
-            if df[column_id].isnull().any():
-                raise ValueError("You have NaN values in column {} of dataframe {}.".format(column_id, key))
-
-            if column_value not in df.columns:
-                raise ValueError("Column {} is not present in dataframe {}.".format(column_value, key))
-
-            if df[column_value].isnull().any():
-                raise ValueError("You have NaN values in column {} of dataframe {}.".format(column_value, key))
-
-            if str(key).endswith("_"):
-                raise ValueError("Dict keys are not allowed to end with '_': {}".format(key))
-
-            if "__" in str(key):
-                raise ValueError("Dict keys are not allowed to contain '__': {}".format(key))
+        _check_colname(*list(ts_dict.keys()))
+        for df in ts_dict.values():
+            _check_nan(df, column_id, column_value)
 
         self.column_value = column_value
 
         if column_sort is not None:
             for key, df in ts_dict.items():
-                if column_sort not in df.columns:
-                    raise AttributeError("Column {} is not present in dataframe {}.".format(column_sort, key))
-
-                if df[column_sort].isnull().any():
-                    raise ValueError("You have NaN values in column {} of dataframe {}.".format(column_sort, key))
+                _check_nan(df, column_sort)
 
             self.grouped_dict = {key: df.sort_values([column_sort]).groupby(column_id)
                                  for key, df in ts_dict.items()}
@@ -305,7 +277,7 @@ class TsDictAdapter(TsData):
     def __iter__(self):
         for kind, grouped_df in self.grouped_dict.items():
             for ts_id, group in grouped_df:
-                yield ts_id, str(kind), group[self.column_value]
+                yield Timeseries(ts_id, str(kind), group[self.column_value])
 
     def __len__(self):
         return sum(grouped_df.ngroups for grouped_df in self.grouped_dict.values())
