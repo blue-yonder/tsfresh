@@ -7,7 +7,10 @@ import pandas as pd
 
 class Timeseries(namedtuple('Timeseries', ['id', 'kind', 'data'])):
     """
-    Timeseries tuple used for feature extraction
+    Timeseries tuple used for feature extraction.
+
+    Make sure `kind` is of type `str` to allow inference
+    of feature settings in `feature_extraction.settings.from_columns`.
     """
 
 
@@ -15,10 +18,7 @@ class TsData(Iterable[Timeseries], Sized):
     """
     TsData provides access to time series data for internal usage.
 
-    Implementations must at least implement `__iter__` which must yield tuples containing
-    (id, kind, pd.Series). Make sure `kind` is of type `str` to allow inference
-    of feature settings in `feature_extraction.settings.from_columns`.
-
+    Implementations must implement `__iter__` and `__len__`.
     Other methods should be overwritten if a more efficient solution exists for the underlying data store.
     """
 
@@ -26,7 +26,7 @@ class TsData(Iterable[Timeseries], Sized):
         raise NotImplementedError
 
     def __len__(self):
-        return sum(1 for _ in self)
+        raise NotImplementedError
 
     def partition(self, chunk_size):
         """
