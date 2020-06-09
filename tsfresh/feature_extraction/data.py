@@ -64,10 +64,10 @@ class SliceableTsData(TsData):
         return self.slice(0)
 
     def partition(self, chunk_size):
-        x, y = divmod(len(self), chunk_size)
-        chunk_info = [(i * chunk_size, chunk_size) for i in range(x)]
-        if y > 0:
-            chunk_info += [(x * chunk_size, y)]
+        div, mod = divmod(len(self), chunk_size)
+        chunk_info = [(i * chunk_size, chunk_size) for i in range(div)]
+        if mod > 0:
+            chunk_info += [(div * chunk_size, mod)]
 
         for offset, length in chunk_info:
             yield _Slice(self, offset, length)
