@@ -15,7 +15,7 @@ class TsData(Iterable[Timeseries], Sized):
     """
     TsData provides access to time series data for internal usage.
 
-    Implementations must at least overwrite `__iter__` which must yield tuples containing
+    Implementations must at least implement `__iter__` which must yield tuples containing
     (id, kind, pd.Series). Make sure `kind` is of type `str` to allow inference
     of feature settings in `feature_extraction.settings.from_columns`.
 
