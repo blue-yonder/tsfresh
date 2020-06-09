@@ -189,8 +189,7 @@ class WideTsFrameAdapter(SliceableTsData):
                 i += 1
                 if length is not None and i > length:
                     return
-                else:
-                    yield Timeseries(group_name, kind, group[kind])
+                yield Timeseries(group_name, kind, group[kind])
             kinds = self.value_columns
 
 
