@@ -48,11 +48,22 @@ class TsData(Iterable[Timeseries], Sized):
 
 
 class SliceableTsData(TsData):
+    """
+    SliceableTsData uses a slice strategy to implement data partitioning.
+    Implementations of `TsData` may extend this class if they can iterate their elements in deterministic order and
+    if an efficient strategy exists to slice the data.
+
+    Because `__iter__` defaults to `slice(0)`, implementations must only implement `slice`.
+    """
+
     def slice(self, offset, length=None):
         """
-        Get a slice of the data
+        Get a subset of the timeseries elements
 
+        :param offset: the offset in the sequence of elements
         :type offset: int
+
+        :param length: if not `None`, the maximum number of elements the slice will yield
         :type length: int
 
         :return: a slice of the data
@@ -180,6 +191,9 @@ class WideTsFrameAdapter(SliceableTsData):
         return self.df_grouped.ngroups * len(self.value_columns)
 
     def slice(self, offset, length=None):
+        if 0 < offset >= len(self):
+            raise ValueError("offset out of range: {}".format(offset))
+
         group_offset, column_offset = divmod(offset, len(self.value_columns))
         kinds = self.value_columns[column_offset:]
         i = 0
