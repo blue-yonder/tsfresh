@@ -19,6 +19,7 @@ Unreleased
     - Speed up the result pivoting (#705)
 - Bugfixes:
     - Fixed readthedocs (#695, #696)
+    - Fix spark and dask after #705 and for non-id named id columns (#712)
 
 Version 0.16.0
 ==============

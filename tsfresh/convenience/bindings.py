@@ -24,10 +24,10 @@ def _feature_extraction_on_chunk_helper(df, column_id, column_kind,
     chunk = df[column_id].iloc[0], df[column_kind].iloc[0], df.sort_values(column_sort)[column_value]
     features = _do_extraction_on_chunk(chunk, default_fc_parameters=default_fc_parameters,
                                        kind_to_fc_parameters=kind_to_fc_parameters)
-    features = pd.DataFrame(features)
+    features = pd.DataFrame(features, columns=[column_id, "variable", "value"])
     features["value"] = features["value"].astype("double")
 
-    return features[[column_id, "variable", "value"]]
+    return features
 
 
 def dask_feature_extraction_on_chunk(df, column_id, column_kind,
