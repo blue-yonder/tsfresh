@@ -70,7 +70,9 @@ class DriftBifSimlationTestCase(unittest.TestCase):
         df['id'] = df['id'].astype('str')
         y.index = y.index.astype('str')
 
-        X = extract_relevant_features(df, y, column_id="id", column_sort="time", column_kind="dimension", column_value="value")
+        X = extract_relevant_features(df, y,
+                                      column_id="id", column_sort="time",
+                                      column_kind="dimension", column_value="value")
 
         self.assertGreater(len(X.columns), 10)
 
