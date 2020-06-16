@@ -19,6 +19,7 @@ Unreleased
     - Speed up the result pivoting (#705)
 - Bugfixes:
     - Fixed readthedocs (#695, #696)
+    - Fixed a bug in the selection, that caused all regression tasks with un-ordered index to be wrong (#715)
 
 Version 0.16.0
 ==============
