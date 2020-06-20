@@ -17,6 +17,7 @@ Unreleased
     - Implemented the benford distribution feature (#689)
     - Reworked the notebooks (#701, #704)
     - Speed up the result pivoting (#705)
+    - Add a test for the dask bindings (#719)
 - Bugfixes:
     - Fixed readthedocs (#695, #696)
     - Fix spark and dask after #705 and for non-id named id columns (#712)
