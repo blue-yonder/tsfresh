@@ -21,7 +21,10 @@ def _feature_extraction_on_chunk_helper(df, column_id, column_kind,
     elif default_fc_parameters is None and kind_to_fc_parameters is not None:
         default_fc_parameters = {}
 
-    chunk = df[column_id].iloc[0], df[column_kind].iloc[0], df.sort_values(column_sort)[column_value]
+    if column_sort is not None:
+        df = df.sort_values(column_sort)
+
+    chunk = df[column_id].iloc[0], df[column_kind].iloc[0], df[column_value]
     features = _do_extraction_on_chunk(chunk, default_fc_parameters=default_fc_parameters,
                                        kind_to_fc_parameters=kind_to_fc_parameters)
     features = pd.DataFrame(features, columns=[column_id, "variable", "value"])
@@ -31,7 +34,7 @@ def _feature_extraction_on_chunk_helper(df, column_id, column_kind,
 
 
 def dask_feature_extraction_on_chunk(df, column_id, column_kind,
-                                     column_sort, column_value,
+                                     column_value, column_sort=None,
                                      default_fc_parameters=None, kind_to_fc_parameters=None):
     """
     Extract features on a grouped dask dataframe given the column names and the extraction settings.
@@ -99,7 +102,7 @@ def dask_feature_extraction_on_chunk(df, column_id, column_kind,
     :type column_id: str
 
     :param column_sort: The name of the sort column.
-    :type column_sort: str
+    :type column_sort: str or None
 
     :param column_kind: The name of the column keeping record on the kind of the value.
     :type column_kind: str
@@ -121,8 +124,8 @@ def dask_feature_extraction_on_chunk(df, column_id, column_kind,
 
 
 def spark_feature_extraction_on_chunk(df, column_id, column_kind,
-                                      column_sort, column_value,
-                                      default_fc_parameters, kind_to_fc_parameters=None):
+                                      column_value, column_sort=None,
+                                      default_fc_parameters=None, kind_to_fc_parameters=None):
     """
     Extract features on a grouped spark dataframe given the column names and the extraction settings.
     This wrapper function should only be used if you have a spark dataframe as input.
@@ -184,7 +187,7 @@ def spark_feature_extraction_on_chunk(df, column_id, column_kind,
     :type column_id: str
 
     :param column_sort: The name of the sort column.
-    :type column_sort: str
+    :type column_sort: str or None
 
     :param column_kind: The name of the column keeping record on the kind of the value.
     :type column_kind: str
