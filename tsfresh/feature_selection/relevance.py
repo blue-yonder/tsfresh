@@ -131,6 +131,13 @@ def calculate_relevance_table(X, y, ml_task='auto', n_jobs=defaults.N_PROCESSES,
              not relevant] for this feature)
     :rtype: pandas.DataFrame
     """
+
+    # Make sure X and y both have the exact same indices
+    y = y.sort_index()
+    X = X.sort_index()
+
+    assert list(y.index) == list(X.index), "The index of X and y need to be the same"
+
     if ml_task not in ['auto', 'classification', 'regression']:
         raise ValueError('ml_task must be one of: \'auto\', \'classification\', \'regression\'')
     elif ml_task == 'auto':

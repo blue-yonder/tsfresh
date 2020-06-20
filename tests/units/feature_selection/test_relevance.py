@@ -83,8 +83,14 @@ class TestCalculateRelevanceTable:
 
         assert 0.5 == relevance_table.loc['feature_binary'].p_value
         assert 0.7 == relevance_table.loc['feature_real'].p_value
-        significance_test_feature_binary_mock.assert_called_once_with(X['feature_binary'], y=y_real)
-        significance_test_feature_real_mock.assert_called_once_with(X['feature_real'], y=y_real)
+
+        assert significance_test_feature_binary_mock.call_count == 1
+        pd.testing.assert_series_equal(significance_test_feature_binary_mock.call_args[0][0], X["feature_binary"])
+        pd.testing.assert_series_equal(significance_test_feature_binary_mock.call_args[1]["y"], y_real)
+
+        assert significance_test_feature_real_mock.call_count == 1
+        pd.testing.assert_series_equal(significance_test_feature_real_mock.call_args[0][0], X["feature_real"])
+        pd.testing.assert_series_equal(significance_test_feature_real_mock.call_args[1]["y"], y_real)
 
     @mock.patch('tsfresh.feature_selection.relevance.target_real_feature_real_test')
     @mock.patch('tsfresh.feature_selection.relevance.target_real_feature_binary_test')
