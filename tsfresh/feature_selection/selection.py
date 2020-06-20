@@ -140,11 +140,6 @@ def select_features(X, y, test_for_binary_target_binary_feature=defaults.TEST_FO
     if isinstance(y, np.ndarray):
         y = pd.Series(y, index=X.index)
 
-    y = y.sort_index()
-    X = X.sort_index()
-
-    assert list(y.index) == list(X.index), "The index of X and y need to be the same"
-
     relevance_table = calculate_relevance_table(
         X, y, ml_task=ml_task, n_jobs=n_jobs, show_warnings=show_warnings, chunksize=chunksize,
         test_for_binary_target_real_feature=test_for_binary_target_real_feature,

@@ -203,6 +203,8 @@ def __check_if_pandas_series(x, y):
         raise TypeError("x should be a pandas Series")
     if not isinstance(y, pd.Series):
         raise TypeError("y should be a pandas Series")
+    if not list(y.index) == list(x.index):
+        raise ValueError("X and y need to have the same index!")
 
 
 def __check_for_binary_target(y):
