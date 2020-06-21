@@ -1038,7 +1038,7 @@ class AddSubIdTestCase(TestCase):
         extended_dataframe = dataframe_functions.add_sub_time_series_index(dataframe, 2, column_id="id")
 
         self.assertEqual(list(extended_dataframe["id"]),
-                         ["0,1", "0,1", "1,1", "1,1", "0,2", "0,2", "1,2", "1,2", "2,2"])
+                         [(0,1), (0,1), (1,1), (1,1), (0,2), (0,2), (1,2), (1,2), (2,2)])
         assert_series_equal(dataframe["value"], extended_dataframe["value"])
 
     def test_kind_parameters(self):
@@ -1051,7 +1051,7 @@ class AddSubIdTestCase(TestCase):
                                                                            column_kind="kind")
 
         self.assertEqual(list(extended_dataframe["id"]),
-                         ["0,1", "0,1", "0,1", "0,1", "0,2", "0,2", "0,2", "0,2", "1,2"])
+                         [(0,1), (0,1), (0,1), (0,1), (0,2), (0,2), (0,2), (0,2), (1,2)])
         assert_series_equal(dataframe["value"], extended_dataframe["value"])
         assert_series_equal(dataframe["kind"], extended_dataframe["kind"])
 
@@ -1067,7 +1067,7 @@ class AddSubIdTestCase(TestCase):
                                                                            column_sort="sort")
 
         self.assertEqual(list(extended_dataframe["id"]),
-                         ["0,2", "0,2", "0,2", "0,2", "1,2", "0,1", "0,1", "0,1", "0,1"])
+                         [(0,2), (0,2), (0,2), (0,2), (1,2), (0,1), (0,1), (0,1), (0,1)])
         self.assertEqual(list(extended_dataframe["value"]),
                          [9, 8, 7, 6, 5, 4, 3, 2, 1])
         self.assertEqual(list(extended_dataframe["kind"]),
@@ -1087,7 +1087,7 @@ class AddSubIdTestCase(TestCase):
         extended_dataframe = extended_dataframe["1"]
 
         self.assertEqual(list(extended_dataframe["id"]),
-                         ["0,1", "0,1", "1,1", "1,1", "0,2", "0,2", "1,2", "1,2", "2,2"])
+                         [(0,1), (0,1), (1,1), (1,1), (0,2), (0,2), (1,2), (1,2), (2,2)])
         assert_series_equal(dataframe["value"], extended_dataframe["value"])
 
 

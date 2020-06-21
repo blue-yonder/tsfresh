@@ -768,7 +768,7 @@ def add_sub_time_series_index(df_or_dict, sub_length, column_id=None, column_sor
         assert(len(indices) == chunk_length)
 
         if column_id:
-            indices = [str(id) + "," + str(old_id) for id, old_id in zip(indices, df_chunk[column_id])]
+            indices = list(zip(indices, df_chunk[column_id]))
 
         if column_sort:
             df_chunk = df_chunk.sort_values(column_sort)
