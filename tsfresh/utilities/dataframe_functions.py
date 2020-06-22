@@ -5,15 +5,14 @@
 Utility functions for handling the DataFrame conversions to the internal normalized format
 (see ``normalize_input_to_internal_representation``) or on how to handle ``NaN`` and ``inf`` in the DataFrames.
 """
-import gc
 import warnings
 from collections import defaultdict
 
-from tsfresh import defaults
-from tsfresh.utilities.distribution import MapDistributor, MultiprocessingDistributor, DistributorBaseClass
-
 import numpy as np
 import pandas as pd
+
+from tsfresh import defaults
+from tsfresh.utilities.distribution import MapDistributor, MultiprocessingDistributor, DistributorBaseClass
 
 
 def check_for_nans_in_columns(df, columns=None):
@@ -238,149 +237,6 @@ def get_ids(df_or_dict, column_id):
         return set.union(*[set(df[column_id]) for _, df in df_or_dict.items()])
     else:
         raise TypeError("df_or_dict should be of type dict or pandas.DataFrame")
-
-
-# todo: add more testcases
-# todo: rewrite in a more straightforward way
-def _normalize_input_to_internal_representation(timeseries_container, column_id, column_sort,
-                                                column_kind, column_value):
-    """
-    Try to transform any given input to the internal representation of time series, which is a flat DataFrame
-    (the first format from see :ref:`data-formats-label`).
-
-    This function can transform pandas DataFrames in different formats or dictionaries into the internal format
-    that we use. It should not be called by the user.
-
-    :param timeseries_container: a pandas DataFrame or a dictionary. The required shape/form of the object depends on
-        the rest of the passed arguments.
-    :type timeseries_container: pandas.DataFrame or dict
-    :param column_id: it must be present in the pandas DataFrame or in all DataFrames in the dictionary.
-        It is not allowed to have NaN values in this column.
-    :type column_id: basestring
-    :param column_sort: if not None, sort the rows by this column. It is not allowed to
-        have NaN values in this column.
-    :type column_sort: basestring or None
-    :param column_kind: It can only be used when passing a pandas DataFrame (the dictionary is already assumed to be
-        grouped by the kind). Is must be present in the DataFrame and no NaN values are allowed. The DataFrame
-        will be grouped by the values in the kind column and each group will be one entry in the resulting
-        mapping.
-        If the kind column is not passed, it is assumed that each column in the pandas DataFrame (except the id or
-        sort column) is a possible kind and the DataFrame is split up into as many DataFrames as there are columns.
-        It is not allowed to have a value column then.
-    :type column_kind: basestring or None
-    :param column_value: If it is given, it must be present and not-NaN on the pandas DataFrames (or all pandas
-        DataFrames in the dictionaries). If it is None, the kind column must also be none.
-    :type column_value: basestring or None
-
-    :return: A tuple of 4 elements: the normalized DataFrame, the name of the id column, the name of the value column
-             and the name of the value column
-    :rtype: (pd.DataFrame, basestring, basestring, basestring)
-    :raise: ``ValueError`` when the passed combination of parameters is wrong or does not fit to the input DataFrame
-            or dict.
-    """
-    # Also make it possible to have a dict as an input
-    if isinstance(timeseries_container, dict):
-        if column_kind is not None:
-            raise ValueError("You passed in a dictionary and gave a column name for the kind. Both are not possible.")
-
-        column_kind = "_variables"
-
-        timeseries_container = {key: df.copy() for key, df in timeseries_container.items()}
-
-        for kind, df in timeseries_container.items():
-            df[column_kind] = kind
-
-        try:
-            timeseries_container = pd.concat(timeseries_container.values(), sort=True)
-        except TypeError:  # pandas < 0.23.0
-            timeseries_container = pd.concat(timeseries_container.values())
-        gc.collect()
-
-    # Check ID column
-    if column_id is None:
-        raise ValueError("You have to set the column_id which contains the ids of the different time series")
-
-    if column_id not in timeseries_container.columns:
-        raise AttributeError("The given column for the id is not present in the data.")
-
-    if timeseries_container[column_id].isnull().any():
-        raise ValueError("You have NaN values in your id column.")
-
-    # Check sort column
-    if column_sort is not None:
-        if timeseries_container[column_sort].isnull().any():
-            raise ValueError("You have NaN values in your sort column.")
-
-    # Check that either kind and value is None or both not None.
-    if column_kind is None and column_value is not None:
-        column_kind = "_variables"
-        timeseries_container = timeseries_container.copy()
-        timeseries_container[column_kind] = column_value
-    if column_kind is not None and column_value is None:
-        raise ValueError("If passing the kind, you also have to pass the value.")
-
-    if column_kind is None and column_value is None:
-        if column_sort is not None:
-            sort = timeseries_container[column_sort].values
-            timeseries_container = timeseries_container.drop(column_sort, axis=1)
-        else:
-            sort = range(len(timeseries_container))
-            column_sort = "_sort"
-
-        column_kind = "_variables"
-        column_value = "_values"
-
-        if not set(timeseries_container.columns) - {column_id}:
-            raise ValueError("There is no column with values in your data!")
-
-        # We need to preserve the index. However, pandas has hard times to parse the columns if they
-        # have different types, so we need to preserve them.
-        # At least until https://github.com/pandas-dev/pandas/pull/28859 is merged.
-        if isinstance(column_id, int) or isinstance(column_id, float):
-            # some arbitrary number
-            index_name = column_id + 999
-        else:
-            index_name = "_temporary_index_column"
-
-        timeseries_container.index.name = index_name
-        timeseries_container = pd.melt(timeseries_container.reset_index(),
-                                       id_vars=[index_name, column_id],
-                                       value_name=column_value, var_name=column_kind)
-        timeseries_container = timeseries_container.set_index(index_name)
-        timeseries_container[column_sort] = np.tile(sort, (len(timeseries_container) // len(sort)))
-
-    # Check kind column
-    if column_kind not in timeseries_container.columns:
-        raise AttributeError("The given column for the kind is not present in the data.")
-
-    if timeseries_container[column_kind].isnull().any():
-        raise ValueError("You have NaN values in your kind column.")
-
-    # Check value column
-    if column_value not in timeseries_container.columns:
-        raise ValueError("The given column for the value is not present in the data.")
-
-    if timeseries_container[column_value].isnull().any():
-        raise ValueError("You have NaN values in your value column.")
-
-    if column_sort:
-        timeseries_container = timeseries_container.sort_values([column_id, column_kind, column_sort])
-        timeseries_container = timeseries_container.drop(column_sort, axis=1)
-    else:
-        timeseries_container = timeseries_container.sort_values([column_id, column_kind])
-
-    # The kind columns should always be of type "str" to make the inference of feature settings later in `from_columns`
-    # work
-    timeseries_container[column_kind] = timeseries_container[column_kind].astype(str)
-
-    # Make sure we have only parsable names
-    for kind in timeseries_container[column_kind].unique():
-        if kind.endswith("_"):
-            raise ValueError("The kind {kind} is not allowed to end with '_'".format(kind=kind))
-        if "__" in kind:
-            raise ValueError("The kind {kind} is not allowed to contain '__'".format(kind=kind))
-
-    return timeseries_container, column_id, column_kind, column_value
 
 
 def _roll_out_time_series(timeshift, grouped_data, rolling_direction, max_timeshift, min_timeshift,
