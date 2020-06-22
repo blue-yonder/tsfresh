@@ -207,7 +207,8 @@ def spark_feature_extraction_on_chunk(df, column_id, column_kind,
                                  default_fc_parameters=default_fc_parameters,
                                  kind_to_fc_parameters=kind_to_fc_parameters)
 
-    feature_extraction_udf = pandas_udf(f"{column_id} long, variable string, value double",
+    type_string = "{column_id} long, variable string, value double".format(column_id=column_id)
+    feature_extraction_udf = pandas_udf(type_string,
                                         PandasUDFType.GROUPED_MAP)(feature_extraction)
 
     return df.apply(feature_extraction_udf)

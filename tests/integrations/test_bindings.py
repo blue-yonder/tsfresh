@@ -22,12 +22,7 @@ class DaskBindingsTestCase(TestCase):
                                                     column_sort=None,
                                                     default_fc_parameters=MinimalFCParameters())
 
-        features = features.categorize(columns=["variable"])
-        features = features.reset_index(drop=True)
+        features = features.compute()
 
-        feature_table = features.pivot_table(index="my_id", columns="variable", values="value", aggfunc="sum")
-
-        feature_table = feature_table.compute()
-
-        self.assertEqual(len(feature_table.columns), len(MinimalFCParameters()))
-        self.assertEqual(len(feature_table), 2)
+        self.assertEqual(list(features.columns), ["my_id", "value", "variable"])
+        self.assertEqual(len(features), 2 * len(MinimalFCParameters()))
