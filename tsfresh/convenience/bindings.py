@@ -30,7 +30,7 @@ def _feature_extraction_on_chunk_helper(df, column_id, column_kind,
     features = pd.DataFrame(features, columns=[column_id, "variable", "value"])
     features["value"] = features["value"].astype("double")
 
-    return features
+    return features[[column_id, "variable", "value"]]
 
 
 def dask_feature_extraction_on_chunk(df, column_id, column_kind,
@@ -120,7 +120,7 @@ def dask_feature_extraction_on_chunk(df, column_id, column_kind,
                                  column_sort=column_sort, column_value=column_value,
                                  default_fc_parameters=default_fc_parameters,
                                  kind_to_fc_parameters=kind_to_fc_parameters)
-    return df.apply(feature_extraction, meta={column_id: 'int64', 'variable': 'object', 'value': 'float64'})
+    return df.apply(feature_extraction, meta=[(column_id, 'int64'), ('variable', 'object'), ('value', 'float64')])
 
 
 def spark_feature_extraction_on_chunk(df, column_id, column_kind,
