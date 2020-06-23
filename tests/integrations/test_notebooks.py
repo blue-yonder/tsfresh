@@ -7,6 +7,7 @@ import subprocess
 import tempfile
 import nbformat
 
+import pytest
 from unittest import TestCase
 
 default_timeout = 900
@@ -52,7 +53,7 @@ def _notebook_run(path, timeout=default_timeout):
               if output.output_type == "error"]
     return nb, errors
 
-
+@pytest.mark.skipif(os.environ.get('TEST_NOTEBOOKS') != 'y')
 class NotebooksTestCase(TestCase):
     def test_basic_example(self):
         nb, errors = _notebook_run('notebooks/examples/01 Feature Extraction and Selection.ipynb', default_timeout)
