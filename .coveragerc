@@ -1,5 +1,6 @@
 # .coveragerc to control coverage.py
 [run]
+relative_files = True
 branch = True
 source = tsfresh
 omit = tsfresh/utilities/profiling.py 
