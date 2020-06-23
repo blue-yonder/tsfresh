@@ -24,5 +24,5 @@ class DaskBindingsTestCase(TestCase):
 
         features = features.compute()
 
-        self.assertEqual(list(features.columns), ["my_id", "value", "variable"])
+        self.assertEqual(list(sorted(features.columns)), ["my_id", "value", "variable"])
         self.assertEqual(len(features), 2 * len(MinimalFCParameters()))
