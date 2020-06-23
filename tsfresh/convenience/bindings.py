@@ -30,7 +30,7 @@ def _feature_extraction_on_chunk_helper(df, column_id, column_kind,
     features = pd.DataFrame(features, columns=[column_id, "variable", "value"])
     features["value"] = features["value"].astype("double")
 
-    return features
+    return features[[column_id, "variable", "value"]]
 
 
 def dask_feature_extraction_on_chunk(df, column_id, column_kind,
