@@ -146,6 +146,7 @@ def _check_nan(df, *columns):
         if df[col].isnull().any():
             raise ValueError("Column must not contain NaN values: {}".format(col))
 
+
 def _get_value_columns(df, *other_columns):
     value_columns = [col for col in df.columns if col not in other_columns]
 
