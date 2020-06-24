@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 import pandas as pd
 
@@ -35,16 +37,28 @@ WIDE_TEST_DATA_EXPECTED_TUPLES = \
 
 
 class DataAdapterTestCase(DataTestCase):
-
     def test_long_tsframe(self):
         df = self.create_test_data_sample()
         data = LongTsFrameAdapter(df, "id", "kind", "val", "sort")
 
         self.assert_tsdata(data, TEST_DATA_EXPECTED_TUPLES)
 
+    def test_long_tsframe_no_value_column(self):
+        df = self.create_test_data_sample()
+        data = LongTsFrameAdapter(df, "id", "kind", None, "sort")
+
+        self.assert_tsdata(data, TEST_DATA_EXPECTED_TUPLES)
+
     def test_wide_tsframe(self):
         df = self.create_test_data_sample_wide()
         data = WideTsFrameAdapter(df, "id", "sort")
+
+        self.assert_tsdata(data, WIDE_TEST_DATA_EXPECTED_TUPLES)
+
+    def test_wide_tsframe_without_sort(self):
+        df = self.create_test_data_sample_wide()
+        df = df.drop(columns=["sort"])
+        data = WideTsFrameAdapter(df, "id")
 
         self.assert_tsdata(data, WIDE_TEST_DATA_EXPECTED_TUPLES)
 
@@ -58,7 +72,13 @@ class DataAdapterTestCase(DataTestCase):
         self.assertEqual(len(data), len(expected))
         self.assertEqual(sum(1 for _ in data), len(data))
         self.assertEqual(sum(1 for _ in data.partition(1)), len(expected))
+        self.assertEqual(sum(1 for _ in data.partition(2)), math.ceil(len(expected) / 2))
+        self.assertEqual(sum(1 for _ in data.partition(3)), math.ceil(len(expected) / 3))
         self.assertEqual((sum(sum(1 for _ in g) for g in data.partition(1))), len(data))
+        first_partition = next(data.partition(1))
+        self.assertEqual(len(first_partition), 1)
+        first_partition = next(data.partition(4))
+        self.assertEqual(len(first_partition), 4)
         self.assert_data_chunk_object_equal(data, expected)
 
     def assert_data_chunk_object_equal(self, result, expected):
@@ -97,6 +117,16 @@ class DataAdapterTestCase(DataTestCase):
                     ("id_1", 'b', pd.Series([1, 2], index=[1, 0], name="value"))]
         self.assert_data_chunk_object_equal(result, expected)
 
+    def test_with_dictionaries_two_rows(self):
+        test_df = pd.DataFrame([{"value": 1, "id": "id_1"},
+                                {"value": 2, "id": "id_1"}])
+        test_dict = {"a": test_df, "b": test_df}
+
+        result = to_tsdata(test_dict, column_id="id", column_value="value")
+        expected = [("id_1", 'a', pd.Series([1, 2], index=[0, 1], name="value")),
+                    ("id_1", 'b', pd.Series([1, 2], index=[0, 1], name="value"))]
+        self.assert_data_chunk_object_equal(result, expected)
+
     def test_wide_dataframe_order_preserved_with_sort_column(self):
         """ verifies that the order of the sort column from a wide time series container is preserved
         """
@@ -122,6 +152,10 @@ class DataAdapterTestCase(DataTestCase):
         self.assertRaises(ValueError, to_tsdata, test_df,
                           "strange_id", "kind", "value", "sort")
 
+        test_df = pd.DataFrame([{"id": 0, "kind": "a", "value": 3, "value_2": 1, "sort": 1}])
+        self.assertRaises(ValueError, to_tsdata, test_df,
+                          "strange_id", "kind", None, "sort")
+
         test_df = pd.DataFrame([{"id": 0, "kind": "a", "value": 3, "sort": 1}])
         self.assertRaises(ValueError, to_tsdata, test_df,
                           "id", "strange_kind", "value", "sort")
@@ -136,6 +170,16 @@ class DataAdapterTestCase(DataTestCase):
 
         test_df = pd.DataFrame([{"id": 2}, {"id": 1}])
         test_dict = {"a": test_df, "b": test_df}
+
+        # column_id needs to be given
+        self.assertRaises(ValueError, to_tsdata, test_df,
+                          None, "a", "b", None)
+        self.assertRaises(ValueError, to_tsdata, test_df,
+                          None, "a", "b", "a")
+        self.assertRaises(ValueError, to_tsdata, test_dict,
+                          None, "a", "b", None)
+        self.assertRaises(ValueError, to_tsdata, test_dict,
+                          None, "a", "b", "a")
 
         # If there are more than one column, the algorithm can not choose the correct column
         self.assertRaises(ValueError, to_tsdata, test_dict,
@@ -171,3 +215,7 @@ class DataAdapterTestCase(DataTestCase):
         test_df = pd.DataFrame([{"id": 0, "sort": 0}])
         self.assertRaises(ValueError, to_tsdata, test_df,
                           "id", None, None, "sort")
+
+        test_df = [1, 2, 3]
+        self.assertRaises(ValueError, to_tsdata, test_df,
+                          "a", "b", "c", "d")
