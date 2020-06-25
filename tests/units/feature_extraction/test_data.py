@@ -57,7 +57,7 @@ class DataAdapterTestCase(DataTestCase):
 
     def test_wide_tsframe_without_sort(self):
         df = self.create_test_data_sample_wide()
-        df = df.drop(columns=["sort"])
+        del df["sort"]
         data = WideTsFrameAdapter(df, "id")
 
         self.assert_tsdata(data, WIDE_TEST_DATA_EXPECTED_TUPLES)
