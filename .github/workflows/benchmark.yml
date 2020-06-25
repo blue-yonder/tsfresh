@@ -28,4 +28,6 @@ jobs:
           pytest benchmark.py --benchmark-min-rounds=2 --benchmark-only -n 0 --no-cov --benchmark-json output.json
       - name: Publish results
         uses: nils-braun/pytest-benchmark-commenter@v1
+        with:
+          benchmark-file: tests/output.json
 
