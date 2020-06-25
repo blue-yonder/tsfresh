@@ -2,11 +2,6 @@
 # Taken and adapted from https://github.com/rhysd/github-action-benchmark/blob/master/.github/workflows/pytest.yml
 name: Benchmark
 on:
-  # Trigger the workflow on push or pull request,
-  # but only for the master branch
-  push:
-    branches:
-      - master
   pull_request:
     branches:
       - master
@@ -26,8 +21,17 @@ jobs:
         run: |
           cd tests
           pytest benchmark.py --benchmark-min-rounds=4 --benchmark-only -n 0 --no-cov --benchmark-json output.json
+      - name: Download artifact of previous benchmarks from default branch
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          github_token: ${{ github.token }}
+          workflow: upload.yml
+          name: benchmark_results
+          path: old_benchmark
+        continue-on-error: true
       - name: Publish results
-        uses: nils-braun/pytest-benchmark-commenter@v1
+        uses: nils-braun/pytest-benchmark-commenter@v2
         with:
           benchmark-file: tests/output.json
+          comparison-benchmark-file: "old_benchmark/output.json"
 
