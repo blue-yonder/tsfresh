@@ -157,7 +157,7 @@ def _get_value_columns(df, *other_columns):
 
 
 class WideTsFrameAdapter(SliceableTsData):
-    def __init__(self, df, column_id, column_sort=None, column_value=None):
+    def __init__(self, df, column_id, column_sort=None, value_columns=None):
         """
         Adapter for Pandas DataFrames in wide format, where multiple columns contain different time series for
         the same id.
@@ -171,19 +171,17 @@ class WideTsFrameAdapter(SliceableTsData):
         :param column_sort: the name of the column to sort on
         :type column_sort: str|None
 
-        :param column_value: column to treat as time series value.
-            If `None`, all columns except `column_id` and `column_sort` will be used.
-        :type column_value: str|None
+        :param value_columns: list of column names to treat as time series values.
+            If `None` or empty, all columns except `column_id` and `column_sort` will be used.
+        :type value_columns: list[str]|None
         """
         if column_id is None:
             raise ValueError("A value for column_id needs to be supplied")
 
         _check_nan(df, column_id)
 
-        if column_value is None:
+        if value_columns is None:
             value_columns = _get_value_columns(df, column_id, column_sort)
-        else:
-            value_columns = [column_value]
 
         _check_nan(df, *value_columns)
         _check_colname(*value_columns)
@@ -357,7 +355,7 @@ def to_tsdata(df, column_id, column_kind=None, column_value=None, column_sort=No
             return LongTsFrameAdapter(df, column_id, column_kind, column_value, column_sort)
         else:
             if column_value is not None:
-                return WideTsFrameAdapter(df, column_id, column_sort, column_value)
+                return WideTsFrameAdapter(df, column_id, column_sort, [column_value])
             else:
                 return WideTsFrameAdapter(df, column_id, column_sort)
 
