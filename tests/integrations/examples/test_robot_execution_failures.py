@@ -8,12 +8,21 @@ from tsfresh import extract_features
 from tsfresh.examples.robot_execution_failures import load_robot_execution_failures, download_robot_execution_failures
 from pandas import DataFrame, Series
 import numpy as np
+import tempfile
+import os
+import shutil
 
 
 class RobotExecutionFailuresTestCase(TestCase):
     def setUp(self):
-        download_robot_execution_failures()
-        self.X, self.y = load_robot_execution_failures()
+        self.temporary_folder = tempfile.mkdtemp()
+        self.temporary_file = os.path.join(self.temporary_folder, "data")
+
+        download_robot_execution_failures(file_name=self.temporary_file)
+        self.X, self.y = load_robot_execution_failures(file_name=self.temporary_file)
+
+    def tearDown(self):
+        shutil.rmtree(self.temporary_folder)
 
     def test_characteristics_downloaded_robot_execution_failures(self):
         self.assertEqual(len(self.X), 1320)
@@ -28,12 +37,12 @@ class RobotExecutionFailuresTestCase(TestCase):
         self.assertGreater(len(df), 0)
 
     def test_binary_target_is_default(self):
-        _, y = load_robot_execution_failures()
+        _, y = load_robot_execution_failures(file_name=self.temporary_file)
 
         assert len(y.unique()) == 2
 
     def test_multilabel_target_on_request(self):
-        _, y = load_robot_execution_failures(multiclass=True)
+        _, y = load_robot_execution_failures(multiclass=True, file_name=self.temporary_file)
 
         assert len(y.unique()) > 2
         assert y.dtype == np.object
