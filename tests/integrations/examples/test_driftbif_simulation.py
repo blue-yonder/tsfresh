@@ -7,6 +7,7 @@ import unittest
 import pandas as pd
 
 from tsfresh.examples.driftbif_simulation import velocity, load_driftbif, sample_tau
+from tsfresh import extract_relevant_features
 
 
 class DriftBifSimlationTestCase(unittest.TestCase):
@@ -62,6 +63,18 @@ class DriftBifSimlationTestCase(unittest.TestCase):
         v = ds.simulate(Nt, v0=np.zeros(3))
         self.assertEqual(v.shape, (Nt, 3),
                          'The returned vector should reflect the dimension of the initial condition.')
+
+    def test_relevant_feature_extraction(self):
+        df, y = load_driftbif(100, 10, classification=False, seed=42)
+
+        df['id'] = df['id'].astype('str')
+        y.index = y.index.astype('str')
+
+        X = extract_relevant_features(df, y,
+                                      column_id="id", column_sort="time",
+                                      column_kind="dimension", column_value="value")
+
+        self.assertGreater(len(X.columns), 10)
 
 
 class SampleTauTestCase(unittest.TestCase):

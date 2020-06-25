@@ -9,6 +9,7 @@ Unreleased
 
 - Breaking Change
     - Changed constructed id in roll_time_series from string to tuple (#700)
+    - Same for add_sub_time_series_index (#720)
 - Added Features
     - Implemented the Lempel-Ziv-Complexity and the Fourier Entropy (#688)
     - Prevent #524 by adding an assert for common identifiers (#690)
@@ -17,8 +18,12 @@ Unreleased
     - Implemented the benford distribution feature (#689)
     - Reworked the notebooks (#701, #704)
     - Speed up the result pivoting (#705)
+    - Add a test for the dask bindings (#719)
+    - Refactor input data iteration to need less memory (#707)
 - Bugfixes:
+    - Fixed a bug in the selection, that caused all regression tasks with un-ordered index to be wrong (#715)
     - Fixed readthedocs (#695, #696)
+    - Fix spark and dask after #705 and for non-id named id columns (#712)
 
 Version 0.16.0
 ==============

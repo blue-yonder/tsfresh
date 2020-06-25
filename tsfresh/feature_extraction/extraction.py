@@ -12,8 +12,9 @@ import pandas as pd
 
 from tsfresh import defaults
 from tsfresh.feature_extraction import feature_calculators
+from tsfresh.feature_extraction.data import to_tsdata
 from tsfresh.feature_extraction.settings import ComprehensiveFCParameters
-from tsfresh.utilities import dataframe_functions, profiling
+from tsfresh.utilities import profiling
 from tsfresh.utilities.distribution import MapDistributor, MultiprocessingDistributor, \
     DistributorBaseClass
 from tsfresh.utilities.string_manipulation import convert_to_output_format
@@ -130,12 +131,7 @@ def extract_features(timeseries_container, default_fc_parameters=None,
 
     # Always use the standardized way of storing the data.
     # See the function normalize_input_to_internal_representation for more information.
-    df_melt, column_id, column_kind, column_value = \
-        dataframe_functions._normalize_input_to_internal_representation(
-            timeseries_container=timeseries_container,
-            column_id=column_id, column_kind=column_kind,
-            column_sort=column_sort,
-            column_value=column_value)
+
     # Use the standard setting if the user did not supply ones himself.
     if default_fc_parameters is None and kind_to_fc_parameters is None:
         default_fc_parameters = ComprehensiveFCParameters()
@@ -152,9 +148,10 @@ def extract_features(timeseries_container, default_fc_parameters=None,
         else:
             warnings.simplefilter("default")
 
-        result = _do_extraction(df=df_melt,
+        result = _do_extraction(df=timeseries_container,
                                 column_id=column_id, column_value=column_value,
                                 column_kind=column_kind,
+                                column_sort=column_sort,
                                 n_jobs=n_jobs, chunk_size=chunksize,
                                 disable_progressbar=disable_progressbar,
                                 show_warnings=show_warnings,
@@ -174,69 +171,7 @@ def extract_features(timeseries_container, default_fc_parameters=None,
     return result
 
 
-def generate_data_chunk_format(df, column_id, column_kind, column_value):
-    """Converts the dataframe df in into a list of individual time seriess.
-
-    E.g. the DataFrame
-
-        ====  ======  =========
-          id  kind          val
-        ====  ======  =========
-           1  a       -0.21761
-           1  a       -0.613667
-           1  a       -2.07339
-           2  b       -0.576254
-           2  b       -1.21924
-        ====  ======  =========
-
-    into
-
-        [(1, 'a', pd.Series([-0.217610, -0.613667, -2.073386]),
-         (2, 'b', pd.Series([-0.576254, -1.219238])]
-
-
-    The data is separated out into those single time series and the _do_extraction_on_chunk is
-    called on each of them. The results are then combined into a single pandas DataFrame.
-
-    The call is either happening in parallel or not and is showing a progress bar or not depending
-    on the given flags.
-
-    :param df: The dataframe in the normalized format which is used for extraction.
-    :type df: pd.DataFrame
-
-    :param column_id: The name of the id column to group by.
-    :type column_id: str
-
-    :param column_kind: The name of the column keeping record on the kind of the value.
-    :type column_kind: str
-
-    :param column_value: The name for the column keeping the value itself.
-    :type column_value: str
-
-    :return: the data in chunks
-    :rtype: list
-    """
-    MAX_VALUES_GROUPBY = 2147483647
-
-    if df[[column_id, column_kind]].nunique().prod() >= MAX_VALUES_GROUPBY:
-        _logger.error(
-            "The time series container has {} different ids and {} different kind of time series, "
-            "in total {} possible combinations. "
-            "Due to a limitation in pandas we can only process a maximum of {} id/kind combinations. "
-            "Please reduce your time series container and restart "
-            "the calculation".format(
-                df[column_id].nunique(), df[column_kind].nunique(),
-                df[[column_id, column_kind]].nunique().prod(), MAX_VALUES_GROUPBY)
-        )
-        raise ValueError(
-            "Number of ids/kinds are too high. Please reduce your data size and run feature extraction again.")
-    data_in_chunks = [x + (y,) for x, y in
-                      df.groupby([column_id, column_kind], as_index=True)[column_value]]
-
-    return data_in_chunks
-
-
-def _do_extraction(df, column_id, column_value, column_kind,
+def _do_extraction(df, column_id, column_value, column_kind, column_sort,
                    default_fc_parameters, kind_to_fc_parameters,
                    n_jobs, chunk_size, disable_progressbar, show_warnings, distributor):
     """
@@ -291,7 +226,7 @@ def _do_extraction(df, column_id, column_value, column_kind,
     :rtype: pd.DataFrame
     """
 
-    data_in_chunks = generate_data_chunk_format(df, column_id, column_kind, column_value)
+    data = to_tsdata(df, column_id, column_kind, column_value, column_sort)
 
     if distributor is None:
         if n_jobs == 0:
@@ -309,7 +244,7 @@ def _do_extraction(df, column_id, column_value, column_kind,
     kwargs = dict(default_fc_parameters=default_fc_parameters,
                   kind_to_fc_parameters=kind_to_fc_parameters)
 
-    result = distributor.map_reduce(_do_extraction_on_chunk, data=data_in_chunks,
+    result = distributor.map_reduce(_do_extraction_on_chunk, data=data,
                                     chunk_size=chunk_size,
                                     function_kwargs=kwargs)
     distributor.close()
