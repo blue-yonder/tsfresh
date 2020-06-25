@@ -26,16 +26,6 @@ jobs:
         run: |
           cd tests
           pytest benchmark.py --benchmark-min-rounds=2 --benchmark-only -n 0 --no-cov --benchmark-json output.json
-      - name: Store benchmark result
-        uses: rhysd/github-action-benchmark@v1
-        with:
-          name: Python Benchmark with pytest-benchmark
-          tool: 'pytest'
-          output-file-path: tests/output.json
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          auto-push: true
-          # Show alert with commit comment on detecting possible performance regression
-          alert-threshold: '200%'
-          comment-on-alert: true
-          fail-on-alert: false
-          alert-comment-cc-users: '@nils-braun'
+      - name: Publish results
+        uses: nils-braun/pytest-benchmark-commenter@v1
+
