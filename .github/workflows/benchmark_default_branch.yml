@@ -1,7 +1,7 @@
+# Store benchmark results as an artifact
 name: Benchmark the default branch
 on:
-  # Trigger the workflow on push or pull request,
-  # but only for the master branch
+  # Only run on the default branch
   push:
     branches:
       - master

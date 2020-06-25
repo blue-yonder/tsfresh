@@ -1,7 +1,8 @@
-# Store benchmark results
+# Present benchmark results as a comment on the PR
 # Taken and adapted from https://github.com/rhysd/github-action-benchmark/blob/master/.github/workflows/pytest.yml
 name: Benchmark
 on:
+  # only run on pull requests again the main branch
   pull_request:
     branches:
       - master
@@ -28,8 +29,9 @@ jobs:
           workflow: upload.yml
           name: benchmark_results
           path: old_benchmark
+          commit: ${{github.event.pull_request.base.sha}}
         continue-on-error: true
-      - name: Publish results
+      - name: Publish results as comment
         uses: nils-braun/pytest-benchmark-commenter@v2
         with:
           benchmark-file: tests/output.json
