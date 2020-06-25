@@ -14,7 +14,7 @@ def create_data(time_series_length, num_ids, random_seed=42):
         pd.DataFrame({
             "id": [i] * time_series_length,
             "time": range(time_series_length),
-            "value": np.random.randn(time_series_length)
+            "value": np.random.randn(time_series_length).cumsum()
         })
         for i in range(num_ids)
     ])
