@@ -863,7 +863,7 @@ def first_location_of_minimum(x):
 
 
 @set_property("fctype", "simple")
-def percentage_of_reoccurring_datapoints_to_all_datapoints(x):
+def percentage_of_reoccurring_values_to_all_values(x):
     """
     Returns the percentage of unique values, that are present in the time series
     more than once.
@@ -891,7 +891,7 @@ def percentage_of_reoccurring_datapoints_to_all_datapoints(x):
 
 @set_property("fctype", "simple")
 @set_property("input", "pd.Series")
-def percentage_of_reoccurring_values_to_all_values(x):
+def percentage_of_reoccurring_datapoints_to_all_datapoints(x):
     """
     Returns the ratio of unique values, that are present in the time series
     more than once.
