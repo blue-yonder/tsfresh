@@ -871,7 +871,7 @@ def percentage_of_reoccurring_values_to_all_values(x):
         len(different values occurring more than once) / len(different values)
 
     This means the percentage is normalized to the number of unique values,
-    in contrast to the percentage_of_reoccurring_values_to_all_values.
+    in contrast to the percentage_of_reoccurring_datapoints_to_all_datapoints.
 
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
@@ -899,7 +899,7 @@ def percentage_of_reoccurring_datapoints_to_all_datapoints(x):
         # of data points occurring more than once / # of all data points
 
     This means the ratio is normalized to the number of data points in the time series,
-    in contrast to the percentage_of_reoccurring_datapoints_to_all_datapoints.
+    in contrast to the percentage_of_reoccurring_values_to_all_values.
 
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
