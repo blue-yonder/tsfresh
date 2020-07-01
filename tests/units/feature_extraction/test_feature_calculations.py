@@ -516,19 +516,19 @@ class FeatureCalculationTestCase(TestCase):
 
     def test_percentage_of_doubled_datapoints(self):
         self.assertAlmostEqualOnAllArrayTypes(percentage_of_reoccurring_datapoints_to_all_datapoints, [1, 1, 2, 3, 4],
-                                              0.25)
+                                              0.4)
         self.assertAlmostEqualOnAllArrayTypes(percentage_of_reoccurring_datapoints_to_all_datapoints, [1, 1.5, 2, 3], 0)
         self.assertAlmostEqualOnAllArrayTypes(percentage_of_reoccurring_datapoints_to_all_datapoints, [1], 0)
         self.assertAlmostEqualOnAllArrayTypes(percentage_of_reoccurring_datapoints_to_all_datapoints,
-                                              [1.111, -2.45, 1.111, 2.45], 1.0 / 3.0)
+                                              [1.111, -2.45, 1.111, 2.45], 0.5)
         self.assertIsNanOnAllArrayTypes(percentage_of_reoccurring_datapoints_to_all_datapoints, [])
 
     def test_ratio_of_doubled_values(self):
-        self.assertAlmostEqualOnAllArrayTypes(percentage_of_reoccurring_values_to_all_values, [1, 1, 2, 3, 4], 0.4)
+        self.assertAlmostEqualOnAllArrayTypes(percentage_of_reoccurring_values_to_all_values, [1, 1, 2, 3, 4], 0.25)
         self.assertAlmostEqualOnAllArrayTypes(percentage_of_reoccurring_values_to_all_values, [1, 1.5, 2, 3], 0)
         self.assertAlmostEqualOnAllArrayTypes(percentage_of_reoccurring_values_to_all_values, [1], 0)
         self.assertAlmostEqualOnAllArrayTypes(percentage_of_reoccurring_values_to_all_values,
-                                              [1.111, -2.45, 1.111, 2.45], 0.5)
+                                              [1.111, -2.45, 1.111, 2.45], 1.0 / 3.0)
         self.assertIsNanOnAllArrayTypes(percentage_of_reoccurring_values_to_all_values, [])
 
     def test_sum_of_reoccurring_values(self):
