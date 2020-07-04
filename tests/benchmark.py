@@ -23,22 +23,22 @@ def create_data(time_series_length, num_ids, random_seed=42):
 
 
 def test_benchmark_small_data(benchmark):
-    df = create_data(5, 100)
+    df = create_data(5, 200)
 
     benchmark(extract_features, df, column_id="id", column_sort="time", n_jobs=0,
               disable_progressbar=True)
 
 
 def test_benchmark_large_data(benchmark):
-    df = create_data(500, 10)
+    df = create_data(500, 20)
 
     benchmark(extract_features, df, column_id="id", column_sort="time", n_jobs=0,
               disable_progressbar=True)
 
 
 def test_benchmark_with_selection(benchmark):
-    df = create_data(500, 10)
-    y = pd.Series(np.random.choice([0, 1], 10))
+    df = create_data(500, 20)
+    y = pd.Series(np.random.choice([0, 1], 20))
 
     benchmark(extract_relevant_features, df, y, column_id="id", column_sort="time", n_jobs=0,
               disable_progressbar=True)
