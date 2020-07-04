@@ -5,7 +5,7 @@ on:
   # only run on pull requests again the main branch
   pull_request:
     branches:
-      - master
+      - main
 
 jobs:
   benchmark:
