@@ -41,7 +41,7 @@ env:
     - PYTEST_ADDOPTS="-c setup-nocov.cfg"
 
 # The script to call on tests
-script: "if [ $TRAVIS_PULL_REQUEST = false ] && ! [ $TRAVIS_BRANCH = master ]; then pytest tests/units; else pytest tests; fi"
+script: "if [ $TRAVIS_PULL_REQUEST = false ] && ! [ $TRAVIS_BRANCH = main ]; then pytest tests/units; else pytest tests; fi"
 
 # Now define the different stages
 jobs:
