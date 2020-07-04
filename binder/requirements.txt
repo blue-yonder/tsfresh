@@ -1,3 +1,0 @@
--e .  # relative to cwd
--r ../requirements.txt  # relative to here
--r ../test-requirements.txt  # relative to here
