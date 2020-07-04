@@ -26,7 +26,7 @@ jobs:
         uses: dawidd6/action-download-artifact@v2
         with:
           github_token: ${{ github.token }}
-          workflow: upload.yml
+          workflow: benchmark_default_branch.yml
           name: benchmark_results
           path: old_benchmark
           commit: ${{github.event.pull_request.base.sha}}
