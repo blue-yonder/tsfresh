@@ -7,7 +7,7 @@
 # tsfresh
 
 [![Documentation Status](https://readthedocs.org/projects/tsfresh/badge/?version=latest)](https://tsfresh.readthedocs.io/en/latest/?badge=latest)
-[![Build Status](https://travis-ci.org/blue-yonder/tsfresh.svg?branch=main)](https://travis-ci.org/blue-yonder/tsfresh)
+[![Build Status](https://github.com/blue-yonder/tsfresh/workflows/Test%20Default%20Branch/badge.svg)](https://github.com/blue-yonder/tsfresh/actions)
 [![Coverage Status](https://coveralls.io/repos/github/blue-yonder/tsfresh/badge.svg?branch=main)](https://coveralls.io/github/blue-yonder/tsfresh?branch=main)
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/blue-yonder/tsfresh/blob/main/LICENSE.txt)
 [![Gitter chat](https://badges.gitter.im/tsfresh/Lobby.svg)](https://gitter.im/tsfresh/Lobby?utm_source=share-link&utm_medium=link&utm_campaign=share-link)
