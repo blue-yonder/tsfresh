@@ -5,13 +5,20 @@
 from unittest import TestCase
 from tsfresh.examples.har_dataset import download_har_dataset, load_har_dataset, load_har_classes
 from pandas import DataFrame, Series
+import tempfile
+import shutil
 
 
 class HumanActivityTestCase(TestCase):
     def setUp(self):
-        download_har_dataset()
-        self.data = load_har_dataset()
-        self.classes = load_har_classes()
+        self.temporary_folder = tempfile.mkdtemp()
+
+        download_har_dataset(folder_name=self.temporary_folder)
+        self.data = load_har_dataset(folder_name=self.temporary_folder)
+        self.classes = load_har_classes(folder_name=self.temporary_folder)
+
+    def tearDown(self):
+        shutil.rmtree(self.temporary_folder)
 
     def test_characteristics_downloaded_robot_execution_failures(self):
         self.assertEqual(len(self.data), 7352)
