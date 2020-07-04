@@ -7,6 +7,8 @@ tsfresh uses `Semantic Versioning <http://semver.org/>`_
 Unreleased
 ==========
 
+We changed the default branch from "master" to "main".
+
 - Breaking Change
     - Changed constructed id in roll_time_series from string to tuple (#700)
     - Same for add_sub_time_series_index (#720)
