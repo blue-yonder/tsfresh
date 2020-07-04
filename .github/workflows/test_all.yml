@@ -3,7 +3,7 @@ name: Test Default Branch
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   test:
