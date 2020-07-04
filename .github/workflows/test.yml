@@ -1,0 +1,112 @@
+---
+name: Test
+on: [pull_request]
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.6, 3.7, 3.8]
+        installation: ["lowest", "highest"]
+        include:
+        - python-version: 3.6
+          installation: "lowest"
+
+          NUMPY: "1.15.1"
+          PANDAS: "0.25.0"
+          SCIKITLEARN: "0.19.2"
+          DASK: "2.9.0"
+          DISTRIBUTED: "2.11.0"
+          SCIPY: "1.2.0"
+          STATSMODELS: "0.9.0"
+
+        - python-version: 3.7
+          installation: "lowest"
+
+          NUMPY: "1.15.1"
+          PANDAS: "0.25.0"
+          SCIKITLEARN: "0.19.2"
+          DASK: "2.9.0"
+          DISTRIBUTED: "2.11.0"
+          SCIPY: "1.2.0"
+          STATSMODELS: "0.9.0"
+
+        - python-version: 3.8
+          installation: "lowest"
+
+          # only starting from these version, there is a wheel
+          NUMPY: "1.17.3"
+          PANDAS: "1.0.0"
+          SCIKITLEARN: "0.22.0"
+          DASK: "2.9.0"
+          DISTRIBUTED: "2.11.0"
+          # 1.2.0 is not installable with python 3.8...
+          SCIPY: "1.4.0"
+          STATSMODELS: "0.10.2"
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Cache pip
+      uses: actions/cache@v2
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}-${{ hashFiles('test-requirements.txt') }}-${{ matrix.python-version }}-${{ matrix.installation }}
+        restore-keys: |
+          ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}-${{ hashFiles('test-requirements.txt') }}-${{ matrix.python-version }}-${{ matrix.installation }}
+
+    - name: Install dependencies
+      run: |
+        # Do all the installations
+        python -m pip install --upgrade pip wheel setuptools
+
+        # Now downgrade packages if required by environment variables
+        [ -z "${{matrix.NUMPY}}" ] || pip install numpy==${{matrix.NUMPY}}
+        [ -z "${{matrix.PANDAS}}" ] || pip install pandas==${{matrix.PANDAS}}
+        [ -z "${{matrix.SCIKITLEARN}}" ] || pip install scikit-learn==${{matrix.SCIKITLEARN}}
+        [ -z "${{matrix.STATSMODELS}}" ] || pip install statsmodels==${{matrix.STATSMODELS}}
+        [ -z "${{matrix.DASK}}" ] || pip install dask==${{matrix.DASK}}
+        [ -z "${{matrix.DISTRIBUTED}}" ] || pip install distributed==${{matrix.DISTRIBUTED}}
+        # need to downgrade tornado manually
+        [ -z "${{matrix.SCIPY}}" ] || pip install scipy==${{matrix.SCIPY}}
+
+        pip install -r requirements.txt -r test-requirements.txt
+        pip install .
+
+        # Print out the pip versions for debugging
+        pip list
+
+    - name: Test with pytest
+      run: |
+        pytest --junitxml=junit/test-results-${{ matrix.python-version }}-${{ matrix.installation }}.xml tests
+
+    - name: Upload pytest test results
+      uses: actions/upload-artifact@v1
+      with:
+        name: pytest-results-${{ matrix.python-version }}-${{ matrix.installation }}
+        path: junit/test-results-${{ matrix.python-version }}-${{ matrix.installation }}.xml
+      # Use always() to always run this step to publish test results when there are test failures
+      if: ${{ always() }}
+
+    - name: Coveralls
+      uses: AndreMiras/coveralls-python-action@develop
+      with:
+        parallel: true
+
+  coveralls_finish:
+    name: Coveralls Finished
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+    - name: Coveralls Finished
+      uses: AndreMiras/coveralls-python-action@develop
+      with:
+        parallel-finished: true
