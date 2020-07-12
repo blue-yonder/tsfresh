@@ -2,6 +2,8 @@ import itertools
 from collections import namedtuple
 from typing import Generator, Iterable, Sized
 
+from tsfresh.utilities.dataframe_functions import window
+
 import pandas as pd
 
 
@@ -181,6 +183,8 @@ class WideTsFrameAdapter(SliceableTsData):
 
         self.value_columns = value_columns
 
+        self.column_id_dtype = df[column_id].dtype
+
         if column_sort is not None:
             _check_nan(df, column_sort)
             self.df_grouped = df.sort_values([column_sort]).groupby([column_id])
@@ -234,6 +238,8 @@ class LongTsFrameAdapter(TsData):
         _check_colname(column_kind)
 
         self.column_value = column_value
+
+        self.column_id_dtype = df[column_id].dtype
 
         if column_sort is not None:
             _check_nan(df, column_sort)
@@ -289,6 +295,93 @@ class TsDictAdapter(TsData):
 
     def __len__(self):
         return sum(grouped_df.ngroups for grouped_df in self.grouped_dict.values())
+
+class RollingWideTsFrameAdapter(SliceableTsData):
+
+    def __init__(self, df, column_id, window_width, column_sort=None, value_columns=None):
+        """
+        Rolling window adapter for Pandas DataFrames in wide format, where multiple columns contain different time series for
+        the same id.
+
+        :param df: the data frame
+        :type df: pd.DataFrame
+
+        :param column_id: the name of the column containing time series group ids
+        :type column_id: str
+
+        :param window_width: the width of a single window in the rolling window
+        :type window_width: int
+
+        :param column_sort: the name of the column to sort on
+        :type column_sort: str|None
+
+        :param value_columns: list of column names to treat as time series values.
+            If `None`, all columns except `column_id` and `column_sort` will be used.
+        :type value_columns: list[str]|None
+        """
+
+        # pdb.set_trace()
+        _check_nan(df, column_id)
+
+        if value_columns is None:
+            value_columns = [col for col in df.columns if col not in [column_id, column_sort]]
+
+        if len(value_columns) == 0:
+            raise ValueError("You must provide at least one value column")
+
+        _check_nan(df, *value_columns)
+        _check_colname(*value_columns)
+
+        self.value_columns = value_columns
+
+        self.column_id_dtype = df[column_id].dtype
+
+        if column_sort is not None:
+            _check_nan(df, column_sort)
+            self.df_grouped = df.sort_values([column_sort]).groupby([column_id])
+            self.column_sort = column_sort
+        else:
+            self.df_grouped = df.groupby([column_id])
+            self.column_sort = column_id
+
+        assert df.groupby(column_id).count().min().min() >= window_width, 'window_width must be equal to or less than the length of the smallest time series'
+
+        self.window_width = window_width
+        self.num_windows = df.groupby(column_id).count().min(axis=1) - window_width + 1
+
+    def __len__(self):
+        return sum([len(self.value_columns) * n_w for n_w in self.num_windows])
+
+    def slice(self, offset, length=None):
+        if 0 < offset >= len(self):
+            raise ValueError("offset out of range: {}".format(offset))
+
+        off_c = 0
+        for group_offset, n_w in enumerate(self.num_windows):
+            column_offset, window_offset = divmod(offset - off_c, n_w)
+            off_c += len(self.value_columns) * n_w
+            if offset < off_c:
+                break
+
+        i = 0
+
+        for group_name, group in itertools.islice(self.df_grouped, group_offset, None):
+            for kind in self.value_columns[column_offset:]:
+                for win_idx in window(
+                    group[kind].index[window_offset:], window_width=self.window_width
+                ):
+                    i += 1
+                    if length is not None and i > length:
+                        return
+                    yield Timeseries(
+                        (group_name, group.loc[win_idx[-1], self.column_sort]),
+                        kind,
+                        group.loc[win_idx, kind],
+                    )
+                # Reset window_idx
+                window_offset = 0
+            # Reset kind
+            column_offset = 0
 
 
 def to_tsdata(df, column_id=None, column_kind=None, column_value=None, column_sort=None):
