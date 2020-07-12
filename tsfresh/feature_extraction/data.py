@@ -322,12 +322,13 @@ def window(seq, window_width):
         result = result[1:] + (elem,)
         yield result
 
+
 class RollingWideTsFrameAdapter(SliceableTsData):
 
     def __init__(self, df, column_id, window_width, column_sort=None, value_columns=None):
         """
-        Rolling window adapter for Pandas DataFrames in wide format, where multiple columns contain different time series for
-        the same id.
+        Rolling window adapter for Pandas DataFrames in wide format, where multiple columns
+        contain different time series for the same id.
 
         :param df: the data frame
         :type df: pd.DataFrame
@@ -370,7 +371,9 @@ class RollingWideTsFrameAdapter(SliceableTsData):
             self.df_grouped = df.groupby([column_id])
             self.column_sort = column_id
 
-        assert df.groupby(column_id).count().min().min() >= window_width, 'window_width must be equal to or less than the length of the smallest time series'
+        assert (
+            df.groupby(column_id).count().min().min() >= window_width
+        ), "window_width must be equal to or less than the length of the smallest time series"
 
         self.window_width = window_width
         self.num_windows = df.groupby(column_id).count().min(axis=1) - window_width + 1
