@@ -2,8 +2,6 @@ import itertools
 from collections import namedtuple
 from typing import Generator, Iterable, Sized
 
-from tsfresh.utilities.dataframe_functions import window
-
 import pandas as pd
 
 
@@ -295,6 +293,34 @@ class TsDictAdapter(TsData):
 
     def __len__(self):
         return sum(grouped_df.ngroups for grouped_df in self.grouped_dict.values())
+
+
+def window(seq, window_width):
+    """
+    Returns a sliding window (of width n) over data from the iterable
+    s -> (s0,s1,...s[n-1]), (s1,s2,...,sn), ...
+
+    Taken from: https://stackoverflow.com/questions/6822725/rolling-or-sliding-window-iterator
+    """
+
+    # it = s0, s1, ...,
+    it = iter(seq)
+
+    # islice just takes the first n terms
+    # Therefore it iterates through the first n terms of it
+    # result = (it0, it1, ... itn)
+    result = tuple(itertools.islice(it, window_width))
+
+    # yield the first result
+    if len(result) == window_width:
+        yield result
+        # it = s[n+1], s[n+2], ...
+        # result = (it0, it1, ... itn) = (s0, s1, ..., sn)
+
+    # Iteratively drop the first term of result and append the first elem of 'it' to results
+    for elem in it:
+        result = result[1:] + (elem,)
+        yield result
 
 class RollingWideTsFrameAdapter(SliceableTsData):
 
