@@ -863,15 +863,15 @@ def first_location_of_minimum(x):
 
 
 @set_property("fctype", "simple")
-def percentage_of_reoccurring_datapoints_to_all_datapoints(x):
+def percentage_of_reoccurring_values_to_all_values(x):
     """
-    Returns the percentage of unique values, that are present in the time series
+    Returns the percentage of values that are present in the time series
     more than once.
 
         len(different values occurring more than once) / len(different values)
 
     This means the percentage is normalized to the number of unique values,
-    in contrast to the percentage_of_reoccurring_values_to_all_values.
+    in contrast to the percentage_of_reoccurring_datapoints_to_all_datapoints.
 
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
@@ -891,15 +891,15 @@ def percentage_of_reoccurring_datapoints_to_all_datapoints(x):
 
 @set_property("fctype", "simple")
 @set_property("input", "pd.Series")
-def percentage_of_reoccurring_values_to_all_values(x):
+def percentage_of_reoccurring_datapoints_to_all_datapoints(x):
     """
-    Returns the ratio of unique values, that are present in the time series
-    more than once.
+    Returns the percentage of non-unique data points. Non-unique means that they are
+    contained another time in the time series again.
 
         # of data points occurring more than once / # of all data points
 
     This means the ratio is normalized to the number of data points in the time series,
-    in contrast to the percentage_of_reoccurring_datapoints_to_all_datapoints.
+    in contrast to the percentage_of_reoccurring_values_to_all_values.
 
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray

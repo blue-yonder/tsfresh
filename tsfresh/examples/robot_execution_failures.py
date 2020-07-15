@@ -38,7 +38,7 @@ module_path = os.path.dirname(__file__)
 data_file_name = os.path.join(module_path, 'data', 'robotfailure-mld', 'lp1.data')
 
 
-def download_robot_execution_failures():
+def download_robot_execution_failures(file_name=data_file_name):
     """
     Download the Robot Execution Failures LP1 Data Set[#1] from the UCI Machine Learning Repository [#2] and store it
     locally.
@@ -51,16 +51,16 @@ def download_robot_execution_failures():
     >>> from tsfresh.examples import download_robot_execution_failures
     >>> download_robot_execution_failures()
     """
-    if os.path.exists(data_file_name):
+    if os.path.exists(file_name):
         _logger.warning("You have already downloaded the Robot Execution Failures LP1 Data Set.")
         return
 
-    if not os.access(module_path, os.W_OK):
+    os.makedirs(os.path.dirname(file_name), exist_ok=True)
+
+    if not os.access(os.path.dirname(file_name), os.W_OK):
         raise RuntimeError("You don't have the necessary permissions to download the Robot Execution Failures LP1 Data "
                            "Set into the module path. Consider installing the module in a virtualenv you "
                            "own or run this function with appropriate permissions.")
-
-    os.makedirs(os.path.dirname(data_file_name))
 
     r = requests.get(UCI_MLD_REF_URL)
 
@@ -68,11 +68,11 @@ def download_robot_execution_failures():
         raise RuntimeError("Could not download the Robot Execution Failures LP1 Data Set from the UCI Machine Learning "
                            "Repository. HTTP status code: {}".format(r.status_code))
 
-    with open(data_file_name, "w") as f:
+    with open(file_name, "w") as f:
         f.write(r.text)
 
 
-def load_robot_execution_failures(multiclass=False):
+def load_robot_execution_failures(multiclass=False, file_name=data_file_name):
     """
     Load the Robot Execution Failures LP1 Data Set[1].
     The Time series are passed as a flat DataFrame.
@@ -90,13 +90,13 @@ def load_robot_execution_failures(multiclass=False):
     :return: time series data as :class:`pandas.DataFrame` and target vector as :class:`pandas.Series`
     :rtype: tuple
     """
-    if not os.path.exists(data_file_name):
+    if not os.path.exists(file_name):
         raise RuntimeError(UCI_MLD_REF_MSG)
 
     id_to_target = {}
     df_rows = []
 
-    with open(data_file_name) as f:
+    with open(file_name) as f:
         cur_id = 0
         time = 0
 

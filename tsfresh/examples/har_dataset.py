@@ -24,17 +24,15 @@ from zipfile import ZipFile
 import pandas as pd
 import os
 import logging
+import shutil
 
 _logger = logging.getLogger(__name__)
 
 module_path = os.path.dirname(__file__)
-data_file_name = os.path.join(module_path, 'data')
-data_file_name_dataset = os.path.join(module_path, 'data', 'UCI HAR Dataset', 'train', 'Inertial Signals',
-                                      'body_acc_x_train.txt')
-data_file_name_classes = os.path.join(module_path, 'data', 'UCI HAR Dataset', 'train', 'y_train.txt')
+data_file_name = os.path.join(module_path, 'data', 'UCI HAR Dataset')
 
 
-def download_har_dataset():
+def download_har_dataset(folder_name=data_file_name):
     """
     Download human activity recognition dataset from UCI ML Repository and store it at /tsfresh/notebooks/data.
 
@@ -47,17 +45,26 @@ def download_har_dataset():
 
     zipurl = 'https://github.com/MaxBenChrist/human-activity-dataset/blob/master/UCI%20HAR%20Dataset.zip?raw=True'
 
-    if os.path.exists(data_file_name_dataset) and os.path.exists(data_file_name_classes):
+    if not os.access(module_path, os.W_OK):
+        raise RuntimeError("You don't have the necessary permissions to download the Human Activity Dataset "
+                           "Set into the module path. Consider installing the module in a virtualenv you "
+                           "own or run this function with appropriate permissions.")
+
+    if os.path.exists(os.path.join(folder_name, 'UCI HAR Dataset')):
         _logger.warning("You have already downloaded the Human Activity Data Set.")
         return
 
+    os.makedirs(folder_name, exist_ok=True)
+
     with urlopen(zipurl) as zipresp:
         with ZipFile(BytesIO(zipresp.read())) as zfile:
-            zfile.extractall(path=data_file_name)
+            zfile.extractall(path=folder_name)
         zfile.close()
 
 
-def load_har_dataset():
+def load_har_dataset(folder_name=data_file_name):
+    data_file_name_dataset = os.path.join(folder_name, 'UCI HAR Dataset', 'train', 'Inertial Signals',
+                                          'body_acc_x_train.txt')
     try:
         return pd.read_csv(data_file_name_dataset, delim_whitespace=True, header=None)
     except OSError:
@@ -65,7 +72,8 @@ def load_har_dataset():
                       'before?'.format(data_file_name_dataset))
 
 
-def load_har_classes():
+def load_har_classes(folder_name=data_file_name):
+    data_file_name_classes = os.path.join(folder_name, 'UCI HAR Dataset', 'train', 'y_train.txt')
     try:
         return pd.read_csv(data_file_name_classes, delim_whitespace=True, header=None, squeeze=True)
     except OSError:

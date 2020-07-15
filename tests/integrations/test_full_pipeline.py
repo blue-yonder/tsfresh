@@ -4,6 +4,9 @@
 
 from unittest import TestCase
 import pandas as pd
+import os
+import shutil
+import tempfile
 from sklearn.pipeline import Pipeline
 from tsfresh.examples.robot_execution_failures import load_robot_execution_failures, download_robot_execution_failures
 from tsfresh.transformers import RelevantFeatureAugmenter
@@ -11,12 +14,18 @@ from tsfresh.transformers import RelevantFeatureAugmenter
 
 class FullPipelineTestCase_robot_failures(TestCase):
     def setUp(self):
-        download_robot_execution_failures()
-        self.timeseries, self.y = load_robot_execution_failures()
+        self.temporary_folder = tempfile.mkdtemp()
+        temporary_file = os.path.join(self.temporary_folder, "data")
+
+        download_robot_execution_failures(file_name=temporary_file)
+        self.timeseries, self.y = load_robot_execution_failures(file_name=temporary_file)
         self.df = pd.DataFrame(index=self.timeseries.id.unique())
 
         # shrink the time series for this test
         self.timeseries = self.timeseries[["id", "time", "F_x"]]
+
+    def tearDown(self):
+        shutil.rmtree(self.temporary_folder)
 
     def test_relevant_extraction(self):
         self.assertGreater(len(self.y), 0)
