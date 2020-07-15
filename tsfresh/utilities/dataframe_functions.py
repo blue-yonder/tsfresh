@@ -11,6 +11,8 @@ from collections import defaultdict
 import numpy as np
 import pandas as pd
 
+import itertools
+
 from tsfresh import defaults
 from tsfresh.utilities.distribution import MapDistributor, MultiprocessingDistributor, DistributorBaseClass
 

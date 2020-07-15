@@ -252,7 +252,7 @@ def _do_extraction(df, column_id, column_value, column_kind, column_sort,
     return_df = pivot_list(result, dtype=float)
 
     # copy the type of the index
-    return_df.index = return_df.index.astype(df[column_id].dtype)
+    return_df.index = return_df.index.astype(data.column_id_dtype)
 
     # Sort by index to be backward compatible
     return_df = return_df.sort_index()
