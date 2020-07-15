@@ -27,6 +27,7 @@ We changed the default branch from "master" to "main".
     - Fixed a bug in the selection, that caused all regression tasks with un-ordered index to be wrong (#715)
     - Fixed readthedocs (#695, #696)
     - Fix spark and dask after #705 and for non-id named id columns (#712)
+    - Fix in the forecasting notebook (#729)
 
 Version 0.16.0
 ==============
