@@ -147,8 +147,16 @@ def _check_nan(df, *columns):
             raise ValueError("Column must not contain NaN values: {}".format(col))
 
 
-class WideTsFrameAdapter(SliceableTsData):
+def _get_value_columns(df, *other_columns):
+    value_columns = [col for col in df.columns if col not in other_columns]
 
+    if len(value_columns) == 0:
+        raise ValueError("Could not guess the value column! Please hand it to the function as an argument.")
+
+    return value_columns
+
+
+class WideTsFrameAdapter(SliceableTsData):
     def __init__(self, df, column_id, column_sort=None, value_columns=None):
         """
         Adapter for Pandas DataFrames in wide format, where multiple columns contain different time series for
@@ -164,17 +172,16 @@ class WideTsFrameAdapter(SliceableTsData):
         :type column_sort: str|None
 
         :param value_columns: list of column names to treat as time series values.
-            If `None`, all columns except `column_id` and `column_sort` will be used.
+            If `None` or empty, all columns except `column_id` and `column_sort` will be used.
         :type value_columns: list[str]|None
         """
+        if column_id is None:
+            raise ValueError("A value for column_id needs to be supplied")
 
         _check_nan(df, column_id)
 
         if value_columns is None:
-            value_columns = [col for col in df.columns if col not in [column_id, column_sort]]
-
-        if len(value_columns) == 0:
-            raise ValueError("You must provide at least one value column")
+            value_columns = _get_value_columns(df, column_id, column_sort)
 
         _check_nan(df, *value_columns)
         _check_colname(*value_columns)
@@ -208,7 +215,6 @@ class WideTsFrameAdapter(SliceableTsData):
 
 
 class LongTsFrameAdapter(TsData):
-
     def __init__(self, df, column_id, column_kind, column_value, column_sort=None):
         """
         Adapter for Pandas DataFrames in long format, where different time series for the same id are
@@ -229,11 +235,21 @@ class LongTsFrameAdapter(TsData):
         :param column_sort: the name of the column to sort on
         :type column_sort: str|None
         """
+        if column_id is None:
+            raise ValueError("A value for column_id needs to be supplied")
+        if column_kind is None:
+            raise ValueError("A value for column_kind needs to be supplied")
 
-        _check_nan(df, column_id, column_kind, column_value)
+        if column_value is None:
+            possible_value_columns = _get_value_columns(df, column_id, column_sort, column_kind)
+            if len(possible_value_columns) != 1:
+                raise ValueError("Could not guess the value column! Please hand it to the function as an argument.")
+            self.column_value = possible_value_columns[0]
+        else:
+            self.column_value = column_value
+
+        _check_nan(df, column_id, column_kind, self.column_value)
         _check_colname(column_kind)
-
-        self.column_value = column_value
 
         if column_sort is not None:
             _check_nan(df, column_sort)
@@ -291,7 +307,7 @@ class TsDictAdapter(TsData):
         return sum(grouped_df.ngroups for grouped_df in self.grouped_dict.values())
 
 
-def to_tsdata(df, column_id=None, column_kind=None, column_value=None, column_sort=None):
+def to_tsdata(df, column_id, column_kind=None, column_value=None, column_sort=None):
     """
     Wrap supported data formats as a TsData object, i.e. an iterable of individual time series.
 
@@ -316,7 +332,7 @@ def to_tsdata(df, column_id=None, column_kind=None, column_value=None, column_so
     :type df: pd.DataFrame|dict|TsData
 
     :param column_id: The name of the id column to group by.
-    :type column_id: str|None
+    :type column_id: str
 
     :param column_kind: The name of the column keeping record on the kind of the value.
     :type column_kind: str|None
@@ -335,13 +351,13 @@ def to_tsdata(df, column_id=None, column_kind=None, column_value=None, column_so
         return df
 
     elif isinstance(df, pd.DataFrame):
-        if column_value is not None:
-            if column_kind is not None:
-                return LongTsFrameAdapter(df, column_id, column_kind, column_value, column_sort)
-            else:
-                return WideTsFrameAdapter(df, column_id, column_sort, [column_value])
+        if column_kind is not None:
+            return LongTsFrameAdapter(df, column_id, column_kind, column_value, column_sort)
         else:
-            return WideTsFrameAdapter(df, column_id, column_sort)
+            if column_value is not None:
+                return WideTsFrameAdapter(df, column_id, column_sort, [column_value])
+            else:
+                return WideTsFrameAdapter(df, column_id, column_sort)
 
     elif isinstance(df, dict):
         return TsDictAdapter(df, column_id, column_value, column_sort)

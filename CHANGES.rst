@@ -28,6 +28,7 @@ We changed the default branch from "master" to "main".
     - Fixed readthedocs (#695, #696)
     - Fix spark and dask after #705 and for non-id named id columns (#712)
     - Fix in the forecasting notebook (#729)
+    - Let tsfresh choose the value column if possible (#722)
 
 Version 0.16.0
 ==============
