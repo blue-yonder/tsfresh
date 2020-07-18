@@ -67,9 +67,41 @@ class DistributorBaseClass:
     The main purpose of the instances of the DistributorBaseClass subclasses is to evaluate a function
     (called map_function) on a list of data items (called data).
 
+    Dependent on the implementation of the distribute function, this is done in parallel or using a cluster of nodes.
+    """
+    def map_reduce(self, map_function, data, function_kwargs=None, chunk_size=None, data_length=None):
+        """
+        This method contains the core functionality of the DistributorBaseClass class.
+
+        It maps the map_function to each element of the data and reduces the results to return a flattened list.
+
+        It needs to be implemented for each of the subclasses.
+
+        :param map_function: a function to apply to each data item.
+        :type map_function: callable
+        :param data: the data to use in the calculation
+        :type data: iterable
+        :param function_kwargs: parameters for the map function
+        :type function_kwargs: dict of string to parameter
+        :param chunk_size: If given, chunk the data according to this size. If not given, use an empirical value.
+        :type chunk_size: int
+        :param data_length: If the data is a generator, you have to set the length here. If it is none, the
+          length is deduced from the len of the data.
+        :type data_length: int
+
+        :return: the calculated results
+        :rtype: list
+        """
+        raise NotImplementedError
+
+
+class IterableDistributorBaseClass(DistributorBaseClass):
+    """
+    Distributor Base Class that can handle all iterable items and calculate
+    a map_function on each item separately.
+
     This is done on chunks of the data, meaning, that the DistributorBaseClass classes will chunk the data into chunks,
-    distribute the data and apply the feature calculator functions from
-    :mod:`tsfresh.feature_extraction.feature_calculators` on the time series.
+    distribute the data and apply the map_function functions on the items separately.
 
     Dependent on the implementation of the distribute function, this is done in parallel or using a cluster of nodes.
     """
@@ -154,6 +186,9 @@ class DistributorBaseClass:
         :return: the calculated results
         :rtype: list
         """
+        if not isinstance(data, Iterable):
+            raise ValueError("You passed data, which can not be handled by this distributor!")
+
         if data_length is None:
             data_length = len(data)
 
@@ -173,6 +208,8 @@ class DistributorBaseClass:
             result = self.distribute(_function_with_partly_reduce, chunk_generator, map_kwargs),
 
         result = list(itertools.chain.from_iterable(result))
+
+        self.close()
 
         return result
 
@@ -201,7 +238,7 @@ class DistributorBaseClass:
         pass
 
 
-class MapDistributor(DistributorBaseClass):
+class MapDistributor(IterableDistributorBaseClass):
     """
     Distributor using the python build-in map, which calculates each job sequentially one after the other.
     """
@@ -245,7 +282,7 @@ class MapDistributor(DistributorBaseClass):
         return 1
 
 
-class LocalDaskDistributor(DistributorBaseClass):
+class LocalDaskDistributor(IterableDistributorBaseClass):
     """
     Distributor using a local dask cluster and inproc communication.
     """
@@ -299,7 +336,7 @@ class LocalDaskDistributor(DistributorBaseClass):
         self.client.close()
 
 
-class ClusterDaskDistributor(DistributorBaseClass):
+class ClusterDaskDistributor(IterableDistributorBaseClass):
     """
     Distributor using a dask cluster, meaning that the calculation is spread over a cluster
     """
@@ -358,7 +395,7 @@ class ClusterDaskDistributor(DistributorBaseClass):
         self.client.close()
 
 
-class MultiprocessingDistributor(DistributorBaseClass):
+class MultiprocessingDistributor(IterableDistributorBaseClass):
     """
     Distributor using a multiprocessing Pool to calculate the jobs in parallel on the local machine.
     """
@@ -406,3 +443,12 @@ class MultiprocessingDistributor(DistributorBaseClass):
         self.pool.close()
         self.pool.terminate()
         self.pool.join()
+
+
+class ApplyDistributor(DistributorBaseClass):
+    def __init__(self, meta):
+        self.meta = meta
+
+    def map_reduce(self, map_function, data, function_kwargs=None, chunk_size=None, data_length=None):
+        return data.apply(map_function, meta=self.meta, **function_kwargs)
+

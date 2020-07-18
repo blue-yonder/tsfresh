@@ -2,9 +2,11 @@ import math
 
 import numpy as np
 import pandas as pd
+from unittest import TestCase
+from unittest.mock import Mock
 
 from tests.fixtures import DataTestCase
-from tsfresh.feature_extraction.data import to_tsdata, LongTsFrameAdapter, WideTsFrameAdapter, TsDictAdapter
+from tsfresh.feature_extraction.data import to_tsdata, LongTsFrameAdapter, WideTsFrameAdapter, TsDictAdapter, PartitionedTsData
 from tsfresh.utilities.distribution import MultiprocessingDistributor
 
 TEST_DATA_EXPECTED_TUPLES = \
@@ -219,3 +221,56 @@ class DataAdapterTestCase(DataTestCase):
         test_df = [1, 2, 3]
         self.assertRaises(ValueError, to_tsdata, test_df,
                           "a", "b", "c", "d")
+
+
+class PivotListTestCase(TestCase):
+    def test_empty_list(self):
+        mock_ts_data = Mock()
+        mock_ts_data.df_id_type = str
+
+        return_df = PartitionedTsData.pivot(mock_ts_data, [])
+
+        self.assertEqual(len(return_df), 0)
+        self.assertEqual(len(return_df.index), 0)
+        self.assertEqual(len(return_df.columns), 0)
+
+    def test_different_input(self):
+        mock_ts_data = Mock()
+        mock_ts_data.df_id_type = str
+
+        input_list = [
+            ("a", "b", 1),
+            ("a", "c", 2),
+            ("A", "b", 3),
+            ("A", "c", 4),
+            ("X", "Y", 5),
+        ]
+        return_df = PartitionedTsData.pivot(mock_ts_data, input_list)
+
+        self.assertEqual(len(return_df), 3)
+        self.assertEqual(set(return_df.index), {"a", "A", "X"})
+        self.assertEqual(set(return_df.columns), {"b", "c", "Y"})
+
+        self.assertEqual(return_df.loc["a", "b"], 1)
+        self.assertEqual(return_df.loc["a", "c"], 2)
+        self.assertEqual(return_df.loc["A", "b"], 3)
+        self.assertEqual(return_df.loc["A", "c"], 4)
+        self.assertEqual(return_df.loc["X", "Y"], 5)
+
+    def test_long_input(self):
+        mock_ts_data = Mock()
+        mock_ts_data.df_id_type = str
+
+        input_list = []
+        for i in range(100):
+            for j in range(100):
+                input_list.append((i, j, i*j))
+
+        return_df = PartitionedTsData.pivot(mock_ts_data, input_list)
+
+        self.assertEqual(len(return_df), 100)
+        self.assertEqual(len(return_df.columns), 100)
+        # every cell should be filled
+        self.assertEqual(np.sum(np.sum(np.isnan(return_df))), 0)
+        # test if all entries are there
+        self.assertEqual(return_df.sum().sum(), 24502500)
