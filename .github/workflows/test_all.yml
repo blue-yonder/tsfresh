@@ -39,7 +39,7 @@ jobs:
       run: |
         # Include notebook tests
         export TEST_NOTEBOOKS=y
-        pytest --junitxml=junit/test-results.xml tests
+        pytest --junitxml=junit/test-results.xml --cov-report=xml tests
 
     - name: Upload pytest test results
       uses: actions/upload-artifact@v1
