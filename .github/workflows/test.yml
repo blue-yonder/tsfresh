@@ -46,6 +46,9 @@ jobs:
           # 1.2.0 is not installable with python 3.8...
           SCIPY: "1.4.0"
           STATSMODELS: "0.10.2"
+    env:
+      PYTHON: ${{ matrix.python-version }}
+      INSTALLATION: ${{ matrix.installation }}
 
     steps:
     - uses: actions/checkout@v2
@@ -86,7 +89,7 @@ jobs:
 
     - name: Test with pytest
       run: |
-        pytest --junitxml=junit/test-results-${{ matrix.python-version }}-${{ matrix.installation }}.xml tests
+        pytest --junitxml=junit/test-results-${{ matrix.python-version }}-${{ matrix.installation }}.xml --cov-report=xml tests
 
     - name: Upload pytest test results
       uses: actions/upload-artifact@v1
@@ -96,17 +99,7 @@ jobs:
       # Use always() to always run this step to publish test results when there are test failures
       if: ${{ always() }}
 
-    - name: Coveralls
-      uses: AndreMiras/coveralls-python-action@develop
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1
       with:
-        parallel: true
-
-  coveralls_finish:
-    name: Coveralls Finished
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
-    - name: Coveralls Finished
-      uses: AndreMiras/coveralls-python-action@develop
-      with:
-        parallel-finished: true
+        env_vars: PYTHON,INSTALLATION
