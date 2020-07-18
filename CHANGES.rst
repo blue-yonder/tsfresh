@@ -29,6 +29,7 @@ We changed the default branch from "master" to "main".
     - Fix spark and dask after #705 and for non-id named id columns (#712)
     - Fix in the forecasting notebook (#729)
     - Let tsfresh choose the value column if possible (#722)
+    - Move from coveralls github action to codecov (#734)
 
 Version 0.16.0
 ==============
