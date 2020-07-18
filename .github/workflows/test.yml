@@ -46,9 +46,6 @@ jobs:
           # 1.2.0 is not installable with python 3.8...
           SCIPY: "1.4.0"
           STATSMODELS: "0.10.2"
-    env:
-      PYTHON: ${{ matrix.python-version }}
-      INSTALLATION: ${{ matrix.installation }}
 
     steps:
     - uses: actions/checkout@v2
@@ -101,5 +98,3 @@ jobs:
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
-      with:
-        env_vars: PYTHON,INSTALLATION
