@@ -180,7 +180,7 @@ class WideTsFrameAdapter(SliceableTsData):
 
         _check_nan(df, column_id)
 
-        if value_columns is None:
+        if not value_columns:
             value_columns = _get_value_columns(df, column_id, column_sort)
 
         _check_nan(df, *value_columns)
@@ -215,7 +215,7 @@ class WideTsFrameAdapter(SliceableTsData):
 
 
 class LongTsFrameAdapter(TsData):
-    def __init__(self, df, column_id, column_kind, column_value, column_sort=None):
+    def __init__(self, df, column_id, column_kind, column_value=None, column_sort=None):
         """
         Adapter for Pandas DataFrames in long format, where different time series for the same id are
         labeled by column `column_kind`.
@@ -229,8 +229,9 @@ class LongTsFrameAdapter(TsData):
         :param column_kind: the name of the column containing time series kinds for each id
         :type column_kind: str
 
-        :param column_value: the name of the column containing time series values
-        :type column_value: str
+        :param column_value: None or the name of the column containing time series values
+            If `None`, try to guess it from the remaining, unused columns.
+        :type column_value: str|None
 
         :param column_sort: the name of the column to sort on
         :type column_sort: str|None
@@ -243,7 +244,9 @@ class LongTsFrameAdapter(TsData):
         if column_value is None:
             possible_value_columns = _get_value_columns(df, column_id, column_sort, column_kind)
             if len(possible_value_columns) != 1:
-                raise ValueError("Could not guess the value column! Please hand it to the function as an argument.")
+                raise ValueError("Could not guess the value column, as the number of unused columns os not equal to 1."
+                                 f"These columns where currently unused: {','.join(possible_value_columns)}"
+                                 "Please hand it to the function as an argument.")
             self.column_value = possible_value_columns[0]
         else:
             self.column_value = column_value
@@ -307,7 +310,7 @@ class TsDictAdapter(TsData):
         return sum(grouped_df.ngroups for grouped_df in self.grouped_dict.values())
 
 
-def to_tsdata(df, column_id, column_kind=None, column_value=None, column_sort=None):
+def to_tsdata(df, column_id=None, column_kind=None, column_value=None, column_sort=None):
     """
     Wrap supported data formats as a TsData object, i.e. an iterable of individual time series.
 
@@ -332,7 +335,7 @@ def to_tsdata(df, column_id, column_kind=None, column_value=None, column_sort=No
     :type df: pd.DataFrame|dict|TsData
 
     :param column_id: The name of the id column to group by.
-    :type column_id: str
+    :type column_id: str|None
 
     :param column_kind: The name of the column keeping record on the kind of the value.
     :type column_kind: str|None
