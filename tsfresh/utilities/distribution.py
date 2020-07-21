@@ -59,6 +59,19 @@ def initialize_warnings_in_workers(show_warnings):
     else:
         warnings.simplefilter("default")
 
+from itertools import islice, takewhile, repeat
+
+def split_every(iterable, n):
+    """
+    Slice an iterable into chunks of n elements
+    :type n: int
+    :type iterable: Iterable
+    :rtype: Iterator
+    """
+    iterator = iter(iterable)
+    return takewhile(bool, (list(islice(iterator, n)) for _ in repeat(None)))
+
+
 
 class DistributorBaseClass:
     """
@@ -89,18 +102,20 @@ class DistributorBaseClass:
         :rtype: Generator[Iterable]
         """
 
-        if isinstance(data, TsData):
-            return data.partition(chunk_size)
-        else:
-            def partition_iterable():
-                iterable = iter(data)
-                while True:
-                    next_chunk = list(itertools.islice(iterable, chunk_size))
-                    if not next_chunk:
-                        return
-                    yield next_chunk
+        return split_every(data, chunk_size)
 
-            return partition_iterable()
+        # if isinstance(data, TsData):
+        #     return data.partition(chunk_size)
+        # else:
+        #     def partition_iterable():
+        #         iterable = iter(data)
+        #         while True:
+        #             next_chunk = list(itertools.islice(iterable, chunk_size))
+        #             if not next_chunk:
+        #                 return
+        #             yield next_chunk
+
+        #     return partition_iterable()
 
     def __init__(self):
         """
