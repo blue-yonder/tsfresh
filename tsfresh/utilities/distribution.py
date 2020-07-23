@@ -14,6 +14,7 @@ import warnings
 from collections import Generator, Iterable
 from functools import partial
 from multiprocessing import Pool
+from itertools import takewhile, islice, repeat
 
 from tqdm import tqdm
 
@@ -59,19 +60,6 @@ def initialize_warnings_in_workers(show_warnings):
     else:
         warnings.simplefilter("default")
 
-from itertools import islice, takewhile, repeat
-
-def split_every(iterable, n):
-    """
-    Slice an iterable into chunks of n elements
-    :type n: int
-    :type iterable: Iterable
-    :rtype: Iterator
-    """
-    iterator = iter(iterable)
-    return takewhile(bool, (list(islice(iterator, n)) for _ in repeat(None)))
-
-
 
 class DistributorBaseClass:
     """
@@ -93,6 +81,12 @@ class DistributorBaseClass:
         This generator partitions an iterable into slices of length `chunk_size`.
         If the chunk size is not a divider of the data length, the last slice will be shorter.
 
+        Taken from https://stackoverflow.com/questions/1915170/split-a-generator-iterable-every-n-items-in-python-splitevery
+
+        The important part here is, that the iterable is only
+        traversed once and the chunks are produced one at a time.
+        This is good for both memory as well as speed.
+
         :param data: The data to partition.
         :type data: Iterable
         :param chunk_size: The chunk size. The last chunk might be smaller.
@@ -101,21 +95,14 @@ class DistributorBaseClass:
         :return: A generator producing the chunks of data.
         :rtype: Generator[Iterable]
         """
+        # Make sure we have an iterable
+        iterator = iter(data)
 
-        return split_every(data, chunk_size)
-
-        # if isinstance(data, TsData):
-        #     return data.partition(chunk_size)
-        # else:
-        #     def partition_iterable():
-        #         iterable = iter(data)
-        #         while True:
-        #             next_chunk = list(itertools.islice(iterable, chunk_size))
-        #             if not next_chunk:
-        #                 return
-        #             yield next_chunk
-
-        #     return partition_iterable()
+        # takewhile(true, ...) generates an iterator until the items are empty
+        # (= we have reached the end)
+        # The islice(iterator, n) gets the next n elements from the iterator.
+        # The list(...) makes sure we do not pass
+        return takewhile(bool, (list(islice(iterator, chunk_size)) for _ in repeat(None)))
 
     def __init__(self):
         """

@@ -71,14 +71,6 @@ class DataAdapterTestCase(DataTestCase):
     def assert_tsdata(self, data, expected):
         self.assertEqual(len(data), len(expected))
         self.assertEqual(sum(1 for _ in data), len(data))
-        self.assertEqual(sum(1 for _ in data.partition(1)), len(expected))
-        self.assertEqual(sum(1 for _ in data.partition(2)), math.ceil(len(expected) / 2))
-        self.assertEqual(sum(1 for _ in data.partition(3)), math.ceil(len(expected) / 3))
-        self.assertEqual((sum(sum(1 for _ in g) for g in data.partition(1))), len(data))
-        first_partition = next(data.partition(1))
-        self.assertEqual(len(first_partition), 1)
-        first_partition = next(data.partition(4))
-        self.assertEqual(len(first_partition), 4)
         self.assert_data_chunk_object_equal(data, expected)
 
     def assert_data_chunk_object_equal(self, result, expected):

@@ -1,6 +1,6 @@
 import itertools
 from collections import namedtuple
-from typing import Generator, Iterable, Sized
+from typing import Iterable, Sized
 
 import pandas as pd
 
@@ -28,24 +28,6 @@ class TsData(Iterable[Timeseries], Sized):
     def __len__(self):
         raise NotImplementedError
 
-    def partition(self, chunk_size):
-        """
-        Split the data into iterable chunks of given `chunk_size`.
-
-        :param chunk_size: the size of the chunks
-        :type chunk_size: int
-
-        :return: chunks with at most `chunk_size` items
-        :rtype: Generator[Iterable[Timeseries]]
-        """
-        iterable = iter(self)
-        while True:
-            next_chunk = list(itertools.islice(iterable, chunk_size))
-            if not next_chunk:
-                return
-
-            yield next_chunk
-
 
 class SliceableTsData(TsData):
     """
@@ -55,54 +37,8 @@ class SliceableTsData(TsData):
 
     Because `__iter__` defaults to `slice(0)`, implementations must only implement `slice`.
     """
-
-    def slice(self, offset, length=None):
-        """
-        Get a subset of the timeseries elements
-
-        :param offset: the offset in the sequence of elements
-        :type offset: int
-
-        :param length: if not `None`, the maximum number of elements the slice will yield
-        :type length: int
-
-        :return: a slice of the data
-        :rtype: Iterable[Timeseries]
-        """
+    def __iter__(self):
         raise NotImplementedError
-
-    def __iter__(self):
-        return self.slice(0)
-
-    def partition(self, chunk_size):
-        div, mod = divmod(len(self), chunk_size)
-        chunk_info = [(i * chunk_size, chunk_size) for i in range(div)]
-        if mod > 0:
-            chunk_info += [(div * chunk_size, mod)]
-
-        for offset, length in chunk_info:
-            yield _Slice(self, offset, length)
-
-
-class _Slice(Iterable[Timeseries]):
-    def __init__(self, data, offset, length):
-        """
-        Wraps the `slice` generator function as an iterable object which can be pickled and passed to the distributor
-        backend.
-
-        :type data: SliceableTsData
-        :type offset: int
-        :type length: int
-        """
-        self.data = data
-        self.offset = offset
-        self.length = length
-
-    def __iter__(self):
-        return self.data.slice(self.offset, self.length)
-
-    def __len__(self):
-        return self.length
 
 
 def _check_colname(*columns):
@@ -197,21 +133,10 @@ class WideTsFrameAdapter(SliceableTsData):
     def __len__(self):
         return self.df_grouped.ngroups * len(self.value_columns)
 
-    def slice(self, offset, length=None):
-        if 0 < offset >= len(self):
-            raise ValueError("offset out of range: {}".format(offset))
-
-        group_offset, column_offset = divmod(offset, len(self.value_columns))
-        kinds = self.value_columns[column_offset:]
-        i = 0
-
-        for group_name, group in itertools.islice(self.df_grouped, group_offset, None):
-            for kind in kinds:
-                i += 1
-                if length is not None and i > length:
-                    return
+    def __iter__(self):
+        for group_name, group in self.df_grouped:
+            for kind in self.value_columns:
                 yield Timeseries(group_name, kind, group[kind])
-            kinds = self.value_columns
 
 
 class LongTsFrameAdapter(TsData):
