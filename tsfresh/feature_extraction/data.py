@@ -1,6 +1,6 @@
 import itertools
 from collections import namedtuple, defaultdict
-from typing import Generator, Iterable, Sized
+from typing import Iterable, Sized
 
 import pandas as pd
 try:
@@ -56,24 +56,6 @@ class PartitionedTsData(Iterable[Timeseries], Sized):
     def __init__(self, df, column_id):
         self.df_id_type = df[column_id].dtype
 
-    def partition(self, chunk_size):
-        """
-        Split the data into iterable chunks of given `chunk_size`.
-
-        :param chunk_size: the size of the chunks
-        :type chunk_size: int
-
-        :return: chunks with at most `chunk_size` items
-        :rtype: Generator[Iterable[Timeseries]]
-        """
-        iterable = iter(self)
-        while True:
-            next_chunk = list(itertools.islice(iterable, chunk_size))
-            if not next_chunk:
-                return
-
-            yield next_chunk
-
     def pivot(self, results):
         """
         Helper function to turn an iterable of tuples with three entries into a dataframe.
@@ -110,64 +92,6 @@ class PartitionedTsData(Iterable[Timeseries], Sized):
         return_df = return_df.sort_index()
 
         return return_df
-
-
-class SliceableTsData(PartitionedTsData):
-    """
-    SliceableTsData uses a slice strategy to implement data partitioning.
-    Implementations of `TsData` may extend this class if they can iterate their elements in deterministic order and
-    if an efficient strategy exists to slice the data.
-
-    Because `__iter__` defaults to `slice(0)`, implementations must only implement `slice`.
-    """
-
-    def slice(self, offset, length=None):
-        """
-        Get a subset of the timeseries elements
-
-        :param offset: the offset in the sequence of elements
-        :type offset: int
-
-        :param length: if not `None`, the maximum number of elements the slice will yield
-        :type length: int
-
-        :return: a slice of the data
-        :rtype: Iterable[Timeseries]
-        """
-        raise NotImplementedError
-
-    def __iter__(self):
-        return self.slice(0)
-
-    def partition(self, chunk_size):
-        div, mod = divmod(len(self), chunk_size)
-        chunk_info = [(i * chunk_size, chunk_size) for i in range(div)]
-        if mod > 0:
-            chunk_info += [(div * chunk_size, mod)]
-
-        for offset, length in chunk_info:
-            yield _Slice(self, offset, length)
-
-
-class _Slice(Iterable[Timeseries]):
-    def __init__(self, data, offset, length):
-        """
-        Wraps the `slice` generator function as an iterable object which can be pickled and passed to the distributor
-        backend.
-
-        :type data: SliceableTsData
-        :type offset: int
-        :type length: int
-        """
-        self.data = data
-        self.offset = offset
-        self.length = length
-
-    def __iter__(self):
-        return self.data.slice(self.offset, self.length)
-
-    def __len__(self):
-        return self.length
 
 
 def _check_colname(*columns):
@@ -221,7 +145,7 @@ def _get_value_columns(df, *other_columns):
     return value_columns
 
 
-class WideTsFrameAdapter(SliceableTsData):
+class WideTsFrameAdapter(PartitionedTsData):
     def __init__(self, df, column_id, column_sort=None, value_columns=None):
         """
         Adapter for Pandas DataFrames in wide format, where multiple columns contain different time series for
@@ -245,7 +169,7 @@ class WideTsFrameAdapter(SliceableTsData):
 
         _check_nan(df, column_id)
 
-        if value_columns is None:
+        if not value_columns:
             value_columns = _get_value_columns(df, column_id, column_sort)
 
         _check_nan(df, *value_columns)
@@ -255,34 +179,26 @@ class WideTsFrameAdapter(SliceableTsData):
 
         if column_sort is not None:
             _check_nan(df, column_sort)
-            self.df_grouped = df.sort_values([column_sort]).groupby([column_id])
-        else:
-            self.df_grouped = df.groupby([column_id])
+
+        self.column_sort = column_sort
+        self.df_grouped = df.groupby([column_id])
 
         super().__init__(df, column_id)
 
     def __len__(self):
         return self.df_grouped.ngroups * len(self.value_columns)
 
-    def slice(self, offset, length=None):
-        if 0 < offset >= len(self):
-            raise ValueError("offset out of range: {}".format(offset))
+    def __iter__(self):
+        for group_name, group in self.df_grouped:
+            if self.column_sort is not None:
+                group = group.sort_values(self.column_sort)
 
-        group_offset, column_offset = divmod(offset, len(self.value_columns))
-        kinds = self.value_columns[column_offset:]
-        i = 0
-
-        for group_name, group in itertools.islice(self.df_grouped, group_offset, None):
-            for kind in kinds:
-                i += 1
-                if length is not None and i > length:
-                    return
+            for kind in self.value_columns:
                 yield Timeseries(group_name, kind, group[kind])
-            kinds = self.value_columns
 
 
 class LongTsFrameAdapter(PartitionedTsData):
-    def __init__(self, df, column_id, column_kind, column_value, column_sort=None):
+    def __init__(self, df, column_id, column_kind, column_value=None, column_sort=None):
         """
         Adapter for Pandas DataFrames in long format, where different time series for the same id are
         labeled by column `column_kind`.
@@ -296,13 +212,13 @@ class LongTsFrameAdapter(PartitionedTsData):
         :param column_kind: the name of the column containing time series kinds for each id
         :type column_kind: str
 
-        :param column_value: the name of the column containing time series values
-        :type column_value: str
+        :param column_value: None or the name of the column containing time series values
+            If `None`, try to guess it from the remaining, unused columns.
+        :type column_value: str|None
 
         :param column_sort: the name of the column to sort on
         :type column_sort: str|None
         """
-        _check_nan(df, column_id, column_kind, column_value)
         if column_id is None:
             raise ValueError("A value for column_id needs to be supplied")
         if column_kind is None:
@@ -311,7 +227,9 @@ class LongTsFrameAdapter(PartitionedTsData):
         if column_value is None:
             possible_value_columns = _get_value_columns(df, column_id, column_sort, column_kind)
             if len(possible_value_columns) != 1:
-                raise ValueError("Could not guess the value column! Please hand it to the function as an argument.")
+                raise ValueError("Could not guess the value column, as the number of unused columns os not equal to 1."
+                                 f"These columns where currently unused: {','.join(possible_value_columns)}"
+                                 "Please hand it to the function as an argument.")
             self.column_value = possible_value_columns[0]
         else:
             self.column_value = column_value
@@ -321,9 +239,9 @@ class LongTsFrameAdapter(PartitionedTsData):
 
         if column_sort is not None:
             _check_nan(df, column_sort)
-            self.df_grouped = df.sort_values([column_sort]).groupby([column_id, column_kind])
-        else:
-            self.df_grouped = df.groupby([column_id, column_kind])
+
+        self.column_sort = column_sort
+        self.df_grouped = df.groupby([column_id, column_kind])
 
         super().__init__(df, column_id)
 
@@ -332,6 +250,8 @@ class LongTsFrameAdapter(PartitionedTsData):
 
     def __iter__(self):
         for group_key, group in self.df_grouped:
+            if self.column_sort is not None:
+                group = group.sort_values(self.column_sort)
             yield Timeseries(group_key[0], str(group_key[1]), group[self.column_value])
 
 
@@ -452,7 +372,7 @@ class DaskTsAdapter(TsData):
         return feature_table
 
 
-def to_tsdata(df, column_id, column_kind=None, column_value=None, column_sort=None):
+def to_tsdata(df, column_id=None, column_kind=None, column_value=None, column_sort=None):
     """
     Wrap supported data formats as a TsData object, i.e. an iterable of individual time series.
 
@@ -477,7 +397,7 @@ def to_tsdata(df, column_id, column_kind=None, column_value=None, column_sort=No
     :type df: pd.DataFrame|dict|TsData
 
     :param column_id: The name of the id column to group by.
-    :type column_id: str
+    :type column_id: str|None
 
     :param column_kind: The name of the column keeping record on the kind of the value.
     :type column_kind: str|None
@@ -491,7 +411,6 @@ def to_tsdata(df, column_id, column_kind=None, column_value=None, column_sort=No
     :return: a data adapter
     :rtype: TsData
     """
-
     if isinstance(df, TsData):
         return df
 
