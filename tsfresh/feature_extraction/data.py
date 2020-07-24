@@ -126,15 +126,18 @@ class WideTsFrameAdapter(SliceableTsData):
 
         if column_sort is not None:
             _check_nan(df, column_sort)
-            self.df_grouped = df.sort_values([column_sort]).groupby([column_id])
-        else:
-            self.df_grouped = df.groupby([column_id])
+
+        self.column_sort = column_sort
+        self.df_grouped = df.groupby([column_id])
 
     def __len__(self):
         return self.df_grouped.ngroups * len(self.value_columns)
 
     def __iter__(self):
         for group_name, group in self.df_grouped:
+            if self.column_sort is not None:
+                group = group.sort_values(self.column_sort)
+
             for kind in self.value_columns:
                 yield Timeseries(group_name, kind, group[kind])
 
@@ -181,15 +184,17 @@ class LongTsFrameAdapter(TsData):
 
         if column_sort is not None:
             _check_nan(df, column_sort)
-            self.df_grouped = df.sort_values([column_sort]).groupby([column_id, column_kind])
-        else:
-            self.df_grouped = df.groupby([column_id, column_kind])
+
+        self.column_sort = column_sort
+        self.df_grouped = df.groupby([column_id, column_kind])
 
     def __len__(self):
         return len(self.df_grouped)
 
     def __iter__(self):
         for group_key, group in self.df_grouped:
+            if self.column_sort is not None:
+                group = group.sort_values(self.column_sort)
             yield Timeseries(group_key[0], str(group_key[1]), group[self.column_value])
 
 
