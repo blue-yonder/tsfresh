@@ -19,25 +19,12 @@ class TsData(Iterable[Timeseries], Sized):
     TsData provides access to time series data for internal usage.
 
     Implementations must implement `__iter__` and `__len__`.
-    Other methods should be overwritten if a more efficient solution exists for the underlying data store.
     """
 
     def __iter__(self):
         raise NotImplementedError
 
     def __len__(self):
-        raise NotImplementedError
-
-
-class SliceableTsData(TsData):
-    """
-    SliceableTsData uses a slice strategy to implement data partitioning.
-    Implementations of `TsData` may extend this class if they can iterate their elements in deterministic order and
-    if an efficient strategy exists to slice the data.
-
-    Because `__iter__` defaults to `slice(0)`, implementations must only implement `slice`.
-    """
-    def __iter__(self):
         raise NotImplementedError
 
 
@@ -92,7 +79,7 @@ def _get_value_columns(df, *other_columns):
     return value_columns
 
 
-class WideTsFrameAdapter(SliceableTsData):
+class WideTsFrameAdapter(TsData):
     def __init__(self, df, column_id, column_sort=None, value_columns=None):
         """
         Adapter for Pandas DataFrames in wide format, where multiple columns contain different time series for
