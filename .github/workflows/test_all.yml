@@ -29,6 +29,7 @@ jobs:
       run: |
         # Do all the installations
         python -m pip install --upgrade pip wheel setuptools
+        pip uninstall tsfresh
         pip install -r requirements.txt -r test-requirements.txt
         pip install .
 
