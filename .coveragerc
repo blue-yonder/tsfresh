@@ -2,8 +2,8 @@
 [run]
 relative_files = True
 branch = True
-source = tsfresh
-omit = tsfresh/utilities/profiling.py 
+source = ./tsfresh
+omit = tsfresh/utilities/profiling.py
        tsfresh/__init__.py
        tsfresh/feature_extraction/__init__.py
        tsfresh/example/__init__.py
