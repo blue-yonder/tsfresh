@@ -81,7 +81,8 @@ class DistributorBaseClass:
         This generator partitions an iterable into slices of length `chunk_size`.
         If the chunk size is not a divider of the data length, the last slice will be shorter.
 
-        Taken from https://stackoverflow.com/questions/1915170/split-a-generator-iterable-every-n-items-in-python-splitevery
+        Taken from
+        https://stackoverflow.com/questions/1915170/split-a-generator-iterable-every-n-items-in-python-splitevery
 
         The important part here is, that the iterable is only
         traversed once and the chunks are produced one at a time.
