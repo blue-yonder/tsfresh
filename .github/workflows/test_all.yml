@@ -38,6 +38,7 @@ jobs:
     - name: Test with pytest
       run: |
         # Include notebook tests
+        rm -rf .coverage.*
         export TEST_NOTEBOOKS=y
         pytest --junitxml=junit/test-results.xml --cov-report=xml tests
 
