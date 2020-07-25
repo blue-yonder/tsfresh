@@ -12,7 +12,7 @@ from mock import Mock
 from tests.fixtures import DataTestCase
 from tsfresh.feature_extraction.extraction import extract_features
 from tsfresh.feature_extraction.settings import ComprehensiveFCParameters
-from tsfresh.utilities.distribution import DistributorBaseClass, MapDistributor
+from tsfresh.utilities.distribution import IterableDistributorBaseClass, MapDistributor
 
 
 class ExtractionTestCase(DataTestCase):
@@ -244,7 +244,7 @@ class DistributorUsageTestCase(DataTestCase):
     def test_distributor_map_reduce_is_called(self):
         df = self.create_test_data_sample()
 
-        mock = Mock(spec=DistributorBaseClass)
+        mock = Mock(spec=IterableDistributorBaseClass)
         mock.close.return_value = None
         mock.map_reduce.return_value = []
 
