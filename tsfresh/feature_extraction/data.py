@@ -235,7 +235,6 @@ class LongTsFrameAdapter(PartitionedTsData):
             self.column_value = column_value
 
         _check_nan(df, column_id, column_kind, self.column_value)
-        _check_colname(column_kind)
 
         if column_sort is not None:
             _check_nan(df, column_sort)
@@ -300,13 +299,20 @@ class TsDictAdapter(PartitionedTsData):
 
 class DaskTsAdapter(TsData):
     def __init__(self, df, column_id, column_kind=None, column_value=None, column_sort=None):
-        assert column_id is not None, "column_id must be set"
+        if column_id is None:
+            raise ValueError("column_id must be set")
+
+        if column_id not in df.columns:
+            raise ValueError(f"Column not found: {column_id}")
 
         # Get all columns, which are not id, kind or sort
         possible_value_columns = _get_value_columns(df, column_id, column_sort, column_kind)
 
         # The user has already a kind column. That means we just need to group by id (and additionally by id)
         if column_kind is not None:
+            if column_kind not in df.columns:
+                raise ValueError(f"Column not found: {column_kind}")
+
             self.df = df.groupby([column_id, column_kind])
 
             # We assume the last remaining column is the value - but there needs to be one!
@@ -329,6 +335,8 @@ class DaskTsAdapter(TsData):
             else:
                 value_vars = possible_value_columns
                 column_value = "value"
+
+            _check_colname(*value_vars)
 
             id_vars = [column_id, column_sort] if column_sort else [column_id]
 

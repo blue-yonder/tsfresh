@@ -5,9 +5,11 @@
 import numpy as np
 import unittest
 import pandas as pd
+import dask.dataframe as dd
 
 from tsfresh.examples.driftbif_simulation import velocity, load_driftbif, sample_tau
-from tsfresh import extract_relevant_features
+from tsfresh import extract_relevant_features, extract_features
+from tsfresh.feature_extraction import MinimalFCParameters
 
 
 class DriftBifSimlationTestCase(unittest.TestCase):
@@ -75,6 +77,28 @@ class DriftBifSimlationTestCase(unittest.TestCase):
                                       column_kind="dimension", column_value="value")
 
         self.assertGreater(len(X.columns), 10)
+
+    def test_feature_extraction(self):
+        df, y = load_driftbif(100, 10, classification=True, seed=42)
+
+        df['id'] = df['id'].astype('str')
+
+        # Just test it it works, we are not interested on the result
+        extract_features(df, column_id="id", column_sort="time", column_kind="dimension", column_value="value",
+                         default_fc_parameters=MinimalFCParameters())
+        extract_features(df, column_id="id", column_sort="time", column_kind="dimension",
+                         default_fc_parameters=MinimalFCParameters())
+        extract_features(df.drop(columns=["dimension"]), column_id="id", column_sort="time",
+                         default_fc_parameters=MinimalFCParameters())
+        extract_features(df.drop(columns=["dimension", "time"]), column_id="id",
+                         default_fc_parameters=MinimalFCParameters())
+        extract_features(dd.from_pandas(df, npartitions=1), column_id="id", column_sort="time", column_kind="dimension", column_value="value",
+                         default_fc_parameters=MinimalFCParameters()).compute()
+        extract_features(dd.from_pandas(df.drop(columns=["dimension"]), npartitions=1), column_id="id", column_sort="time",
+                         default_fc_parameters=MinimalFCParameters()).compute()
+        extract_features(dd.from_pandas(df.drop(columns=["dimension", "time"]), npartitions=1), column_id="id",
+                         default_fc_parameters=MinimalFCParameters()).compute()
+
 
 
 class SampleTauTestCase(unittest.TestCase):
