@@ -23,6 +23,7 @@ We changed the default branch from "master" to "main".
     - Add a test for the dask bindings (#719)
     - Refactor input data iteration to need less memory (#707)
     - Added benchmark tests (#710)
+    - Make dask a possible input format (#736)
 - Bugfixes:
     - Fixed a bug in the selection, that caused all regression tasks with un-ordered index to be wrong (#715)
     - Fixed readthedocs (#695, #696)
