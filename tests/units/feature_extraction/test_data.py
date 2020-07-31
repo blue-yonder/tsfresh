@@ -7,7 +7,13 @@ from unittest import TestCase
 from unittest.mock import Mock
 
 from tests.fixtures import DataTestCase
-from tsfresh.feature_extraction.data import to_tsdata, LongTsFrameAdapter, WideTsFrameAdapter, TsDictAdapter, PartitionedTsData
+from tsfresh.feature_extraction.data import (
+    to_tsdata,
+    LongTsFrameAdapter,
+    WideTsFrameAdapter,
+    TsDictAdapter,
+    PartitionedTsData
+)
 from tsfresh.utilities.distribution import MultiprocessingDistributor
 
 TEST_DATA_EXPECTED_TUPLES = \

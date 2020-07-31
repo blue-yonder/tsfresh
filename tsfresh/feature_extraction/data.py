@@ -361,7 +361,8 @@ class DaskTsAdapter(TsData):
         After the call, turn it back into pandas dataframes
         for further processing.
         """
-        bound_function = _binding_helper(f, kwargs, self.column_sort, self.column_id, self.column_kind, self.column_value)
+        bound_function = _binding_helper(f, kwargs, self.column_sort, self.column_id,
+                                         self.column_kind, self.column_value)
         return self.df.apply(bound_function, meta=meta)
 
     def pivot(self, results):

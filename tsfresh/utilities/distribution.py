@@ -454,4 +454,3 @@ class ApplyDistributor(DistributorBaseClass):
 
     def map_reduce(self, map_function, data, function_kwargs=None, chunk_size=None, data_length=None):
         return data.apply(map_function, meta=self.meta, **function_kwargs)
-
