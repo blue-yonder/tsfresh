@@ -1,10 +1,7 @@
 .. _feature-naming-label:
 
-Feature Calculation
-===================
-
-Feature naming
-''''''''''''''
+Feature Calculator Naming
+=========================
 
 tsfresh enforces a strict naming of the created features, which you have to follow whenever you create new feature
 calculators.
