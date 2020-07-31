@@ -324,6 +324,7 @@ class DaskTsAdapter(TsData):
             # Ok, the user has no kind, so it is in Wide format.
             # That means we have do melt before we can group.
             # TODO: here is some room for optimization!
+            # we could choose the same way as for the Wide and LongTsAdapter
 
             # We first choose a name for our future kind column
             column_kind = "kind"

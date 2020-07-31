@@ -81,23 +81,56 @@ class DriftBifSimlationTestCase(unittest.TestCase):
     def test_feature_extraction(self):
         df, y = load_driftbif(100, 10, classification=True, seed=42)
 
-        df['id'] = df['id'].astype('str')
+        df['my_id'] = df['id'].astype('str')
+        del df["id"]
 
-        # Just test it it works, we are not interested on the result
-        extract_features(df, column_id="id", column_sort="time", column_kind="dimension", column_value="value",
+        # Test shape and a single entry (to see if it works at all)
+        X = extract_features(df, column_id="my_id", column_sort="time", column_kind="dimension", column_value="value",
                          default_fc_parameters=MinimalFCParameters())
-        extract_features(df, column_id="id", column_sort="time", column_kind="dimension",
+        self.assertIn("1__mean", X.columns)
+        self.assertIn("11", X.index)
+        self.assertEqual(X.shape, (100, 16))
+
+        X = extract_features(df, column_id="my_id", column_sort="time", column_kind="dimension",
                          default_fc_parameters=MinimalFCParameters())
-        extract_features(df.drop(columns=["dimension"]), column_id="id", column_sort="time",
+        self.assertIn("1__mean", X.columns)
+        self.assertIn("11", X.index)
+        self.assertEqual(X.shape, (100, 16))
+
+        X = extract_features(df.drop(columns=["dimension"]), column_id="my_id", column_sort="time",
                          default_fc_parameters=MinimalFCParameters())
-        extract_features(df.drop(columns=["dimension", "time"]), column_id="id",
+        self.assertIn("value__mean", X.columns)
+        self.assertIn("11", X.index)
+        self.assertEqual(X.shape, (100, 8))
+
+        X = extract_features(df.drop(columns=["dimension", "time"]), column_id="my_id",
                          default_fc_parameters=MinimalFCParameters())
-        extract_features(dd.from_pandas(df, npartitions=1), column_id="id", column_sort="time", column_kind="dimension", column_value="value",
-                         default_fc_parameters=MinimalFCParameters()).compute()
-        extract_features(dd.from_pandas(df.drop(columns=["dimension"]), npartitions=1), column_id="id", column_sort="time",
-                         default_fc_parameters=MinimalFCParameters()).compute()
-        extract_features(dd.from_pandas(df.drop(columns=["dimension", "time"]), npartitions=1), column_id="id",
-                         default_fc_parameters=MinimalFCParameters()).compute()
+        self.assertIn("value__mean", X.columns)
+        self.assertIn("11", X.index)
+        self.assertEqual(X.shape, (100, 8))
+
+        X = extract_features(dd.from_pandas(df, npartitions=1), column_id="my_id", column_sort="time", column_kind="dimension", column_value="value",
+                             default_fc_parameters=MinimalFCParameters()).compute()
+        self.assertIn("1__mean", X.columns)
+        self.assertIn("11", X.index)
+        self.assertEqual(X.shape, (100, 16))
+        X = extract_features(dd.from_pandas(df, npartitions=1), column_id="my_id", column_sort="time", column_kind="dimension",
+                             default_fc_parameters=MinimalFCParameters()).compute()
+        self.assertIn("1__mean", X.columns)
+        self.assertIn("11", X.index)
+        self.assertEqual(X.shape, (100, 16))
+
+        X = extract_features(dd.from_pandas(df.drop(columns=["dimension"]), npartitions=1), column_id="my_id", column_sort="time",
+                             default_fc_parameters=MinimalFCParameters()).compute()
+        self.assertIn("value__mean", X.columns)
+        self.assertIn("11", X.index)
+        self.assertEqual(X.shape, (100, 8))
+
+        X = extract_features(dd.from_pandas(df.drop(columns=["dimension", "time"]), npartitions=1), column_id="my_id",
+                             default_fc_parameters=MinimalFCParameters()).compute()
+        self.assertIn("value__mean", X.columns)
+        self.assertIn("11", X.index)
+        self.assertEqual(X.shape, (100, 8))
 
 
 
