@@ -10,10 +10,11 @@ import warnings
 from collections import Iterable
 
 import pandas as pd
+from dask import dataframe as dd
 
 from tsfresh import defaults
 from tsfresh.feature_extraction import feature_calculators
-from tsfresh.feature_extraction.data import to_tsdata
+from tsfresh.feature_extraction.data import to_tsdata, IterableSplitTsData, ApplyableSplitTsData
 from tsfresh.feature_extraction.settings import ComprehensiveFCParameters
 from tsfresh.utilities import profiling
 from tsfresh.utilities.distribution import MapDistributor, MultiprocessingDistributor, \
@@ -241,7 +242,7 @@ def _do_extraction(df, column_id, column_value, column_kind, column_sort,
                                                          progressbar_title="Feature Extraction",
                                                          show_warnings=show_warnings)
         else:
-            distributor = ApplyDistributor(meta=[(data.column_id, 'int64'), ('variable', 'object'),
+            distributor = ApplyDistributor(meta=[(data.column_id, data.df_id_type), ('variable', 'object'),
                                                  ('value', 'float64')])
 
     if not isinstance(distributor, DistributorBaseClass):
@@ -326,3 +327,51 @@ def _do_extraction_on_chunk(chunk, default_fc_parameters, kind_to_fc_parameters)
                 yield (sample_id, feature_name, item)
 
     return list(_f())
+
+
+def extract_features_on_sub_features(timeseries_container,
+                                     sub_feature_split,
+                                     sub_default_fc_parameters=None, sub_kind_to_fc_parameters=None,
+                                     default_fc_parameters=None, kind_to_fc_parameters=None,
+                                     column_id=None, column_sort=None, column_kind=None, column_value=None,
+                                     **kwargs):
+    ts_data = to_tsdata(timeseries_container, column_id=column_id, column_sort=column_sort, column_kind=column_kind, column_value=column_value)
+    if isinstance(ts_data, Iterable):
+        split_ts_data = IterableSplitTsData(ts_data, sub_feature_split)
+    else:
+        split_ts_data = ApplyableSplitTsData(ts_data, sub_feature_split)
+
+    sub_features = extract_features(split_ts_data, default_fc_parameters=sub_default_fc_parameters,
+                                    kind_to_fc_parameters=sub_kind_to_fc_parameters, **kwargs, pivot=False)
+
+    column_kind = column_kind or "variable"
+    column_id = column_id or "id"
+    column_sort = column_sort or "sort"
+    column_value = column_value or "value"
+
+    # The feature names include many "_", which will confuse tsfresh where the sub feature name ends
+    # and where the real feature name starts. We just remove them.
+    # Also, we split up the index into the id and the sort
+    # We need to do this separately for dask dataframes,
+    # as the return type is not a list, but already a dataframe
+    if isinstance(sub_features, dd.DataFrame):
+        sub_features = sub_features.reset_index(drop=True)
+
+        sub_features[column_kind] = sub_features[column_kind].apply(lambda col: col.replace("_", ""), meta=(column_kind, object))
+
+        sub_features[column_sort] = sub_features[column_id].apply(lambda x: x[1], meta=(column_id, "int64"))
+        sub_features[column_id] = sub_features[column_id].apply(lambda x: x[0], meta=(column_id, ts_data.df_id_type))
+
+    else:
+        sub_features = pd.DataFrame(sub_features, columns=[column_id, column_kind, column_value])
+
+        sub_features[column_kind] = sub_features[column_kind].apply(lambda col: col.replace("_", ""))
+
+        sub_features[column_sort] = sub_features[column_id].apply(lambda x: x[1])
+        sub_features[column_id] = sub_features[column_id].apply(lambda x: x[0])
+
+    X = extract_features(sub_features, column_id=column_id, column_sort=column_sort, column_kind=column_kind, column_value=column_value,
+                         default_fc_parameters=default_fc_parameters, kind_to_fc_parameters=kind_to_fc_parameters,
+                         **kwargs)
+
+    return X

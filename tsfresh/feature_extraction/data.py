@@ -1,6 +1,7 @@
 import itertools
 from collections import namedtuple, defaultdict
 from typing import Iterable, Sized
+import math
 
 import pandas as pd
 try:
@@ -45,7 +46,8 @@ class TsData:
     Timeseries instances (which distributors can use to apply the function on).
     Other methods can be overwritten if a more efficient solution exists for the underlying data store.
     """
-    pass
+    def __init__(self, df, column_id):
+        self.df_id_type = df[column_id].dtype
 
 
 class PartitionedTsData(Iterable[Timeseries], Sized, TsData):
@@ -53,9 +55,6 @@ class PartitionedTsData(Iterable[Timeseries], Sized, TsData):
     Special class of TsData, which can be partitioned.
     Derived classes should implement __iter__ and __len__.
     """
-    def __init__(self, df, column_id):
-        self.df_id_type = df[column_id].dtype
-
     def pivot(self, results):
         """
         Helper function to turn an iterable of tuples with three entries into a dataframe.
@@ -302,6 +301,8 @@ class DaskTsAdapter(TsData):
         if column_id is None:
             raise ValueError("column_id must be set")
 
+        super().__init__(df, column_id)
+
         if column_id not in df.columns:
             raise ValueError(f"Column not found: {column_id}")
 
@@ -380,6 +381,65 @@ class DaskTsAdapter(TsData):
                                             values="value", aggfunc="sum")
 
         return feature_table
+
+
+class IterableSplitTsData(PartitionedTsData):
+    def __init__(self, root_ts_data, split_size):
+        self._root_ts_data = root_ts_data
+        self._split_size = split_size
+
+        self.df_id_type = object
+
+    def __iter__(self):
+        tsdata = iter(self._root_ts_data)
+
+        for chunk_id, chunk_kind, chunk_data in tsdata:
+            max_chunks = math.ceil(len(chunk_data) / self._split_size)
+            for chunk_number in range(max_chunks):
+                yield Timeseries(
+                    (chunk_id, chunk_number),
+                    chunk_kind,
+                    chunk_data.iloc[chunk_number * self._split_size:(chunk_number + 1) * self._split_size]
+                )
+
+    def __len__(self):
+        summed_length = 0
+
+        tsdata = iter(self._root_ts_data)
+
+        for _, _, chunk_data in tsdata:
+            summed_length += math.ceil(len(chunk_data) / self._split_size)
+
+        return summed_length
+
+
+class ApplyableSplitTsData(TsData):
+    def __init__(self, root_ts_data, split_size):
+        self._root_ts_data = root_ts_data
+        self._split_size = split_size
+
+        self.column_id = self._root_ts_data.column_id
+
+        self.df_id_type = object
+
+    def apply(self, f, **kwargs):
+        def wrapped_f(time_series, **kwargs):
+            chunk_id, chunk_kind, chunk_data = time_series
+            max_chunks = math.ceil(len(chunk_data) / self._split_size)
+
+            for chunk_number in range(max_chunks):
+                result = f(Timeseries(
+                    (chunk_id, chunk_number),
+                    chunk_kind,
+                    chunk_data.iloc[chunk_number * self._split_size:(chunk_number + 1) * self._split_size]
+                ), **kwargs)
+
+                yield from result
+
+        return self._root_ts_data.apply(wrapped_f, **kwargs)
+
+    def pivot(self, results):
+        return self._root_ts_data.pivot(results)
 
 
 def to_tsdata(df, column_id=None, column_kind=None, column_value=None, column_sort=None):
