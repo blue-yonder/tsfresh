@@ -48,7 +48,7 @@ class TsData:
     pass
 
 
-class PartitionedTsData(Iterable[Timeseries], Sized):
+class PartitionedTsData(Iterable[Timeseries], Sized, TsData):
     """
     Special class of TsData, which can be partitioned.
     Derived classes should implement __iter__ and __len__.
