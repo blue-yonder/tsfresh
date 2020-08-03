@@ -3,9 +3,20 @@
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
 from unittest import TestCase
+from contextlib import contextmanager
+import warnings
 
 import numpy as np
 import pandas as pd
+
+
+@contextmanager
+def warning_free():
+    """Small helper to surpress all warnings"""
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore')
+
+        yield
 
 
 # todo: add test cases for float data
