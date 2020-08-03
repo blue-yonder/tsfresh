@@ -81,63 +81,6 @@ class DriftBifSimlationTestCase(unittest.TestCase):
 
         self.assertGreater(len(X.columns), 10)
 
-    def test_feature_extraction(self):
-        df, y = load_driftbif(100, 10, classification=True, seed=42)
-
-        df['my_id'] = df['id'].astype('str')
-        del df["id"]
-
-        # Test shape and a single entry (to see if it works at all)
-        X = extract_features(df, column_id="my_id", column_sort="time", column_kind="dimension", column_value="value",
-                             default_fc_parameters=MinimalFCParameters())
-        self.assertIn("1__mean", X.columns)
-        self.assertIn("11", X.index)
-        self.assertEqual(X.shape, (100, 16))
-
-        X = extract_features(df, column_id="my_id", column_sort="time", column_kind="dimension",
-                             default_fc_parameters=MinimalFCParameters())
-        self.assertIn("1__mean", X.columns)
-        self.assertIn("11", X.index)
-        self.assertEqual(X.shape, (100, 16))
-
-        X = extract_features(df.drop(columns=["dimension"]), column_id="my_id", column_sort="time",
-                             default_fc_parameters=MinimalFCParameters())
-        self.assertIn("value__mean", X.columns)
-        self.assertIn("11", X.index)
-        self.assertEqual(X.shape, (100, 8))
-
-        X = extract_features(df.drop(columns=["dimension", "time"]), column_id="my_id",
-                             default_fc_parameters=MinimalFCParameters())
-        self.assertIn("value__mean", X.columns)
-        self.assertIn("11", X.index)
-        self.assertEqual(X.shape, (100, 8))
-
-        X = extract_features(dd.from_pandas(df, npartitions=1), column_id="my_id", column_sort="time",
-                             column_kind="dimension", column_value="value",
-                             default_fc_parameters=MinimalFCParameters()).compute()
-        self.assertIn("1__mean", X.columns)
-        self.assertIn("11", X.index)
-        self.assertEqual(X.shape, (100, 16))
-        X = extract_features(dd.from_pandas(df, npartitions=1), column_id="my_id", column_sort="time",
-                             column_kind="dimension",
-                             default_fc_parameters=MinimalFCParameters()).compute()
-        self.assertIn("1__mean", X.columns)
-        self.assertIn("11", X.index)
-        self.assertEqual(X.shape, (100, 16))
-
-        X = extract_features(dd.from_pandas(df.drop(columns=["dimension"]), npartitions=1), column_id="my_id",
-                             column_sort="time",
-                             default_fc_parameters=MinimalFCParameters()).compute()
-        self.assertIn("value__mean", X.columns)
-        self.assertIn("11", X.index)
-        self.assertEqual(X.shape, (100, 8))
-
-        X = extract_features(dd.from_pandas(df.drop(columns=["dimension", "time"]), npartitions=1), column_id="my_id",
-                             default_fc_parameters=MinimalFCParameters()).compute()
-        self.assertIn("value__mean", X.columns)
-        self.assertIn("11", X.index)
-        self.assertEqual(X.shape, (100, 8))
-
 
 class SampleTauTestCase(unittest.TestCase):
     def setUp(self):

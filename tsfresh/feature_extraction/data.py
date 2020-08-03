@@ -5,7 +5,7 @@ from typing import Iterable, Sized
 import pandas as pd
 try:
     from dask import dataframe as dd
-except ImportError:
+except ImportError:  # pragma: no cover
     dd = None
 
 

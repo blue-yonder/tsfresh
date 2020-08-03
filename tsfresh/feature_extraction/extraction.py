@@ -7,7 +7,7 @@ This module contains the main function to interact with tsfresh: extract feature
 
 import logging
 import warnings
-from collections import Iterable
+from collections.abc import Iterable
 
 import pandas as pd
 
