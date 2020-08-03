@@ -30,6 +30,7 @@ We changed the default branch from "master" to "main".
     - Fix in the forecasting notebook (#729)
     - Let tsfresh choose the value column if possible (#722)
     - Move from coveralls github action to codecov (#734)
+    - Fix for newer, more strict pandas versions (#737)
 
 Version 0.16.0
 ==============
