@@ -64,18 +64,19 @@ class FeatureCalculationTestCase(TestCase):
     def assertAlmostEqualOnAllArrayTypes(self, f, input_to_f, result, *args, **kwargs):
         expected_result = f(input_to_f, *args, **kwargs)
         self.assertAlmostEqual(expected_result, result,
-                         msg="Not almost equal for lists: {} != {}".format(expected_result, result))
+                               msg="Not almost equal for lists: {} != {}".format(expected_result, result))
         expected_result = f(np.array(input_to_f), *args, **kwargs)
         self.assertAlmostEqual(expected_result, result,
-                         msg="Not almost equal for numpy.arrays: {} != {}".format(expected_result, result))
+                               msg="Not almost equal for numpy.arrays: {} != {}".format(expected_result, result))
         expected_result = f(pd.Series(input_to_f, dtype="float64"), *args, **kwargs)
         self.assertAlmostEqual(expected_result, result,
-                         msg="Not almost equal for pandas.Series: {} != {}".format(expected_result, result))
+                               msg="Not almost equal for pandas.Series: {} != {}".format(expected_result, result))
 
     def assertIsNanOnAllArrayTypes(self, f, input_to_f, *args, **kwargs):
         self.assertTrue(np.isnan(f(input_to_f, *args, **kwargs)), msg="Not NaN for lists")
         self.assertTrue(np.isnan(f(np.array(input_to_f), *args, **kwargs)), msg="Not NaN for numpy.arrays")
-        self.assertTrue(np.isnan(f(pd.Series(input_to_f, dtype="float64"), *args, **kwargs)), msg="Not NaN for pandas.Series")
+        self.assertTrue(np.isnan(f(pd.Series(input_to_f, dtype="float64"), *args, **kwargs)),
+                        msg="Not NaN for pandas.Series")
 
     def assertEqualPandasSeriesWrapper(self, f, input_to_f, result, *args, **kwargs):
         self.assertEqual(f(pd.Series(input_to_f), *args, **kwargs), result,

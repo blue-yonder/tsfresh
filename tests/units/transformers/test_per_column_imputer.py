@@ -39,7 +39,7 @@ class PerColumnImputerTestCase(TestCase):
             imputer.fit(X)
             self.assertEqual(len(w), 1)
             self.assertEqual("The columns ['NaNs' 'PINF' 'NINF'] did not have any finite values. Filling with zeros.",
-                            str(w[0].message))
+                             str(w[0].message))
 
         selected_X = imputer.transform(X)
 
@@ -60,7 +60,7 @@ class PerColumnImputerTestCase(TestCase):
             imputer.fit(X)
             self.assertEqual(len(w), 1)
             self.assertEqual("The columns ['NaNs' 'PINF' 'NINF'] did not have any finite values. Filling with zeros.",
-                            str(w[0].message))
+                             str(w[0].message))
 
         selected_X = imputer.transform(X)
 
@@ -70,7 +70,7 @@ class PerColumnImputerTestCase(TestCase):
             imputer.fit(X_numpy)
             self.assertEqual(len(w), 1)
             self.assertEqual("The columns [0 1 2] did not have any finite values. Filling with zeros.",
-                            str(w[0].message))
+                             str(w[0].message))
 
         selected_X_numpy = imputer.transform(X_numpy)
 
