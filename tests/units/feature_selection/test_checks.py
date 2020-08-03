@@ -9,6 +9,7 @@ import numpy as np
 from tsfresh.defaults import TEST_FOR_BINARY_TARGET_REAL_FEATURE
 from tsfresh.feature_selection.significance_tests import target_real_feature_binary_test,\
     target_real_feature_real_test, target_binary_feature_real_test, target_binary_feature_binary_test
+from tests.fixtures import warning_free
 
 
 @pytest.fixture()

@@ -13,6 +13,7 @@ import mock
 
 from tsfresh.feature_extraction import MinimalFCParameters
 from tsfresh.transformers.relevant_feature_augmenter import RelevantFeatureAugmenter
+from tests.fixtures import warning_free
 
 
 class RelevantFeatureAugmenterTestCase(DataTestCase):
@@ -33,7 +34,7 @@ class RelevantFeatureAugmenterTestCase(DataTestCase):
         augmenter = RelevantFeatureAugmenter()
 
         X = pd.DataFrame()
-        y = pd.Series()
+        y = pd.Series(dtype="float64")
 
         self.assertRaises(RuntimeError, augmenter.fit, X, y)
 
@@ -105,7 +106,8 @@ class RelevantFeatureAugmenterTestCase(DataTestCase):
         calculate_relevance_table_mock.return_value = pd.DataFrame(columns=['feature', 'p_value', 'relevant'])
         augmenter = RelevantFeatureAugmenter(column_id='id', column_sort='time', default_fc_parameters=fc_parameters)
         augmenter.set_timeseries_container(df)
-        augmenter.fit(X, y)
+        with warning_free():
+            augmenter.fit(X, y)
 
         assert calculate_relevance_table_mock.call_count == 1
         assert not calculate_relevance_table_mock.call_args[0][0].isnull().any().any()

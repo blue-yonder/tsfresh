@@ -11,7 +11,7 @@ Design of this module by Nils Braun
 import itertools
 import math
 import warnings
-from collections import Generator, Iterable
+from collections.abc import Generator, Iterable
 from functools import partial
 from multiprocessing import Pool
 
@@ -264,7 +264,7 @@ class LocalDaskDistributor(DistributorBaseClass):
 
         # attribute .local_dir_ is the path where the local dask workers store temporary files
         self.local_dir_ = tempfile.mkdtemp()
-        cluster = LocalCluster(n_workers=n_workers, processes=False, local_dir=self.local_dir_)
+        cluster = LocalCluster(n_workers=n_workers, processes=False, local_directory=self.local_dir_)
 
         self.client = Client(cluster)
         self.n_workers = n_workers
