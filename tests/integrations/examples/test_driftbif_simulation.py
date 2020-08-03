@@ -13,6 +13,9 @@ from tsfresh.feature_extraction import MinimalFCParameters
 
 
 class DriftBifSimlationTestCase(unittest.TestCase):
+    def setUp(self):
+        np.random.seed(42)
+
     def test_intrinsic_velocity_at_default_bifurcation_point(self):
         """
         The intrinsic velocity of a dissipative soliton at the Drift bifurcation point is zero.
@@ -67,7 +70,7 @@ class DriftBifSimlationTestCase(unittest.TestCase):
                          'The returned vector should reflect the dimension of the initial condition.')
 
     def test_relevant_feature_extraction(self):
-        df, y = load_driftbif(100, 10, classification=False, seed=42)
+        df, y = load_driftbif(100, 10, classification=False)
 
         df['id'] = df['id'].astype('str')
         y.index = y.index.astype('str')
@@ -137,6 +140,9 @@ class DriftBifSimlationTestCase(unittest.TestCase):
 
 
 class SampleTauTestCase(unittest.TestCase):
+    def setUp(self):
+        np.random.seed(42)
+
     def test_range(self):
         tau = sample_tau(100)
         self.assertGreaterEqual(min(tau), 2.87)
@@ -151,6 +157,9 @@ class SampleTauTestCase(unittest.TestCase):
 
 
 class LoadDriftBifTestCase(unittest.TestCase):
+    def setUp(self):
+        np.random.seed(42)
+
     def test_classification_labels(self):
         X, y = load_driftbif(10, 100)
         self.assertEqual(set(y), {0, 1})

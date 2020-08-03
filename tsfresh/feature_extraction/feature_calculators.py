@@ -29,7 +29,12 @@ from numpy.linalg import LinAlgError
 from scipy.signal import cwt, find_peaks_cwt, ricker, welch
 from scipy.stats import linregress
 from statsmodels.tools.sm_exceptions import MissingDataError
-from statsmodels.tsa.ar_model import AR
+
+with warnings.catch_warnings():
+    # Ignore warnings of the patsy package
+    warnings.simplefilter("ignore", DeprecationWarning)
+
+    from statsmodels.tsa.ar_model import AR
 from statsmodels.tsa.stattools import acf, adfuller, pacf
 
 # todo: make sure '_' works in parameter names in all cases, add a warning if not
@@ -906,11 +911,11 @@ def percentage_of_reoccurring_datapoints_to_all_datapoints(x):
     :return: the value of this feature
     :return type: float
     """
+    if len(x) == 0:
+        return np.nan
+
     if not isinstance(x, pd.Series):
         x = pd.Series(x)
-
-    if x.size == 0:
-        return np.nan
 
     value_counts = x.value_counts()
     reoccuring_values = value_counts[value_counts > 1].sum()

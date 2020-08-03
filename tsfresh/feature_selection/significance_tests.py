@@ -221,11 +221,12 @@ def __check_for_binary_target(y):
     :raises: ``ValueError`` if the values are not binary.
     """
     if not set(y) == {0, 1}:
-        warnings.warn("[target_binary_feature_binary_test] The binary target should have "
+        if len(set(y)) > 2:
+            raise ValueError("Target is not binary!")
+
+        warnings.warn("The binary target should have "
                       "values 1 and 0 (or True and False). "
                       "Instead found" + str(set(y)), RuntimeWarning)
-        if len(set(y)) > 2:
-            raise ValueError("[target_binary_feature_binary_test] Target is not binary!")
 
 
 def __check_for_binary_feature(x):
@@ -242,11 +243,12 @@ def __check_for_binary_feature(x):
     :raises: ``ValueError`` if the values are not binary.
     """
     if not set(x) == {0, 1}:
-        warnings.warn("[target_binary_feature_binary_test] A binary feature should have only "
-                      "values 1 and 0 (incl. True and False). "
-                      "Instead found " + str(set(x)) + " in feature ''" + str(x.name) + "''.", RuntimeWarning)
         if len(set(x)) > 2:
             raise ValueError("[target_binary_feature_binary_test] Feature is not binary!")
+
+        warnings.warn("A binary feature should have only "
+                      "values 1 and 0 (incl. True and False). "
+                      "Instead found " + str(set(x)) + " in feature ''" + str(x.name) + "''.", RuntimeWarning)
 
 
 def _check_for_nans(x, y):
