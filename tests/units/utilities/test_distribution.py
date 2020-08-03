@@ -87,7 +87,7 @@ class LocalDaskDistributorTestCase(DataTestCase):
 class ClusterDaskDistributorTestCase(DataTestCase):
     @skipIf(sys.version_info < (3, 6, 0), "dask requires python >= 3.6")
     def test_dask_cluster_extraction_one_worker(self):
-        cluster = LocalCluster(n_workers=1, threads_per_worker=1, diagnostics_port=False)
+        cluster = LocalCluster(n_workers=1, threads_per_worker=1, dashboard_address=None)
         client = Client(cluster)
         address = client.scheduler_info()['address']
         Distributor = ClusterDaskDistributor(address=address)
@@ -110,7 +110,7 @@ class ClusterDaskDistributorTestCase(DataTestCase):
 
     @skipIf(sys.version_info < (3, 6, 0), "dask requires python >= 3.6")
     def test_dask_cluster_extraction_two_workers(self):
-        cluster = LocalCluster(n_workers=2, threads_per_worker=1, diagnostics_port=False)
+        cluster = LocalCluster(n_workers=2, threads_per_worker=1, dashboard_address=None)
         client = Client(cluster)
         address = client.scheduler_info()['address']
         Distributor = ClusterDaskDistributor(address=address)

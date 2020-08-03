@@ -8,7 +8,7 @@ from tsfresh.feature_extraction.settings import ComprehensiveFCParameters
 from tsfresh.utilities.dataframe_functions import impute
 from unittest import TestCase
 import numpy as np
-import pandas.util.testing as pdt
+import pandas.testing as pdt
 import pandas as pd
 
 

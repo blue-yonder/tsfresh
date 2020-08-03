@@ -3,13 +3,16 @@
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
 from unittest import TestCase
-import pandas as pd
 import os
 import shutil
 import tempfile
+
+import pandas as pd
 from sklearn.pipeline import Pipeline
+
 from tsfresh.examples.robot_execution_failures import load_robot_execution_failures, download_robot_execution_failures
 from tsfresh.transformers import RelevantFeatureAugmenter
+from tests.fixtures import warning_free
 
 
 class FullPipelineTestCase_robot_failures(TestCase):
@@ -37,7 +40,8 @@ class FullPipelineTestCase_robot_failures(TestCase):
 
         pipe = Pipeline([("relevant_augmenter", relevant_augmenter)])
 
-        pipe.fit(self.df, self.y)
+        with warning_free():
+            pipe.fit(self.df, self.y)
         extracted_features = pipe.transform(self.df)
 
         some_expected_features = {'F_x__abs_energy',

@@ -9,6 +9,7 @@ import pandas as pd
 from pandas.testing import assert_frame_equal, assert_series_equal
 
 from tsfresh.utilities import dataframe_functions
+from tests.fixtures import warning_free
 
 
 class RollingTestCase(TestCase):
@@ -461,10 +462,14 @@ class RollingTestCase(TestCase):
         second_class["initial_id"] = 2
         df_full = pd.concat([first_class, second_class], ignore_index=True)
 
-        window_size = 2
-        df_rolled = dataframe_functions.roll_time_series(
-            df_full, column_id="initial_id", column_sort="time",
-            min_timeshift=window_size-1, max_timeshift=window_size-1)
+        # Do not show the warning on non-equidistant time
+        with warning_free():
+            window_size = 2
+
+            df_rolled = dataframe_functions.roll_time_series(
+                df_full, column_id="initial_id", column_sort="time",
+                min_timeshift=window_size-1, max_timeshift=window_size-1)
+
         """ df is
         {x: _value  id
               1.0   1
@@ -759,7 +764,12 @@ class GetRangeValuesPerColumnTestCase(TestCase):
     def test_no_finite_values_yields_0(self):
         df = pd.DataFrame([np.NaN, np.PINF, np.NINF], columns=["value"])
 
-        col_to_max, col_to_min, col_to_median = dataframe_functions.get_range_values_per_column(df)
+        with warnings.catch_warnings(record=True) as w:
+            col_to_max, col_to_min, col_to_median = dataframe_functions.get_range_values_per_column(df)
+
+            self.assertEqual(len(w), 1)
+            self.assertEqual(str(w[0].message),
+                             "The columns ['value'] did not have any finite values. Filling with zeros.")
 
         self.assertEqual(col_to_max, {"value": 0})
         self.assertEqual(col_to_min, {"value": 0})
@@ -796,7 +806,7 @@ class MakeForecastingFrameTestCase(TestCase):
                                                            kind="test", max_timeshift=1, rolling_direction=1)
 
         expected_y = pd.Series(data=[1, 2, 3], index=pd.DatetimeIndex(["2011-01-01 01:00:00", "2011-01-01 02:00:00",
-                                                                       "2011-01-01 03:00:00"]), name="value")
+                                                                       "2011-01-01 03:00:00"], freq="H"), name="value")
         expected_df = pd.DataFrame({"id": list(zip(["id"] * 3, pd.DatetimeIndex(["2011-01-01 01:00:00",
                                                                                  "2011-01-01 02:00:00",
                                                                                  "2011-01-01 03:00:00"]))),
