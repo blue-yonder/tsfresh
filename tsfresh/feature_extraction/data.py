@@ -4,10 +4,7 @@ from typing import Iterable, Sized
 import math
 
 import pandas as pd
-try:
-    from dask import dataframe as dd
-except ImportError:
-    dd = None
+from dask import dataframe as dd
 
 
 def _binding_helper(f, kwargs, column_sort, column_id, column_kind, column_value):
@@ -24,73 +21,6 @@ def _binding_helper(f, kwargs, column_sort, column_id, column_kind, column_value
         return result[[column_id, "variable", "value"]]
 
     return wrapped_feature_extraction
-
-
-class Timeseries(namedtuple('Timeseries', ['id', 'kind', 'data'])):
-    """
-    Timeseries tuple used for feature extraction.
-
-    Make sure `kind` is of type `str` to allow inference
-    of feature settings in `feature_extraction.settings.from_columns`.
-    """
-
-
-class TsData:
-    """
-    TsData provides access to time series data for internal usage.
-
-    Distributors will use this data class to apply functions on the data.
-    All derived classes must either implement the `apply` method,
-    which is used to apply the given function directly on the data
-    or the __iter__ method, which can be used to get an iterator of
-    Timeseries instances (which distributors can use to apply the function on).
-    Other methods can be overwritten if a more efficient solution exists for the underlying data store.
-    """
-    def __init__(self, df, column_id):
-        self.df_id_type = df[column_id].dtype
-
-
-class PartitionedTsData(Iterable[Timeseries], Sized, TsData):
-    """
-    Special class of TsData, which can be partitioned.
-    Derived classes should implement __iter__ and __len__.
-    """
-    def pivot(self, results):
-        """
-        Helper function to turn an iterable of tuples with three entries into a dataframe.
-
-        The input ``list_of_tuples`` needs to be an iterable with tuples containing three
-        entries: (a, b, c).
-        Out of this, a pandas dataframe will be created with all a's as index,
-        all b's as columns and all c's as values.
-
-        It basically does a pd.pivot(first entry, second entry, third entry),
-        but optimized for non-pandas input (= python list of tuples).
-
-        This function is called in the end of the extract_features call.
-        """
-        return_df_dict = defaultdict(dict)
-        for chunk_id, variable, value in results:
-            # we turn it into a nested mapping `column -> index -> value`
-            return_df_dict[variable][chunk_id] = value
-
-        # the mapping column -> {index -> value}
-        # is now a dict of dicts. The pandas dataframe
-        # constructor will peel this off:
-        # first, the keys of the outer dict (the column)
-        # will turn into a column header and the rest into a column
-        # the rest is {index -> value} which will be turned into a
-        # column with index.
-        # All index will be aligned.
-        return_df = pd.DataFrame(return_df_dict, dtype=float)
-
-        # copy the type of the index
-        return_df.index = return_df.index.astype(self.df_id_type)
-
-        # Sort by index to be backward compatible
-        return_df = return_df.sort_index()
-
-        return return_df
 
 
 def _check_colname(*columns):
@@ -144,7 +74,94 @@ def _get_value_columns(df, *other_columns):
     return value_columns
 
 
-class WideTsFrameAdapter(PartitionedTsData):
+class Timeseries(namedtuple('Timeseries', ['id', 'kind', 'data'])):
+    """
+    Timeseries tuple used for feature extraction.
+
+    Make sure `kind` is of type `str` to allow inference
+    of feature settings in `feature_extraction.settings.from_columns`.
+    """
+
+
+class TsData:
+    """
+    TsData provides access to time series data for internal usage.
+
+    Distributors will use this data class to apply functions on the data.
+    All derived classes must either implement the `apply` method,
+    which is used to apply the given function directly on the data
+    or the __iter__ method, which can be used to get an iterator of
+    Timeseries instances (which distributors can use to apply the function on).
+    Other methods can be overwritten if a more efficient solution exists for the underlying data store.
+    """
+    def __init__(self, column_id, df_id_type):
+        self.column_id = column_id
+        self.df_id_type = df_id_type
+
+
+class IterableTsData(Iterable[Timeseries], Sized, TsData):
+    """
+    Special class of TsData, which can be partitioned.
+    Derived classes should implement __iter__ and __len__.
+    """
+    def pivot(self, results):
+        """
+        Helper function to turn an iterable of tuples with three entries into a dataframe.
+
+        The input ``list_of_tuples`` needs to be an iterable with tuples containing three
+        entries: (a, b, c).
+        Out of this, a pandas dataframe will be created with all a's as index,
+        all b's as columns and all c's as values.
+
+        It basically does a pd.pivot(first entry, second entry, third entry),
+        but optimized for non-pandas input (= python list of tuples).
+
+        This function is called in the end of the extract_features call.
+        """
+        return_df_dict = defaultdict(dict)
+        for chunk_id, variable, value in results:
+            # we turn it into a nested mapping `column -> index -> value`
+            return_df_dict[variable][chunk_id] = value
+
+        # the mapping column -> {index -> value}
+        # is now a dict of dicts. The pandas dataframe
+        # constructor will peel this off:
+        # first, the keys of the outer dict (the column)
+        # will turn into a column header and the rest into a column
+        # the rest is {index -> value} which will be turned into a
+        # column with index.
+        # All index will be aligned.
+        return_df = pd.DataFrame(return_df_dict, dtype=float)
+
+        # copy the type of the index
+        return_df.index = return_df.index.astype(self.df_id_type)
+
+        # Sort by index to be backward compatible
+        return_df = return_df.sort_index()
+
+        return return_df
+
+    def __len__(self):
+        """Override in a subclass"""
+        raise NotImplementedError
+
+    def __iter__(self):
+        """Override in a subclass"""
+        raise NotImplementedError
+
+
+class ApplyableTsData(TsData):
+    """
+    TsData base class to use, if an iterable ts data can not be used.
+    Its only interface is an apply function, which should be applied
+    to each of the chunks of the data. How this is done
+    depends on the implementation.
+    """
+    def apply(self, f, **kwargs):
+        raise NotImplementedError
+
+
+class WideTsFrameAdapter(IterableTsData):
     def __init__(self, df, column_id, column_sort=None, value_columns=None):
         """
         Adapter for Pandas DataFrames in wide format, where multiple columns contain different time series for
@@ -182,7 +199,7 @@ class WideTsFrameAdapter(PartitionedTsData):
         self.column_sort = column_sort
         self.df_grouped = df.groupby([column_id])
 
-        super().__init__(df, column_id)
+        super().__init__(column_id, df[column_id].dtype)
 
     def __len__(self):
         return self.df_grouped.ngroups * len(self.value_columns)
@@ -196,7 +213,7 @@ class WideTsFrameAdapter(PartitionedTsData):
                 yield Timeseries(group_name, kind, group[kind])
 
 
-class LongTsFrameAdapter(PartitionedTsData):
+class LongTsFrameAdapter(IterableTsData):
     def __init__(self, df, column_id, column_kind, column_value=None, column_sort=None):
         """
         Adapter for Pandas DataFrames in long format, where different time series for the same id are
@@ -241,7 +258,7 @@ class LongTsFrameAdapter(PartitionedTsData):
         self.column_sort = column_sort
         self.df_grouped = df.groupby([column_id, column_kind])
 
-        super().__init__(df, column_id)
+        super().__init__(column_id, df[column_id].dtype)
 
     def __len__(self):
         return len(self.df_grouped)
@@ -253,7 +270,7 @@ class LongTsFrameAdapter(PartitionedTsData):
             yield Timeseries(group_key[0], str(group_key[1]), group[self.column_value])
 
 
-class TsDictAdapter(PartitionedTsData):
+class TsDictAdapter(IterableTsData):
     def __init__(self, ts_dict, column_id, column_value, column_sort=None):
         """
         Adapter for a dict, which maps different time series kinds to Pandas DataFrames.
@@ -285,7 +302,8 @@ class TsDictAdapter(PartitionedTsData):
         else:
             self.grouped_dict = {key: df.groupby(column_id) for key, df in ts_dict.items()}
 
-        super().__init__(df, column_id)
+        # We use the last df to give us the id column type
+        super().__init__(column_id, df[column_id].dtype)
 
     def __iter__(self):
         for kind, grouped_df in self.grouped_dict.items():
@@ -301,8 +319,6 @@ class DaskTsAdapter(TsData):
         if column_id is None:
             raise ValueError("column_id must be set")
 
-        super().__init__(df, column_id)
-
         if column_id not in df.columns:
             raise ValueError(f"Column not found: {column_id}")
 
@@ -314,7 +330,7 @@ class DaskTsAdapter(TsData):
             if column_kind not in df.columns:
                 raise ValueError(f"Column not found: {column_kind}")
 
-            self.df = df.groupby([column_id, column_kind])
+            self.df_grouped = df.groupby([column_id, column_kind])
 
             # We assume the last remaining column is the value - but there needs to be one!
             if column_value is None:
@@ -346,12 +362,13 @@ class DaskTsAdapter(TsData):
             df_melted = df.melt(id_vars=id_vars, value_vars=value_vars,
                                 var_name=column_kind, value_name=column_value)
 
-            self.df = df_melted.groupby([column_id, column_kind])
+            self.df_grouped = df_melted.groupby([column_id, column_kind])
 
-        self.column_id = column_id
         self.column_kind = column_kind
         self.column_value = column_value
         self.column_sort = column_sort
+
+        super().__init__(column_id, df[column_id].dtype)
 
     def apply(self, f, meta, **kwargs):
         """
@@ -364,7 +381,7 @@ class DaskTsAdapter(TsData):
         """
         bound_function = _binding_helper(f, kwargs, self.column_sort, self.column_id,
                                          self.column_kind, self.column_value)
-        return self.df.apply(bound_function, meta=meta)
+        return self.df_grouped.apply(bound_function, meta=meta)
 
     def pivot(self, results):
         """
@@ -383,14 +400,26 @@ class DaskTsAdapter(TsData):
         return feature_table
 
 
-class IterableSplitTsData(PartitionedTsData):
+class IterableSplitTsData(IterableTsData):
+    """
+    Wrapper around another iterable ts data object, which splits the root ts data
+    object into smaller pieces, each of size split_size.
+
+    This means if you iterate over this object, the root ts object
+    will also be iterated, but the time series will additionally be split into smaller
+    chunks.
+    """
     def __init__(self, root_ts_data, split_size):
+        """Initialize with the root ts data object and the size to split"""
         self._root_ts_data = root_ts_data
         self._split_size = split_size
 
+        # The resulting type will be a tuple (id, chunk number),
+        # so it is an object
         self.df_id_type = object
 
     def __iter__(self):
+        """Iterate over the root ts data object and only return small chunks of the data"""
         tsdata = iter(self._root_ts_data)
 
         for chunk_id, chunk_kind, chunk_data in tsdata:
@@ -403,6 +432,7 @@ class IterableSplitTsData(PartitionedTsData):
                 )
 
     def __len__(self):
+        """The len needs to be re-calculated"""
         summed_length = 0
 
         tsdata = iter(self._root_ts_data)
@@ -412,17 +442,33 @@ class IterableSplitTsData(PartitionedTsData):
 
         return summed_length
 
+    def pivot(self, results):
+        """Pivoting can be copied from the root ts object"""
+        return self._root_ts_data.pivot(results)
 
-class ApplyableSplitTsData(TsData):
+
+class ApplyableSplitTsData(ApplyableTsData):
+    """
+    Wrapper around another iterable ts data object, which splits the root ts data
+    object into smaller pieces, each of size split_size.
+
+    This means if you apply a function on this object, a temporary
+    wrapper will be applied to the root ts data object, which splits
+    the result into smaller chunks on which the actual function is called.
+    """
     def __init__(self, root_ts_data, split_size):
+        """Initialize with the root ts data object and the size to split"""
         self._root_ts_data = root_ts_data
         self._split_size = split_size
 
         self.column_id = self._root_ts_data.column_id
 
+        # The resulting type will be a tuple (id, chunk number),
+        # so it is an object
         self.df_id_type = object
 
     def apply(self, f, **kwargs):
+        """Call f on the chunks of the root ts data object"""
         def wrapped_f(time_series, **kwargs):
             chunk_id, chunk_kind, chunk_data = time_series
             max_chunks = math.ceil(len(chunk_data) / self._split_size)
@@ -439,6 +485,7 @@ class ApplyableSplitTsData(TsData):
         return self._root_ts_data.apply(wrapped_f, **kwargs)
 
     def pivot(self, results):
+        """Pivoting can be copied from the root ts object"""
         return self._root_ts_data.pivot(results)
 
 

@@ -12,7 +12,7 @@ from tsfresh.feature_extraction.data import (
     LongTsFrameAdapter,
     WideTsFrameAdapter,
     TsDictAdapter,
-    PartitionedTsData
+    IterableTsData
 )
 from tsfresh.utilities.distribution import MultiprocessingDistributor
 
@@ -316,7 +316,7 @@ class PivotListTestCase(TestCase):
         mock_ts_data = Mock()
         mock_ts_data.df_id_type = str
 
-        return_df = PartitionedTsData.pivot(mock_ts_data, [])
+        return_df = IterableTsData.pivot(mock_ts_data, [])
 
         self.assertEqual(len(return_df), 0)
         self.assertEqual(len(return_df.index), 0)
@@ -333,7 +333,7 @@ class PivotListTestCase(TestCase):
             ("A", "c", 4),
             ("X", "Y", 5),
         ]
-        return_df = PartitionedTsData.pivot(mock_ts_data, input_list)
+        return_df = IterableTsData.pivot(mock_ts_data, input_list)
 
         self.assertEqual(len(return_df), 3)
         self.assertEqual(set(return_df.index), {"a", "A", "X"})
@@ -354,7 +354,7 @@ class PivotListTestCase(TestCase):
             for j in range(100):
                 input_list.append((i, j, i*j))
 
-        return_df = PartitionedTsData.pivot(mock_ts_data, input_list)
+        return_df = IterableTsData.pivot(mock_ts_data, input_list)
 
         self.assertEqual(len(return_df), 100)
         self.assertEqual(len(return_df.columns), 100)
