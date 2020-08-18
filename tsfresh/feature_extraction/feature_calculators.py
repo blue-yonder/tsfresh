@@ -235,6 +235,8 @@ def ratio_beyond_r_sigma(x, r):
 
     :param x: the time series to calculate the feature of
     :type x: iterable
+    :param r: the ratio to compare with
+    :type r: float
     :return: the value of this feature
     :return type: float
     """
@@ -279,8 +281,8 @@ def symmetry_looking(x, param):
 
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
-    :param r: the percentage of the range to compare with
-    :type r: float
+    :param param: contains dictionaries {"r": x} with x (float) is the percentage of the range to compare with
+    :type param: list
     :return: the value of this feature
     :return type: bool
     """
