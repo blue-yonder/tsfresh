@@ -31,6 +31,7 @@ We changed the default branch from "master" to "main".
     - Let tsfresh choose the value column if possible (#722)
     - Move from coveralls github action to codecov (#734)
     - Fix for newer, more strict pandas versions (#737)
+    - Fix documentation for feature calculators (#743)
 
 Version 0.16.0
 ==============
