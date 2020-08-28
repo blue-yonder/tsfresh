@@ -444,8 +444,10 @@ def partial_autocorrelation(x, param):
     if n <= 1:
         pacf_coeffs = [np.nan] * (max_demanded_lag + 1)
     else:
-        if (n <= max_demanded_lag):
-            max_lag = n - 1
+        # https://github.com/statsmodels/statsmodels/pull/6846
+        # PACF limits lag length to 50% of sample size.
+        if max_demanded_lag >= n // 2:
+            max_lag = n // 2 - (n % 2 == 0)
         else:
             max_lag = max_demanded_lag
         pacf_coeffs = list(pacf(x, method="ld", nlags=max_lag))
