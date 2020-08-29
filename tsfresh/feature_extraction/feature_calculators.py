@@ -450,8 +450,11 @@ def partial_autocorrelation(x, param):
             max_lag = n // 2 - 1
         else:
             max_lag = max_demanded_lag
-        pacf_coeffs = list(pacf(x, method="ld", nlags=max_lag))
-        pacf_coeffs = pacf_coeffs + [np.nan] * max(0, (max_demanded_lag - max_lag))
+        if max_lag > 0:
+            pacf_coeffs = list(pacf(x, method="ld", nlags=max_lag))
+            pacf_coeffs = pacf_coeffs + [np.nan] * max(0, (max_demanded_lag - max_lag))
+        else:
+            pacf_coeffs = [np.nan] * (max_demanded_lag + 1)
 
     return [("lag_{}".format(lag["lag"]), pacf_coeffs[lag["lag"]]) for lag in param]
 
