@@ -533,7 +533,7 @@ def cid_ce(x, normalize):
 
     .. math::
 
-        \\sqrt{ \\sum_{i=1}^{n-2lag} ( x_{i} - x_{i+1})^2 }
+        \\sqrt{ \\sum_{i=1}^{n-1} ( x_{i} - x_{i-1})^2 }
 
     .. rubric:: References
 
