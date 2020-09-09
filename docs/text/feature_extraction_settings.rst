@@ -90,10 +90,10 @@ So, for example using
 
     kind_to_fc_parameters = {
         "temperature": {"mean": None},
-        "pressure": {"max": None, "min": None}
+        "pressure": {"maximum": None, "minimum": None}
     }
 
-will extract the `"mean"` feature of the `"temperature"` time series and the `"min"` and `"max"` of the
+will extract the `"mean"` feature of the `"temperature"` time series and the `"minimum"` and `"maximum"` of the
 `"pressure"` time series.
 
 The `kind_to_fc_parameters` argument will partly override the `default_fc_parameters`. So, if you include a kind

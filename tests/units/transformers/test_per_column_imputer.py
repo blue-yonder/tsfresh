@@ -5,8 +5,9 @@
 from builtins import range
 from unittest import TestCase
 import pandas as pd
-import pandas.util.testing as pdt
+import pandas.testing as pdt
 from sklearn.exceptions import NotFittedError
+import warnings
 
 import numpy as np
 import numpy.testing as npt
@@ -34,7 +35,12 @@ class PerColumnImputerTestCase(TestCase):
         X["PINF"] = np.PINF * np.ones(100)
         X["NINF"] = np.NINF * np.ones(100)
 
-        imputer.fit(X)
+        with warnings.catch_warnings(record=True) as w:
+            imputer.fit(X)
+            self.assertEqual(len(w), 1)
+            self.assertEqual("The columns ['NaNs' 'PINF' 'NINF'] did not have any finite values. Filling with zeros.",
+                             str(w[0].message))
+
         selected_X = imputer.transform(X)
 
         self.assertTrue((selected_X.values == 0).all())
@@ -48,14 +54,24 @@ class PerColumnImputerTestCase(TestCase):
         X["PINF"] = np.PINF * np.ones(100)
         X["NINF"] = np.NINF * np.ones(100)
 
-        X_numpy = X.values
+        X_numpy = X.values.copy()
 
-        imputer.fit(X)
+        with warnings.catch_warnings(record=True) as w:
+            imputer.fit(X)
+            self.assertEqual(len(w), 1)
+            self.assertEqual("The columns ['NaNs' 'PINF' 'NINF'] did not have any finite values. Filling with zeros.",
+                             str(w[0].message))
+
         selected_X = imputer.transform(X)
 
         # re-initialize for new dicts
         imputer = PerColumnImputer()
-        imputer.fit(X_numpy)
+        with warnings.catch_warnings(record=True) as w:
+            imputer.fit(X_numpy)
+            self.assertEqual(len(w), 1)
+            self.assertEqual("The columns [0 1 2] did not have any finite values. Filling with zeros.",
+                             str(w[0].message))
+
         selected_X_numpy = imputer.transform(X_numpy)
 
         npt.assert_array_equal(selected_X.values, selected_X_numpy.values)
