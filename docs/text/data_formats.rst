@@ -10,7 +10,7 @@ tsfresh offers three different options to specify the time series data to be use
 Irrespective of the input format, tsfresh will always return the calculated features in the same output format
 described below.
 
-Typicalle, the input format options consist of :class:`pandas.DataFrame` objects.
+Typically, the input format options consist of :class:`pandas.DataFrame` objects.
 (see :ref:`large-data-label` for other input types)
 There are four important column types that
 make up those DataFrames. Each will be described with an example from the robot failures dataset
