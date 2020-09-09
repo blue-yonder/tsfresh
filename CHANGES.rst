@@ -4,8 +4,8 @@ Changelog
 
 tsfresh uses `Semantic Versioning <http://semver.org/>`_
 
-Unreleased
-==========
+Version 0.17.0
+==============
 
 We changed the default branch from "master" to "main".
 
