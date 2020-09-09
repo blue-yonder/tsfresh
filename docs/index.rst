@@ -24,24 +24,24 @@ The following chapters will explain the tsfresh package in detail:
 .. toctree::
    :maxdepth: 1
 
-   Introduction <text/introduction>
-   Quick Start <text/quick_start>
-   Module Reference <api/modules>
-   Data Formats <text/data_formats>
-   scikit-learn Transformers <text/sklearn_transformers>
-   List of Calculated Features <text/list_of_features>
-   Feature Calculation <text/feature_calculation>
-   Feature Calculator Settings <text/feature_extraction_settings>
-   Feature Filtering <text/feature_filtering>
-   How to write custom Feature Calculators <text/how_to_add_custom_feature>
-   Parallelization <text/parallelization>
-   tsfresh on a cluster <text/tsfresh_on_a_cluster>
-   Rolling/Time Series Forecasting <text/forecasting>
-   FAQ <text/faq>
-   Authors <authors>
-   License <license>
-   Changelog <changes>
-   How to contribute <text/how_to_contribute>
+   text/introduction
+   text/quick_start
+   text/data_formats
+   text/sklearn_transformers
+   text/list_of_features
+   text/feature_extraction_settings
+   text/feature_filtering
+   text/how_to_add_custom_feature
+   text/large_data
+   text/tsfresh_on_a_cluster
+   text/forecasting
+   text/faq
+   api/modules
+   authors
+   license
+   changes
+   text/how_to_contribute
+   text/feature_calculation
 
 
 Indices and tables

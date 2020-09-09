@@ -23,6 +23,7 @@ We changed the default branch from "master" to "main".
     - Add a test for the dask bindings (#719)
     - Refactor input data iteration to need less memory (#707)
     - Added benchmark tests (#710)
+    - Make dask a possible input format (#736)
 - Bugfixes:
     - Fixed a bug in the selection, that caused all regression tasks with un-ordered index to be wrong (#715)
     - Fixed readthedocs (#695, #696)
@@ -30,6 +31,7 @@ We changed the default branch from "master" to "main".
     - Fix in the forecasting notebook (#729)
     - Let tsfresh choose the value column if possible (#722)
     - Move from coveralls github action to codecov (#734)
+    - Improve speed of data processing (#735)
     - Fix for newer, more strict pandas versions (#737)
     - Fix documentation for feature calculators (#743)
 
