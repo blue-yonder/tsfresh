@@ -1,8 +1,28 @@
 import itertools
-from collections import namedtuple
+from collections import namedtuple, defaultdict
 from typing import Iterable, Sized
 
 import pandas as pd
+try:
+    from dask import dataframe as dd
+except ImportError:  # pragma: no cover
+    dd = None
+
+
+def _binding_helper(f, kwargs, column_sort, column_id, column_kind, column_value):
+    def wrapped_feature_extraction(x):
+        if column_sort is not None:
+            x = x.sort_values(column_sort)
+
+        chunk = Timeseries(x[column_id].iloc[0], x[column_kind].iloc[0], x[column_value])
+        result = f(chunk, **kwargs)
+
+        result = pd.DataFrame(result, columns=[column_id, "variable", "value"])
+        result["value"] = result["value"].astype("double")
+
+        return result[[column_id, "variable", "value"]]
+
+    return wrapped_feature_extraction
 
 
 class Timeseries(namedtuple('Timeseries', ['id', 'kind', 'data'])):
@@ -14,18 +34,64 @@ class Timeseries(namedtuple('Timeseries', ['id', 'kind', 'data'])):
     """
 
 
-class TsData(Iterable[Timeseries], Sized):
+class TsData:
     """
     TsData provides access to time series data for internal usage.
 
-    Implementations must implement `__iter__` and `__len__`.
+    Distributors will use this data class to apply functions on the data.
+    All derived classes must either implement the `apply` method,
+    which is used to apply the given function directly on the data
+    or the __iter__ method, which can be used to get an iterator of
+    Timeseries instances (which distributors can use to apply the function on).
+    Other methods can be overwritten if a more efficient solution exists for the underlying data store.
     """
+    pass
 
-    def __iter__(self):
-        raise NotImplementedError
 
-    def __len__(self):
-        raise NotImplementedError
+class PartitionedTsData(Iterable[Timeseries], Sized, TsData):
+    """
+    Special class of TsData, which can be partitioned.
+    Derived classes should implement __iter__ and __len__.
+    """
+    def __init__(self, df, column_id):
+        self.df_id_type = df[column_id].dtype
+
+    def pivot(self, results):
+        """
+        Helper function to turn an iterable of tuples with three entries into a dataframe.
+
+        The input ``list_of_tuples`` needs to be an iterable with tuples containing three
+        entries: (a, b, c).
+        Out of this, a pandas dataframe will be created with all a's as index,
+        all b's as columns and all c's as values.
+
+        It basically does a pd.pivot(first entry, second entry, third entry),
+        but optimized for non-pandas input (= python list of tuples).
+
+        This function is called in the end of the extract_features call.
+        """
+        return_df_dict = defaultdict(dict)
+        for chunk_id, variable, value in results:
+            # we turn it into a nested mapping `column -> index -> value`
+            return_df_dict[variable][chunk_id] = value
+
+        # the mapping column -> {index -> value}
+        # is now a dict of dicts. The pandas dataframe
+        # constructor will peel this off:
+        # first, the keys of the outer dict (the column)
+        # will turn into a column header and the rest into a column
+        # the rest is {index -> value} which will be turned into a
+        # column with index.
+        # All index will be aligned.
+        return_df = pd.DataFrame(return_df_dict, dtype=float)
+
+        # copy the type of the index
+        return_df.index = return_df.index.astype(self.df_id_type)
+
+        # Sort by index to be backward compatible
+        return_df = return_df.sort_index()
+
+        return return_df
 
 
 def _check_colname(*columns):
@@ -79,7 +145,7 @@ def _get_value_columns(df, *other_columns):
     return value_columns
 
 
-class WideTsFrameAdapter(TsData):
+class WideTsFrameAdapter(PartitionedTsData):
     def __init__(self, df, column_id, column_sort=None, value_columns=None):
         """
         Adapter for Pandas DataFrames in wide format, where multiple columns contain different time series for
@@ -117,6 +183,8 @@ class WideTsFrameAdapter(TsData):
         self.column_sort = column_sort
         self.df_grouped = df.groupby([column_id])
 
+        super().__init__(df, column_id)
+
     def __len__(self):
         return self.df_grouped.ngroups * len(self.value_columns)
 
@@ -129,7 +197,7 @@ class WideTsFrameAdapter(TsData):
                 yield Timeseries(group_name, kind, group[kind])
 
 
-class LongTsFrameAdapter(TsData):
+class LongTsFrameAdapter(PartitionedTsData):
     def __init__(self, df, column_id, column_kind, column_value=None, column_sort=None):
         """
         Adapter for Pandas DataFrames in long format, where different time series for the same id are
@@ -167,13 +235,14 @@ class LongTsFrameAdapter(TsData):
             self.column_value = column_value
 
         _check_nan(df, column_id, column_kind, self.column_value)
-        _check_colname(column_kind)
 
         if column_sort is not None:
             _check_nan(df, column_sort)
 
         self.column_sort = column_sort
         self.df_grouped = df.groupby([column_id, column_kind])
+
+        super().__init__(df, column_id)
 
     def __len__(self):
         return len(self.df_grouped)
@@ -185,7 +254,7 @@ class LongTsFrameAdapter(TsData):
             yield Timeseries(group_key[0], str(group_key[1]), group[self.column_value])
 
 
-class TsDictAdapter(TsData):
+class TsDictAdapter(PartitionedTsData):
     def __init__(self, ts_dict, column_id, column_value, column_sort=None):
         """
         Adapter for a dict, which maps different time series kinds to Pandas DataFrames.
@@ -202,7 +271,6 @@ class TsDictAdapter(TsData):
         :param column_sort: the name of the column to sort on
         :type column_sort: str|None
         """
-
         _check_colname(*list(ts_dict.keys()))
         for df in ts_dict.values():
             _check_nan(df, column_id, column_value)
@@ -218,6 +286,8 @@ class TsDictAdapter(TsData):
         else:
             self.grouped_dict = {key: df.groupby(column_id) for key, df in ts_dict.items()}
 
+        super().__init__(df, column_id)
+
     def __iter__(self):
         for kind, grouped_df in self.grouped_dict.items():
             for ts_id, group in grouped_df:
@@ -225,6 +295,91 @@ class TsDictAdapter(TsData):
 
     def __len__(self):
         return sum(grouped_df.ngroups for grouped_df in self.grouped_dict.values())
+
+
+class DaskTsAdapter(TsData):
+    def __init__(self, df, column_id, column_kind=None, column_value=None, column_sort=None):
+        if column_id is None:
+            raise ValueError("column_id must be set")
+
+        if column_id not in df.columns:
+            raise ValueError(f"Column not found: {column_id}")
+
+        # Get all columns, which are not id, kind or sort
+        possible_value_columns = _get_value_columns(df, column_id, column_sort, column_kind)
+
+        # The user has already a kind column. That means we just need to group by id (and additionally by id)
+        if column_kind is not None:
+            if column_kind not in df.columns:
+                raise ValueError(f"Column not found: {column_kind}")
+
+            self.df = df.groupby([column_id, column_kind])
+
+            # We assume the last remaining column is the value - but there needs to be one!
+            if column_value is None:
+                if len(possible_value_columns) != 1:
+                    raise ValueError("Could not guess the value column! Please hand it to the function as an argument.")
+                column_value = possible_value_columns[0]
+        else:
+            # Ok, the user has no kind, so it is in Wide format.
+            # That means we have do melt before we can group.
+            # TODO: here is some room for optimization!
+            # we could choose the same way as for the Wide and LongTsAdapter
+
+            # We first choose a name for our future kind column
+            column_kind = "kind"
+
+            # if the user has specified a value column, use it
+            # if not, just go with every remaining columns
+            if column_value is not None:
+                value_vars = [column_value]
+            else:
+                value_vars = possible_value_columns
+                column_value = "value"
+
+            _check_colname(*value_vars)
+
+            id_vars = [column_id, column_sort] if column_sort else [column_id]
+
+            # Now melt and group
+            df_melted = df.melt(id_vars=id_vars, value_vars=value_vars,
+                                var_name=column_kind, value_name=column_value)
+
+            self.df = df_melted.groupby([column_id, column_kind])
+
+        self.column_id = column_id
+        self.column_kind = column_kind
+        self.column_value = column_value
+        self.column_sort = column_sort
+
+    def apply(self, f, meta, **kwargs):
+        """
+        Apply the wrapped feature extraction function "f"
+        onto the data.
+        Before that, turn the data into the correct form of Timeseries instances
+        usable the the feature extraction.
+        After the call, turn it back into pandas dataframes
+        for further processing.
+        """
+        bound_function = _binding_helper(f, kwargs, self.column_sort, self.column_id,
+                                         self.column_kind, self.column_value)
+        return self.df.apply(bound_function, meta=meta)
+
+    def pivot(self, results):
+        """
+        The extract features function for dask returns a
+        dataframe of [id, variable, value].
+        Turn this into a pivoted dataframe, where only the variables are the columns
+        and the ids are the rows.
+
+        Attention: this is highly non-optimized!
+        """
+        results = results.reset_index(drop=True).persist()
+        results = results.categorize(columns=["variable"])
+        feature_table = results.pivot_table(index=self.column_id, columns="variable",
+                                            values="value", aggfunc="sum")
+
+        return feature_table
 
 
 def to_tsdata(df, column_id=None, column_kind=None, column_value=None, column_sort=None):
@@ -266,7 +421,6 @@ def to_tsdata(df, column_id=None, column_kind=None, column_value=None, column_so
     :return: a data adapter
     :rtype: TsData
     """
-
     if isinstance(df, TsData):
         return df
 
@@ -281,6 +435,9 @@ def to_tsdata(df, column_id=None, column_kind=None, column_value=None, column_so
 
     elif isinstance(df, dict):
         return TsDictAdapter(df, column_id, column_value, column_sort)
+
+    elif dd and isinstance(df, dd.DataFrame):
+        return DaskTsAdapter(df, column_id, column_kind, column_value, column_sort)
 
     else:
         raise ValueError("df must be a DataFrame or a dict of DataFrames. "

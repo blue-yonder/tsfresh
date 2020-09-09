@@ -2,9 +2,18 @@ import math
 
 import numpy as np
 import pandas as pd
+from dask import dataframe as dd
+from unittest import TestCase
+from unittest.mock import Mock
 
 from tests.fixtures import DataTestCase
-from tsfresh.feature_extraction.data import to_tsdata, LongTsFrameAdapter, WideTsFrameAdapter, TsDictAdapter
+from tsfresh.feature_extraction.data import (
+    to_tsdata,
+    LongTsFrameAdapter,
+    WideTsFrameAdapter,
+    TsDictAdapter,
+    PartitionedTsData
+)
 from tsfresh.utilities.distribution import MultiprocessingDistributor
 
 TEST_DATA_EXPECTED_TUPLES = \
@@ -135,6 +144,69 @@ class DataAdapterTestCase(DataTestCase):
                     ("b", 'v2', pd.Series([11], index=[2], name="v2"))]
         self.assert_data_chunk_object_equal(result, expected)
 
+    def test_dask_dataframe_with_kind(self):
+        test_df = dd.from_pandas(pd.DataFrame({
+            "id": [1, 2],
+            "kind": ["a", "a"],
+            "value": [1, 2]
+        }), npartitions=1)
+
+        result = to_tsdata(test_df, column_id="id", column_kind="kind")
+        self.assertEqual(result.column_id, "id")
+        self.assertEqual(result.column_kind, "kind")
+        self.assertEqual(result.column_value, "value")
+
+        def test_f(chunk):
+            return pd.DataFrame({"id": chunk[0], "variable": chunk[1], "value": chunk[2]})
+
+        return_f = result.apply(test_f, meta=(("id", "int"), ("variable", "int"), ("value", "int"))).compute()
+        pd.testing.assert_frame_equal(return_f, pd.DataFrame({
+            "id": [1, 2],
+            "variable": ["a", "a"],
+            "value": [1.0, 2.0]
+        }))
+
+    def test_dask_dataframe_without_kind(self):
+        test_df = dd.from_pandas(pd.DataFrame({
+            "id": [1, 2],
+            "value_a": [1, 2],
+            "value_b": [3, 4]
+        }), npartitions=1)
+
+        result = to_tsdata(test_df, column_id="id")
+        self.assertEqual(result.column_id, "id")
+
+        def test_f(chunk):
+            return pd.DataFrame({"id": chunk[0], "variable": chunk[1], "value": chunk[2]})
+
+        return_f = result.apply(test_f, meta=(("id", "int"), ("variable", "int"), ("value", "int"))).compute()
+        pd.testing.assert_frame_equal(return_f.reset_index(drop=True), pd.DataFrame({
+            "id": [1, 2, 1, 2],
+            "variable": ["value_a", "value_a", "value_b", "value_b"],
+            "value": [1.0, 2.0, 3.0, 4.0]
+        }))
+
+        test_df = dd.from_pandas(pd.DataFrame({
+            "id": [1, 1],
+            "sort": [2, 1],
+            "value_a": [1, 2],
+            "value_b": [3, 4]
+        }), npartitions=1)
+
+        result = to_tsdata(test_df, column_id="id", column_sort="sort")
+        self.assertEqual(result.column_id, "id")
+
+        def test_f(chunk):
+            return pd.DataFrame({"id": chunk[0], "variable": chunk[1], "value": chunk[2]})
+
+        return_f = result.apply(test_f, meta=(("id", "int"), ("variable", "int"), ("value", "int"))).compute()
+
+        pd.testing.assert_frame_equal(return_f.reset_index(drop=True), pd.DataFrame({
+            "id": [1, 1, 1, 1],
+            "variable": ["value_a", "value_a", "value_b", "value_b"],
+            "value": [2.0, 1.0, 4.0, 3.0]
+        }))
+
     def test_with_wrong_input(self):
         test_df = pd.DataFrame([{"id": 0, "kind": "a", "value": 3, "sort": np.NaN}])
         self.assertRaises(ValueError, to_tsdata, test_df,
@@ -143,12 +215,21 @@ class DataAdapterTestCase(DataTestCase):
         test_df = pd.DataFrame([{"id": 0, "kind": "a", "value": 3, "sort": 1}])
         self.assertRaises(ValueError, to_tsdata, test_df,
                           "strange_id", "kind", "value", "sort")
+        test_df = dd.from_pandas(test_df, npartitions=1)
+        self.assertRaises(ValueError, to_tsdata, test_df,
+                          "strange_id", "kind", "value", "sort")
 
         test_df = pd.DataFrame([{"id": 0, "kind": "a", "value": 3, "value_2": 1, "sort": 1}])
         self.assertRaises(ValueError, to_tsdata, test_df,
                           "strange_id", "kind", None, "sort")
+        test_df = dd.from_pandas(test_df, npartitions=1)
+        self.assertRaises(ValueError, to_tsdata, test_df,
+                          "strange_id", "kind", None, "sort")
 
         test_df = pd.DataFrame([{"id": 0, "kind": "a", "value": 3, "sort": 1}])
+        self.assertRaises(ValueError, to_tsdata, test_df,
+                          "id", "strange_kind", "value", "sort")
+        test_df = dd.from_pandas(test_df, npartitions=1)
         self.assertRaises(ValueError, to_tsdata, test_df,
                           "id", "strange_kind", "value", "sort")
 
@@ -161,12 +242,17 @@ class DataAdapterTestCase(DataTestCase):
                           "id", "kind", "value", "sort")
 
         test_df = pd.DataFrame([{"id": 2}, {"id": 1}])
+        test_dd = dd.from_pandas(test_df, npartitions=1)
         test_dict = {"a": test_df, "b": test_df}
 
         # column_id needs to be given
         self.assertRaises(ValueError, to_tsdata, test_df,
                           None, "a", "b", None)
+        self.assertRaises(ValueError, to_tsdata, test_dd,
+                          None, "a", "b", None)
         self.assertRaises(ValueError, to_tsdata, test_df,
+                          None, "a", "b", "a")
+        self.assertRaises(ValueError, to_tsdata, test_dd,
                           None, "a", "b", "a")
         self.assertRaises(ValueError, to_tsdata, test_dict,
                           None, "a", "b", None)
@@ -195,19 +281,84 @@ class DataAdapterTestCase(DataTestCase):
         test_df = pd.DataFrame([{"id": 0, "a_": 3, "b": 5, "sort": 1}])
         self.assertRaises(ValueError, to_tsdata, test_df,
                           "id", None, None, "sort")
+        test_df = dd.from_pandas(test_df, npartitions=1)
+        self.assertRaises(ValueError, to_tsdata, test_df,
+                          "id", None, None, "sort")
 
         test_df = pd.DataFrame([{"id": 0, "a__c": 3, "b": 5, "sort": 1}])
+        self.assertRaises(ValueError, to_tsdata, test_df,
+                          "id", None, None, "sort")
+        test_df = dd.from_pandas(test_df, npartitions=1)
         self.assertRaises(ValueError, to_tsdata, test_df,
                           "id", None, None, "sort")
 
         test_df = pd.DataFrame([{"id": 0}])
         self.assertRaises(ValueError, to_tsdata, test_df,
                           "id", None, None, None)
+        test_df = dd.from_pandas(test_df, npartitions=1)
+        self.assertRaises(ValueError, to_tsdata, test_df,
+                          "id", None, None, None)
 
         test_df = pd.DataFrame([{"id": 0, "sort": 0}])
+        self.assertRaises(ValueError, to_tsdata, test_df,
+                          "id", None, None, "sort")
+        test_df = dd.from_pandas(test_df, npartitions=1)
         self.assertRaises(ValueError, to_tsdata, test_df,
                           "id", None, None, "sort")
 
         test_df = [1, 2, 3]
         self.assertRaises(ValueError, to_tsdata, test_df,
                           "a", "b", "c", "d")
+
+
+class PivotListTestCase(TestCase):
+    def test_empty_list(self):
+        mock_ts_data = Mock()
+        mock_ts_data.df_id_type = str
+
+        return_df = PartitionedTsData.pivot(mock_ts_data, [])
+
+        self.assertEqual(len(return_df), 0)
+        self.assertEqual(len(return_df.index), 0)
+        self.assertEqual(len(return_df.columns), 0)
+
+    def test_different_input(self):
+        mock_ts_data = Mock()
+        mock_ts_data.df_id_type = str
+
+        input_list = [
+            ("a", "b", 1),
+            ("a", "c", 2),
+            ("A", "b", 3),
+            ("A", "c", 4),
+            ("X", "Y", 5),
+        ]
+        return_df = PartitionedTsData.pivot(mock_ts_data, input_list)
+
+        self.assertEqual(len(return_df), 3)
+        self.assertEqual(set(return_df.index), {"a", "A", "X"})
+        self.assertEqual(set(return_df.columns), {"b", "c", "Y"})
+
+        self.assertEqual(return_df.loc["a", "b"], 1)
+        self.assertEqual(return_df.loc["a", "c"], 2)
+        self.assertEqual(return_df.loc["A", "b"], 3)
+        self.assertEqual(return_df.loc["A", "c"], 4)
+        self.assertEqual(return_df.loc["X", "Y"], 5)
+
+    def test_long_input(self):
+        mock_ts_data = Mock()
+        mock_ts_data.df_id_type = str
+
+        input_list = []
+        for i in range(100):
+            for j in range(100):
+                input_list.append((i, j, i*j))
+
+        return_df = PartitionedTsData.pivot(mock_ts_data, input_list)
+
+        self.assertEqual(len(return_df), 100)
+        self.assertEqual(len(return_df.columns), 100)
+        # every cell should be filled
+        self.assertEqual(np.sum(np.sum(np.isnan(return_df))), 0)
+        # test if all entries are there
+        self.assertEqual(return_df.sum().sum(), 24502500)

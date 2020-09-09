@@ -19,7 +19,7 @@ References
 """
 
 from io import BytesIO
-from urllib.request import urlopen
+import requests
 from zipfile import ZipFile
 import pandas as pd
 import os
@@ -56,10 +56,13 @@ def download_har_dataset(folder_name=data_file_name):
 
     os.makedirs(folder_name, exist_ok=True)
 
-    with urlopen(zipurl) as zipresp:
-        with ZipFile(BytesIO(zipresp.read())) as zfile:
-            zfile.extractall(path=folder_name)
-        zfile.close()
+    r = requests.get(zipurl, stream=True)
+    if r.status_code != 200:
+        raise RuntimeError("Could not download the Human Activity Data Set from GitHub."
+                           "HTTP status code: {}".format(r.status_code))
+
+    with ZipFile(BytesIO(r.content)) as zfile:
+        zfile.extractall(path=folder_name)
 
 
 def load_har_dataset(folder_name=data_file_name):

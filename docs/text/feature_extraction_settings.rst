@@ -12,7 +12,7 @@ For the lazy: Just let me calculate some features
 -------------------------------------------------
 
 So, to just calculate a comprehensive set of features, call the :func:`tsfresh.extract_features` method without
-passing a `default_fc_parameters` or `kind_to_fc_parameters` object, which means you are using the default options
+passing a ``default_fc_parameters`` or ``kind_to_fc_parameters`` object, which means you are using the default options
 (which will use all feature calculators in this package for what we think are sane default parameters).
 
 For the advanced: How do I set the parameters for all kind of time series?
@@ -29,7 +29,7 @@ custom settings object:
 >>> from tsfresh.feature_extraction import extract_features
 >>> extract_features(df, default_fc_parameters=settings)
 
-The `default_fc_parameters` is expected to be a dictionary, which maps feature calculator names
+The ``default_fc_parameters`` is expected to be a dictionary, which maps feature calculator names
 (the function names you can find in the :mod:`tsfresh.feature_extraction.feature_calculators` file) to a list
 of dictionaries, which are the parameters with which the function will be called (as key value pairs). Each function
 parameter combination, that is in this dict will be called during the extraction and will produce a feature.
@@ -79,7 +79,7 @@ For the ambitious: How do I set the parameters for different type of time series
 It is also possible, to control the features to be extracted for the different kinds of time series individually.
 You can do so by passing another dictionary to the extract function as a
 
-`kind_to_fc_parameters` = {"kind" : `fc_parameters`}
+  kind_to_fc_parameters = {"kind" : fc_parameters}
 
 parameter. This dict must be a mapping from kind names (as string) to `fc_parameters` objects,
 which you would normally pass as an argument to the `default_fc_parameters` parameter.
@@ -90,10 +90,10 @@ So, for example using
 
     kind_to_fc_parameters = {
         "temperature": {"mean": None},
-        "pressure": {"max": None, "min": None}
+        "pressure": {"maximum": None, "minimum": None}
     }
 
-will extract the `"mean"` feature of the `"temperature"` time series and the `"min"` and `"max"` of the
+will extract the `"mean"` feature of the `"temperature"` time series and the `"minimum"` and `"maximum"` of the
 `"pressure"` time series.
 
 The `kind_to_fc_parameters` argument will partly override the `default_fc_parameters`. So, if you include a kind

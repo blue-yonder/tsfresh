@@ -5,9 +5,11 @@
 import numpy as np
 import unittest
 import pandas as pd
+import dask.dataframe as dd
 
 from tsfresh.examples.driftbif_simulation import velocity, load_driftbif, sample_tau
-from tsfresh import extract_relevant_features
+from tsfresh import extract_relevant_features, extract_features
+from tsfresh.feature_extraction import MinimalFCParameters
 
 
 class DriftBifSimlationTestCase(unittest.TestCase):

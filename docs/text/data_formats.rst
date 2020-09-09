@@ -10,14 +10,15 @@ tsfresh offers three different options to specify the time series data to be use
 Irrespective of the input format, tsfresh will always return the calculated features in the same output format
 described below.
 
-All three input format options consist of :class:`pandas.DataFrame` objects. There are four important column types that
+Typically, the input format options consist of :class:`pandas.DataFrame` objects.
+(see :ref:`large-data-label` for other input types)
+There are four important column types that
 make up those DataFrames. Each will be described with an example from the robot failures dataset
 (see :ref:`quick-start-label`).
 
 :`column_id`: This column indicates which entities the time series belong to. Features will be extracted individually
     for each entity (id). The resulting feature matrix will contain one row per id.
     Each robot is a different entity, so each of it has a different id.
-    After rolling, each window will be a distinct entity, so it has a distinct id.
 
 :`column_sort`: This column contains values which allow to sort the time series (e.g. time stamps).
     In general, it is not required to have equidistant time steps or the same time scale for the different ids and/or kinds.
@@ -43,12 +44,12 @@ In the following we describe the different input formats, that are build on thos
 * A dictionary of flat DataFrames
 
 The difference between a flat and a stacked DataFrame is indicated by specifying or not specifying the parameters
-`column_value` and `column_kind` in the :func:`tsfresh.extract_features` function.
+``column_value`` and ``column_kind`` in the :func:`tsfresh.extract_features` function.
 
 If you do not know which one to choose, you probably want to try out the flat or stacked DataFrame.
 
-Input Option 1. Flat DataFrame
-------------------------------
+Input Option 1. Flat DataFrame or Wide DataFrame
+------------------------------------------------
 
 If both ``column_value`` and ``column_kind`` are set to ``None``, the time series data is assumed to be in a flat
 DataFrame. This means that each different time series must be saved as its own column.
@@ -82,8 +83,8 @@ and you would pass
 to the extraction functions, to extract features separately for all ids and separately for the x and y values.
 You can also omit the ``column_kind=None, column_value=None`` as this is the default.
 
-Input Option 2. Stacked DataFrame
----------------------------------
+Input Option 2. Stacked DataFrame or Long DataFrame
+---------------------------------------------------
 
 If both ``column_value`` and ``column_kind`` are set, the time series data is assumed to be a stacked DataFrame.
 This means that there are no different columns for the different types of time series.
@@ -128,6 +129,7 @@ Then you would set
     column_id="id", column_sort="time", column_kind="kind", column_value="value"
 
 to end up with the same extracted features as above.
+You can also omit the value column and let ``tsfresh`` can deduce it automatically.
 
 
 Input Option 3. Dictionary of flat DataFrames
