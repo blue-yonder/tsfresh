@@ -9,6 +9,8 @@ import pandas as pd
 from pandas.testing import assert_frame_equal, assert_series_equal
 
 from tsfresh.utilities import dataframe_functions
+from tsfresh import extract_relevant_features
+from tsfresh.feature_extraction.settings import MinimalFCParameters
 from tests.fixtures import warning_free
 
 
@@ -786,7 +788,7 @@ class MakeForecastingFrameTestCase(TestCase):
                                     "value": [0, 1, 2],
                                     "time": [0, 1, 2]})
 
-        expected_y = pd.Series(data=[1, 2, 3], index=[1, 2, 3], name="value")
+        expected_y = pd.Series(data=[1, 2, 3], index=[("id", 1), ("id", 2), ("id", 3)], name="value")
         assert_frame_equal(df.sort_index(axis=1).reset_index(drop=True), expected_df.sort_index(axis=1))
         assert_series_equal(y, expected_y)
 
@@ -797,7 +799,9 @@ class MakeForecastingFrameTestCase(TestCase):
                                     "kind": ["test"] * 3,
                                     "value": np.arange(3),
                                     "time": [0, 1, 2]})
+        expected_y = pd.Series(data=[1, 2, 3], index=[("id", 1), ("id", 2), ("id", 3)], name="value")
         assert_frame_equal(df.sort_index(axis=1).reset_index(drop=True), expected_df.sort_index(axis=1))
+        assert_series_equal(y, expected_y)
 
     def test_make_forecasting_frame_pdSeries(self):
 
@@ -805,8 +809,8 @@ class MakeForecastingFrameTestCase(TestCase):
         df, y = dataframe_functions.make_forecasting_frame(x=pd.Series(data=range(4), index=t_index),
                                                            kind="test", max_timeshift=1, rolling_direction=1)
 
-        expected_y = pd.Series(data=[1, 2, 3], index=pd.DatetimeIndex(["2011-01-01 01:00:00", "2011-01-01 02:00:00",
-                                                                       "2011-01-01 03:00:00"], freq="H"), name="value")
+        expected_y = pd.Series(data=[1, 2, 3], index=zip(["id"]*3, pd.DatetimeIndex(["2011-01-01 01:00:00", "2011-01-01 02:00:00",
+                                                                       "2011-01-01 03:00:00"], freq="H")), name="value")
         expected_df = pd.DataFrame({"id": list(zip(["id"] * 3, pd.DatetimeIndex(["2011-01-01 01:00:00",
                                                                                  "2011-01-01 02:00:00",
                                                                                  "2011-01-01 03:00:00"]))),
@@ -816,6 +820,13 @@ class MakeForecastingFrameTestCase(TestCase):
                                     })
         assert_frame_equal(df.sort_index(axis=1).reset_index(drop=True), expected_df.sort_index(axis=1))
         assert_series_equal(y, expected_y)
+
+    def test_make_forecasting_frame_feature_extraction(self):
+        t_index = pd.date_range('1/1/2011', periods=4, freq='H')
+        df, y = dataframe_functions.make_forecasting_frame(x=pd.Series(data=range(4), index=t_index),
+                                                           kind="test", max_timeshift=1, rolling_direction=1)
+
+        extract_relevant_features(df, y, column_id="id", column_sort="time", column_value="value", default_fc_parameters=MinimalFCParameters())
 
 
 class GetIDsTestCase(TestCase):
