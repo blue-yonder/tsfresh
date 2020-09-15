@@ -559,7 +559,16 @@ def make_forecasting_frame(x, kind, max_timeshift, rolling_direction):
     mask = df_shift.groupby(['id'])['id'].transform(mask_first).astype(bool)
     df_shift = df_shift[mask]
 
-    return df_shift, df["value"][1:]
+    # Now create the target vector out of the values
+    # of the input series - not including the first one
+    # (as there is nothing to forecast from)
+    y = df["value"][1:]
+
+    # make sure that the format is the same as the
+    # df_shift index
+    y.index = map(lambda x: ("id", x), y.index)
+
+    return df_shift, y
 
 
 def add_sub_time_series_index(df_or_dict, sub_length, column_id=None, column_sort=None, column_kind=None):

@@ -9,6 +9,7 @@ Unreleased
 
 - Bugfixes:
     - Fix typos in notebook (#757)
+    - Fix output format of `make_forecasting_frame` (#758)
 
 Version 0.17.0
 ==============
