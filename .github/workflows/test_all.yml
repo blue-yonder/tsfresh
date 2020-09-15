@@ -50,6 +50,3 @@ jobs:
         path: junit/test-results.xml
       # Use always() to always run this step to publish test results when there are test failures
       if: ${{ always() }}
-
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v1
