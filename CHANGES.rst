@@ -8,6 +8,7 @@ Unreleased
 ==========
 
 - Bugfixes:
+    - Do not send coverage of notebook tests to codecov #759
     - Fix typos in notebook (#757)
     - Fix output format of `make_forecasting_frame` (#758)
 
