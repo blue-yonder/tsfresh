@@ -4,6 +4,12 @@ Changelog
 
 tsfresh uses `Semantic Versioning <http://semver.org/>`_
 
+Unreleased
+==========
+
+- Bugfixes:
+    - Fix output format of `make_forecasting_frame` (#758)
+
 Version 0.17.0
 ==============
 
