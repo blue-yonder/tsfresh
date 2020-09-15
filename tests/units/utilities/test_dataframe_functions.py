@@ -809,8 +809,8 @@ class MakeForecastingFrameTestCase(TestCase):
         df, y = dataframe_functions.make_forecasting_frame(x=pd.Series(data=range(4), index=t_index),
                                                            kind="test", max_timeshift=1, rolling_direction=1)
 
-        expected_y = pd.Series(data=[1, 2, 3], index=zip(["id"]*3, pd.DatetimeIndex(["2011-01-01 01:00:00", "2011-01-01 02:00:00",
-                                                                       "2011-01-01 03:00:00"], freq="H")), name="value")
+        time_shifts = pd.DatetimeIndex(["2011-01-01 01:00:00", "2011-01-01 02:00:00", "2011-01-01 03:00:00"], freq="H")
+        expected_y = pd.Series(data=[1, 2, 3], index=zip(["id"]*3, time_shifts), name="value")
         expected_df = pd.DataFrame({"id": list(zip(["id"] * 3, pd.DatetimeIndex(["2011-01-01 01:00:00",
                                                                                  "2011-01-01 02:00:00",
                                                                                  "2011-01-01 03:00:00"]))),
@@ -826,7 +826,8 @@ class MakeForecastingFrameTestCase(TestCase):
         df, y = dataframe_functions.make_forecasting_frame(x=pd.Series(data=range(4), index=t_index),
                                                            kind="test", max_timeshift=1, rolling_direction=1)
 
-        extract_relevant_features(df, y, column_id="id", column_sort="time", column_value="value", default_fc_parameters=MinimalFCParameters())
+        extract_relevant_features(df, y, column_id="id", column_sort="time", column_value="value",
+                                  default_fc_parameters=MinimalFCParameters())
 
 
 class GetIDsTestCase(TestCase):
