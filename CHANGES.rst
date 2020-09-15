@@ -8,6 +8,7 @@ Unreleased
 ==========
 
 - Bugfixes:
+    - Do not send coverage of notebook tests to codecov #759
     - Fix typos in notebook (#757)
 
 Version 0.17.0
