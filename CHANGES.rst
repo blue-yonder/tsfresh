@@ -4,6 +4,12 @@ Changelog
 
 tsfresh uses `Semantic Versioning <http://semver.org/>`_
 
+Unreleased
+==========
+
+- Bugfixes:
+    - Fix typos in notebook (#757)
+
 Version 0.17.0
 ==============
 
