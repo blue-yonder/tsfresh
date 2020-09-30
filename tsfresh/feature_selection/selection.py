@@ -19,7 +19,7 @@ def select_features(X, y, test_for_binary_target_binary_feature=defaults.TEST_FO
                     test_for_real_target_real_feature=defaults.TEST_FOR_REAL_TARGET_REAL_FEATURE,
                     fdr_level=defaults.FDR_LEVEL, hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
                     n_jobs=defaults.N_PROCESSES, show_warnings=defaults.SHOW_WARNINGS,
-                    chunksize=defaults.CHUNKSIZE, ml_task='auto'):
+                    chunksize=defaults.CHUNKSIZE, ml_task='auto', multiclass=False, n_significant=1):
     """
     Check the significance of all features (columns) of feature matrix X and return a possibly reduced feature matrix
     only containing relevant features.
@@ -119,6 +119,15 @@ def select_features(X, y, test_for_binary_target_binary_feature=defaults.TEST_FO
                     If `y` has a boolean, integer or object dtype, the task is assumend to be classification,
                     else regression.
     :type ml_task: str
+    
+    :param multiclass: Whether the problem is multiclass classification. This modifies the way in which features
+                       are selected. Multiclass requires the features to be statistically significant for 
+                       predicting n_significant features.
+    :type multiclass: bool
+    
+    :param n_significant: The number of classes for which features should be statistically significant predictors
+                          to be regarded as 'relevant'. Only specify when multiclass=True
+    :type n_significant: int
 
     :return: The same DataFrame as X, but possibly with reduced number of columns ( = features).
     :rtype: pandas.DataFrame
@@ -141,7 +150,8 @@ def select_features(X, y, test_for_binary_target_binary_feature=defaults.TEST_FO
         y = pd.Series(y, index=X.index)
 
     relevance_table = calculate_relevance_table(
-        X, y, ml_task=ml_task, n_jobs=n_jobs, show_warnings=show_warnings, chunksize=chunksize,
+        X, y, ml_task=ml_task, multiclass=multiclass, n_significant=n_significant,
+        n_jobs=n_jobs, show_warnings=show_warnings, chunksize=chunksize,
         test_for_binary_target_real_feature=test_for_binary_target_real_feature,
         fdr_level=fdr_level, hypotheses_independent=hypotheses_independent,
     )

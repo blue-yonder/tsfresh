@@ -24,7 +24,7 @@ from tsfresh.feature_selection.significance_tests import target_binary_feature_r
 from tsfresh.utilities.distribution import initialize_warnings_in_workers
 
 
-def calculate_relevance_table(X, y, ml_task='auto', n_jobs=defaults.N_PROCESSES,
+def calculate_relevance_table(X, y, ml_task='auto', multiclass=False, n_significant = 1, n_jobs=defaults.N_PROCESSES,
                               show_warnings=defaults.SHOW_WARNINGS, chunksize=defaults.CHUNKSIZE,
                               test_for_binary_target_binary_feature=defaults.TEST_FOR_BINARY_TARGET_BINARY_FEATURE,
                               test_for_binary_target_real_feature=defaults.TEST_FOR_BINARY_TARGET_REAL_FEATURE,
@@ -83,6 +83,15 @@ def calculate_relevance_table(X, y, ml_task='auto', n_jobs=defaults.N_PROCESSES,
                     If `y` has a boolean, integer or object dtype, the task is assumend to be classification,
                     else regression.
     :type ml_task: str
+    
+    :param multiclass: Whether the problem is multiclass classification. This modifies the way in which features
+                       are selected. Multiclass requires the features to be statistically significant for 
+                       predicting n_significant features.
+    :type multiclass: bool
+    
+    :param n_significant: The number of classes for which features should be statistically significant predictors
+                          to be regarded as 'relevant'
+    :type n_significant: int
 
     :param test_for_binary_target_binary_feature: Which test to be used for binary target, binary feature
                                                   (currently unused)
@@ -142,6 +151,14 @@ def calculate_relevance_table(X, y, ml_task='auto', n_jobs=defaults.N_PROCESSES,
         raise ValueError('ml_task must be one of: \'auto\', \'classification\', \'regression\'')
     elif ml_task == 'auto':
         ml_task = infer_ml_task(y)
+        
+    if multiclass:
+        if ml_task != 'classification':
+            raise ValueError('ml_task must be classification for multiclass problem')
+        if len(y.unique()) < n_significant:
+            raise ValueError('n_significant must not exceed the total number of classes')
+        if len(y.unique()) <= 2:
+            warnings.warn("Two or fewer classes, binary feature selection should be used (multiclass = False)")
 
     with warnings.catch_warnings():
         if not show_warnings:
@@ -189,8 +206,22 @@ def calculate_relevance_table(X, y, ml_task='auto', n_jobs=defaults.N_PROCESSES,
                     table_real, table_binary, X, _test_real_feature, _test_binary_feature, hypotheses_independent,
                     fdr_level, map_function
                 )
+                if multiclass:
+                    tmp = tmp.reset_index(drop=True)
+                    tmp.columns = tmp.columns.map(lambda x : x+'_'+str(label) if x !='feature'\
+                                                  and x!='type' else x)
                 tables.append(tmp)
-            relevance_table = combine_relevance_tables(tables)
+                
+            if multiclass:
+                relevance_table = reduce(lambda  left,right: pd.merge(left,right,on=['feature','type'],
+                                                how='outer'), tables)
+                relevance_table['n_significant'] = relevance_table.filter(regex='^relevant_', axis=1).sum(axis=1)
+                relevance_table['relevant'] = np.where(relevance_table['n_significant'] >= n_significant,\
+                                                       True, False)
+                relevance_table.index = relevance_table['feature']
+            else:
+                relevance_table = combine_relevance_tables(tables)
+                
         elif ml_task == 'regression':
             _test_real_feature = partial(target_real_feature_real_test, y=y)
             _test_binary_feature = partial(target_real_feature_binary_test, y=y)

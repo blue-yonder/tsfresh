@@ -106,6 +106,20 @@ class TestCalculateRelevanceTable:
                 "No feature was found relevant for regression for fdr level = 0.05 (which corresponds "
                 "to the maximal percentage of irrelevant features, consider using an higher fdr level "
                 "or add other features.")
+    
+    def test_warning_for_multiclass_binary_y(self, X, y_binary):
+         with pytest.warns(RuntimeWarning) as record:
+            _ = calculate_relevance_table(X, y_binary, multiclass=True, n_significant=1, show_warnings=True)
+            assert str(record[0].message) == (
+                "Two or fewer classes, binary feature selection should be used (multiclass = False)") 
+    
+    def test_multiclass_requires_classification(self, X, y_real):
+        with pytest.raises(ValueError):
+            calculate_relevance_table(X, y_real, multiclass=True, ml_task='regression')
+            
+    def test_multiclass_n_significant(self, X, y_binary):
+        with pytest.raises(ValueError):
+            calculate_relevance_table(X, y_binary, multiclass=True, n_significant=3 ,ml_task='classification')
 
 
 class TestCombineRelevanceTables:
