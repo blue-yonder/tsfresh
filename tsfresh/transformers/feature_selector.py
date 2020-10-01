@@ -174,6 +174,8 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
             if self.multiclass_p_values == 'all':
                 self.p_values = p_values_table
                 self.feature_importances_ = 1.0 - p_values_table
+                self.feature_importances_.columns = self.feature_importances_.columns.str.lstrip('p_value')
+                self.feature_importances_ = self.feature_importances_.add_prefix('importance_')
             elif self.multiclass_p_values == 'min':
                 self.p_values = p_values_table.min(axis=1).values
             elif self.multiclass_p_values == 'max':

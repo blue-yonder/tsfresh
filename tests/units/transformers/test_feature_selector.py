@@ -128,3 +128,43 @@ class FeatureSelectorTestCase(TestCase):
         self.assertEqual(selector.p_values.shape, (2,))
         np.testing.assert_almost_equal(selector.p_values,
                                        1.0 - selector.feature_importances_)
+        
+    def test_multiclass_relevant_features_selected(self):
+        y0 = np.zeros(100)
+        y1 = np.repeat(1,100)
+        y2 = np.repeat(2,100)
+        y_multi =  pd.Series(np.uint8(np.concatenate([y0,y1,y2])))
+        X_multi = pd.DataFrame()
+        X_multi['irr_0'] = np.concatenate([np.zeros(298), np.array([0.01,-0.01])])
+        X_multi['relevant_3'] = X_multi['irr_0'].copy()
+        X_multi['relevant_3'][y_multi == 0] = np.random.uniform(2,3,100)
+        X_multi['relevant_2'] = X_multi['relevant_3'].copy()
+        X_multi['relevant_2'][y_multi == 1] = np.random.uniform(-2,-1,100)
+        
+        selector = FeatureSelector(multiclass=True, n_significant=3, ml_task="classification")
+        
+        selector.fit(X_multi, y_multi)
+        
+        self.assertEqual(selector.relevant_features, ["relevant_3"])
+        
+    def test_multiclass_importance_p_values(self):
+        y0 = np.zeros(100)
+        y1 = np.repeat(1,100)
+        y2 = np.repeat(2,100)
+        y =  pd.Series(np.uint8(np.concatenate([y0,y1,y2])))
+        X = pd.DataFrame(index=list(range(300)))
+
+        X["irr1"] = np.random.normal(0, 1, 300)
+        X["rel1"] = y
+
+        selector = FeatureSelector(multiclass=True, ml_task="classification", n_significant=2, multiclass_p_values="all")
+        selector.fit(X, y)
+        
+        self.assertEqual(selector.p_values.shape, (2,3))
+        self.assertEqual(selector.feature_importances_.shape, (2,3))
+        
+        selector = FeatureSelector(multiclass=True, ml_task="classification", n_significant=2, multiclass_p_values="min")
+        selector.fit(X, y)
+        
+        self.assertEqual(selector.p_values.shape, (2,))
+        self.assertEqual(selector.feature_importances_.shape, (2,))
