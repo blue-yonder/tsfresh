@@ -38,6 +38,13 @@ class TestCalculateRelevanceTable:
     @pytest.fixture()
     def y_real(self):
         return pd.Series([0.1, 0.2, 0.1])
+    
+    @pytest.fixture()
+    def y_multi(self):
+        y0 = np.zeros(100)
+        y1 = np.repeat(1,100)
+        y2 = np.repeat(2,100)
+        return pd.Series(np.uint8(np.concatenate([y0,y1,y2])))
 
     @pytest.fixture()
     def X(self):
@@ -114,12 +121,35 @@ class TestCalculateRelevanceTable:
                 "Two or fewer classes, binary feature selection should be used (multiclass = False)") 
     
     def test_multiclass_requires_classification(self, X, y_real):
-        with pytest.raises(ValueError):
+        with pytest.raises(AssertionError):
             calculate_relevance_table(X, y_real, multiclass=True, ml_task='regression')
             
-    def test_multiclass_n_significant(self, X, y_binary):
-        with pytest.raises(ValueError):
+    def test_multiclass_n_significant_error(self, X, y_binary):
+        with pytest.raises(AssertionError):
             calculate_relevance_table(X, y_binary, multiclass=True, n_significant=3 ,ml_task='classification')
+            
+    def test_multiclass_relevance_table_columns(self, X, y_binary):      
+        y = y_binary.copy()
+        y[2] = 2
+        relevance_table = calculate_relevance_table(X, y, multiclass=True)
+        
+        assert len(relevance_table.columns) == 10
+    
+    def test_multiclass_correct_features_relevant(self, y_multi):
+        X_multi = pd.DataFrame()
+        X_multi['relevant_0'] = np.concatenate([np.zeros(298), np.array([0.01,-0.01])])
+        X_multi['relevant_3'] = X_multi['relevant_0'].copy()
+        X_multi['relevant_3'][y_multi == 0] = np.random.uniform(2,3,100)
+        X_multi['relevant_2'] = X_multi['relevant_3'].copy()
+        X_multi['relevant_2'][y_multi == 1] = np.random.uniform(-2,-1,100)
+        
+        relevance_table = calculate_relevance_table(X_multi, y_multi, multiclass=True, ml_task="classification", n_significant=3)
+        assert relevance_table.loc['relevant_3','relevant']
+        assert not relevance_table.loc['relevant_2','relevant']
+        assert not relevance_table.loc['relevant_0','relevant']
+        assert relevance_table.loc['relevant_3', 'n_significant'] == 3
+        assert relevance_table.loc['relevant_2', 'n_significant'] == 2
+        assert relevance_table.loc['relevant_0', 'n_significant'] == 0
 
 
 class TestCombineRelevanceTables:

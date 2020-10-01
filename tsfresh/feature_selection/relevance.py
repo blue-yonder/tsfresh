@@ -153,10 +153,9 @@ def calculate_relevance_table(X, y, ml_task='auto', multiclass=False, n_signific
         ml_task = infer_ml_task(y)
         
     if multiclass:
-        if ml_task != 'classification':
-            raise ValueError('ml_task must be classification for multiclass problem')
-        if len(y.unique()) < n_significant:
-            raise ValueError('n_significant must not exceed the total number of classes')
+        assert ml_task == 'classification', 'ml_task must be classification for multiclass problem'
+        assert len(y.unique()) >= n_significant, 'n_significant must not exceed the total number of classes'
+        
         if len(y.unique()) <= 2:
             warnings.warn("Two or fewer classes, binary feature selection should be used (multiclass = False)")
 
@@ -235,6 +234,12 @@ def calculate_relevance_table(X, y, ml_task='auto', multiclass=False, n_signific
             pool.terminate()
             pool.join()
 
+        if multiclass:
+            for column in relevance_table.filter(regex="^relevant_", axis=1).columns:
+                table_const[column] = False
+            table_const['n_significant'] = 0
+            table_const.drop(columns=['p_value'], inplace=True)
+        
         relevance_table = pd.concat([relevance_table, table_const], axis=0)
 
         if sum(relevance_table['relevant']) == 0:

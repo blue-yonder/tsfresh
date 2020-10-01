@@ -20,11 +20,14 @@ with open("requirements.txt") as f:
 needs_sphinx = {"build_sphinx", "upload_docs"}.intersection(sys.argv)
 sphinx = ["sphinx", "sphinx_rtd_theme"] if needs_sphinx else []
 
-setup(
-    use_scm_version=True,
-    long_description=long_description,
-    long_description_content_type="text/markdown",
-    setup_requires=["setuptools_scm"] + sphinx,
-    packages=find_packages(exclude=["tests.*", "tests"]),
-    install_requires=requirements,
-)
+try:
+    setup(
+        use_scm_version=True,
+        long_description=long_description,
+        long_description_content_type="text/markdown",
+        setup_requires=["setuptools_scm"] + sphinx,
+        packages=find_packages(exclude=["tests.*", "tests"]),
+        install_requires=requirements,
+    )
+except FileExistsError:
+    pass 
