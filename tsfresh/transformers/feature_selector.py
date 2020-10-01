@@ -104,7 +104,7 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
         
         :param multiclass: Whether the problem is multiclass classification. This modifies the way in which features
                        are selected. Multiclass requires the features to be statistically significant for 
-                       predicting n_significant features.
+                       predicting n_significant classes.
         :type multiclass: bool
         
         :param n_significant: The number of classes for which features should be statistically significant predictors
