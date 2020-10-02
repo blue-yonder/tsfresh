@@ -57,13 +57,21 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
     ``relevant_features`` after the fit.
     """
 
-    def __init__(self, test_for_binary_target_binary_feature=defaults.TEST_FOR_BINARY_TARGET_BINARY_FEATURE,
-                 test_for_binary_target_real_feature=defaults.TEST_FOR_BINARY_TARGET_REAL_FEATURE,
-                 test_for_real_target_binary_feature=defaults.TEST_FOR_REAL_TARGET_BINARY_FEATURE,
-                 test_for_real_target_real_feature=defaults.TEST_FOR_REAL_TARGET_REAL_FEATURE,
-                 fdr_level=defaults.FDR_LEVEL, hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
-                 n_jobs=defaults.N_PROCESSES, chunksize=defaults.CHUNKSIZE, ml_task='auto', multiclass=False,
-                 n_significant=1, multiclass_p_values='min'):
+    def __init__(
+        self,
+        test_for_binary_target_binary_feature=defaults.TEST_FOR_BINARY_TARGET_BINARY_FEATURE,
+        test_for_binary_target_real_feature=defaults.TEST_FOR_BINARY_TARGET_REAL_FEATURE,
+        test_for_real_target_binary_feature=defaults.TEST_FOR_REAL_TARGET_BINARY_FEATURE,
+        test_for_real_target_real_feature=defaults.TEST_FOR_REAL_TARGET_REAL_FEATURE,
+        fdr_level=defaults.FDR_LEVEL,
+        hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
+        n_jobs=defaults.N_PROCESSES,
+        chunksize=defaults.CHUNKSIZE,
+        ml_task="auto",
+        multiclass=False,
+        n_significant=1,
+        multiclass_p_values="min",
+    ):
         """
         Create a new FeatureSelector instance.
 
@@ -101,17 +109,17 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
                     If `y` has a boolean, integer or object dtype, the task is assumend to be classification,
                     else regression.
         :type ml_task: str
-        
+
         :param multiclass: Whether the problem is multiclass classification. This modifies the way in which features
-                       are selected. Multiclass requires the features to be statistically significant for 
+                       are selected. Multiclass requires the features to be statistically significant for
                        predicting n_significant classes.
         :type multiclass: bool
-        
+
         :param n_significant: The number of classes for which features should be statistically significant predictors
                             to be regarded as 'relevant'
         :type n_significant: int
-        
-        :param multiclass_p_values: The desired method for choosing how to display multiclass p-values for each feature. 
+
+        :param multiclass_p_values: The desired method for choosing how to display multiclass p-values for each feature.
                                     Either `'avg'`, `'max'`, `'min'`, `'all'`. Defaults to `'min'`, meaning the p-value
                                     with the highest significance is chosen. When set to `'all'`, the attributes
                                     `self.feature_importances_` and `self.p_values` are of type pandas.DataFrame, where
@@ -123,7 +131,9 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
         self.p_values = None
         self.features = None
 
-        self.test_for_binary_target_binary_feature = test_for_binary_target_binary_feature
+        self.test_for_binary_target_binary_feature = (
+            test_for_binary_target_binary_feature
+        )
         self.test_for_binary_target_real_feature = test_for_binary_target_real_feature
         self.test_for_real_target_binary_feature = test_for_real_target_binary_feature
         self.test_for_real_target_real_feature = test_for_real_target_real_feature
@@ -162,33 +172,47 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
             y = pd.Series(y.copy())
 
         relevance_table = calculate_relevance_table(
-            X, y, ml_task=self.ml_task, multiclass=self.multiclass, n_significant=self.n_significant,
+            X,
+            y,
+            ml_task=self.ml_task,
+            multiclass=self.multiclass,
+            n_significant=self.n_significant,
             n_jobs=self.n_jobs,
-            chunksize=self.chunksize, fdr_level=self.fdr_level,
+            chunksize=self.chunksize,
+            fdr_level=self.fdr_level,
             hypotheses_independent=self.hypotheses_independent,
-            test_for_binary_target_real_feature=self.test_for_binary_target_real_feature)
-        self.relevant_features = relevance_table.loc[relevance_table.relevant].feature.tolist()
-        
+            test_for_binary_target_real_feature=self.test_for_binary_target_real_feature,
+        )
+        self.relevant_features = relevance_table.loc[
+            relevance_table.relevant
+        ].feature.tolist()
+
         if self.multiclass:
-            p_values_table = relevance_table.filter(regex='^p_value_*', axis=1)
-            if self.multiclass_p_values == 'all':
+            p_values_table = relevance_table.filter(regex="^p_value_*", axis=1)
+            if self.multiclass_p_values == "all":
                 self.p_values = p_values_table
                 self.feature_importances_ = 1.0 - p_values_table
-                self.feature_importances_.columns = self.feature_importances_.columns.str.lstrip('p_value')
-                self.feature_importances_ = self.feature_importances_.add_prefix('importance_')
-            elif self.multiclass_p_values == 'min':
+                self.feature_importances_.columns = (
+                    self.feature_importances_.columns.str.lstrip("p_value")
+                )
+                self.feature_importances_ = self.feature_importances_.add_prefix(
+                    "importance_"
+                )
+            elif self.multiclass_p_values == "min":
                 self.p_values = p_values_table.min(axis=1).values
-            elif self.multiclass_p_values == 'max':
+            elif self.multiclass_p_values == "max":
                 self.p_values = p_values_table.max(axis=1).values
-            elif self.multiclass_p_values == 'avg':
+            elif self.multiclass_p_values == "avg":
                 self.p_values = p_values_table.mean(axis=1).values
-            
-            if self.multiclass_p_values != 'all':
-                self.feature_importances_ = 1.0 - self.p_values**relevance_table.n_significant.values      
+
+            if self.multiclass_p_values != "all":
+                self.feature_importances_ = (
+                    1.0 - self.p_values ** relevance_table.n_significant.values
+                )
         else:
             self.feature_importances_ = 1.0 - relevance_table.p_value.values
             self.p_values = relevance_table.p_value.values
-            
+
         self.features = relevance_table.index.tolist()
 
         return self

@@ -46,26 +46,40 @@ class TestSelectFeatures:
 
     def test_selects_for_each_class(self):
         df = pd.DataFrame()
-        df['f1'] = [10] * 10 + list(range(10)) + list(range(10))
-        df['f2'] = list(range(10)) + [10] * 10 + list(range(10))
-        df['f3'] = list(range(10)) + list(range(10)) + [10] * 10
-        df['y'] = [0] * 10 + [1] * 10 + [2] * 10
+        df["f1"] = [10] * 10 + list(range(10)) + list(range(10))
+        df["f2"] = list(range(10)) + [10] * 10 + list(range(10))
+        df["f3"] = list(range(10)) + list(range(10)) + [10] * 10
+        df["y"] = [0] * 10 + [1] * 10 + [2] * 10
 
         y = df.y
-        X = df.drop(['y'], axis=1)
-        X_relevant = select_features(X, y, ml_task='classification')
-        assert {'f1', 'f2', 'f3'} == set(X_relevant.columns)
-        
+        X = df.drop(["y"], axis=1)
+        X_relevant = select_features(X, y, ml_task="classification")
+        assert {"f1", "f2", "f3"} == set(X_relevant.columns)
+
     def test_multiclass_selects_correct_n_significant(self):
         df = pd.DataFrame()
-        df['f1'] = [10] * 10 + list(range(10)) + list(range(10))
-        df['f2'] = list(range(10)) + [10] * 10 + list(range(10))
-        df['f3'] = list(range(10)) + list(range(10)) + [10] * 10
-        df['y'] = [0] * 10 + [1] * 10 + [2] * 10
+        df["f1"] = [10] * 10 + list(range(10)) + list(range(10))
+        df["f2"] = list(range(10)) + [10] * 10 + list(range(10))
+        df["f3"] = list(range(10)) + list(range(10)) + [10] * 10
+        df["y"] = [0] * 10 + [1] * 10 + [2] * 10
 
         y = df.y
-        X = df.drop(['y'], axis=1)
-        X_relevant = select_features(X, y, ml_task='classification', multiclass=True, n_significant=1, fdr_level=0.01)
-        assert {'f1', 'f2', 'f3'} == set(X_relevant.columns)
-        X_relevant = select_features(X, y, ml_task='classification', multiclass=True, n_significant=3, fdr_level=0.01)
+        X = df.drop(["y"], axis=1)
+        X_relevant = select_features(
+            X,
+            y,
+            ml_task="classification",
+            multiclass=True,
+            n_significant=1,
+            fdr_level=0.01,
+        )
+        assert {"f1", "f2", "f3"} == set(X_relevant.columns)
+        X_relevant = select_features(
+            X,
+            y,
+            ml_task="classification",
+            multiclass=True,
+            n_significant=3,
+            fdr_level=0.01,
+        )
         assert len(X_relevant.columns) == 0
