@@ -42,3 +42,5 @@ def test_benchmark_with_selection(benchmark):
 
     benchmark(extract_relevant_features, df, y, column_id="id", column_sort="time", n_jobs=0,
               disable_progressbar=True)
+
+# def test_benchmark_only_one_function(benchmark):
