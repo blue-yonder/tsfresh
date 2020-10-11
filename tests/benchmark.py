@@ -2,6 +2,7 @@
 import pytest
 import pandas as pd
 import numpy as np
+from functools import partial
 
 from tsfresh import extract_features, extract_relevant_features
 from tsfresh.feature_extraction.settings import ComprehensiveFCParameters, MinimalFCParameters
@@ -43,4 +44,54 @@ def test_benchmark_with_selection(benchmark):
     benchmark(extract_relevant_features, df, y, column_id="id", column_sort="time", n_jobs=0,
               disable_progressbar=True)
 
-# def test_benchmark_only_one_function(benchmark):
+def test_optimized_energy_ratio_by_chunks(benchmark):
+    fc_parameters = {
+        "optimized_energy_ratio_by_chunks": [{"num_segments": 5, "segment_focus": 2},
+                                 {"num_segments": 7, "segment_focus": 3}
+                                    ]
+    }
+    extract_features_partial = partial(extract_features, default_fc_parameters=fc_parameters)
+    df = create_data(40000, 30)
+
+    benchmark(extract_features_partial, df, column_id="id", column_sort="time", n_jobs=0,
+              disable_progressbar=True)
+
+def test_energy_ratio_by_chunks(benchmark):
+    fc_parameters = {
+        "energy_ratio_by_chunks": [{"num_segments": 5, "segment_focus": 2},
+                                 {"num_segments": 7, "segment_focus": 3}
+                                    ]
+    }
+    extract_features_partial = partial(extract_features, default_fc_parameters=fc_parameters)
+    df = create_data(40000, 30)
+
+    benchmark(extract_features_partial, df, column_id="id", column_sort="time", n_jobs=0,
+              disable_progressbar=True)
+
+def test_energy_ratio_by_chunks_similarity():
+
+    fc_parameters = {
+                        "energy_ratio_by_chunks": [{"num_segments": 5, "segment_focus": 2},
+                                                   {"num_segments": 7, "segment_focus": 3}
+                                                  ]
+                    }
+
+    df = create_data(40000, 30)
+
+    resnon_opti = extract_features(df, column_id="id", column_sort="time", n_jobs=0,
+                                    disable_progressbar=True, default_fc_parameters=fc_parameters)
+                                
+    fc_parameters = {
+        "optimized_energy_ratio_by_chunks": [{"num_segments": 5, "segment_focus": 2},
+                                 {"num_segments": 7, "segment_focus": 3}
+                                    ]
+    }
+
+    res_opti = extract_features(df, column_id="id", column_sort="time", n_jobs=0,
+                                    disable_progressbar=True, default_fc_parameters=fc_parameters)
+    
+    print(res_opti)
+    resnon_opti.columns = res_opti.columns
+
+    
+    pd.testing.assert_frame_equal(resnon_opti, res_opti)

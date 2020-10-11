@@ -25,6 +25,8 @@ from collections import defaultdict
 
 import numpy as np
 import pandas as pd
+from numba import njit, jit
+from numba.typed import Dict as TypedDict
 from numpy.linalg import LinAlgError
 from scipy.signal import cwt, find_peaks_cwt, ricker, welch
 from scipy.stats import linregress
@@ -2035,7 +2037,9 @@ def agg_linear_trend(x, param):
     """
     # todo: we could use the index of the DataFrame here
 
-    calculated_agg = defaultdict(dict)
+    # calculated_agg = defaultdict(dict)
+    calculated_agg = TypedDict()
+    
     res_data = []
     res_index = []
 
@@ -2062,7 +2066,6 @@ def agg_linear_trend(x, param):
         res_index.append("attr_\"{}\"__chunk_len_{}__f_agg_\"{}\"".format(attr, chunk_len, f_agg))
 
     return zip(res_index, res_data)
-
 
 @set_property("fctype", "combiner")
 def energy_ratio_by_chunks(x, param):
@@ -2105,6 +2108,73 @@ def energy_ratio_by_chunks(x, param):
 
     # Materialize as list for Python 3 compatibility with name handling
     return list(zip(res_index, res_data))
+
+import numba 
+from numba.typed import Dict as numbaDict
+from numba import types
+
+@set_property("fctype", "combiner")
+def optimized_energy_ratio_by_chunks(x, param):
+    res_data = np.empty(len(param), dtype="float64")
+    res_index = np.empty(len(param), dtype="U")
+    full_series_energy = np.sum(x ** 2)
+
+    d = numbaDict.empty(
+        key_type=types.unicode_type,
+        value_type=types.int64,
+        )
+    
+    new_param = []
+    for parameter_combination in param:
+        print(parameter_combination)
+        d["num_segments"] = parameter_combination["num_segments"]
+        d["segment_focus"] = parameter_combination["segment_focus"]
+        new_param.append(d.copy())
+
+    res = optimized_energy_ratio_by_chunks_values(x, new_param, res_data, res_index, full_series_energy)
+    return res
+
+
+@jit
+def optimized_energy_ratio_by_chunks_values(x, param, res_data, res_index, full_series_energy):
+    """
+    Calculates the sum of squares of chunk i out of N chunks expressed as a ratio with the sum of squares over the whole
+    series.
+
+    Takes as input parameters the number num_segments of segments to divide the series into and segment_focus
+    which is the segment number (starting at zero) to return a feature on.
+
+    If the length of the time series is not a multiple of the number of segments, the remaining data points are
+    distributed on the bins starting from the first. For example, if your time series consists of 8 entries, the
+    first two bins will contain 3 and the last two values, e.g. `[ 0.,  1.,  2.], [ 3.,  4.,  5.]` and `[ 6.,  7.]`.
+
+    Note that the answer for `num_segments = 1` is a trivial "1" but we handle this scenario
+    in case somebody calls it. Sum of the ratios should be 1.0.
+
+    :param x: the time series to calculate the feature of
+    :type x: numpy.ndarray
+    :param param: contains dictionaries {"num_segments": N, "segment_focus": i} with N, i both ints
+    :return: the feature values
+    :return type: list of tuples (index, data)
+    """
+
+    for i, parameter_combination in enumerate(param):
+        
+        num_segments = parameter_combination["num_segments"]
+        segment_focus = parameter_combination["segment_focus"]
+        assert segment_focus < num_segments
+        assert num_segments > 0
+
+        if full_series_energy == 0:
+            res_data[i] = np.NaN
+        else:
+            res_data[i] = float(np.sum(np.array_split(x, num_segments)[segment_focus] ** 2.0) / full_series_energy)
+
+        res_index[i] = "num_segments_{}__segment_focus_{}".format(num_segments, segment_focus)
+        
+    # Materialize as list for Python 3 compatibility with name handling
+    return list(zip(res_index, res_data))
+
 
 
 @set_property("fctype", "combiner")
