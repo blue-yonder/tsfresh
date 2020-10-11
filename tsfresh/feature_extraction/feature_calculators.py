@@ -176,7 +176,6 @@ def _aggregate_on_chunks(x, f_agg, chunk_len):
     """
     return [getattr(x[i * chunk_len: (i + 1) * chunk_len], f_agg)() for i in range(int(np.ceil(len(x) / chunk_len)))]
 
-
 def _into_subchunks(x, subchunk_length, every_n=1):
     """
     Split the time series x into subwindows of length "subchunk_length", starting every "every_n".
@@ -1618,6 +1617,73 @@ def sample_entropy(x):
     # Return SampEn
     return -np.log(A / B)
 
+from numba import prange
+
+@njit(parallel=True)
+def transform2(xm, tolerance):
+    to_sum = [0] * len(xm)
+    for xmi in xm:
+        absolute = np.abs(xmi - xm)
+        res = np.array([absolute[i, :].max() for i in prange(absolute.shape[0])])
+
+        to_sum.append(np.sum(res <= tolerance) - 1)
+    return(to_sum)
+
+# todo - include latex formula
+# todo - check if vectorizable
+@set_property("high_comp_cost", True)
+@set_property("fctype", "simple")
+def optimized_sample_entropy(x):
+    """
+    Calculate and return sample entropy of x.
+
+    .. rubric:: References
+
+    |  [1] http://en.wikipedia.org/wiki/Sample_Entropy
+    |  [2] https://www.ncbi.nlm.nih.gov/pubmed/10843903?dopt=Abstract
+
+    :param x: the time series to calculate the feature of
+    :type x: numpy.ndarray
+
+    :return: the value of this feature
+    :return type: float
+    """
+    x = np.array(x)
+
+    # if one of the values is NaN, we can not compute anything meaningful
+    if np.isnan(x).any():
+        return np.nan
+
+    m = 2  # common value for m, according to wikipedia...
+    tolerance = 0.2 * np.std(x)  # 0.2 is a common value for r, according to wikipedia...
+
+    # Split time series and save all templates of length m
+    # Basically we turn [1, 2, 3, 4] into [1, 2], [2, 3], [3, 4]
+    xm = _into_subchunks(x, m)
+
+    # Now calculate the maximum distance between each of those pairs
+    #   np.abs(xmi - xm).max(axis=1)
+    # and check how many are below the tolerance.
+    # For speed reasons, we are not doing this in a nested for loop,
+    # but with numpy magic.
+    # Example:
+    # if x = [1, 2, 3]
+    # then xm = [[1, 2], [2, 3]]
+    # so we will substract xm from [1, 2] => [[0, 0], [-1, -1]]
+    # and from [2, 3] => [[1, 1], [0, 0]]
+    # taking the abs and max gives us:
+    # [0, 1] and [1, 0]
+    # as the diagonal elements are always 0, we substract 1.
+    B = np.sum(transform2(xm, tolerance))
+
+    # Similar for computing A
+    xmp1 = _into_subchunks(x, m + 1)
+
+    A = np.sum(transform2(xmp1, tolerance))
+
+    # Return SampEn
+    return -np.log(A / B)
+
 
 @set_property("fctype", "simple")
 @set_property("high_comp_cost", True)
@@ -2109,74 +2175,6 @@ def energy_ratio_by_chunks(x, param):
     # Materialize as list for Python 3 compatibility with name handling
     return list(zip(res_index, res_data))
 
-import numba 
-from numba.typed import Dict as numbaDict
-from numba import types
-
-@set_property("fctype", "combiner")
-def optimized_energy_ratio_by_chunks(x, param):
-    res_data = np.empty(len(param), dtype="float64")
-    res_index = np.empty(len(param), dtype="U")
-    full_series_energy = np.sum(x ** 2)
-
-    d = numbaDict.empty(
-        key_type=types.unicode_type,
-        value_type=types.int64,
-        )
-    
-    new_param = []
-    for parameter_combination in param:
-        print(parameter_combination)
-        d["num_segments"] = parameter_combination["num_segments"]
-        d["segment_focus"] = parameter_combination["segment_focus"]
-        new_param.append(d.copy())
-
-    res = optimized_energy_ratio_by_chunks_values(x, new_param, res_data, res_index, full_series_energy)
-    return res
-
-
-@jit
-def optimized_energy_ratio_by_chunks_values(x, param, res_data, res_index, full_series_energy):
-    """
-    Calculates the sum of squares of chunk i out of N chunks expressed as a ratio with the sum of squares over the whole
-    series.
-
-    Takes as input parameters the number num_segments of segments to divide the series into and segment_focus
-    which is the segment number (starting at zero) to return a feature on.
-
-    If the length of the time series is not a multiple of the number of segments, the remaining data points are
-    distributed on the bins starting from the first. For example, if your time series consists of 8 entries, the
-    first two bins will contain 3 and the last two values, e.g. `[ 0.,  1.,  2.], [ 3.,  4.,  5.]` and `[ 6.,  7.]`.
-
-    Note that the answer for `num_segments = 1` is a trivial "1" but we handle this scenario
-    in case somebody calls it. Sum of the ratios should be 1.0.
-
-    :param x: the time series to calculate the feature of
-    :type x: numpy.ndarray
-    :param param: contains dictionaries {"num_segments": N, "segment_focus": i} with N, i both ints
-    :return: the feature values
-    :return type: list of tuples (index, data)
-    """
-
-    for i, parameter_combination in enumerate(param):
-        
-        num_segments = parameter_combination["num_segments"]
-        segment_focus = parameter_combination["segment_focus"]
-        assert segment_focus < num_segments
-        assert num_segments > 0
-
-        if full_series_energy == 0:
-            res_data[i] = np.NaN
-        else:
-            res_data[i] = float(np.sum(np.array_split(x, num_segments)[segment_focus] ** 2.0) / full_series_energy)
-
-        res_index[i] = "num_segments_{}__segment_focus_{}".format(num_segments, segment_focus)
-        
-    # Materialize as list for Python 3 compatibility with name handling
-    return list(zip(res_index, res_data))
-
-
-
 @set_property("fctype", "combiner")
 @set_property("input", "pd.Series")
 @set_property("index_type", pd.DatetimeIndex)
@@ -2225,7 +2223,6 @@ def count_above(x, t):
     :return type: float
     """
     return np.sum(x >= t)/len(x)
-
 
 @set_property("fctype", "simple")
 def count_below(x, t):

@@ -44,53 +44,46 @@ def test_benchmark_with_selection(benchmark):
     benchmark(extract_relevant_features, df, y, column_id="id", column_sort="time", n_jobs=0,
               disable_progressbar=True)
 
-def test_optimized_energy_ratio_by_chunks(benchmark):
+def test_optimized_sample_entropy(benchmark):
     fc_parameters = {
-        "optimized_energy_ratio_by_chunks": [{"num_segments": 5, "segment_focus": 2},
-                                 {"num_segments": 7, "segment_focus": 3}
-                                    ]
+        "optimized_sample_entropy": []
     }
     extract_features_partial = partial(extract_features, default_fc_parameters=fc_parameters)
-    df = create_data(40000, 30)
+    df = create_data(1000, 20)
 
     benchmark(extract_features_partial, df, column_id="id", column_sort="time", n_jobs=0,
               disable_progressbar=True)
 
-def test_energy_ratio_by_chunks(benchmark):
+def test_sample_entropy(benchmark):
     fc_parameters = {
-        "energy_ratio_by_chunks": [{"num_segments": 5, "segment_focus": 2},
-                                 {"num_segments": 7, "segment_focus": 3}
-                                    ]
+        "sample_entropy": []
     }
     extract_features_partial = partial(extract_features, default_fc_parameters=fc_parameters)
-    df = create_data(40000, 30)
+    df = create_data(1000, 20)
 
     benchmark(extract_features_partial, df, column_id="id", column_sort="time", n_jobs=0,
               disable_progressbar=True)
 
-def test_energy_ratio_by_chunks_similarity():
+def test_sample_entropy_similarity():
 
     fc_parameters = {
-                        "energy_ratio_by_chunks": [{"num_segments": 5, "segment_focus": 2},
-                                                   {"num_segments": 7, "segment_focus": 3}
-                                                  ]
-                    }
+        "sample_entropy": []
+    }
 
-    df = create_data(40000, 30)
+    df = create_data(1000, 20)
 
     resnon_opti = extract_features(df, column_id="id", column_sort="time", n_jobs=0,
                                     disable_progressbar=True, default_fc_parameters=fc_parameters)
                                 
     fc_parameters = {
-        "optimized_energy_ratio_by_chunks": [{"num_segments": 5, "segment_focus": 2},
-                                 {"num_segments": 7, "segment_focus": 3}
-                                    ]
+        "optimized_sample_entropy": []
     }
 
     res_opti = extract_features(df, column_id="id", column_sort="time", n_jobs=0,
                                     disable_progressbar=True, default_fc_parameters=fc_parameters)
     
     print(res_opti)
+    print(resnon_opti)
     resnon_opti.columns = res_opti.columns
 
     
