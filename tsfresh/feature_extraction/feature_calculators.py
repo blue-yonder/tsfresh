@@ -1619,12 +1619,12 @@ def sample_entropy(x):
 
 from numba import prange
 
-@njit(parallel=True)
+@njit(parallel=False)
 def transform2(xm, tolerance):
     to_sum = [0] * len(xm)
     for xmi in xm:
         absolute = np.abs(xmi - xm)
-        res = np.array([absolute[i, :].max() for i in prange(absolute.shape[0])])
+        res = np.array([absolute[i, :].max() for i in prange(xm.shape[0])])
 
         to_sum.append(np.sum(res <= tolerance) - 1)
     return(to_sum)
