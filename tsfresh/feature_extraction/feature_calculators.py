@@ -1620,14 +1620,13 @@ def sample_entropy(x):
 from numba import prange
 
 @njit(parallel=False)
-def transform2(xm, tolerance):
-    to_sum = [0] * len(xm)
+def _sample_entropy_compiled_subfunction(xm, tolerance):
+    to_sum = []
     for xmi in xm:
         absolute = np.abs(xmi - xm)
-        res = np.array([absolute[i, :].max() for i in prange(xm.shape[0])])
+        to_sum.append(np.sum(np.array([absolute[i, :].max() for i in prange(xm.shape[0])]) <= tolerance) - 1)
 
-        to_sum.append(np.sum(res <= tolerance) - 1)
-    return(to_sum)
+    return to_sum
 
 # todo - include latex formula
 # todo - check if vectorizable
@@ -1674,12 +1673,12 @@ def optimized_sample_entropy(x):
     # taking the abs and max gives us:
     # [0, 1] and [1, 0]
     # as the diagonal elements are always 0, we substract 1.
-    B = np.sum(transform2(xm, tolerance))
+    B = np.sum(_sample_entropy_compiled_subfunction(xm, tolerance))
 
     # Similar for computing A
     xmp1 = _into_subchunks(x, m + 1)
 
-    A = np.sum(transform2(xmp1, tolerance))
+    A = np.sum(_sample_entropy_compiled_subfunction(xmp1, tolerance))
 
     # Return SampEn
     return -np.log(A / B)
