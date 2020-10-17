@@ -29,7 +29,12 @@ from numpy.linalg import LinAlgError
 from scipy.signal import cwt, find_peaks_cwt, ricker, welch
 from scipy.stats import linregress
 from statsmodels.tools.sm_exceptions import MissingDataError
-from statsmodels.tsa.ar_model import AR
+
+with warnings.catch_warnings():
+    # Ignore warnings of the patsy package
+    warnings.simplefilter("ignore", DeprecationWarning)
+
+    from statsmodels.tsa.ar_model import AR
 from statsmodels.tsa.stattools import acf, adfuller, pacf
 
 # todo: make sure '_' works in parameter names in all cases, add a warning if not
@@ -230,6 +235,8 @@ def ratio_beyond_r_sigma(x, r):
 
     :param x: the time series to calculate the feature of
     :type x: iterable
+    :param r: the ratio to compare with
+    :type r: float
     :return: the value of this feature
     :return type: float
     """
@@ -274,8 +281,8 @@ def symmetry_looking(x, param):
 
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
-    :param r: the percentage of the range to compare with
-    :type r: float
+    :param param: contains dictionaries {"r": x} with x (float) is the percentage of the range to compare with
+    :type param: list
     :return: the value of this feature
     :return type: bool
     """
@@ -437,12 +444,17 @@ def partial_autocorrelation(x, param):
     if n <= 1:
         pacf_coeffs = [np.nan] * (max_demanded_lag + 1)
     else:
-        if (n <= max_demanded_lag):
-            max_lag = n - 1
+        # https://github.com/statsmodels/statsmodels/pull/6846
+        # PACF limits lag length to 50% of sample size.
+        if max_demanded_lag >= n // 2:
+            max_lag = n // 2 - 1
         else:
             max_lag = max_demanded_lag
-        pacf_coeffs = list(pacf(x, method="ld", nlags=max_lag))
-        pacf_coeffs = pacf_coeffs + [np.nan] * max(0, (max_demanded_lag - max_lag))
+        if max_lag > 0:
+            pacf_coeffs = list(pacf(x, method="ld", nlags=max_lag))
+            pacf_coeffs = pacf_coeffs + [np.nan] * max(0, (max_demanded_lag - max_lag))
+        else:
+            pacf_coeffs = [np.nan] * (max_demanded_lag + 1)
 
     return [("lag_{}".format(lag["lag"]), pacf_coeffs[lag["lag"]]) for lag in param]
 
@@ -521,7 +533,7 @@ def cid_ce(x, normalize):
 
     .. math::
 
-        \\sqrt{ \\sum_{i=1}^{n-2lag} ( x_{i} - x_{i+1})^2 }
+        \\sqrt{ \\sum_{i=1}^{n-1} ( x_{i} - x_{i-1})^2 }
 
     .. rubric:: References
 
@@ -906,11 +918,11 @@ def percentage_of_reoccurring_datapoints_to_all_datapoints(x):
     :return: the value of this feature
     :return type: float
     """
+    if len(x) == 0:
+        return np.nan
+
     if not isinstance(x, pd.Series):
         x = pd.Series(x)
-
-    if x.size == 0:
-        return np.nan
 
     value_counts = x.value_counts()
     reoccuring_values = value_counts[value_counts > 1].sum()

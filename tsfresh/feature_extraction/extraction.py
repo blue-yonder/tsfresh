@@ -7,6 +7,7 @@ This module contains the main function to interact with tsfresh: extract feature
 
 import logging
 import warnings
+from collections.abc import Iterable
 
 import pandas as pd
 
@@ -16,9 +17,8 @@ from tsfresh.feature_extraction.data import to_tsdata
 from tsfresh.feature_extraction.settings import ComprehensiveFCParameters
 from tsfresh.utilities import profiling
 from tsfresh.utilities.distribution import MapDistributor, MultiprocessingDistributor, \
-    DistributorBaseClass
+    DistributorBaseClass, ApplyDistributor
 from tsfresh.utilities.string_manipulation import convert_to_output_format
-from tsfresh.utilities.dataframe_functions import pivot_list
 
 _logger = logging.getLogger(__name__)
 
@@ -33,7 +33,7 @@ def extract_features(timeseries_container, default_fc_parameters=None,
                      profile=defaults.PROFILING,
                      profiling_filename=defaults.PROFILING_FILENAME,
                      profiling_sorting=defaults.PROFILING_SORTING,
-                     distributor=None):
+                     distributor=None, pivot=True):
     """
     Extract features from
 
@@ -157,7 +157,8 @@ def extract_features(timeseries_container, default_fc_parameters=None,
                                 show_warnings=show_warnings,
                                 default_fc_parameters=default_fc_parameters,
                                 kind_to_fc_parameters=kind_to_fc_parameters,
-                                distributor=distributor)
+                                distributor=distributor,
+                                pivot=pivot)
 
         # Impute the result if requested
         if impute_function is not None:
@@ -173,7 +174,8 @@ def extract_features(timeseries_container, default_fc_parameters=None,
 
 def _do_extraction(df, column_id, column_value, column_kind, column_sort,
                    default_fc_parameters, kind_to_fc_parameters,
-                   n_jobs, chunk_size, disable_progressbar, show_warnings, distributor):
+                   n_jobs, chunk_size, disable_progressbar, show_warnings, distributor,
+                   pivot):
     """
     Wrapper around the _do_extraction_on_chunk, which calls it on all chunks in the data frame.
     A chunk is a subset of the data, with a given kind and id - so a single time series.
@@ -229,14 +231,18 @@ def _do_extraction(df, column_id, column_value, column_kind, column_sort,
     data = to_tsdata(df, column_id, column_kind, column_value, column_sort)
 
     if distributor is None:
-        if n_jobs == 0:
-            distributor = MapDistributor(disable_progressbar=disable_progressbar,
-                                         progressbar_title="Feature Extraction")
+        if isinstance(data, Iterable):
+            if n_jobs == 0:
+                distributor = MapDistributor(disable_progressbar=disable_progressbar,
+                                             progressbar_title="Feature Extraction")
+            else:
+                distributor = MultiprocessingDistributor(n_workers=n_jobs,
+                                                         disable_progressbar=disable_progressbar,
+                                                         progressbar_title="Feature Extraction",
+                                                         show_warnings=show_warnings)
         else:
-            distributor = MultiprocessingDistributor(n_workers=n_jobs,
-                                                     disable_progressbar=disable_progressbar,
-                                                     progressbar_title="Feature Extraction",
-                                                     show_warnings=show_warnings)
+            distributor = ApplyDistributor(meta=[(data.column_id, 'int64'), ('variable', 'object'),
+                                                 ('value', 'float64')])
 
     if not isinstance(distributor, DistributorBaseClass):
         raise ValueError("the passed distributor is not an DistributorBaseClass object")
@@ -247,16 +253,11 @@ def _do_extraction(df, column_id, column_value, column_kind, column_sort,
     result = distributor.map_reduce(_do_extraction_on_chunk, data=data,
                                     chunk_size=chunk_size,
                                     function_kwargs=kwargs)
-    distributor.close()
 
-    return_df = pivot_list(result, dtype=float)
+    if not pivot:
+        return result
 
-    # copy the type of the index
-    return_df.index = return_df.index.astype(df[column_id].dtype)
-
-    # Sort by index to be backward compatible
-    return_df = return_df.sort_index()
-
+    return_df = data.pivot(result)
     return return_df
 
 

@@ -9,6 +9,9 @@ import pandas as pd
 from pandas.testing import assert_frame_equal, assert_series_equal
 
 from tsfresh.utilities import dataframe_functions
+from tsfresh import extract_relevant_features
+from tsfresh.feature_extraction.settings import MinimalFCParameters
+from tests.fixtures import warning_free
 
 
 class RollingTestCase(TestCase):
@@ -461,10 +464,14 @@ class RollingTestCase(TestCase):
         second_class["initial_id"] = 2
         df_full = pd.concat([first_class, second_class], ignore_index=True)
 
-        window_size = 2
-        df_rolled = dataframe_functions.roll_time_series(
-            df_full, column_id="initial_id", column_sort="time",
-            min_timeshift=window_size-1, max_timeshift=window_size-1)
+        # Do not show the warning on non-equidistant time
+        with warning_free():
+            window_size = 2
+
+            df_rolled = dataframe_functions.roll_time_series(
+                df_full, column_id="initial_id", column_sort="time",
+                min_timeshift=window_size-1, max_timeshift=window_size-1)
+
         """ df is
         {x: _value  id
               1.0   1
@@ -759,7 +766,12 @@ class GetRangeValuesPerColumnTestCase(TestCase):
     def test_no_finite_values_yields_0(self):
         df = pd.DataFrame([np.NaN, np.PINF, np.NINF], columns=["value"])
 
-        col_to_max, col_to_min, col_to_median = dataframe_functions.get_range_values_per_column(df)
+        with warnings.catch_warnings(record=True) as w:
+            col_to_max, col_to_min, col_to_median = dataframe_functions.get_range_values_per_column(df)
+
+            self.assertEqual(len(w), 1)
+            self.assertEqual(str(w[0].message),
+                             "The columns ['value'] did not have any finite values. Filling with zeros.")
 
         self.assertEqual(col_to_max, {"value": 0})
         self.assertEqual(col_to_min, {"value": 0})
@@ -776,7 +788,7 @@ class MakeForecastingFrameTestCase(TestCase):
                                     "value": [0, 1, 2],
                                     "time": [0, 1, 2]})
 
-        expected_y = pd.Series(data=[1, 2, 3], index=[1, 2, 3], name="value")
+        expected_y = pd.Series(data=[1, 2, 3], index=[("id", 1), ("id", 2), ("id", 3)], name="value")
         assert_frame_equal(df.sort_index(axis=1).reset_index(drop=True), expected_df.sort_index(axis=1))
         assert_series_equal(y, expected_y)
 
@@ -787,7 +799,9 @@ class MakeForecastingFrameTestCase(TestCase):
                                     "kind": ["test"] * 3,
                                     "value": np.arange(3),
                                     "time": [0, 1, 2]})
+        expected_y = pd.Series(data=[1, 2, 3], index=[("id", 1), ("id", 2), ("id", 3)], name="value")
         assert_frame_equal(df.sort_index(axis=1).reset_index(drop=True), expected_df.sort_index(axis=1))
+        assert_series_equal(y, expected_y)
 
     def test_make_forecasting_frame_pdSeries(self):
 
@@ -795,8 +809,8 @@ class MakeForecastingFrameTestCase(TestCase):
         df, y = dataframe_functions.make_forecasting_frame(x=pd.Series(data=range(4), index=t_index),
                                                            kind="test", max_timeshift=1, rolling_direction=1)
 
-        expected_y = pd.Series(data=[1, 2, 3], index=pd.DatetimeIndex(["2011-01-01 01:00:00", "2011-01-01 02:00:00",
-                                                                       "2011-01-01 03:00:00"]), name="value")
+        time_shifts = pd.DatetimeIndex(["2011-01-01 01:00:00", "2011-01-01 02:00:00", "2011-01-01 03:00:00"], freq="H")
+        expected_y = pd.Series(data=[1, 2, 3], index=zip(["id"]*3, time_shifts), name="value")
         expected_df = pd.DataFrame({"id": list(zip(["id"] * 3, pd.DatetimeIndex(["2011-01-01 01:00:00",
                                                                                  "2011-01-01 02:00:00",
                                                                                  "2011-01-01 03:00:00"]))),
@@ -806,6 +820,14 @@ class MakeForecastingFrameTestCase(TestCase):
                                     })
         assert_frame_equal(df.sort_index(axis=1).reset_index(drop=True), expected_df.sort_index(axis=1))
         assert_series_equal(y, expected_y)
+
+    def test_make_forecasting_frame_feature_extraction(self):
+        t_index = pd.date_range('1/1/2011', periods=4, freq='H')
+        df, y = dataframe_functions.make_forecasting_frame(x=pd.Series(data=range(4), index=t_index),
+                                                           kind="test", max_timeshift=1, rolling_direction=1)
+
+        extract_relevant_features(df, y, column_id="id", column_sort="time", column_value="value",
+                                  default_fc_parameters=MinimalFCParameters())
 
 
 class GetIDsTestCase(TestCase):
@@ -890,47 +912,3 @@ class AddSubIdTestCase(TestCase):
         self.assertEqual(list(extended_dataframe["id"]),
                          [(0, 1), (0, 1), (1, 1), (1, 1), (0, 2), (0, 2), (1, 2), (1, 2), (2, 2)])
         assert_series_equal(dataframe["value"], extended_dataframe["value"])
-
-
-class PivotListTestCase(TestCase):
-    def test_empty_list(self):
-        return_df = dataframe_functions.pivot_list([])
-
-        self.assertEqual(len(return_df), 0)
-        self.assertEqual(len(return_df.index), 0)
-        self.assertEqual(len(return_df.columns), 0)
-
-    def test_different_input(self):
-        input_list = [
-            ("a", "b", 1),
-            ("a", "c", 2),
-            ("A", "b", 3),
-            ("A", "c", 4),
-            ("X", "Y", 5),
-        ]
-        return_df = dataframe_functions.pivot_list(input_list)
-
-        self.assertEqual(len(return_df), 3)
-        self.assertEqual(set(return_df.index), {"a", "A", "X"})
-        self.assertEqual(set(return_df.columns), {"b", "c", "Y"})
-
-        self.assertEqual(return_df.loc["a", "b"], 1)
-        self.assertEqual(return_df.loc["a", "c"], 2)
-        self.assertEqual(return_df.loc["A", "b"], 3)
-        self.assertEqual(return_df.loc["A", "c"], 4)
-        self.assertEqual(return_df.loc["X", "Y"], 5)
-
-    def test_long_input(self):
-        input_list = []
-        for i in range(100):
-            for j in range(100):
-                input_list.append((i, j, i*j))
-
-        return_df = dataframe_functions.pivot_list(input_list)
-
-        self.assertEqual(len(return_df), 100)
-        self.assertEqual(len(return_df.columns), 100)
-        # every cell should be filled
-        self.assertEqual(np.sum(np.sum(np.isnan(return_df))), 0)
-        # test if all entries are there
-        self.assertEqual(return_df.sum().sum(), 24502500)

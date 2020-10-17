@@ -3,8 +3,54 @@
 .. role:: python(code)
     :language: python
 
-How to deploy tsfresh at scale
-==============================
+Parallelization
+===============
+
+The feature extraction, the feature selection as well as the rolling offer the possibility of parallelization.
+By default, all of those tasks are parallelized by tsfresh.
+Here we discuss the different settings to control the parallelization.
+To achieve best results for your use-case you should experiment with the parameters.
+
+.. NOTE::
+    This document describes parallelization for processing time speed up.
+    If you are dealing with large amounts of data (which might not fit into memory anymore),
+    you can also have a look into :ref:`large-data-label`.
+
+Please let us know about your results tuning the below mentioned parameters! It will help improve this document as
+well as the default settings.
+
+Parallelization of Feature Selection
+------------------------------------
+
+We use a :class:`multiprocessing.Pool` to parallelize the calculation of the p-values for each feature. On
+instantiation we set the Pool's number of worker processes to
+`n_jobs`. This field defaults to
+the number of processors on the current system. We recommend setting it to the maximum number of available (and
+otherwise idle) processors.
+
+The chunksize of the Pool's map function is another important parameter to consider. It can be set via the
+`chunksize` field. By default it is up to
+:class:`multiprocessing.Pool` is parallelisation parameter. One data chunk is
+defined as a singular time series for one id and one kind. The chunksize is the
+number of chunks that are submitted as one task to one worker process.  If you
+set the chunksize to 10, then it means that one worker task corresponds to
+calculate all features for 10 id/kind time series combinations.  If it is set it
+to None, depending on distributor, heuristics are used to find the optimal
+chunksize.  The chunksize can have an crucial influence on the optimal cluster
+performance and should be optimised in benchmarks for the problem at hand.
+
+Parallelization of Feature Extraction
+-------------------------------------
+
+For the feature extraction tsfresh exposes the parameters
+`n_jobs` and `chunksize`. Both behave analogue to the parameters
+for the feature selection.
+
+To do performance studies and profiling, it sometimes quite useful to turn off parallelization at all. This can be
+setting the parameter `n_jobs` to 0.
+
+Parallelization beyond a single machine
+---------------------------------------
 
 The high volume of time series data can demand an analysis at scale.
 So, time series need to be processed on a group of computational units instead of a singular machine.
@@ -12,9 +58,6 @@ So, time series need to be processed on a group of computational units instead o
 Accordingly, it may be necessary to distribute the extraction of time series features to a cluster.
 Indeed, it is possible to extract features with *tsfresh* in a distributed fashion.
 This page will explain how to setup a distributed *tsfresh*.
-
-The distributor class
-'''''''''''''''''''''
 
 To distribute the calculation of features, we use a certain object, the Distributor class (contained in the
 :mod:`tsfresh.utilities.distribution` module).
@@ -94,6 +137,12 @@ Using dask to distribute the calculations
 
 We provide distributor for the `dask framework <https://dask.pydata.org/en/latest/>`_, where
 *"Dask is a flexible parallel computing library for analytic computing."*
+
+.. NOTE::
+    This part of the documentation only handles parallelizing the computation using
+    a dask cluster. The input and output are still pandas objects.
+    If you want to use dask's capabilities to scale to data beyond your local
+    memory, have a look into :ref:`large-data-label`.
 
 Dask is a great framework to distribute analytic calculations to a cluster.
 It scales up and down, meaning that you can even use it on a singular machine.

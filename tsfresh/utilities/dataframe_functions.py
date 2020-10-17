@@ -6,7 +6,6 @@ Utility functions for handling the DataFrame conversions to the internal normali
 (see ``normalize_input_to_internal_representation``) or on how to handle ``NaN`` and ``inf`` in the DataFrames.
 """
 import warnings
-from collections import defaultdict
 
 import numpy as np
 import pandas as pd
@@ -560,7 +559,16 @@ def make_forecasting_frame(x, kind, max_timeshift, rolling_direction):
     mask = df_shift.groupby(['id'])['id'].transform(mask_first).astype(bool)
     df_shift = df_shift[mask]
 
-    return df_shift, df["value"][1:]
+    # Now create the target vector out of the values
+    # of the input series - not including the first one
+    # (as there is nothing to forecast from)
+    y = df["value"][1:]
+
+    # make sure that the format is the same as the
+    # df_shift index
+    y.index = map(lambda x: ("id", x), y.index)
+
+    return df_shift, y
 
 
 def add_sub_time_series_index(df_or_dict, sub_length, column_id=None, column_sort=None, column_kind=None):
@@ -644,31 +652,3 @@ def add_sub_time_series_index(df_or_dict, sub_length, column_id=None, column_sor
     df = df.set_index(df.index.get_level_values(-1))
 
     return df
-
-
-def pivot_list(list_of_tuples, **kwargs):
-    """
-    Helper function to turn an iterable of tuples with three entries into a dataframe.
-
-    The input ``list_of_tuples`` needs to be an iterable with tuples containing three
-    entries: (a, b, c).
-    Out of this, a pandas dataframe will be created with all a's as index,
-    all b's as columns and all c's as values.
-
-    It basically does a pd.pivot(first entry, second entry, third entry),
-    but optimized for non-pandas input (= python list of tuples).
-    """
-    return_df_dict = defaultdict(dict)
-    for chunk_id, variable, value in list_of_tuples:
-        # we turn it into a nested mapping `column -> index -> value`
-        return_df_dict[variable][chunk_id] = value
-
-    # the mapping column -> {index -> value}
-    # is now a dict of dicts. The pandas dataframe
-    # constructor will peel this off:
-    # first, the keys of the outer dict (the column)
-    # will turn into a column header and the rest into a column
-    # the rest is {index -> value} which will be turned into a
-    # column with index.
-    # All index will be aligned.
-    return pd.DataFrame(return_df_dict, **kwargs)

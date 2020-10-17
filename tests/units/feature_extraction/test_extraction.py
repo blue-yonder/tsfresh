@@ -12,7 +12,7 @@ from mock import Mock
 from tests.fixtures import DataTestCase
 from tsfresh.feature_extraction.extraction import extract_features
 from tsfresh.feature_extraction.settings import ComprehensiveFCParameters
-from tsfresh.utilities.distribution import DistributorBaseClass
+from tsfresh.utilities.distribution import IterableDistributorBaseClass, MapDistributor
 
 
 class ExtractionTestCase(DataTestCase):
@@ -241,23 +241,10 @@ class DistributorUsageTestCase(DataTestCase):
         # only calculate some features to reduce load on travis ci
         self.name_to_param = {"maximum": None}
 
-    def test_assert_is_distributor(self):
+    def test_distributor_map_reduce_is_called(self):
         df = self.create_test_data_sample()
 
-        self.assertRaises(ValueError, extract_features,
-                          timeseries_container=df, column_id="id", column_sort="sort",
-                          column_kind="kind", column_value="val",
-                          default_fc_parameters=self.name_to_param, distributor=object())
-
-        self.assertRaises(ValueError, extract_features,
-                          timeseries_container=df, column_id="id", column_sort="sort",
-                          column_kind="kind", column_value="val",
-                          default_fc_parameters=self.name_to_param, distributor=13)
-
-    def test_distributor_map_reduce_and_close_are_called(self):
-        df = self.create_test_data_sample()
-
-        mock = Mock(spec=DistributorBaseClass)
+        mock = Mock(spec=IterableDistributorBaseClass)
         mock.close.return_value = None
         mock.map_reduce.return_value = []
 
@@ -265,5 +252,17 @@ class DistributorUsageTestCase(DataTestCase):
                              column_kind="kind", column_value="val",
                              default_fc_parameters=self.name_to_param, distributor=mock)
 
-        self.assertTrue(mock.close.called)
         self.assertTrue(mock.map_reduce.called)
+
+    def test_distributor_close_is_called(self):
+        df = self.create_test_data_sample()
+
+        mock = MapDistributor()
+        mock.close = Mock()
+        mock.close.return_value = None
+
+        X = extract_features(timeseries_container=df, column_id="id", column_sort="sort",
+                             column_kind="kind", column_value="val",
+                             default_fc_parameters=self.name_to_param, distributor=mock)
+
+        self.assertTrue(mock.close.called)

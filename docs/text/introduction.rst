@@ -46,8 +46,6 @@ What not to do with tsfresh?
 Currently, tsfresh is not suitable
 
     * for usage with streaming data
-    * for batch processing over a distributed architecture when different time series are fragmented over different computational units
-      (but see how to use ``tsfresh`` on a cluster in :ref:`tsfresh-on-a-cluster-label`)
     * to train models on the features (we do not want to reinvent the wheel, check out the python package
       `scikit-learn <http://scikit-learn.org/stable/>`_ for example)
 
@@ -61,6 +59,7 @@ There is a matlab package called `hctsa <https://github.com/benfulcher/hctsa>`_ 
 extract features from time series.
 It is also possible to use hctsa from within python by means of the `pyopy <https://github.com/strawlab/pyopy>`_
 package.
+There also exist `featuretools <https://www.featuretools.com/>`_, `FATS <http://isadoranun.github.io/tsfeat/>`_ and `cesium <http://cesium-ml.org/>`_.
 
 References
 ----------
