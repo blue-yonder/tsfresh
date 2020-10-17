@@ -7,10 +7,13 @@ tsfresh uses `Semantic Versioning <http://semver.org/>`_
 Unreleased
 ==========
 
+- Added Features
+    - Allow arbitrary rolling sizes (#766)
 - Bugfixes:
-    - Do not send coverage of notebook tests to codecov #759
+    - Do not send coverage of notebook tests to codecov (#759)
     - Fix typos in notebook (#757)
     - Fix output format of `make_forecasting_frame` (#758)
+    - Fix badges and remove benchmark test
 
 Version 0.17.0
 ==============
