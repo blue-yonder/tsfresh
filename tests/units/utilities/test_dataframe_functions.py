@@ -313,6 +313,64 @@ class RollingTestCase(TestCase):
         self.assertListEqual(list(df["a"].values), correct_values_a)
         self.assertListEqual(list(df["b"].values), correct_values_b)
 
+    def test_rolling_with_larger_shift(self):
+        first_class = pd.DataFrame({"a": [1, 2, 3, 4], "b": [5, 6, 7, 8], "time": range(4)})
+        second_class = pd.DataFrame({"a": [10, 11], "b": [12, 13], "time": range(20, 22)})
+
+        first_class["id"] = 1
+        second_class["id"] = 2
+
+        df_full = pd.concat([first_class, second_class], ignore_index=True)
+
+        """ df_full is
+            a   b  time  id
+        0   1   5     0   1
+        1   2   6     1   1
+        2   3   7     2   1
+        3   4   8     3   1
+        4  10  12    20   2
+        5  11  13    21   2
+        """
+        correct_indices = [
+            (1, 1),
+            (1, 1),
+            (1, 3),
+            (1, 3),
+            (1, 3),
+            (1, 3),
+            (2, 21),
+            (2, 21)
+        ]
+        correct_values_a = [1.0, 2.0, 1.0, 2.0, 3.0, 4.0, 10.0, 11.0]
+        correct_values_b = [5.0, 6.0, 5.0, 6.0, 7.0, 8.0, 12.0, 13.0]
+
+        df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
+                                                  column_kind=None, rolling_direction=2, n_jobs=0)
+
+        self.assertListEqual(list(df["id"]), correct_indices)
+        self.assertListEqual(list(df["a"].values), correct_values_a)
+        self.assertListEqual(list(df["b"].values), correct_values_b)
+
+        correct_indices = [
+            (1, 0),
+            (1, 0),
+            (1, 0),
+            (1, 0),
+            (1, 2),
+            (1, 2),
+            (2, 20),
+            (2, 20)
+        ]
+        correct_values_a = [1.0, 2.0, 3.0, 4.0, 3.0, 4.0, 10.0, 11.0]
+        correct_values_b = [5.0, 6.0, 7.0, 8.0, 7.0, 8.0, 12.0, 13.0]
+
+        df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
+                                                  column_kind=None, rolling_direction=-2, n_jobs=0)
+
+        self.assertListEqual(list(df["id"]), correct_indices)
+        self.assertListEqual(list(df["a"].values), correct_values_a)
+        self.assertListEqual(list(df["b"].values), correct_values_b)
+
     def test_stacked_rolling(self):
         first_class = pd.DataFrame({"a": [1, 2, 3, 4], "b": [5, 6, 7, 8], "time": range(4)})
         second_class = pd.DataFrame({"a": [10, 11], "b": [12, 13], "time": range(20, 22)})
