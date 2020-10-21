@@ -267,7 +267,9 @@ def calculate_relevance_table(
                 relevance_table["n_significant"] = relevance_table.filter(
                     regex="^relevant_", axis=1
                 ).sum(axis=1)
-                relevance_table["relevant"] = relevance_table["n_significant"] >= n_significant
+                relevance_table["relevant"] = (
+                    relevance_table["n_significant"] >= n_significant
+                )
                 relevance_table.index = relevance_table["feature"]
             else:
                 relevance_table = combine_relevance_tables(tables)
@@ -290,7 +292,7 @@ def calculate_relevance_table(
             pool.close()
             pool.terminate()
             pool.join()
-        
+
         # set constant features to be irrelevant for all classes in multiclass case
         if multiclass:
             for column in relevance_table.filter(regex="^relevant_", axis=1).columns:

@@ -61,7 +61,7 @@ class TestSelectFeatures:
         N = 10
         constants = [N] * N
         increase = list(range(N))
-        
+
         df["f1"] = constants + increase + increase
         df["f2"] = increase + constants + increase
         df["f3"] = increase + increase + constants
