@@ -185,3 +185,32 @@ class FeatureSelectorTestCase(TestCase):
 
         self.assertEqual(selector.p_values.shape, (2,))
         self.assertEqual(selector.feature_importances_.shape, (2,))
+
+    def test_multiclass_max_avg_p_values(self):
+        y0 = np.zeros(100)
+        y1 = np.repeat(1, 100)
+        y2 = np.repeat(2, 100)
+        y = pd.Series(np.uint8(np.concatenate([y0, y1, y2])))
+        X = pd.DataFrame(index=list(range(300)))
+
+        X["irr1"] = np.random.normal(0, 1, 300)
+        X["rel1"] = y
+
+        selector = FeatureSelector(
+            multiclass=True,
+            ml_task="classification",
+            n_significant=2,
+            multiclass_p_values="max",
+        )
+        selector.fit(X, y)
+
+        assert (selector.p_values > 0.1).all()
+        selector = FeatureSelector(
+            multiclass=True,
+            ml_task="classification",
+            n_significant=2,
+            multiclass_p_values="avg",
+        )
+        selector.fit(X, y)
+
+        assert (selector.p_values > 0.1).all()
