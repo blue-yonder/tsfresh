@@ -144,15 +144,6 @@ class TestCalculateRelevanceTable:
                 "or add other features."
             )
 
-    def test_warning_for_multiclass_binary_y(self, X, y_binary):
-        with pytest.warns(RuntimeWarning) as record:
-            _ = calculate_relevance_table(
-                X, y_binary, multiclass=True, n_significant=1, show_warnings=True
-            )
-            assert str(record[0].message) == (
-                "Two or fewer classes, binary feature selection should be used (multiclass = False)"
-            )
-
     def test_multiclass_requires_classification(self, X, y_real):
         with pytest.raises(AssertionError):
             calculate_relevance_table(X, y_real, multiclass=True, ml_task="regression")
@@ -184,7 +175,13 @@ class TestCalculateRelevanceTable:
         assert relevance_table.loc["relevant_3", "relevant"]
         assert not relevance_table.loc["relevant_2", "relevant"]
         assert not relevance_table.loc["relevant_0", "relevant"]
+        
+        # the distributions of all 3 classes under a one vs. rest scheme will be separated enough for
+        # this feature to be relevant for predicting 3 classes
         assert relevance_table.loc["relevant_3", "n_significant"] == 3
+        
+        # due to the distribution of this feature where y_multi == 0 being contained inside the range of 
+        # y_multi != 0 it will not pass the Mann-Whitney U test under a one vs. rest scheme for that class
         assert relevance_table.loc["relevant_2", "n_significant"] == 2
         assert relevance_table.loc["relevant_0", "n_significant"] == 0
 

@@ -206,6 +206,8 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
                 self.p_values = p_values_table.mean(axis=1).values
 
             if self.multiclass_p_values != "all":
+                # raise p_values to the power of n_significant to increase importance
+                # of features which are significant for more classes
                 self.feature_importances_ = (
                     1.0 - self.p_values ** relevance_table.n_significant.values
                 )

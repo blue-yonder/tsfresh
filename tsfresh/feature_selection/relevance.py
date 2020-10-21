@@ -177,8 +177,9 @@ def calculate_relevance_table(
 
         if len(y.unique()) <= 2:
             warnings.warn(
-                "Two or fewer classes, binary feature selection should be used (multiclass = False)"
+                "Two or fewer classes, binary feature selection will be used (multiclass = False)"
             )
+            multiclass = False
 
     with warnings.catch_warnings():
         if not show_warnings:
@@ -266,9 +267,7 @@ def calculate_relevance_table(
                 relevance_table["n_significant"] = relevance_table.filter(
                     regex="^relevant_", axis=1
                 ).sum(axis=1)
-                relevance_table["relevant"] = np.where(
-                    relevance_table["n_significant"] >= n_significant, True, False
-                )
+                relevance_table["relevant"] = relevance_table["n_significant"] >= n_significant
                 relevance_table.index = relevance_table["feature"]
             else:
                 relevance_table = combine_relevance_tables(tables)
@@ -291,7 +290,8 @@ def calculate_relevance_table(
             pool.close()
             pool.terminate()
             pool.join()
-
+        
+        # set constant features to be irrelevant for all classes in multiclass case
         if multiclass:
             for column in relevance_table.filter(regex="^relevant_", axis=1).columns:
                 table_const[column] = False

@@ -58,10 +58,14 @@ class TestSelectFeatures:
 
     def test_multiclass_selects_correct_n_significant(self):
         df = pd.DataFrame()
-        df["f1"] = [10] * 10 + list(range(10)) + list(range(10))
-        df["f2"] = list(range(10)) + [10] * 10 + list(range(10))
-        df["f3"] = list(range(10)) + list(range(10)) + [10] * 10
-        df["y"] = [0] * 10 + [1] * 10 + [2] * 10
+        N = 10
+        constants = [N] * N
+        increase = list(range(N))
+        
+        df["f1"] = constants + increase + increase
+        df["f2"] = increase + constants + increase
+        df["f3"] = increase + increase + constants
+        df["y"] = [0] * N + [1] * N + [2] * N
 
         y = df.y
         X = df.drop(["y"], axis=1)
@@ -74,6 +78,15 @@ class TestSelectFeatures:
             fdr_level=0.01,
         )
         assert {"f1", "f2", "f3"} == set(X_relevant.columns)
+        X_relevant = select_features(
+            X,
+            y,
+            ml_task="classification",
+            multiclass=True,
+            n_significant=2,
+            fdr_level=0.01,
+        )
+        assert len(X_relevant.columns) == 0
         X_relevant = select_features(
             X,
             y,
