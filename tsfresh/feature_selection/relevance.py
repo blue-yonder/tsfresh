@@ -19,18 +19,31 @@ from functools import partial, reduce
 from statsmodels.stats.multitest import multipletests
 
 from tsfresh import defaults
-from tsfresh.feature_selection.significance_tests import target_binary_feature_real_test, \
-    target_real_feature_binary_test, target_real_feature_real_test, target_binary_feature_binary_test
+from tsfresh.feature_selection.significance_tests import (
+    target_binary_feature_real_test,
+    target_real_feature_binary_test,
+    target_real_feature_real_test,
+    target_binary_feature_binary_test,
+)
 from tsfresh.utilities.distribution import initialize_warnings_in_workers
 
 
-def calculate_relevance_table(X, y, ml_task='auto', n_jobs=defaults.N_PROCESSES,
-                              show_warnings=defaults.SHOW_WARNINGS, chunksize=defaults.CHUNKSIZE,
-                              test_for_binary_target_binary_feature=defaults.TEST_FOR_BINARY_TARGET_BINARY_FEATURE,
-                              test_for_binary_target_real_feature=defaults.TEST_FOR_BINARY_TARGET_REAL_FEATURE,
-                              test_for_real_target_binary_feature=defaults.TEST_FOR_REAL_TARGET_BINARY_FEATURE,
-                              test_for_real_target_real_feature=defaults.TEST_FOR_REAL_TARGET_REAL_FEATURE,
-                              fdr_level=defaults.FDR_LEVEL, hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT):
+def calculate_relevance_table(
+    X,
+    y,
+    ml_task="auto",
+    multiclass=False,
+    n_significant=1,
+    n_jobs=defaults.N_PROCESSES,
+    show_warnings=defaults.SHOW_WARNINGS,
+    chunksize=defaults.CHUNKSIZE,
+    test_for_binary_target_binary_feature=defaults.TEST_FOR_BINARY_TARGET_BINARY_FEATURE,
+    test_for_binary_target_real_feature=defaults.TEST_FOR_BINARY_TARGET_REAL_FEATURE,
+    test_for_real_target_binary_feature=defaults.TEST_FOR_REAL_TARGET_BINARY_FEATURE,
+    test_for_real_target_real_feature=defaults.TEST_FOR_REAL_TARGET_REAL_FEATURE,
+    fdr_level=defaults.FDR_LEVEL,
+    hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
+):
     """
     Calculate the relevance table for the features contained in feature matrix `X` with respect to target vector `y`.
     The relevance table is calculated for the intended machine learning task `ml_task`.
@@ -83,6 +96,15 @@ def calculate_relevance_table(X, y, ml_task='auto', n_jobs=defaults.N_PROCESSES,
                     If `y` has a boolean, integer or object dtype, the task is assumend to be classification,
                     else regression.
     :type ml_task: str
+
+    :param multiclass: Whether the problem is multiclass classification. This modifies the way in which features
+                       are selected. Multiclass requires the features to be statistically significant for
+                       predicting n_significant classes.
+    :type multiclass: bool
+
+    :param n_significant: The number of classes for which features should be statistically significant predictors
+                          to be regarded as 'relevant'
+    :type n_significant: int
 
     :param test_for_binary_target_binary_feature: Which test to be used for binary target, binary feature
                                                   (currently unused)
@@ -138,10 +160,26 @@ def calculate_relevance_table(X, y, ml_task='auto', n_jobs=defaults.N_PROCESSES,
 
     assert list(y.index) == list(X.index), "The index of X and y need to be the same"
 
-    if ml_task not in ['auto', 'classification', 'regression']:
-        raise ValueError('ml_task must be one of: \'auto\', \'classification\', \'regression\'')
-    elif ml_task == 'auto':
+    if ml_task not in ["auto", "classification", "regression"]:
+        raise ValueError(
+            "ml_task must be one of: 'auto', 'classification', 'regression'"
+        )
+    elif ml_task == "auto":
         ml_task = infer_ml_task(y)
+
+    if multiclass:
+        assert (
+            ml_task == "classification"
+        ), "ml_task must be classification for multiclass problem"
+        assert (
+            len(y.unique()) >= n_significant
+        ), "n_significant must not exceed the total number of classes"
+
+        if len(y.unique()) <= 2:
+            warnings.warn(
+                "Two or fewer classes, binary feature selection will be used (multiclass = False)"
+            )
+            multiclass = False
 
     with warnings.catch_warnings():
         if not show_warnings:
@@ -152,25 +190,35 @@ def calculate_relevance_table(X, y, ml_task='auto', n_jobs=defaults.N_PROCESSES,
         if n_jobs == 0:
             map_function = map
         else:
-            pool = Pool(processes=n_jobs, initializer=initialize_warnings_in_workers, initargs=(show_warnings,))
+            pool = Pool(
+                processes=n_jobs,
+                initializer=initialize_warnings_in_workers,
+                initargs=(show_warnings,),
+            )
             map_function = partial(pool.map, chunksize=chunksize)
 
-        relevance_table = pd.DataFrame(index=pd.Series(X.columns, name='feature'))
-        relevance_table['feature'] = relevance_table.index
-        relevance_table['type'] = pd.Series(
-            map_function(get_feature_type, [X[feature] for feature in relevance_table.index]),
-            index=relevance_table.index
+        relevance_table = pd.DataFrame(index=pd.Series(X.columns, name="feature"))
+        relevance_table["feature"] = relevance_table.index
+        relevance_table["type"] = pd.Series(
+            map_function(
+                get_feature_type, [X[feature] for feature in relevance_table.index]
+            ),
+            index=relevance_table.index,
         )
-        table_real = relevance_table[relevance_table.type == 'real'].copy()
-        table_binary = relevance_table[relevance_table.type == 'binary'].copy()
+        table_real = relevance_table[relevance_table.type == "real"].copy()
+        table_binary = relevance_table[relevance_table.type == "binary"].copy()
 
-        table_const = relevance_table[relevance_table.type == 'constant'].copy()
-        table_const['p_value'] = np.NaN
-        table_const['relevant'] = False
+        table_const = relevance_table[relevance_table.type == "constant"].copy()
+        table_const["p_value"] = np.NaN
+        table_const["relevant"] = False
 
         if not table_const.empty:
-            warnings.warn("[test_feature_significance] Constant features: {}"
-                          .format(", ".join(table_const.feature)), RuntimeWarning)
+            warnings.warn(
+                "[test_feature_significance] Constant features: {}".format(
+                    ", ".join(table_const.feature)
+                ),
+                RuntimeWarning,
+            )
 
         if len(table_const) == len(relevance_table):
             if n_jobs != 0:
@@ -179,24 +227,65 @@ def calculate_relevance_table(X, y, ml_task='auto', n_jobs=defaults.N_PROCESSES,
                 pool.join()
             return table_const
 
-        if ml_task == 'classification':
+        if ml_task == "classification":
             tables = []
             for label in y.unique():
-                _test_real_feature = partial(target_binary_feature_real_test, y=(y == label),
-                                             test=test_for_binary_target_real_feature)
-                _test_binary_feature = partial(target_binary_feature_binary_test, y=(y == label))
-                tmp = _calculate_relevance_table_for_implicit_target(
-                    table_real, table_binary, X, _test_real_feature, _test_binary_feature, hypotheses_independent,
-                    fdr_level, map_function
+                _test_real_feature = partial(
+                    target_binary_feature_real_test,
+                    y=(y == label),
+                    test=test_for_binary_target_real_feature,
                 )
+                _test_binary_feature = partial(
+                    target_binary_feature_binary_test, y=(y == label)
+                )
+                tmp = _calculate_relevance_table_for_implicit_target(
+                    table_real,
+                    table_binary,
+                    X,
+                    _test_real_feature,
+                    _test_binary_feature,
+                    hypotheses_independent,
+                    fdr_level,
+                    map_function,
+                )
+                if multiclass:
+                    tmp = tmp.reset_index(drop=True)
+                    tmp.columns = tmp.columns.map(
+                        lambda x: x + "_" + str(label)
+                        if x != "feature" and x != "type"
+                        else x
+                    )
                 tables.append(tmp)
-            relevance_table = combine_relevance_tables(tables)
-        elif ml_task == 'regression':
+
+            if multiclass:
+                relevance_table = reduce(
+                    lambda left, right: pd.merge(
+                        left, right, on=["feature", "type"], how="outer"
+                    ),
+                    tables,
+                )
+                relevance_table["n_significant"] = relevance_table.filter(
+                    regex="^relevant_", axis=1
+                ).sum(axis=1)
+                relevance_table["relevant"] = (
+                    relevance_table["n_significant"] >= n_significant
+                )
+                relevance_table.index = relevance_table["feature"]
+            else:
+                relevance_table = combine_relevance_tables(tables)
+
+        elif ml_task == "regression":
             _test_real_feature = partial(target_real_feature_real_test, y=y)
             _test_binary_feature = partial(target_real_feature_binary_test, y=y)
             relevance_table = _calculate_relevance_table_for_implicit_target(
-                table_real, table_binary, X, _test_real_feature, _test_binary_feature, hypotheses_independent,
-                fdr_level, map_function
+                table_real,
+                table_binary,
+                X,
+                _test_real_feature,
+                _test_binary_feature,
+                hypotheses_independent,
+                fdr_level,
+                map_function,
             )
 
         if n_jobs != 0:
@@ -204,31 +293,53 @@ def calculate_relevance_table(X, y, ml_task='auto', n_jobs=defaults.N_PROCESSES,
             pool.terminate()
             pool.join()
 
+        # set constant features to be irrelevant for all classes in multiclass case
+        if multiclass:
+            for column in relevance_table.filter(regex="^relevant_", axis=1).columns:
+                table_const[column] = False
+            table_const["n_significant"] = 0
+            table_const.drop(columns=["p_value"], inplace=True)
+
         relevance_table = pd.concat([relevance_table, table_const], axis=0)
 
-        if sum(relevance_table['relevant']) == 0:
+        if sum(relevance_table["relevant"]) == 0:
             warnings.warn(
                 "No feature was found relevant for {} for fdr level = {} (which corresponds to the maximal percentage "
-                "of irrelevant features, consider using an higher fdr level or add other features."
-                .format(ml_task, fdr_level), RuntimeWarning)
+                "of irrelevant features, consider using an higher fdr level or add other features.".format(
+                    ml_task, fdr_level
+                ),
+                RuntimeWarning,
+            )
 
     return relevance_table
 
 
-def _calculate_relevance_table_for_implicit_target(table_real, table_binary, X, test_real_feature, test_binary_feature,
-                                                   hypotheses_independent, fdr_level, map_function):
-    table_real['p_value'] = pd.Series(
+def _calculate_relevance_table_for_implicit_target(
+    table_real,
+    table_binary,
+    X,
+    test_real_feature,
+    test_binary_feature,
+    hypotheses_independent,
+    fdr_level,
+    map_function,
+):
+    table_real["p_value"] = pd.Series(
         map_function(test_real_feature, [X[feature] for feature in table_real.index]),
-        index=table_real.index
+        index=table_real.index,
     )
-    table_binary['p_value'] = pd.Series(
-        map_function(test_binary_feature, [X[feature] for feature in table_binary.index]),
-        index=table_binary.index
+    table_binary["p_value"] = pd.Series(
+        map_function(
+            test_binary_feature, [X[feature] for feature in table_binary.index]
+        ),
+        index=table_binary.index,
     )
     relevance_table = pd.concat([table_real, table_binary])
-    method = 'fdr_bh' if hypotheses_independent else 'fdr_by'
-    relevance_table['relevant'] = multipletests(relevance_table.p_value, fdr_level, method)[0]
-    return relevance_table.sort_values('p_value')
+    method = "fdr_bh" if hypotheses_independent else "fdr_by"
+    relevance_table["relevant"] = multipletests(
+        relevance_table.p_value, fdr_level, method
+    )[0]
+    return relevance_table.sort_values("p_value")
 
 
 def infer_ml_task(y):
@@ -243,10 +354,10 @@ def infer_ml_task(y):
     :return: 'classification' or 'regression'
     :rtype: str
     """
-    if y.dtype.kind in np.typecodes['AllInteger'] or y.dtype == np.object:
-        ml_task = 'classification'
+    if y.dtype.kind in np.typecodes["AllInteger"] or y.dtype == np.object:
+        ml_task = "classification"
     else:
-        ml_task = 'regression'
+        ml_task = "regression"
 
     return ml_task
 
@@ -261,6 +372,7 @@ def combine_relevance_tables(relevance_tables):
     :return: The combined relevance table
     :rtype: pandas.DataFrame
     """
+
     def _combine(a, b):
         a.relevant |= b.relevant
         a.p_value = a.p_value.combine(b.p_value, min, 1)
@@ -280,8 +392,8 @@ def get_feature_type(feature_column):
     """
     n_unique_values = len(set(feature_column.values))
     if n_unique_values == 1:
-        return 'constant'
+        return "constant"
     elif n_unique_values == 2:
-        return 'binary'
+        return "binary"
     else:
-        return 'real'
+        return "real"

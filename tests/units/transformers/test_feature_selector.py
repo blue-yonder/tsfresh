@@ -33,7 +33,9 @@ class FeatureSelectorTestCase(TestCase):
         z[z == 2] = 1
 
         X["rel1"] = z
-        X["rel2"] = y * np.abs(np.random.normal(0, 1, 1000)) + np.random.normal(0, 0.1, 1000)
+        X["rel2"] = y * np.abs(np.random.normal(0, 1, 1000)) + np.random.normal(
+            0, 0.1, 1000
+        )
         X["rel3"] = y + np.random.normal(0, 1, 1000)
         X["rel4"] = y ** 2 + np.random.normal(0, 1, 1000)
         X["rel5"] = np.sqrt(y) + np.random.binomial(2, 0.1, 1000)
@@ -52,13 +54,17 @@ class FeatureSelectorTestCase(TestCase):
 
         returned_selector = selector.fit(X, y)
         self.assertIs(returned_selector, selector)
-        self.assertEqual(sorted(selector.relevant_features), ["rel1", "rel2", "rel3", "rel4", "rel5"])
+        self.assertEqual(
+            sorted(selector.relevant_features), ["rel1", "rel2", "rel3", "rel4", "rel5"]
+        )
 
         new_X = X.copy()
 
         selected_X = selector.transform(new_X)
 
-        self.assertEqual(sorted(selector.relevant_features), sorted(list(selected_X.columns)))
+        self.assertEqual(
+            sorted(selector.relevant_features), sorted(list(selected_X.columns))
+        )
         self.assertEqual(len(selector.features), len(X.columns))
 
     def test_nothing_relevant(self):
@@ -126,5 +132,85 @@ class FeatureSelectorTestCase(TestCase):
         selector.fit(X, y)
 
         self.assertEqual(selector.p_values.shape, (2,))
-        np.testing.assert_almost_equal(selector.p_values,
-                                       1.0 - selector.feature_importances_)
+        np.testing.assert_almost_equal(
+            selector.p_values, 1.0 - selector.feature_importances_
+        )
+
+    def test_multiclass_relevant_features_selected(self):
+        y0 = np.zeros(100)
+        y1 = np.repeat(1, 100)
+        y2 = np.repeat(2, 100)
+        y_multi = pd.Series(np.uint8(np.concatenate([y0, y1, y2])))
+        X_multi = pd.DataFrame()
+        X_multi["irrelevant"] = np.concatenate([np.zeros(298), np.array([0.01, -0.01])])
+        X_multi["relevant"] = X_multi["irrelevant"].copy()
+        X_multi["relevant"][y_multi == 0] = np.random.uniform(2, 3, 100)
+
+        selector = FeatureSelector(
+            multiclass=True, n_significant=3, ml_task="classification"
+        )
+
+        selector.fit(X_multi, y_multi)
+
+        self.assertEqual(selector.relevant_features, ["relevant"])
+
+    def test_multiclass_importance_p_values(self):
+        y0 = np.zeros(100)
+        y1 = np.repeat(1, 100)
+        y2 = np.repeat(2, 100)
+        y = pd.Series(np.uint8(np.concatenate([y0, y1, y2])))
+        X = pd.DataFrame(index=list(range(300)))
+
+        X["irr1"] = np.random.normal(0, 1, 300)
+        X["rel1"] = y
+
+        selector = FeatureSelector(
+            multiclass=True,
+            ml_task="classification",
+            n_significant=2,
+            multiclass_p_values="all",
+        )
+        selector.fit(X, y)
+
+        self.assertEqual(selector.p_values.shape, (2, 3))
+        self.assertEqual(selector.feature_importances_.shape, (2, 3))
+
+        selector = FeatureSelector(
+            multiclass=True,
+            ml_task="classification",
+            n_significant=2,
+            multiclass_p_values="min",
+        )
+        selector.fit(X, y)
+
+        self.assertEqual(selector.p_values.shape, (2,))
+        self.assertEqual(selector.feature_importances_.shape, (2,))
+
+    def test_multiclass_max_avg_p_values(self):
+        y0 = np.zeros(100)
+        y1 = np.repeat(1, 100)
+        y2 = np.repeat(2, 100)
+        y = pd.Series(np.uint8(np.concatenate([y0, y1, y2])))
+        X = pd.DataFrame(index=list(range(300)))
+
+        X["irr1"] = np.random.normal(0, 1, 300)
+        X["rel1"] = y
+
+        selector = FeatureSelector(
+            multiclass=True,
+            ml_task="classification",
+            n_significant=2,
+            multiclass_p_values="max",
+        )
+        selector.fit(X, y)
+
+        assert (selector.p_values > 0.1).all()
+        selector = FeatureSelector(
+            multiclass=True,
+            ml_task="classification",
+            n_significant=2,
+            multiclass_p_values="avg",
+        )
+        selector.fit(X, y)
+
+        assert (selector.p_values > 0.1).all()
