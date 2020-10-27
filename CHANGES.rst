@@ -9,6 +9,7 @@ Unreleased
 
 - Added Features
     - Allow arbitrary rolling sizes (#766)
+    - Allow for multiclass significance tests (#762)
 - Bugfixes:
     - Do not send coverage of notebook tests to codecov (#759)
     - Fix typos in notebook (#757)
