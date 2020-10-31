@@ -262,7 +262,7 @@ def _do_extraction(df, column_id, column_value, column_kind, column_sort,
     return return_df
 
 
-def _do_extraction_on_chunk(chunk, default_fc_parameters, kind_to_fc_parameters, show_warnings):
+def _do_extraction_on_chunk(chunk, default_fc_parameters, kind_to_fc_parameters, show_warnings=True):
     """
     Main function of this module: use the feature calculators defined in the
     default_fc_parameters or kind_to_fc_parameters parameters and extract all
