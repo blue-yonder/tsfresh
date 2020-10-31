@@ -327,7 +327,6 @@ def _do_extraction_on_chunk(chunk, default_fc_parameters, kind_to_fc_parameters,
                     feature_name += "__" + str(key)
                 yield (sample_id, feature_name, item)
 
-
     with warnings.catch_warnings():
         if not show_warnings:
             warnings.simplefilter("ignore")
