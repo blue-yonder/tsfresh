@@ -248,7 +248,8 @@ def _do_extraction(df, column_id, column_value, column_kind, column_sort,
         raise ValueError("the passed distributor is not an DistributorBaseClass object")
 
     kwargs = dict(default_fc_parameters=default_fc_parameters,
-                  kind_to_fc_parameters=kind_to_fc_parameters)
+                  kind_to_fc_parameters=kind_to_fc_parameters,
+                  show_warnings=show_warnings)
 
     result = distributor.map_reduce(_do_extraction_on_chunk, data=data,
                                     chunk_size=chunk_size,
@@ -261,7 +262,7 @@ def _do_extraction(df, column_id, column_value, column_kind, column_sort,
     return return_df
 
 
-def _do_extraction_on_chunk(chunk, default_fc_parameters, kind_to_fc_parameters):
+def _do_extraction_on_chunk(chunk, default_fc_parameters, kind_to_fc_parameters, show_warnings):
     """
     Main function of this module: use the feature calculators defined in the
     default_fc_parameters or kind_to_fc_parameters parameters and extract all
@@ -280,6 +281,7 @@ def _do_extraction_on_chunk(chunk, default_fc_parameters, kind_to_fc_parameters)
     :param chunk: A tuple of sample_id, kind, data
     :param default_fc_parameters: A dictionary of feature calculators.
     :param kind_to_fc_parameters: A dictionary of fc_parameters for special kinds or None.
+    :param show_warnings: Surpress warnings (some feature calculators are quite verbose)
     :return: A list of calculated features.
     """
     sample_id, kind, data = chunk
@@ -325,4 +327,11 @@ def _do_extraction_on_chunk(chunk, default_fc_parameters, kind_to_fc_parameters)
                     feature_name += "__" + str(key)
                 yield (sample_id, feature_name, item)
 
-    return list(_f())
+
+    with warnings.catch_warnings():
+        if not show_warnings:
+            warnings.simplefilter("ignore")
+        else:
+            warnings.simplefilter("default")
+
+        return list(_f())
