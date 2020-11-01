@@ -25,7 +25,7 @@ from collections import defaultdict
 
 import numpy as np
 import pandas as pd
-from numba import njit, jit
+from numba import njit, jit, prange
 from numba.typed import Dict as TypedDict
 from numpy.linalg import LinAlgError
 from scipy.signal import cwt, find_peaks_cwt, ricker, welch
@@ -1618,7 +1618,6 @@ def sample_entropy(x):
     # Return SampEn
     return -np.log(A / B)
 
-from numba import prange
 
 @njit(parallel=False)
 def _sample_entropy_compiled_subfunction(xm, tolerance):
@@ -1628,6 +1627,7 @@ def _sample_entropy_compiled_subfunction(xm, tolerance):
         to_sum.append(np.sum(np.array([absolute[i, :].max() for i in prange(xm.shape[0])]) <= tolerance) - 1)
 
     return to_sum
+
 
 # todo - include latex formula
 # todo - check if vectorizable
