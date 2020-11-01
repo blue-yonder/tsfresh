@@ -2104,7 +2104,7 @@ def agg_linear_trend(x, param):
     # todo: we could use the index of the DataFrame here
 
     calculated_agg = defaultdict(dict)
-    
+
     res_data = []
     res_index = []
 
