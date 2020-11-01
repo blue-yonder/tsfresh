@@ -176,6 +176,7 @@ def _aggregate_on_chunks(x, f_agg, chunk_len):
     """
     return [getattr(x[i * chunk_len: (i + 1) * chunk_len], f_agg)() for i in range(int(np.ceil(len(x) / chunk_len)))]
 
+
 def _into_subchunks(x, subchunk_length, every_n=1):
     """
     Split the time series x into subwindows of length "subchunk_length", starting every "every_n".
@@ -2102,9 +2103,8 @@ def agg_linear_trend(x, param):
     """
     # todo: we could use the index of the DataFrame here
 
-    # calculated_agg = defaultdict(dict)
-    calculated_agg = TypedDict()
-    
+    calculated_agg = defaultdict(dict)
+
     res_data = []
     res_index = []
 
@@ -2131,6 +2131,7 @@ def agg_linear_trend(x, param):
         res_index.append("attr_\"{}\"__chunk_len_{}__f_agg_\"{}\"".format(attr, chunk_len, f_agg))
 
     return zip(res_index, res_data)
+
 
 @set_property("fctype", "combiner")
 def energy_ratio_by_chunks(x, param):
@@ -2173,6 +2174,7 @@ def energy_ratio_by_chunks(x, param):
 
     # Materialize as list for Python 3 compatibility with name handling
     return list(zip(res_index, res_data))
+
 
 @set_property("fctype", "combiner")
 @set_property("input", "pd.Series")
@@ -2222,6 +2224,7 @@ def count_above(x, t):
     :return type: float
     """
     return np.sum(x >= t)/len(x)
+
 
 @set_property("fctype", "simple")
 def count_below(x, t):
