@@ -44,6 +44,7 @@ def test_benchmark_with_selection(benchmark):
     benchmark(extract_relevant_features, df, y, column_id="id", column_sort="time", n_jobs=0,
               disable_progressbar=True)
 
+
 def test_optimized_sample_entropy(benchmark):
     fc_parameters = {
         "optimized_sample_entropy": []
@@ -53,6 +54,7 @@ def test_optimized_sample_entropy(benchmark):
 
     benchmark(extract_features_partial, df, column_id="id", column_sort="time", n_jobs=0,
               disable_progressbar=True)
+
 
 def test_sample_entropy(benchmark):
     fc_parameters = {
@@ -64,6 +66,7 @@ def test_sample_entropy(benchmark):
     benchmark(extract_features_partial, df, column_id="id", column_sort="time", n_jobs=0,
               disable_progressbar=True)
 
+
 def test_sample_entropy_similarity():
 
     fc_parameters = {
@@ -73,7 +76,7 @@ def test_sample_entropy_similarity():
     df = create_data(100, 20)
 
     resnon_opti = extract_features(df, column_id="id", column_sort="time", n_jobs=0,
-                                    disable_progressbar=True, default_fc_parameters=fc_parameters)
+                                   disable_progressbar=True, default_fc_parameters=fc_parameters)
                                 
     fc_parameters = {
         "optimized_sample_entropy": []
