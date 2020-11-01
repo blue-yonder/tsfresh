@@ -84,7 +84,7 @@ def test_sample_entropy_similarity():
 
     res_opti = extract_features(df, column_id="id", column_sort="time", n_jobs=0,
                                 disable_progressbar=True, default_fc_parameters=fc_parameters)
-    
+
     resnon_opti.columns = res_opti.columns
 
     pd.testing.assert_frame_equal(resnon_opti, res_opti)
