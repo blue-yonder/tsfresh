@@ -15,6 +15,7 @@ Unreleased
     - Fix typos in notebook (#757)
     - Fix output format of `make_forecasting_frame` (#758)
     - Fix badges and remove benchmark test
+    - Fix BY notebook plot (#760)
 
 Version 0.17.0
 ==============
