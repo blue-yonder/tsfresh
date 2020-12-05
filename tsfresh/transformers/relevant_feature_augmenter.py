@@ -333,10 +333,12 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
         """
         X_augmented = self._fit_and_augment(X, y)
 
+        selected_features = X_augmented.copy().loc[:, self.feature_selector.relevant_features]
+
         if self.filter_only_tsfresh_features:
-            return X_augmented.copy().loc[:, self.feature_selector.relevant_features + X.columns.tolist()]
-        else:
-            return X_augmented.copy().loc[:, self.feature_selector.relevant_features]
+            selected_features = pd.merge(selected_features, X, left_index=True, right_index=True, how="left")
+
+        return selected_features
 
     def _fit_and_augment(self, X, y):
         """
@@ -350,8 +352,9 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
         :param y: The target vector to define, which features are relevant.
         :type y: pandas.Series or numpy.array
 
-        :return: the fitted estimator with the information, which features are relevant.
-        :rtype: RelevantFeatureAugmenter
+        :return: a data sample with the extraced time series features. If filter_only_tsfresh_features is False
+            the data sample will also include the information in X.
+        :rtype: pandas.DataFrame
         """
         if self.timeseries_container is None:
             raise RuntimeError("You have to provide a time series using the set_timeseries_container function before.")
