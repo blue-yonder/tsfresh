@@ -37,6 +37,7 @@ class RelevantFeatureAugmenterTestCase(DataTestCase):
         y = pd.Series(dtype="float64")
 
         self.assertRaises(RuntimeError, augmenter.fit, X, y)
+        self.assertRaises(RuntimeError, augmenter.fit_transform, X, y)
 
     def test_nothing_relevant(self):
         augmenter = RelevantFeatureAugmenter(kind_to_fc_parameters=self.kind_to_fc_parameters,
@@ -48,15 +49,18 @@ class RelevantFeatureAugmenterTestCase(DataTestCase):
 
         augmenter.set_timeseries_container(self.test_df)
         augmenter.fit(X, y)
-
         transformed_X = augmenter.transform(X.copy())
+
+        fit_transformed_X = augmenter.fit_transform(X, y)
 
         self.assertEqual(list(transformed_X.columns), [])
         self.assertEqual(list(transformed_X.index), list(X.index))
+        self.assertEqual(list(fit_transformed_X.columns), [])
+        self.assertEqual(list(fit_transformed_X.index), list(X.index))
 
-    def test_evaluate_only_added_features_true(self):
+    def test_filter_only_tsfresh_features_true(self):
         """
-        The boolean flag `evaluate_only_extracted_features` makes sure that only the time series based features are
+        The boolean flag `filter_only_tsfresh_features` makes sure that only the time series based features are
         filtered. This unit tests checks that
         """
 
@@ -72,11 +76,14 @@ class RelevantFeatureAugmenterTestCase(DataTestCase):
         augmenter.fit(X, y)
         transformed_X = augmenter.transform(X.copy())
 
-        self.assertEqual(sum(["pre_feature" == column for column in transformed_X.columns]), 1)
+        fit_transformed_X = augmenter.fit_transform(X, y)
 
-    def test_evaluate_only_added_features_false(self):
+        self.assertEqual(sum(["pre_feature" == column for column in transformed_X.columns]), 1)
+        self.assertEqual(sum(["pre_feature" == column for column in fit_transformed_X.columns]), 1)
+
+    def test_filter_only_tsfresh_features_false(self):
         """
-        The boolean flag `evaluate_only_extracted_features` makes sure that only the time series based features are
+        The boolean flag `filter_only_tsfresh_features` makes sure that only the time series based features are
         filtered. This unit tests checks that
         """
 
@@ -93,8 +100,12 @@ class RelevantFeatureAugmenterTestCase(DataTestCase):
         augmenter.fit(X, y)
         transformed_X = augmenter.transform(X.copy())
 
+        fit_transformed_X = augmenter.fit_transform(X, y)
+
         self.assertEqual(sum(["pre_keep" == column for column in transformed_X.columns]), 1)
         self.assertEqual(sum(["pre_drop" == column for column in transformed_X.columns]), 0)
+        self.assertEqual(sum(["pre_keep" == column for column in fit_transformed_X.columns]), 1)
+        self.assertEqual(sum(["pre_drop" == column for column in fit_transformed_X.columns]), 0)
 
     @mock.patch('tsfresh.transformers.feature_selector.calculate_relevance_table')
     def test_does_impute(self, calculate_relevance_table_mock):
@@ -124,6 +135,8 @@ class RelevantFeatureAugmenterTestCase(DataTestCase):
 
         self.assertRaisesRegex(AttributeError, r"The ids of the time series container",
                                augmenter.fit, X_with_wrong_ids, y)
+        self.assertRaisesRegex(AttributeError, r"The ids of the time series container",
+                               augmenter.fit_transform, X_with_wrong_ids, y)
 
 
 def test_relevant_augmentor_cross_validated():
