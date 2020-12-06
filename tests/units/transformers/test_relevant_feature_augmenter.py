@@ -81,7 +81,7 @@ class RelevantFeatureAugmenterTestCase(DataTestCase):
         self.assertEqual(sum(["pre_feature" == column for column in transformed_X.columns]), 1)
         self.assertEqual(sum(["pre_feature" == column for column in fit_transformed_X.columns]), 1)
 
-    def filter_only_tsfresh_features_false(self):
+    def test_filter_only_tsfresh_features_false(self):
         """
         The boolean flag `filter_only_tsfresh_features` makes sure that only the time series based features are
         filtered. This unit tests checks that
