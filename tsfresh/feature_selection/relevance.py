@@ -146,7 +146,7 @@ def calculate_relevance_table(
 
     :return: A pandas.DataFrame with each column of the input DataFrame X as index with information on the significance
              of this particular feature. The DataFrame has the columns
-             "Feature",
+             "feature",
              "type" (binary, real or const),
              "p_value" (the significance of this feature as a p-value, lower means more significant)
              "relevant" (True if the Benjamini Hochberg procedure rejected the null hypothesis [the feature is
