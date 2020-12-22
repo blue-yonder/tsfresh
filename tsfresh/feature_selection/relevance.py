@@ -151,7 +151,7 @@ def calculate_relevance_table(
              "p_value" (the significance of this feature as a p-value, lower means more significant)
              "relevant" (True if the Benjamini Hochberg procedure rejected the null hypothesis [the feature is
              not relevant] for this feature).
-             If problem is `multiclass` with n classes, the DataFrame will contain n
+             If the problem is `multiclass` with n classes, the DataFrame will contain n
              columns named "p_value_CLASSID" instead of the "p_value" column.
              `CLASSID` refers here to the different values set in `y`.
              There will also be n columns named `relevant_CLASSID`, indicating whether
