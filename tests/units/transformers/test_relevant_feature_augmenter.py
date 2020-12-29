@@ -138,6 +138,24 @@ class RelevantFeatureAugmenterTestCase(DataTestCase):
         self.assertRaisesRegex(AttributeError, r"The ids of the time series container",
                                augmenter.fit_transform, X_with_wrong_ids, y)
 
+    def test_multiclass_selection(self):
+        augmenter = RelevantFeatureAugmenter(
+            column_value="val",
+            column_id="id",
+            column_sort="sort",
+            column_kind="kind",
+            multiclass=True,
+            n_significant=3,
+        )
+
+        df, y = self.create_test_data_sample_with_multiclass_target()
+        X = pd.DataFrame(index=np.unique(df.id))
+
+        augmenter.set_timeseries_container(df)
+        fit_transformed_X = augmenter.fit_transform(X, y)
+
+        self.assertEqual(len(fit_transformed_X.columns), 4)
+
 
 def test_relevant_augmentor_cross_validated():
     """Validates that the RelevantFeatureAugmenter can cloned in pipelines, see issue 537
