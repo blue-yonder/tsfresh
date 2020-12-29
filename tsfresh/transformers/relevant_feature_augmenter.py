@@ -104,7 +104,7 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
                  test_for_real_target_real_feature=defaults.TEST_FOR_REAL_TARGET_REAL_FEATURE,
                  fdr_level=defaults.FDR_LEVEL,
                  hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
-                 ml_task='auto',
+                 ml_task="auto",
                  multiclass=False,
                  n_significant=1,
                  multiclass_p_values="min"):
