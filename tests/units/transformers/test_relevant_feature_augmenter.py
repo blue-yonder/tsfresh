@@ -158,7 +158,8 @@ class RelevantFeatureAugmenterTestCase(DataTestCase):
 
 
 def test_relevant_augmentor_cross_validated():
-    """Validates that the RelevantFeatureAugmenter can cloned in pipelines, see issue 537
+    """
+    Validates that the RelevantFeatureAugmenter can be cloned in pipelines, see issue 537
     """
     n = 16  # number of samples, needs to be divisable by 4
     index = range(n)
