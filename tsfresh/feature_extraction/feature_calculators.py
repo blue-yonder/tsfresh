@@ -19,6 +19,7 @@ alphabetically ascending.
 
 import itertools
 import functools
+from tsfresh.utilities.string_manipulation import convert_to_output_format
 import warnings
 from builtins import range
 from collections import defaultdict
@@ -29,6 +30,7 @@ from numpy.linalg import LinAlgError
 from scipy.signal import cwt, find_peaks_cwt, ricker, welch
 from scipy.stats import linregress
 from statsmodels.tools.sm_exceptions import MissingDataError
+import matrixprofile as mp
 
 with warnings.catch_warnings():
     # Ignore warnings of the patsy package
@@ -2212,3 +2214,67 @@ def benford_correlation(x):
     # np.corrcoef outputs the normalized covariance (correlation) between benford_distribution and data_distribution.
     # In this case returns a 2x2 matrix, the  [0, 1] and [1, 1] are the values between the two arrays
     return np.corrcoef(benford_distribution, data_distribution)[0, 1]
+
+
+@set_property("fctype", "combiner")
+def matrix_profile(x, param):
+    """
+    TODO: Documentation
+
+    :param x: the time series to calculate the feature of
+    :type x: numpy.ndarray
+    :param param: contains dictionaries {"sample_pct": x, "threshold": y, "feature": z}
+                  with sample_pct and threshold being parameters of the matrixprofile
+                  package https://matrixprofile.docs.matrixprofile.org/api.html#matrixprofile-compute
+                  and feature being one of "min", "max", "mean", "median", "25", "75"
+                  and decides which feature of the matrix profile to extract
+    :type param: list
+    :return: the different feature values
+    :return type: pandas.Series
+    """
+    x = np.asarray(x)
+
+    def _calculate_pmp(**kwargs):
+        """Calculate the pan-matrix profile"""
+        try:
+            pmp = mp.compute(x, **kwargs)["pmp"]
+            # TODO: reasonable?
+            return pmp[(~np.isnan(pmp)) & (~np.isinf(pmp))]
+        except Exception:
+            return [np.NaN]
+
+    # The already calculated matrix profiles
+    matrix_profiles = {}
+
+    # The results
+    res = {}
+
+    for kwargs in param:
+        key = convert_to_output_format(kwargs)
+        feature = kwargs.pop('feature')
+
+        # Only calculate the pmp if we have not already done so
+        # The feature calculation can happen afterwards
+        featureless_key = convert_to_output_format(kwargs)
+        if featureless_key not in matrix_profiles:
+            matrix_profiles[featureless_key] = _calculate_pmp(**kwargs)
+
+        pmp = matrix_profiles[featureless_key]
+
+        # TODO: is this what we want?
+        if feature == "min":
+            res[key] = np.min(pmp)
+        elif feature == "max":
+            res[key] = np.max(pmp)
+        elif feature == "mean":
+            res[key] = np.mean(pmp)
+        elif feature == "median":
+            res[key] = np.median(pmp)
+        elif feature == "25":
+            res[key] = np.percentile(pmp, 25)
+        elif feature == "75":
+            res[key] = np.percentile(pmp, 75)
+        else:
+            raise ValueError(f"Unknown feature {feature} for the matrix profile")
+
+    return [(key, value) for key, value in res.items()]
