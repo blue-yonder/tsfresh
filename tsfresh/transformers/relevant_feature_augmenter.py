@@ -85,26 +85,31 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
     However, the default settings which are used if you pass no flags are often quite sensible.
     """
 
-    def __init__(self,
-                 filter_only_tsfresh_features=True,
-                 default_fc_parameters=None,
-                 kind_to_fc_parameters=None,
-                 column_id=None, column_sort=None, column_kind=None, column_value=None,
-                 timeseries_container=None,
-                 chunksize=defaults.CHUNKSIZE,
-                 n_jobs=defaults.N_PROCESSES,
-                 show_warnings=defaults.SHOW_WARNINGS,
-                 disable_progressbar=defaults.DISABLE_PROGRESSBAR,
-                 profile=defaults.PROFILING,
-                 profiling_filename=defaults.PROFILING_FILENAME,
-                 profiling_sorting=defaults.PROFILING_SORTING,
-                 test_for_binary_target_binary_feature=defaults.TEST_FOR_BINARY_TARGET_BINARY_FEATURE,
-                 test_for_binary_target_real_feature=defaults.TEST_FOR_BINARY_TARGET_REAL_FEATURE,
-                 test_for_real_target_binary_feature=defaults.TEST_FOR_REAL_TARGET_BINARY_FEATURE,
-                 test_for_real_target_real_feature=defaults.TEST_FOR_REAL_TARGET_REAL_FEATURE,
-                 fdr_level=defaults.FDR_LEVEL,
-                 hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
-                 ml_task='auto'):
+    def __init__(
+        self,
+        filter_only_tsfresh_features=True,
+        default_fc_parameters=None,
+        kind_to_fc_parameters=None,
+        column_id=None, column_sort=None, column_kind=None, column_value=None,
+        timeseries_container=None,
+        chunksize=defaults.CHUNKSIZE,
+        n_jobs=defaults.N_PROCESSES,
+        show_warnings=defaults.SHOW_WARNINGS,
+        disable_progressbar=defaults.DISABLE_PROGRESSBAR,
+        profile=defaults.PROFILING,
+        profiling_filename=defaults.PROFILING_FILENAME,
+        profiling_sorting=defaults.PROFILING_SORTING,
+        test_for_binary_target_binary_feature=defaults.TEST_FOR_BINARY_TARGET_BINARY_FEATURE,
+        test_for_binary_target_real_feature=defaults.TEST_FOR_BINARY_TARGET_REAL_FEATURE,
+        test_for_real_target_binary_feature=defaults.TEST_FOR_REAL_TARGET_BINARY_FEATURE,
+        test_for_real_target_real_feature=defaults.TEST_FOR_REAL_TARGET_REAL_FEATURE,
+        fdr_level=defaults.FDR_LEVEL,
+        hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
+        ml_task="auto",
+        multiclass=False,
+        n_significant=1,
+        multiclass_p_values="min",
+    ):
         """
         Create a new RelevantFeatureAugmenter instance.
 
@@ -189,6 +194,22 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
                     If `y` has a boolean, integer or object dtype, the task is assumend to be classification,
                     else regression.
         :type ml_task: str
+
+        :param multiclass: Whether the problem is multiclass classification. This modifies the way in which features
+                       are selected. Multiclass requires the features to be statistically significant for
+                       predicting n_significant classes.
+        :type multiclass: bool
+
+        :param n_significant: The number of classes for which features should be statistically significant predictors
+                            to be regarded as 'relevant'
+        :type n_significant: int
+
+        :param multiclass_p_values: The desired method for choosing how to display multiclass p-values for each feature.
+                                    Either `'avg'`, `'max'`, `'min'`, `'all'`. Defaults to `'min'`, meaning the p-value
+                                    with the highest significance is chosen. When set to `'all'`, the attributes
+                                    `self.feature_importances_` and `self.p_values` are of type pandas.DataFrame, where
+                                    each column corresponds to a target class.
+        :type multiclass_p_values: str
         """
         self.filter_only_tsfresh_features = filter_only_tsfresh_features
         self.default_fc_parameters = default_fc_parameters
@@ -212,6 +233,9 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
         self.fdr_level = fdr_level
         self.hypotheses_independent = hypotheses_independent
         self.ml_task = ml_task
+        self.multiclass = multiclass
+        self.n_significant = n_significant
+        self.multiclass_p_values = multiclass_p_values
 
         # attributes
         self.feature_extractor = None
@@ -385,7 +409,10 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
             hypotheses_independent=self.hypotheses_independent,
             n_jobs=self.n_jobs,
             chunksize=self.chunksize,
-            ml_task=self.ml_task
+            ml_task=self.ml_task,
+            multiclass=self.multiclass,
+            n_significant=self.n_significant,
+            multiclass_p_values=self.multiclass_p_values,
         )
 
         if self.filter_only_tsfresh_features:
