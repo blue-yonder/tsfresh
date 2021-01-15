@@ -152,6 +152,8 @@ class ComprehensiveFCParameters(dict):
             "lempel_ziv_complexity": [{"bins": x} for x in [2, 3, 5, 10, 100]],
             "fourier_entropy":  [{"bins": x} for x in [2, 3, 5, 10, 100]],
             "permutation_entropy":  [{"tau": 1, "dimension": x} for x in [3, 4, 5, 6, 7]],
+                        "matrix_profile": [{"sample_pct": 1, "threshold": 0.98, "feature": f}
+                               for f in ["min", "max", "mean", "median", "25", "75"]]
 
         })
 
