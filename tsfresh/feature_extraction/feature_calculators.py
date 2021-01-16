@@ -2262,7 +2262,7 @@ def matrix_profile(x, param):
             matrix_profiles[featureless_key] = _calculate_mp(**kwargs)
 
         m_p = matrix_profiles[featureless_key]
-        finite_indices = np.finite(m_p)
+        finite_indices = np.isfinite(m_p)
 
 
         if feature == "min":
