@@ -1326,6 +1326,12 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqual(matrix_profile(ts)[1],3.514)
         self.assertAlmostEqual(matrix_profile(ts)[2],3.626)
 
+    def test_matrix_profile_nan(self):
+        ts = np.random.uniform(size=2**6)
+        ts[:] = np.nan
+
+        self.assertRaises(NoSolutionPossible,matrix_profile(ts))
+
 
 class FriedrichTestCase(TestCase):
 

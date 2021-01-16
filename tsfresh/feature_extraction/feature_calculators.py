@@ -2219,7 +2219,12 @@ def benford_correlation(x):
 @set_property("fctype", "combiner")
 def matrix_profile(x, param):
     """
-    TODO: Documentation
+    Calculates the 1-D Matrix Profile[1] and returns Tukey's Five Number Set plus the mean of that Matrix Profile.
+
+    .. rubric:: References
+
+    |  [1] Matrix Profile I: All Pairs Similarity Joins for Time Series: A Unifying View That Includes Motifs, Discords and Shapelets. Yeh et.al, 2016.
+
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
     :param param: contains dictionaries {"sample_pct": x, "threshold": y, "feature": z}
