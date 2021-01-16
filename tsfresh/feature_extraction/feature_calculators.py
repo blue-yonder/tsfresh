@@ -2266,17 +2266,17 @@ def matrix_profile(x, param):
 
 
         if feature == "min":
-            res[key] = np.min(finite_indices)
+            res[key] = np.min(m_p[finite_indices])
         elif feature == "max":
-            res[key] = np.max(finite_indices)
+            res[key] = np.max(m_p[finite_indices])
         elif feature == "mean":
-            res[key] = np.mean(finite_indices)
+            res[key] = np.mean(m_p[finite_indices])
         elif feature == "median":
-            res[key] = np.median(finite_indices)
+            res[key] = np.median(m_p[finite_indices])
         elif feature == "25":
-            res[key] = np.percentile(finite_indices, 25)
+            res[key] = np.percentile(m_p[finite_indices], 25)
         elif feature == "75":
-            res[key] = np.percentile(finite_indices, 75)
+            res[key] = np.percentile(m_p[finite_indices], 75)
         else:
             raise ValueError(f"Unknown feature {feature} for the matrix profile")
 
