@@ -2234,14 +2234,15 @@ def matrix_profile(x, param):
     x = np.asarray(x)
 
     def _calculate_mp(**kwargs):
-                """Calculate the matrix profile using the specified window, or the maximum subsequence if no window is specified"""
+        """Calculate the matrix profile using the specified window, or the maximum subsequence if no window is specified"""
         try:
             if 'windows' in kwargs:
                 m_p = mp.compute(x,**kwargs)
 
             else:
-                m_p = mp.algorithms.maximum_subsequence(x, include_pmp=True)['pmp'][-1]
-            return m_p[(~np.isnan(m_p)) & (~np.isinf(m_p))]
+                m_p = mp.algorithms.maximum_subsequence(x, include_pmp=True,**kwargs)['pmp'][-1]
+            return m_p
+
         except Exception:
             return [np.NaN]
 
@@ -2262,20 +2263,21 @@ def matrix_profile(x, param):
             matrix_profiles[featureless_key] = _calculate_mp(**kwargs)
 
         m_p = matrix_profiles[featureless_key]
+        finite_indices = np.finite(m_p)
 
 
         if feature == "min":
-            res[key] = np.min(m_p)
+            res[key] = np.min(finite_indices)
         elif feature == "max":
-            res[key] = np.max(m_p)
+            res[key] = np.max(finite_indices)
         elif feature == "mean":
-            res[key] = np.mean(m_p)
+            res[key] = np.mean(finite_indices)
         elif feature == "median":
-            res[key] = np.median(m_p)
+            res[key] = np.median(finite_indices)
         elif feature == "25":
-            res[key] = np.percentile(m_p, 25)
+            res[key] = np.percentile(finite_indices, 25)
         elif feature == "75":
-            res[key] = np.percentile(m_p, 75)
+            res[key] = np.percentile(finite_indices, 75)
         else:
             raise ValueError(f"Unknown feature {feature} for the matrix profile")
 
