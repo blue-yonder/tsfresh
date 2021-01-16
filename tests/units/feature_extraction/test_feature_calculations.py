@@ -1301,6 +1301,31 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqual(benford_correlation(list_with_nan), 0.10357511)
         self.assertIsNaN(benford_correlation(equal_list))
 
+    def test_matrix_profile_window(self):
+        #Test matrix profile output with specified window
+        np.random.seed(9999)
+        ts = np.random.uniform(size=2**10)
+        w = 2**5
+        subq = ts[0:w]
+        ts[0:w] = subq
+        ts[w+100:w+100+w] = subq
+        self.assertAlmostEqual(matrix_profile(ts,windows=36)[0],2.826)
+        self.assertAlmostEqual(matrix_profile(ts,windows=36)[1],3.514)
+        self.assertAlmostEqual(matrix_profile(ts,windows=36)[2],3.626)
+
+    def test_matrix_profile_no_window(self):
+        np.random.seed(9999)
+        ts = np.random.uniform(size=2**10)
+        w = 2**5
+        subq = ts[0:w]
+        ts[0:w] = subq
+        ts[w+100:w+100+w] = subq
+
+        #Test matrix profile output with no window specified
+        self.assertAlmostEqual(matrix_profile(ts)[0],2.826)
+        self.assertAlmostEqual(matrix_profile(ts)[1],3.514)
+        self.assertAlmostEqual(matrix_profile(ts)[2],3.626)
+
 
 class FriedrichTestCase(TestCase):
 

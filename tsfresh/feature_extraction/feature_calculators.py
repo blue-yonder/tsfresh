@@ -2238,7 +2238,6 @@ def matrix_profile(x, param):
         try:
             if 'windows' in kwargs:
                 m_p = mp.compute(x,**kwargs)
-
             else:
                 m_p = mp.algorithms.maximum_subsequence(x, include_pmp=True,**kwargs)['pmp'][-1]
             return m_p
