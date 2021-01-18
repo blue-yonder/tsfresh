@@ -2248,7 +2248,7 @@ def matrix_profile(x, param):
             return m_p
 
         except Exception:
-            return [np.NaN]
+            return np.array([np.NaN])
 
     # The already calculated matrix profiles
     matrix_profiles = {}

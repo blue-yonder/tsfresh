@@ -5,6 +5,7 @@
 from random import shuffle
 from unittest import TestCase
 import warnings
+from matrixprofile.exceptions import NoSolutionPossible
 
 from tsfresh.feature_extraction.feature_calculators import *
 from tsfresh.feature_extraction.feature_calculators import _roll
