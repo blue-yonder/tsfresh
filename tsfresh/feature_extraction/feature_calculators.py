@@ -2236,53 +2236,59 @@ def matrix_profile(x, param):
     :return: the different feature values
     :return type: pandas.Series
     """
-    x = np.asarray(x)
+    try:
+        x = np.asarray(x)
 
-    def _calculate_mp(**kwargs):
-        """Calculate the matrix profile using the specified window, or the maximum subsequence if no window is specified"""
-        try:
-            if 'windows' in kwargs:
-                m_p = mp.compute(x,**kwargs)
+        def _calculate_mp(**kwargs):
+            """Calculate the matrix profile using the specified window, or the maximum subsequence if no window is specified"""
+            #try:
+            if "windows" in kwargs:
+                m_p = mp.compute(x,**kwargs)['mp']
+
+
             else:
                 m_p = mp.algorithms.maximum_subsequence(x, include_pmp=True,**kwargs)['pmp'][-1]
+
             return m_p
 
-        except Exception:
-            return np.array([np.NaN])
 
-    # The already calculated matrix profiles
-    matrix_profiles = {}
+        # The already calculated matrix profiles
+        matrix_profiles = {}
 
-    # The results
-    res = {}
+        # The results
+        res = {}
 
-    for kwargs in param:
-        key = convert_to_output_format(kwargs)
-        feature = kwargs.pop('feature')
+        for kwargs in param:
+            key = convert_to_output_format(kwargs)
+            feature = kwargs.pop('feature')
 
-        # Only calculate the pmp if we have not already done so
-        # The feature calculation can happen afterwards
-        featureless_key = convert_to_output_format(kwargs)
-        if featureless_key not in matrix_profiles:
-            matrix_profiles[featureless_key] = _calculate_mp(**kwargs)
+            featureless_key = convert_to_output_format(kwargs)
+            if featureless_key not in matrix_profiles:
+                matrix_profiles[featureless_key] = _calculate_mp(**kwargs)
 
-        m_p = matrix_profiles[featureless_key]
-        finite_indices = np.isfinite(m_p)
+            m_p = matrix_profiles[featureless_key]
+            finite_indices = np.isfinite(m_p)
 
 
-        if feature == "min":
-            res[key] = np.min(m_p[finite_indices])
-        elif feature == "max":
-            res[key] = np.max(m_p[finite_indices])
-        elif feature == "mean":
-            res[key] = np.mean(m_p[finite_indices])
-        elif feature == "median":
-            res[key] = np.median(m_p[finite_indices])
-        elif feature == "25":
-            res[key] = np.percentile(m_p[finite_indices], 25)
-        elif feature == "75":
-            res[key] = np.percentile(m_p[finite_indices], 75)
-        else:
-            raise ValueError(f"Unknown feature {feature} for the matrix profile")
+            if feature == "min":
+                res[key] = np.min(m_p[finite_indices])
+            elif feature == "max":
+                res[key] = np.max(m_p[finite_indices])
+            elif feature == "mean":
+                res[key] = np.mean(m_p[finite_indices])
+            elif feature == "median":
+                res[key] = np.median(m_p[finite_indices])
+            elif feature == "25":
+                res[key] = np.percentile(m_p[finite_indices], 25)
+            elif feature == "75":
+                res[key] = np.percentile(m_p[finite_indices], 75)
+            else:
+                raise ValueError(f"Unknown feature {feature} for the matrix profile")
 
-    return [(key, value) for key, value in res.items()]
+        return [(key, value) for key, value in res.items()]
+
+
+
+    except Exception:
+        m_p = np.NaN
+        return m_p

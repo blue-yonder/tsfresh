@@ -1310,11 +1310,20 @@ class FeatureCalculationTestCase(TestCase):
         subq = ts[0:w]
         ts[0:w] = subq
         ts[w+100:w+100+w] = subq
-        self.assertAlmostEqual(matrix_profile(ts,windows=36)[0],2.826)
-        self.assertAlmostEqual(matrix_profile(ts,windows=36)[1],3.514)
-        self.assertAlmostEqual(matrix_profile(ts,windows=36)[2],3.626)
+        param = [
+        {"threshold": 0.98, "windows": 36, "feature": "min"},
+        {"threshold": 0.98, "windows": 36, "feature": "max"},
+        {"threshold": 0.98, "windows": 36, "feature": "mean"},
+        {"threshold": 0.98, "windows": 36, "feature": "median"},
+        {"threshold": 0.98, "windows": 36, "feature": "25"},
+        {"threshold": 0.98, "windows": 36, "feature": "75"}
+        ]
+
+        self.assertAlmostEqual(matrix_profile(ts,param=param)[0][1],2.825786727580335)
+
 
     def test_matrix_profile_no_window(self):
+        #Test matrix profile output with no window specified
         np.random.seed(9999)
         ts = np.random.uniform(size=2**10)
         w = 2**5
@@ -1322,16 +1331,34 @@ class FeatureCalculationTestCase(TestCase):
         ts[0:w] = subq
         ts[w+100:w+100+w] = subq
 
+        param = [
+        {"threshold": 0.98, "feature": "min"},
+        {"threshold": 0.98, "feature": "max"},
+        {"threshold": 0.98, "feature": "mean"},
+        {"threshold": 0.98, "feature": "median"},
+        {"threshold": 0.98, "feature": "25"},
+        {"threshold": 0.98, "feature": "75"}
+        ]
+
         #Test matrix profile output with no window specified
-        self.assertAlmostEqual(matrix_profile(ts)[0],2.826)
-        self.assertAlmostEqual(matrix_profile(ts)[1],3.514)
-        self.assertAlmostEqual(matrix_profile(ts)[2],3.626)
+        self.assertAlmostEqual(matrix_profile(ts, param=param)[0][1],2.825786727580335)
+
 
     def test_matrix_profile_nan(self):
+        #Test matrix profile of NaNs (NaN output)
         ts = np.random.uniform(size=2**6)
         ts[:] = np.nan
 
-        self.assertRaises(NoSolutionPossible,matrix_profile(ts))
+        param = [
+        {"threshold": 0.98, "windows": None, "feature": "min"},
+        {"threshold": 0.98, "windows": None, "feature": "max"},
+        {"threshold": 0.98, "windows": None, "feature": "mean"},
+        {"threshold": 0.98, "windows": None, "feature": "median"},
+        {"threshold": 0.98, "windows": None, "feature": "25"},
+        {"threshold": 0.98, "windows": None, "feature": "75"}
+        ]
+
+        self.assertTrue(np.isnan(matrix_profile(ts, param=param)))
 
 
 class FriedrichTestCase(TestCase):
