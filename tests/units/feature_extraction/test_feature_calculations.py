@@ -1358,7 +1358,7 @@ class FeatureCalculationTestCase(TestCase):
         {"threshold": 0.98, "windows": None, "feature": "75"}
         ]
 
-        self.assertTrue(np.isnan(matrix_profile(ts, param=param)))
+        self.assertTrue(np.isnan(matrix_profile(ts, param=param)[0][1]))
 
 
 class FriedrichTestCase(TestCase):

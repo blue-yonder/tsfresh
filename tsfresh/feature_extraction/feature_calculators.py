@@ -2236,37 +2236,46 @@ def matrix_profile(x, param):
     :return: the different feature values
     :return type: pandas.Series
     """
-    try:
-        x = np.asarray(x)
 
-        def _calculate_mp(**kwargs):
-            """Calculate the matrix profile using the specified window, or the maximum subsequence if no window is specified"""
-            #try:
+    x = np.asarray(x)
+
+    def _calculate_mp(**kwargs):
+        """Calculate the matrix profile using the specified window, or the maximum subsequence if no window is specified"""
+        try:
             if "windows" in kwargs:
                 m_p = mp.compute(x,**kwargs)['mp']
-
 
             else:
                 m_p = mp.algorithms.maximum_subsequence(x, include_pmp=True,**kwargs)['pmp'][-1]
 
             return m_p
 
+        except:
+            return [np.nan]
 
-        # The already calculated matrix profiles
-        matrix_profiles = {}
+    # The already calculated matrix profiles
+    matrix_profiles = {}
 
-        # The results
-        res = {}
+    # The results
+    res = {}
 
-        for kwargs in param:
-            key = convert_to_output_format(kwargs)
-            feature = kwargs.pop('feature')
+    for kwargs in param:
+        key = convert_to_output_format(kwargs)
+        feature = kwargs.pop('feature')
 
-            featureless_key = convert_to_output_format(kwargs)
-            if featureless_key not in matrix_profiles:
-                matrix_profiles[featureless_key] = _calculate_mp(**kwargs)
+        featureless_key = convert_to_output_format(kwargs)
+        if featureless_key not in matrix_profiles:
+            matrix_profiles[featureless_key] = _calculate_mp(**kwargs)
 
-            m_p = matrix_profiles[featureless_key]
+        m_p = matrix_profiles[featureless_key]
+
+        #Set all features to nan if Matrix Profile is nan (cannot be computed)
+        if len(m_p) == 1:
+            res[key] = np.nan
+
+        #Handle all other Matrix Profile instances
+        else:
+
             finite_indices = np.isfinite(m_p)
 
 
@@ -2285,10 +2294,4 @@ def matrix_profile(x, param):
             else:
                 raise ValueError(f"Unknown feature {feature} for the matrix profile")
 
-        return [(key, value) for key, value in res.items()]
-
-
-
-    except Exception:
-        m_p = np.NaN
-        return m_p
+    return [(key, value) for key, value in res.items()]
