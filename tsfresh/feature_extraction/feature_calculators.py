@@ -2226,14 +2226,17 @@ def query_similarity_count(x, param):
 
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
-    :param param: contains dictionaries {"query": Q, "threshold": thr} with
-                  `Q` (numpy.ndarray), the query subsequence to compare the
+    :param param: contains dictionaries 
+                  {"query": Q, "threshold": thr, "normalize": norm}
+                  with `Q` (numpy.ndarray), the query subsequence to compare the
                   time series against. If `Q` is omitted then a value of zero
                   is returned. Additionally, `thr` (float), the maximum
                   z-normalized Euclidean distance threshold for which to
                   increment the query similarity count. If `thr` is omitted
                   then a default threshold of `thr=0.0` is used, which
-                  corresponds to finding exact matches to `Q`.
+                  corresponds to finding exact matches to `Q`. Finally, for
+                  non-normalized (i.e., without z-normalization) Euclidean set
+                  `norm` (bool) to `False.
     :type param: list
     :return x: the different feature values
     :return type: int
@@ -2241,6 +2244,9 @@ def query_similarity_count(x, param):
     res = [0] * len(param)
 
     for i, d in enumerate(param):
+        normalize = d.get("normalize", True)
+        if not isinstance(normalize, bool):
+            normalize = True
         threshold = d.get('threshold', 0.0)
         Q = d.get('query', None)
         count = 0
@@ -2248,9 +2254,16 @@ def query_similarity_count(x, param):
                 isinstance(Q, (np.ndarray, pd.core.series.Series)) and \
                 len(Q) >= 3 and \
                 len(x) >= 3:
-            distance_profile = stumpy.core.mass(np.asarray(Q).astype(float),
-                                                np.asarray(x).astype(float),
-                                                )
+            
+            if normalize:
+                distance_profile = stumpy.core.mass(np.asarray(Q).astype(float),
+                                                    np.asarray(x).astype(float),
+                                                    )
+            else:
+                distance_profile = stumpy.core.mass_absolute(np.asarray(Q).astype(float),
+                                                             np.asarray(x).astype(float),
+                                                             )
+
             count = np.sum(distance_profile <= threshold)
 
         res[i] = (f"query_{i+1}", count)
