@@ -1339,7 +1339,7 @@ class FeatureCalculationTestCase(TestCase):
         param = [{"querying": query, "thresholding": threshold, "normalizing": False}]
         self.assertAlmostEqual(query_similarity_count(x, param=param)[0][1], 0.0)
 
-        param = [{"querying": query, "thresholding": threshold, "normalizing": 100}]
+        param = [{"querying": query, "thresholding": threshold, "normalize": 100}]
         self.assertAlmostEqual(query_similarity_count(x, param=param)[0][1], 0.0)
 
 
