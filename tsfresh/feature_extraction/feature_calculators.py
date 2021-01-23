@@ -29,6 +29,7 @@ from numpy.linalg import LinAlgError
 from scipy.signal import cwt, find_peaks_cwt, ricker, welch
 from scipy.stats import linregress
 from statsmodels.tools.sm_exceptions import MissingDataError
+import stumpy
 
 with warnings.catch_warnings():
     # Ignore warnings of the patsy package
@@ -2212,3 +2213,47 @@ def benford_correlation(x):
     # np.corrcoef outputs the normalized covariance (correlation) between benford_distribution and data_distribution.
     # In this case returns a 2x2 matrix, the  [0, 1] and [1, 1] are the values between the two arrays
     return np.corrcoef(benford_distribution, data_distribution)[0, 1]
+
+
+@set_property("fctype", "combiner")
+def query_similarity_count(x, param):
+    """
+    This feature calculator accepts an input query subsequence parameter,
+    compares the query (under z-normalized Euclidean distance) to all
+    subsequences within the time series, and returns a count of the number
+    times the query was found in the time series (within some predefined
+    maximum distance threshold).
+
+    :param x: the time series to calculate the feature of
+    :type x: numpy.ndarray
+    :param param: contains dictionaries {"query": Q, "threshold": thr} with
+                  `Q` (numpy.ndarray), the query subsequence to compare the
+                  time series against. If `Q` is omitted then a value of zero
+                  is returned. Additionally, `thr` (float), the maximum
+                  z-normalized Euclidean distance threshold for which to
+                  increment the query similarity count. If `thr` is omitted
+                  then a default threshold of `thr=0.0` is used, which
+                  corresponds to finding exact matches to `Q`.
+    :type param: list
+    :return x: the different feature values
+    :return type: int
+    """
+    res = [0] * len(param)
+
+    for i, d in enumerate(param):
+        threshold = d.get('threshold', 0.0)
+        Q = d.get('query', None)
+        count = 0
+        if (Q is not None 
+            and isinstance(Q, (np.ndarray, pd.core.series.Series)) 
+            and len(Q) >= 3 
+            and len(x) >= 3
+            ):
+            distance_profile = stumpy.core.mass(np.asarray(Q).astype(float),
+                                                np.asarray(x).astype(float),
+                                               )
+            count = np.sum(distance_profile <= threshold)
+
+        res[i] = (f"query_{i+1}", count)
+    
+    return res
