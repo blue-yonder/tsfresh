@@ -2254,7 +2254,7 @@ def query_similarity_count(x, param):
                 isinstance(Q, (np.ndarray, pd.core.series.Series)) and \
                 len(Q) >= 3 and \
                 len(x) >= 3:
-            
+
             if normalize:
                 distance_profile = stumpy.core.mass(np.asarray(Q).astype(float),
                                                     np.asarray(x).astype(float),
