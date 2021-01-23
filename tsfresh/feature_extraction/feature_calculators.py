@@ -2226,7 +2226,7 @@ def query_similarity_count(x, param):
 
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
-    :param param: contains dictionaries 
+    :param param: contains dictionaries
                   {"query": Q, "threshold": thr, "normalize": norm}
                   with `Q` (numpy.ndarray), the query subsequence to compare the
                   time series against. If `Q` is omitted then a value of zero
