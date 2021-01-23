@@ -2248,12 +2248,12 @@ def query_similarity_count(x, param):
             and isinstance(Q, (np.ndarray, pd.core.series.Series))
             and len(Q) >= 3
             and len(x) >= 3
-            ):
+        ):
             distance_profile = stumpy.core.mass(np.asarray(Q).astype(float),
                                                 np.asarray(x).astype(float),
-                                               )
+            )
             count = np.sum(distance_profile <= threshold)
 
         res[i] = (f"query_{i+1}", count)
-    
+
     return res
