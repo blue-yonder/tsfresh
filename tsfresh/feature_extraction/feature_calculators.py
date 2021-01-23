@@ -2244,11 +2244,10 @@ def query_similarity_count(x, param):
         threshold = d.get('threshold', 0.0)
         Q = d.get('query', None)
         count = 0
-        if (Q is not None
-                and isinstance(Q, (np.ndarray, pd.core.series.Series))
-                and len(Q) >= 3
-                and len(x) >= 3
-                ):
+        if Q is not None and \
+                isinstance(Q, (np.ndarray, pd.core.series.Series)) and \
+                len(Q) >= 3 and \
+                len(x) >= 3:
             distance_profile = stumpy.core.mass(np.asarray(Q).astype(float),
                                                 np.asarray(x).astype(float),
                                                 )
