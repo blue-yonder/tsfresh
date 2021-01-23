@@ -1300,7 +1300,7 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqual(benford_correlation(fibonacci_list), 0.998003988)
         self.assertAlmostEqual(benford_correlation(list_with_nan), 0.10357511)
         self.assertIsNaN(benford_correlation(equal_list))
-    
+
     def test_query_similarity_count(self):
         np.random.seed(42)
         query = np.random.uniform(size=10)
