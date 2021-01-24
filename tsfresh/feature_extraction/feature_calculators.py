@@ -20,6 +20,7 @@ alphabetically ascending.
 import itertools
 import functools
 import warnings
+from tsfresh.utilities.string_manipulation import convert_to_output_format
 from builtins import range
 from collections import defaultdict
 
@@ -2221,8 +2222,10 @@ def query_similarity_count(x, param):
     This feature calculator accepts an input query subsequence parameter,
     compares the query (under z-normalized Euclidean distance) to all
     subsequences within the time series, and returns a count of the number
-    times the query was found in the time series (within some predefined
-    maximum distance threshold).
+    of times the query was found in the time series (within some predefined
+    maximum distance threshold). Note that this feature will always return
+    `np.nan` when no query subsequence is provided and so users will need
+    to enable this feature themselves.
 
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
@@ -2241,31 +2244,23 @@ def query_similarity_count(x, param):
     :return x: the different feature values
     :return type: int
     """
-    res = [0] * len(param)
+    res = {}
+    T = np.asarray(x).astype(float)
 
-    for i, d in enumerate(param):
-        normalize = d.get("normalize", True)
-        if not isinstance(normalize, bool):
-            normalize = True
-        threshold = d.get('threshold', 0.0)
-        Q = d.get('query', None)
-        count = 0
-        if Q is not None and \
-                isinstance(Q, (np.ndarray, pd.core.series.Series)) and \
-                len(Q) >= 3 and \
-                len(x) >= 3:
-
+    for i, kwargs in enumerate(param):
+        key = convert_to_output_format(kwargs)
+        normalize = kwargs.get("normalize", True)
+        threshold = kwargs.get('threshold', 0.0)
+        Q = kwargs.get('query', None)
+        Q = np.asarray(Q).astype(float)
+        count = np.nan
+        if Q is not None and Q.size >= 3:
             if normalize:
-                distance_profile = stumpy.core.mass(np.asarray(Q).astype(float),
-                                                    np.asarray(x).astype(float),
-                                                    )
+                distance_profile = stumpy.core.mass(Q, T)
             else:
-                distance_profile = stumpy.core.mass_absolute(np.asarray(Q).astype(float),
-                                                             np.asarray(x).astype(float),
-                                                             )
-
+                distance_profile = stumpy.core.mass_absolute(Q, T)
             count = np.sum(distance_profile <= threshold)
 
-        res[i] = (f"query_{i+1}", count)
+        res[key] = count
 
-    return res
+    return [(key, value) for key, value in res.items()]

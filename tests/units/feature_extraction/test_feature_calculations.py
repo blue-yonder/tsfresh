@@ -1309,13 +1309,7 @@ class FeatureCalculationTestCase(TestCase):
 
         # z-normalized Euclidean distances
 
-        param = [{"query": None}]
-        self.assertAlmostEqual(query_similarity_count(x, param=param)[0][1], 0.0)
-
         param = [{"query": query}]
-        self.assertAlmostEqual(query_similarity_count(x, param=param)[0][1], 0.0)
-
-        param = [{"query": None, "threshold": threshold}]
         self.assertAlmostEqual(query_similarity_count(x, param=param)[0][1], 0.0)
 
         param = [{"query": query, "threshold": threshold}]
@@ -1323,24 +1317,11 @@ class FeatureCalculationTestCase(TestCase):
 
         # non-normalized Euclidean distances
 
-        param = [{"query": None, "normalize": False}]
-        self.assertAlmostEqual(query_similarity_count(x, param=param)[0][1], 0.0)
-
         param = [{"query": query, "normalize": False}]
-        self.assertAlmostEqual(query_similarity_count(x, param=param)[0][1], 0.0)
-
-        param = [{"query": None, "threshold": threshold, "normalize": False}]
         self.assertAlmostEqual(query_similarity_count(x, param=param)[0][1], 0.0)
 
         param = [{"query": query, "threshold": threshold, "normalize": False}]
         self.assertAlmostEqual(query_similarity_count(x, param=param)[0][1], 91.0)
-
-        # Test bad or misspelled parameters
-        param = [{"querying": query, "thresholding": threshold, "normalizing": False}]
-        self.assertAlmostEqual(query_similarity_count(x, param=param)[0][1], 0.0)
-
-        param = [{"querying": query, "thresholding": threshold, "normalize": 100}]
-        self.assertAlmostEqual(query_similarity_count(x, param=param)[0][1], 0.0)
 
 
 class FriedrichTestCase(TestCase):
