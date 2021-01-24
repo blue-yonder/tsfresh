@@ -30,7 +30,9 @@ from numpy.linalg import LinAlgError
 from scipy.signal import cwt, find_peaks_cwt, ricker, welch
 from scipy.stats import linregress
 from statsmodels.tools.sm_exceptions import MissingDataError
+from matrixprofile.exceptions import NoSolutionPossible
 import matrixprofile as mp
+
 
 with warnings.catch_warnings():
     # Ignore warnings of the patsy package
@@ -2250,7 +2252,7 @@ def matrix_profile(x, param):
 
             return m_p
 
-        except NoSolutionException:
+        except NoSolutionPossible:
             return [np.nan]
 
     # The already calculated matrix profiles
