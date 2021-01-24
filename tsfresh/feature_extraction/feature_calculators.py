@@ -2223,7 +2223,7 @@ def matrix_profile(x, param):
 
     .. rubric:: References
 
-    |  [1] Matrix Profile I: All Pairs Similarity Joins for Time Series: A Unifying View That Includes Motifs, Discords and Shapelets. Yeh et.al, 2016.
+    |  [1] Yeh et.al (2016), IEEE ICDM
 
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
@@ -2240,17 +2240,17 @@ def matrix_profile(x, param):
     x = np.asarray(x)
 
     def _calculate_mp(**kwargs):
-        """Calculate the matrix profile using the specified window, or the maximum subsequence if no window is specified"""
+        """Calculate the matrix profile using the specified window, or the max subsequence if no window is specified"""
         try:
             if "windows" in kwargs:
-                m_p = mp.compute(x,**kwargs)['mp']
+                m_p = mp.compute(x, **kwargs)['mp']
 
             else:
-                m_p = mp.algorithms.maximum_subsequence(x, include_pmp=True,**kwargs)['pmp'][-1]
+                m_p = mp.algorithms.maximum_subsequence(x, include_pmp=True, **kwargs)['pmp'][-1]
 
             return m_p
 
-        except:
+        except NoSolutionException:
             return [np.nan]
 
     # The already calculated matrix profiles
@@ -2258,7 +2258,6 @@ def matrix_profile(x, param):
 
     # The results
     res = {}
-
 
     for kwargs in param:
         kwargs = kwargs.copy()
@@ -2271,15 +2270,14 @@ def matrix_profile(x, param):
 
         m_p = matrix_profiles[featureless_key]
 
-        #Set all features to nan if Matrix Profile is nan (cannot be computed)
+        # Set all features to nan if Matrix Profile is nan (cannot be computed)
         if len(m_p) == 1:
             res[key] = np.nan
 
-        #Handle all other Matrix Profile instances
+        # Handle all other Matrix Profile instances
         else:
 
             finite_indices = np.isfinite(m_p)
-
 
             if feature == "min":
                 res[key] = np.min(m_p[finite_indices])
