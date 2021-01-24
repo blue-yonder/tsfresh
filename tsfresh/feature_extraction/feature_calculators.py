@@ -2259,7 +2259,9 @@ def matrix_profile(x, param):
     # The results
     res = {}
 
+
     for kwargs in param:
+        kwargs = kwargs.copy()
         key = convert_to_output_format(kwargs)
         feature = kwargs.pop('feature')
 
