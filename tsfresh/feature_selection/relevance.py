@@ -218,9 +218,10 @@ def calculate_relevance_table(
         table_const["relevant"] = False
 
         if not table_const.empty:
+
             warnings.warn(
                 "[test_feature_significance] Constant features: {}".format(
-                    ", ".join(table_const.feature)
+                    ", ".join(map(str, table_const.feature))
                 ),
                 RuntimeWarning,
             )
