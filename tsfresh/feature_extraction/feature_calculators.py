@@ -19,6 +19,7 @@ alphabetically ascending.
 
 import itertools
 import functools
+from tsfresh.utilities.string_manipulation import convert_to_output_format
 import warnings
 from builtins import range
 from collections import defaultdict
@@ -29,6 +30,9 @@ from numpy.linalg import LinAlgError
 from scipy.signal import cwt, find_peaks_cwt, ricker, welch
 from scipy.stats import linregress
 from statsmodels.tools.sm_exceptions import MissingDataError
+from matrixprofile.exceptions import NoSolutionPossible
+import matrixprofile as mp
+
 
 with warnings.catch_warnings():
     # Ignore warnings of the patsy package
@@ -2212,3 +2216,84 @@ def benford_correlation(x):
     # np.corrcoef outputs the normalized covariance (correlation) between benford_distribution and data_distribution.
     # In this case returns a 2x2 matrix, the  [0, 1] and [1, 1] are the values between the two arrays
     return np.corrcoef(benford_distribution, data_distribution)[0, 1]
+
+
+@set_property("fctype", "combiner")
+def matrix_profile(x, param):
+    """
+    Calculates the 1-D Matrix Profile[1] and returns Tukey's Five Number Set plus the mean of that Matrix Profile.
+
+    .. rubric:: References
+
+    |  [1] Yeh et.al (2016), IEEE ICDM
+
+    :param x: the time series to calculate the feature of
+    :type x: numpy.ndarray
+    :param param: contains dictionaries {"sample_pct": x, "threshold": y, "feature": z}
+    with sample_pct and threshold being parameters of the matrixprofile
+    package https://matrixprofile.docs.matrixprofile.org/api.html#matrixprofile-compute
+    and feature being one of "min", "max", "mean", "median", "25", "75"
+    and decides which feature of the matrix profile to extract
+    :type param: list
+    :return: the different feature values
+    :return type: pandas.Series
+    """
+
+    x = np.asarray(x)
+
+    def _calculate_mp(**kwargs):
+        """Calculate the matrix profile using the specified window, or the max subsequence if no window is specified"""
+        try:
+            if "windows" in kwargs:
+                m_p = mp.compute(x, **kwargs)['mp']
+
+            else:
+                m_p = mp.algorithms.maximum_subsequence(x, include_pmp=True, **kwargs)['pmp'][-1]
+
+            return m_p
+
+        except NoSolutionPossible:
+            return [np.nan]
+
+    # The already calculated matrix profiles
+    matrix_profiles = {}
+
+    # The results
+    res = {}
+
+    for kwargs in param:
+        kwargs = kwargs.copy()
+        key = convert_to_output_format(kwargs)
+        feature = kwargs.pop('feature')
+
+        featureless_key = convert_to_output_format(kwargs)
+        if featureless_key not in matrix_profiles:
+            matrix_profiles[featureless_key] = _calculate_mp(**kwargs)
+
+        m_p = matrix_profiles[featureless_key]
+
+        # Set all features to nan if Matrix Profile is nan (cannot be computed)
+        if len(m_p) == 1:
+            res[key] = np.nan
+
+        # Handle all other Matrix Profile instances
+        else:
+
+            finite_indices = np.isfinite(m_p)
+
+            if feature == "min":
+                res[key] = np.min(m_p[finite_indices])
+            elif feature == "max":
+                res[key] = np.max(m_p[finite_indices])
+            elif feature == "mean":
+                res[key] = np.mean(m_p[finite_indices])
+            elif feature == "median":
+                res[key] = np.median(m_p[finite_indices])
+            elif feature == "25":
+                res[key] = np.percentile(m_p[finite_indices], 25)
+            elif feature == "75":
+                res[key] = np.percentile(m_p[finite_indices], 75)
+            else:
+                raise ValueError(f"Unknown feature {feature} for the matrix profile")
+
+    return [(key, value) for key, value in res.items()]
