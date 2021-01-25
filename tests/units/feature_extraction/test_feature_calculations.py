@@ -1302,6 +1302,28 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqual(benford_correlation(list_with_nan), 0.10357511)
         self.assertIsNaN(benford_correlation(equal_list))
 
+    def test_query_similarity_count(self):
+        np.random.seed(42)
+        query = np.random.uniform(size=10)
+        threshold = 3.0
+        x = np.random.uniform(size=100)
+
+        # z-normalized Euclidean distances
+
+        param = [{"query": query}]
+        self.assertAlmostEqual(query_similarity_count(x, param=param)[0][1], 0.0)
+
+        param = [{"query": query, "threshold": threshold}]
+        self.assertAlmostEqual(query_similarity_count(x, param=param)[0][1], 6.0)
+
+        # non-normalized Euclidean distances
+
+        param = [{"query": query, "normalize": False}]
+        self.assertAlmostEqual(query_similarity_count(x, param=param)[0][1], 0.0)
+
+        param = [{"query": query, "threshold": threshold, "normalize": False}]
+        self.assertAlmostEqual(query_similarity_count(x, param=param)[0][1], 91.0)
+
     def test_matrix_profile_window(self):
         # Test matrix profile output with specified window
         np.random.seed(9999)

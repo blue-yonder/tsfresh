@@ -19,8 +19,8 @@ alphabetically ascending.
 
 import itertools
 import functools
-from tsfresh.utilities.string_manipulation import convert_to_output_format
 import warnings
+from tsfresh.utilities.string_manipulation import convert_to_output_format
 from builtins import range
 from collections import defaultdict
 
@@ -32,7 +32,7 @@ from scipy.stats import linregress
 from statsmodels.tools.sm_exceptions import MissingDataError
 from matrixprofile.exceptions import NoSolutionPossible
 import matrixprofile as mp
-
+import stumpy
 
 with warnings.catch_warnings():
     # Ignore warnings of the patsy package
@@ -2295,5 +2295,55 @@ def matrix_profile(x, param):
                 res[key] = np.percentile(m_p[finite_indices], 75)
             else:
                 raise ValueError(f"Unknown feature {feature} for the matrix profile")
+
+    return [(key, value) for key, value in res.items()]
+
+
+@set_property("fctype", "combiner")
+def query_similarity_count(x, param):
+    """
+    This feature calculator accepts an input query subsequence parameter,
+    compares the query (under z-normalized Euclidean distance) to all
+    subsequences within the time series, and returns a count of the number
+    of times the query was found in the time series (within some predefined
+    maximum distance threshold). Note that this feature will always return
+    `np.nan` when no query subsequence is provided and so users will need
+    to enable this feature themselves.
+
+    :param x: the time series to calculate the feature of
+    :type x: numpy.ndarray
+    :param param: contains dictionaries
+                  {"query": Q, "threshold": thr, "normalize": norm}
+                  with `Q` (numpy.ndarray), the query subsequence to compare the
+                  time series against. If `Q` is omitted then a value of zero
+                  is returned. Additionally, `thr` (float), the maximum
+                  z-normalized Euclidean distance threshold for which to
+                  increment the query similarity count. If `thr` is omitted
+                  then a default threshold of `thr=0.0` is used, which
+                  corresponds to finding exact matches to `Q`. Finally, for
+                  non-normalized (i.e., without z-normalization) Euclidean set
+                  `norm` (bool) to `False.
+    :type param: list
+    :return x: the different feature values
+    :return type: int
+    """
+    res = {}
+    T = np.asarray(x).astype(float)
+
+    for i, kwargs in enumerate(param):
+        key = convert_to_output_format(kwargs)
+        normalize = kwargs.get("normalize", True)
+        threshold = kwargs.get('threshold', 0.0)
+        Q = kwargs.get('query', None)
+        Q = np.asarray(Q).astype(float)
+        count = np.nan
+        if Q is not None and Q.size >= 3:
+            if normalize:
+                distance_profile = stumpy.core.mass(Q, T)
+            else:
+                distance_profile = stumpy.core.mass_absolute(Q, T)
+            count = np.sum(distance_profile <= threshold)
+
+        res[key] = count
 
     return [(key, value) for key, value in res.items()]
