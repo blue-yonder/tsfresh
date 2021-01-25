@@ -2296,6 +2296,8 @@ def matrix_profile(x, param):
             else:
                 raise ValueError(f"Unknown feature {feature} for the matrix profile")
 
+    return [(key, value) for key, value in res.items()]
+
 
 @set_property("fctype", "combiner")
 def query_similarity_count(x, param):
