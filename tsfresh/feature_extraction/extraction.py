@@ -107,8 +107,8 @@ def extract_features(timeseries_container, default_fc_parameters=None,
     :param disable_progressbar: Do not show a progressbar while doing the calculation.
     :type disable_progressbar: bool
 
-    :param impute_function: None, if no imputing should happen or the function to call for imputing the result dataframe.
-        Imputing will never happen on the input data.
+    :param impute_function: None, if no imputing should happen or the function to call for
+        imputing the result dataframe. Imputing will never happen on the input data.
     :type impute_function: None or callable
 
     :param profile: Turn on profiling during feature extraction
