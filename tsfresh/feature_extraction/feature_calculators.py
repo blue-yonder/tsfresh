@@ -135,9 +135,9 @@ def _estimate_friedrich_coefficients(x, m, r):
 
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
-    :param m: order of polynom to fit for estimating fixed points of dynamics
+    :param m: order of polynomial to fit for estimating fixed points of dynamics
     :type m: int
-    :param r: number of quantils to use for averaging
+    :param r: number of quantiles to use for averaging
     :type r: float
 
     :return: coefficients of polynomial of deterministic dynamics
@@ -1283,7 +1283,7 @@ def cwt_coefficients(x, param):
 
     where :math:`a` is the width parameter of the wavelet function.
 
-    This feature calculator takes three different parameter: widths, coeff and w. The feature calculater takes all the
+    This feature calculator takes three different parameter: widths, coeff and w. The feature calculator takes all the
     different widths arrays and then calculates the cwt one time for each different width array. Then the values for the
     different coefficient for coeff and width w are returned. (For each dic in param one feature is returned)
 
@@ -1948,8 +1948,8 @@ def friedrich_coefficients(x, param):
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
     :param param: contains dictionaries {"m": x, "r": y, "coeff": z} with x being positive integer,
-                  the order of polynom to fit for estimating fixed points of
-                  dynamics, y positive float, the number of quantils to use for averaging and finally z,
+                  the order of polynomial to fit for estimating fixed points of
+                  dynamics, y positive float, the number of quantiles to use for averaging and finally z,
                   a positive integer corresponding to the returned coefficient
     :type param: list
     :return: the different feature values
@@ -1957,7 +1957,7 @@ def friedrich_coefficients(x, param):
     """
     # calculated is dictionary storing the calculated coefficients {m: {r: friedrich_coefficients}}
     calculated = defaultdict(dict)
-    # res is a dictionary containg the results {"m_10__r_2__coeff_3": 15.43}
+    # res is a dictionary containing the results {"m_10__r_2__coeff_3": 15.43}
     res = {}
 
     for parameter_combination in param:
@@ -1996,9 +1996,9 @@ def max_langevin_fixed_point(x, r, m):
 
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
-    :param m: order of polynom to fit for estimating fixed points of dynamics
+    :param m: order of polynomial to fit for estimating fixed points of dynamics
     :type m: int
-    :param r: number of quantils to use for averaging
+    :param r: number of quantiles to use for averaging
     :type r: float
 
     :return: Largest fixed point of deterministic dynamics

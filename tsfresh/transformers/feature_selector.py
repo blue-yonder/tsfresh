@@ -106,7 +106,7 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
 
         :param ml_task: The intended machine learning task. Either `'classification'`, `'regression'` or `'auto'`.
                     Defaults to `'auto'`, meaning the intended task is inferred from `y`.
-                    If `y` has a boolean, integer or object dtype, the task is assumend to be classification,
+                    If `y` has a boolean, integer or object dtype, the task is assumed to be classification,
                     else regression.
         :type ml_task: str
 
@@ -150,7 +150,7 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
 
     def fit(self, X, y):
         """
-        Extract the information, which of the features are relevent using the given target.
+        Extract the information, which of the features are relevant using the given target.
 
         For more information, please see the :func:`~tsfresh.festure_selection.festure_selector.check_fs_sig_bh`
         function. All columns in the input data sample are treated as feature. The index of all
