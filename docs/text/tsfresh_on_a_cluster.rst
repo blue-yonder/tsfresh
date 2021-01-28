@@ -150,7 +150,7 @@ The only thing that you will need to run *tsfresh* on a Dask cluster is the ip a
 `dask-scheduler <http://distributed.readthedocs.io/en/latest/setup.html>`_.
 
 Lets say that your dask scheduler is running at ``192.168.0.1:8786``, then we can easily construct a
-:class:`~sfresh.utilities.distribution.ClusterDaskDistributor` that connects to the sceduler and distributes the
+:class:`~sfresh.utilities.distribution.ClusterDaskDistributor` that connects to the scheduler and distributes the
 time series data and the calculation to a cluster:
 
 .. code:: python

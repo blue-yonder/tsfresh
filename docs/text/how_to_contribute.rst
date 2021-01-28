@@ -78,7 +78,7 @@ or build the documentation with
 The finished documentation can be found in the docs/_build/html folder.
 
 On Github we use a Travis CI Folder that runs our test suite every time a commit or pull request is sent. The
-configuration of Travi is controlled by the
+configuration of Travis is controlled by the
 `.travis.yml <https://github.com/blue-yonder/tsfresh/blob/main/.travis.yml>`_ file.
 
 
