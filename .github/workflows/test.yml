@@ -25,7 +25,7 @@ jobs:
           DASK: "2.9.0"
           DISTRIBUTED: "2.11.0"
           SCIPY: "1.2.0"
-          STATSMODELS: "0.9.0"
+          STATSMODELS: "0.12.2"
 
         - python-version: 3.7
           installation: "lowest"
@@ -36,7 +36,7 @@ jobs:
           DASK: "2.9.0"
           DISTRIBUTED: "2.11.0"
           SCIPY: "1.2.0"
-          STATSMODELS: "0.9.0"
+          STATSMODELS: "0.12.2"
 
         - python-version: 3.8
           installation: "lowest"
@@ -49,7 +49,7 @@ jobs:
           DISTRIBUTED: "2.11.0"
           # 1.2.0 is not installable with python 3.8...
           SCIPY: "1.4.0"
-          STATSMODELS: "0.10.2"
+          STATSMODELS: "0.12.2"
 
     steps:
     - uses: actions/checkout@v2
