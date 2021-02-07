@@ -1357,7 +1357,7 @@ def spkt_welch_density(x, param):
 def ar_coefficient(x, param):
     """
     This feature calculator fits the Conditional Maximum Likelihood (OLS)
-    of an autoregressive AR(k) process. 
+    of an autoregressive AR(k) process.
     Updated to use statsmodels.tsa.ar_model.AutoReg after AR was depreciated.
     The k parameter is the maximum lag of the process
 
