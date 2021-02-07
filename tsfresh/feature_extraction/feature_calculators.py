@@ -38,7 +38,7 @@ with warnings.catch_warnings():
     # Ignore warnings of the patsy package
     warnings.simplefilter("ignore", DeprecationWarning)
 
-    from statsmodels.tsa.ar_model import AR
+    from statsmodels.tsa.ar_model import AutoReg
 from statsmodels.tsa.stattools import acf, adfuller, pacf
 
 # todo: make sure '_' works in parameter names in all cases, add a warning if not
@@ -1356,8 +1356,9 @@ def spkt_welch_density(x, param):
 @set_property("fctype", "combiner")
 def ar_coefficient(x, param):
     """
-    This feature calculator fits the unconditional maximum likelihood
-    of an autoregressive AR(k) process.
+    This feature calculator fits the Conditional Maximum Likelihood (OLS)
+    of an autoregressive AR(k) process. 
+    Updated to use statsmodels.tsa.ar_model.AutoReg after AR was depreciated.
     The k parameter is the maximum lag of the process
 
     .. math::
@@ -1388,8 +1389,8 @@ def ar_coefficient(x, param):
 
         if k not in calculated_ar_params:
             try:
-                calculated_AR = AR(x_as_list)
-                calculated_ar_params[k] = calculated_AR.fit(maxlag=k, solver="mle").params
+                calculated_AR = AutoReg(x_as_list, lags=k)
+                calculated_ar_params[k] = calculated_AR.fit().params
             except (LinAlgError, ValueError):
                 calculated_ar_params[k] = [np.NaN] * k
 
