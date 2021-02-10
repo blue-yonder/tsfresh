@@ -1701,7 +1701,7 @@ def lempel_ziv_complexity(x, bins):
     """
     x = np.asarray(x)
 
-    bins = np.linspace(np.min(x), np.max(x), bins)
+    bins = np.linspace(np.min(x), np.max(x), bins + 1)[1:]
     sequence = np.searchsorted(bins, x, side='left')
 
     sub_strings = set()
