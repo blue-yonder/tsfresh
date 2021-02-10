@@ -1688,7 +1688,7 @@ def lempel_ziv_complexity(x, bins):
 
     The complexity is defined as the number of dictionary entries (or sub-words) needed
     to encode the time series when viewed from left to right.
-    FOr this, the time series is first binned into the given number of bins.
+    For this, the time series is first binned into the given number of bins.
     Then it is converted into sub-words with different prefixes.
     The number of sub-words needed for this divided by the length of the time
     series is the complexity estimate.
@@ -1710,7 +1710,7 @@ def lempel_ziv_complexity(x, bins):
     ind = 0
     inc = 1
     while ind + inc <= n:
-        # convert tu tuple to make it hashable
+        # convert to tuple in order to make it hashable
         sub_str = tuple(sequence[ind:ind + inc])
         if sub_str in sub_strings:
             inc += 1
