@@ -740,6 +740,19 @@ def kurtosis(x):
         x = pd.Series(x)
     return pd.Series.kurtosis(x)
 
+@set_property("fctype", "simple")
+@set_property("minimal", True)
+def root_mean_square(x):
+    """
+    Returns the root mean square (rms) of the time series.
+
+    :param x: the time series to calculate the feature of
+    :type x: numpy.ndarray
+    :return: the value of this feature
+    :return type: float
+    """
+    return np.sqrt(np.mean(x**2))
+
 
 @set_property("fctype", "simple")
 def absolute_sum_of_changes(x):
