@@ -740,6 +740,7 @@ def kurtosis(x):
         x = pd.Series(x)
     return pd.Series.kurtosis(x)
 
+
 @set_property("fctype", "simple")
 @set_property("minimal", True)
 def root_mean_square(x):
