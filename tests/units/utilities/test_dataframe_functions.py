@@ -570,10 +570,11 @@ class RollingTestCase(TestCase):
             dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
                                                  column_kind=None, rolling_direction=1, n_jobs=0)
 
-            self.assertEqual(len(w), 1)
-            self.assertEqual(str(w[0].message),
-                             "Your time stamps are not uniformly sampled, which makes rolling "
-                             "nonsensical in some domains.")
+            self.assertGreaterEqual(len(w), 1)
+            self.assertIn("Your time stamps are not uniformly sampled, which makes rolling "
+                          "nonsensical in some domains.",
+                          [str(warning.message) for warning in w]
+                          )
 
     def test_multicore_rolling(self):
         first_class = pd.DataFrame({"a": [1, 2, 3, 4], "b": [5, 6, 7, 8], "time": range(4)})
