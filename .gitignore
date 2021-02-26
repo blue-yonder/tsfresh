@@ -1,3 +1,6 @@
+#others
+*.lock
+
 # Temporary and binary files
 *~
 *.py[cod]
@@ -28,6 +31,7 @@ __pycache__/*
 # Unittest and coverage
 htmlcov/*
 .coverage
+.coverage.*
 .tox
 junit.xml
 coverage.xml
