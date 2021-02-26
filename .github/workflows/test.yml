@@ -31,7 +31,7 @@ jobs:
             installation: "lowest"
 
             NUMPY: "1.15.1"
-            PANDAS: "0.25.3" # see https://github.com/numpy/numpy/issues/18355
+            PANDAS: "1.0.5" # see https://github.com/numpy/numpy/issues/18355
             SCIKITLEARN: "0.19.2"
             DASK: "2.9.0"
             DISTRIBUTED: "2.11.0"
