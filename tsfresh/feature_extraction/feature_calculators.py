@@ -752,7 +752,7 @@ def root_mean_square(x):
     :return: the value of this feature
     :return type: float
     """
-    return np.sqrt(np.mean(x**2))
+    return np.sqrt(np.mean(np.square(x))) if len(x) > 0 else np.NaN
 
 
 @set_property("fctype", "simple")

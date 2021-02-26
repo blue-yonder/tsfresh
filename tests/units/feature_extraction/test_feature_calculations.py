@@ -464,9 +464,9 @@ class FeatureCalculationTestCase(TestCase):
         self.assertIsNanOnAllArrayTypes(kurtosis, [1, 1, 1])
 
     def test_root_mean_square(self):
-        self.assertAlmostEqualOnAllArrayTypes(root_mean_square, [1, 1, 1, 2, 2], 1.48324)
+        self.assertAlmostEqualOnAllArrayTypes(root_mean_square, [1, 1, 1, 2, 2], 1.4832396974191)
         self.assertAlmostEqualOnAllArrayTypes(root_mean_square, [0], 0)
-        self.assertAlmostEqualOnAllArrayTypes(root_mean_square, [], 0)
+        self.assertIsNanOnAllArrayTypes(root_mean_square, [])
         self.assertAlmostEqualOnAllArrayTypes(root_mean_square, [1], 1)
         self.assertAlmostEqualOnAllArrayTypes(root_mean_square, [-1], 1)
 
