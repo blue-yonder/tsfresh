@@ -20,6 +20,7 @@ alphabetically ascending.
 import itertools
 import functools
 import warnings
+from tsfresh.utilities.string_manipulation import convert_to_output_format
 from builtins import range
 from collections import defaultdict
 
@@ -29,6 +30,9 @@ from numpy.linalg import LinAlgError
 from scipy.signal import cwt, find_peaks_cwt, ricker, welch
 from scipy.stats import linregress
 from statsmodels.tools.sm_exceptions import MissingDataError
+from matrixprofile.exceptions import NoSolutionPossible
+import matrixprofile as mp
+import stumpy
 
 with warnings.catch_warnings():
     # Ignore warnings of the patsy package
@@ -131,9 +135,9 @@ def _estimate_friedrich_coefficients(x, m, r):
 
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
-    :param m: order of polynom to fit for estimating fixed points of dynamics
+    :param m: order of polynomial to fit for estimating fixed points of dynamics
     :type m: int
-    :param r: number of quantils to use for averaging
+    :param r: number of quantiles to use for averaging
     :type r: float
 
     :return: coefficients of polynomial of deterministic dynamics
@@ -1279,7 +1283,7 @@ def cwt_coefficients(x, param):
 
     where :math:`a` is the width parameter of the wavelet function.
 
-    This feature calculator takes three different parameter: widths, coeff and w. The feature calculater takes all the
+    This feature calculator takes three different parameter: widths, coeff and w. The feature calculator takes all the
     different widths arrays and then calculates the cwt one time for each different width array. Then the values for the
     different coefficient for coeff and width w are returned. (For each dic in param one feature is returned)
 
@@ -1944,8 +1948,8 @@ def friedrich_coefficients(x, param):
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
     :param param: contains dictionaries {"m": x, "r": y, "coeff": z} with x being positive integer,
-                  the order of polynom to fit for estimating fixed points of
-                  dynamics, y positive float, the number of quantils to use for averaging and finally z,
+                  the order of polynomial to fit for estimating fixed points of
+                  dynamics, y positive float, the number of quantiles to use for averaging and finally z,
                   a positive integer corresponding to the returned coefficient
     :type param: list
     :return: the different feature values
@@ -1953,7 +1957,7 @@ def friedrich_coefficients(x, param):
     """
     # calculated is dictionary storing the calculated coefficients {m: {r: friedrich_coefficients}}
     calculated = defaultdict(dict)
-    # res is a dictionary containg the results {"m_10__r_2__coeff_3": 15.43}
+    # res is a dictionary containing the results {"m_10__r_2__coeff_3": 15.43}
     res = {}
 
     for parameter_combination in param:
@@ -1992,9 +1996,9 @@ def max_langevin_fixed_point(x, r, m):
 
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
-    :param m: order of polynom to fit for estimating fixed points of dynamics
+    :param m: order of polynomial to fit for estimating fixed points of dynamics
     :type m: int
-    :param r: number of quantils to use for averaging
+    :param r: number of quantiles to use for averaging
     :type r: float
 
     :return: Largest fixed point of deterministic dynamics
@@ -2212,3 +2216,134 @@ def benford_correlation(x):
     # np.corrcoef outputs the normalized covariance (correlation) between benford_distribution and data_distribution.
     # In this case returns a 2x2 matrix, the  [0, 1] and [1, 1] are the values between the two arrays
     return np.corrcoef(benford_distribution, data_distribution)[0, 1]
+
+
+@set_property("fctype", "combiner")
+def matrix_profile(x, param):
+    """
+    Calculates the 1-D Matrix Profile[1] and returns Tukey's Five Number Set plus the mean of that Matrix Profile.
+
+    .. rubric:: References
+
+    |  [1] Yeh et.al (2016), IEEE ICDM
+
+    :param x: the time series to calculate the feature of
+    :type x: numpy.ndarray
+    :param param: contains dictionaries {"sample_pct": x, "threshold": y, "feature": z}
+    with sample_pct and threshold being parameters of the matrixprofile
+    package https://matrixprofile.docs.matrixprofile.org/api.html#matrixprofile-compute
+    and feature being one of "min", "max", "mean", "median", "25", "75"
+    and decides which feature of the matrix profile to extract
+    :type param: list
+    :return: the different feature values
+    :return type: pandas.Series
+    """
+
+    x = np.asarray(x)
+
+    def _calculate_mp(**kwargs):
+        """Calculate the matrix profile using the specified window, or the max subsequence if no window is specified"""
+        try:
+            if "windows" in kwargs:
+                m_p = mp.compute(x, **kwargs)['mp']
+
+            else:
+                m_p = mp.algorithms.maximum_subsequence(x, include_pmp=True, **kwargs)['pmp'][-1]
+
+            return m_p
+
+        except NoSolutionPossible:
+            return [np.nan]
+
+    # The already calculated matrix profiles
+    matrix_profiles = {}
+
+    # The results
+    res = {}
+
+    for kwargs in param:
+        kwargs = kwargs.copy()
+        key = convert_to_output_format(kwargs)
+        feature = kwargs.pop('feature')
+
+        featureless_key = convert_to_output_format(kwargs)
+        if featureless_key not in matrix_profiles:
+            matrix_profiles[featureless_key] = _calculate_mp(**kwargs)
+
+        m_p = matrix_profiles[featureless_key]
+
+        # Set all features to nan if Matrix Profile is nan (cannot be computed)
+        if len(m_p) == 1:
+            res[key] = np.nan
+
+        # Handle all other Matrix Profile instances
+        else:
+
+            finite_indices = np.isfinite(m_p)
+
+            if feature == "min":
+                res[key] = np.min(m_p[finite_indices])
+            elif feature == "max":
+                res[key] = np.max(m_p[finite_indices])
+            elif feature == "mean":
+                res[key] = np.mean(m_p[finite_indices])
+            elif feature == "median":
+                res[key] = np.median(m_p[finite_indices])
+            elif feature == "25":
+                res[key] = np.percentile(m_p[finite_indices], 25)
+            elif feature == "75":
+                res[key] = np.percentile(m_p[finite_indices], 75)
+            else:
+                raise ValueError(f"Unknown feature {feature} for the matrix profile")
+
+    return [(key, value) for key, value in res.items()]
+
+
+@set_property("fctype", "combiner")
+def query_similarity_count(x, param):
+    """
+    This feature calculator accepts an input query subsequence parameter,
+    compares the query (under z-normalized Euclidean distance) to all
+    subsequences within the time series, and returns a count of the number
+    of times the query was found in the time series (within some predefined
+    maximum distance threshold). Note that this feature will always return
+    `np.nan` when no query subsequence is provided and so users will need
+    to enable this feature themselves.
+
+    :param x: the time series to calculate the feature of
+    :type x: numpy.ndarray
+    :param param: contains dictionaries
+                  {"query": Q, "threshold": thr, "normalize": norm}
+                  with `Q` (numpy.ndarray), the query subsequence to compare the
+                  time series against. If `Q` is omitted then a value of zero
+                  is returned. Additionally, `thr` (float), the maximum
+                  z-normalized Euclidean distance threshold for which to
+                  increment the query similarity count. If `thr` is omitted
+                  then a default threshold of `thr=0.0` is used, which
+                  corresponds to finding exact matches to `Q`. Finally, for
+                  non-normalized (i.e., without z-normalization) Euclidean set
+                  `norm` (bool) to `False.
+    :type param: list
+    :return x: the different feature values
+    :return type: int
+    """
+    res = {}
+    T = np.asarray(x).astype(float)
+
+    for i, kwargs in enumerate(param):
+        key = convert_to_output_format(kwargs)
+        normalize = kwargs.get("normalize", True)
+        threshold = kwargs.get('threshold', 0.0)
+        Q = kwargs.get('query', None)
+        Q = np.asarray(Q).astype(float)
+        count = np.nan
+        if Q is not None and Q.size >= 3:
+            if normalize:
+                distance_profile = stumpy.core.mass(Q, T)
+            else:
+                distance_profile = stumpy.core.mass_absolute(Q, T)
+            count = np.sum(distance_profile <= threshold)
+
+        res[key] = count
+
+    return [(key, value) for key, value in res.items()]

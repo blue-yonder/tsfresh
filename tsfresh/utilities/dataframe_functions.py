@@ -584,7 +584,7 @@ def add_sub_time_series_index(df_or_dict, sub_length, column_id=None, column_sor
     - if column_id is None: for each kind (or if column_kind is None for the full dataframe) a new index built by
       "sub-packaging" the data in packages of length "sub_length". For example if you have data with the
       length of 11 and sub_length is 2, you will get 6 new packages: 0, 0; 1, 1; 2, 2; 3, 3; 4, 4; 5.
-    - if column_id is not None: the same as before, just for each id seperately. The old column_id values are added
+    - if column_id is not None: the same as before, just for each id separately. The old column_id values are added
       to the new "id" column after a comma
 
     You can use this functions to turn a long measurement into sub-packages, where you want to extract features on.

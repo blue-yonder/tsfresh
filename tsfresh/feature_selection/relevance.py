@@ -93,7 +93,7 @@ def calculate_relevance_table(
 
     :param ml_task: The intended machine learning task. Either `'classification'`, `'regression'` or `'auto'`.
                     Defaults to `'auto'`, meaning the intended task is inferred from `y`.
-                    If `y` has a boolean, integer or object dtype, the task is assumend to be classification,
+                    If `y` has a boolean, integer or object dtype, the task is assumed to be classification,
                     else regression.
     :type ml_task: str
 
@@ -218,9 +218,10 @@ def calculate_relevance_table(
         table_const["relevant"] = False
 
         if not table_const.empty:
+
             warnings.warn(
                 "[test_feature_significance] Constant features: {}".format(
-                    ", ".join(table_const.feature)
+                    ", ".join(map(str, table_const.feature))
                 ),
                 RuntimeWarning,
             )

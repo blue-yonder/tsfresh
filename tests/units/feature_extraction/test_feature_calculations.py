@@ -5,6 +5,7 @@
 from random import shuffle
 from unittest import TestCase
 import warnings
+from matrixprofile.exceptions import NoSolutionPossible
 
 from tsfresh.feature_extraction.feature_calculators import *
 from tsfresh.feature_extraction.feature_calculators import _roll
@@ -1300,6 +1301,84 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqual(benford_correlation(fibonacci_list), 0.998003988)
         self.assertAlmostEqual(benford_correlation(list_with_nan), 0.10357511)
         self.assertIsNaN(benford_correlation(equal_list))
+
+    def test_query_similarity_count(self):
+        np.random.seed(42)
+        query = np.random.uniform(size=10)
+        threshold = 3.0
+        x = np.random.uniform(size=100)
+
+        # z-normalized Euclidean distances
+
+        param = [{"query": query}]
+        self.assertAlmostEqual(query_similarity_count(x, param=param)[0][1], 0.0)
+
+        param = [{"query": query, "threshold": threshold}]
+        self.assertAlmostEqual(query_similarity_count(x, param=param)[0][1], 6.0)
+
+        # non-normalized Euclidean distances
+
+        param = [{"query": query, "normalize": False}]
+        self.assertAlmostEqual(query_similarity_count(x, param=param)[0][1], 0.0)
+
+        param = [{"query": query, "threshold": threshold, "normalize": False}]
+        self.assertAlmostEqual(query_similarity_count(x, param=param)[0][1], 91.0)
+
+    def test_matrix_profile_window(self):
+        # Test matrix profile output with specified window
+        np.random.seed(9999)
+        ts = np.random.uniform(size=2**10)
+        w = 2**5
+        subq = ts[0:w]
+        ts[0:w] = subq
+        ts[w+100:w+100+w] = subq
+        param = [
+            {"threshold": 0.98, "windows": 36, "feature": "min"},
+            {"threshold": 0.98, "windows": 36, "feature": "max"},
+            {"threshold": 0.98, "windows": 36, "feature": "mean"},
+            {"threshold": 0.98, "windows": 36, "feature": "median"},
+            {"threshold": 0.98, "windows": 36, "feature": "25"},
+            {"threshold": 0.98, "windows": 36, "feature": "75"}
+        ]
+
+        self.assertAlmostEqual(matrix_profile(ts, param=param)[0][1], 2.825786727580335)
+
+    def test_matrix_profile_no_window(self):
+        # Test matrix profile output with no window specified
+        np.random.seed(9999)
+        ts = np.random.uniform(size=2**10)
+        w = 2**5
+        subq = ts[0:w]
+        ts[0:w] = subq
+        ts[w+100:w+100+w] = subq
+
+        param = [
+            {"threshold": 0.98, "feature": "min"},
+            {"threshold": 0.98, "feature": "max"},
+            {"threshold": 0.98, "feature": "mean"},
+            {"threshold": 0.98, "feature": "median"},
+            {"threshold": 0.98, "feature": "25"},
+            {"threshold": 0.98, "feature": "75"}
+        ]
+
+        # Test matrix profile output with no window specified
+        self.assertAlmostEqual(matrix_profile(ts, param=param)[0][1], 2.825786727580335)
+
+    def test_matrix_profile_nan(self):
+        # Test matrix profile of NaNs (NaN output)
+        ts = np.random.uniform(size=2**6)
+        ts[:] = np.nan
+
+        param = [
+            {"threshold": 0.98, "windows": None, "feature": "min"},
+            {"threshold": 0.98, "windows": None, "feature": "max"},
+            {"threshold": 0.98, "windows": None, "feature": "mean"},
+            {"threshold": 0.98, "windows": None, "feature": "median"},
+            {"threshold": 0.98, "windows": None, "feature": "25"},
+            {"threshold": 0.98, "windows": None, "feature": "75"}
+        ]
+
+        self.assertTrue(np.isnan(matrix_profile(ts, param=param)[0][1]))
 
 
 class FriedrichTestCase(TestCase):

@@ -111,12 +111,12 @@ By using feature selection algorithms you find out that only a subgroup of featu
 Then, we provide the :func:`tsfresh.feature_extraction.settings.from_columns` method that constructs the `kind_to_fc_parameters`
 dictionary from the column names of this filtered feature matrix to make sure that only relevant features are extracted.
 
-This can save a huge amount of time because you prevent the calculation of uncessary features.
+This can save a huge amount of time because you prevent the calculation of unnecessary features.
 Let's illustrate that with an example:
 
 .. code:: python
 
-    # X_tsfresh containes the extracted tsfresh features
+    # X_tsfresh contains the extracted tsfresh features
     X_tsfresh = extract_features(...)
 
     # which are now filtered to only contain relevant features

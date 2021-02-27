@@ -346,7 +346,7 @@ class ClusterDaskDistributor(IterableDistributorBaseClass):
 
     def __init__(self, address):
         """
-        Sets up a distributor that connects to a Dask Scheduler to distribute the calculaton of the features
+        Sets up a distributor that connects to a Dask Scheduler to distribute the calculation of the features
 
         :param address: the ip address and port number of the Dask Scheduler
         :type address: str

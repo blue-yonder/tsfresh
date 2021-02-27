@@ -4,7 +4,8 @@ Large Input Data
 ================
 
 If you are dealing with large time series data, you are facing multiple problems.
-Thw two most important ones are
+The two most important ones are
+
 * long execution times for feature extraction
 * large memory consumptions, even beyond what a single machine can handle
 
@@ -79,6 +80,6 @@ No pivoting will be performed in this case.
 PySpark
 -------
 
-Similar to dask, it is also possible to ass the feature extraction into a Spark
+Similar to dask, it is also possible to pass the feature extraction into a Spark
 computation graph.
 You can find more information in the documentation of :func:`tsfresh.convenience.bindings.spark_feature_extraction_on_chunk`.
