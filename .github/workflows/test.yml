@@ -21,7 +21,7 @@ jobs:
 
             NUMPY: "1.15.1"
             PANDAS: "0.25.0"
-            SCIKITLEARN: "0.19.2"
+            SCIKITLEARN: "0.22.0"
             DASK: "2.9.0"
             DISTRIBUTED: "2.11.0"
             SCIPY: "1.2.0"
@@ -32,7 +32,7 @@ jobs:
 
             NUMPY: "1.15.1"
             PANDAS: "1.0.5" # see https://github.com/numpy/numpy/issues/18355
-            SCIKITLEARN: "0.19.2"
+            SCIKITLEARN: "0.22.0"
             DASK: "2.9.0"
             DISTRIBUTED: "2.11.0"
             SCIPY: "1.2.0"
