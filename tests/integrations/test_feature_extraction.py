@@ -29,28 +29,28 @@ class FeatureExtractionTestCase(TestCase):
         self.assertIn("1__mean", X.columns)
         self.assertAlmostEqual(X.loc["5", "1__mean"], 5.516e-05, 4)
         self.assertIn("11", X.index)
-        self.assertEqual(X.shape, (100, 16))
+        self.assertEqual(X.shape, (100, 18))
 
         X = extract_features(df, column_id="my_id", column_sort="time", column_kind="dimension",
                              default_fc_parameters=MinimalFCParameters())
         self.assertIn("1__mean", X.columns)
         self.assertAlmostEqual(X.loc["5", "1__mean"], 5.516e-05, 4)
         self.assertIn("11", X.index)
-        self.assertEqual(X.shape, (100, 16))
+        self.assertEqual(X.shape, (100, 18))
 
         X = extract_features(df.drop(columns=["dimension"]), column_id="my_id", column_sort="time",
                              default_fc_parameters=MinimalFCParameters())
         self.assertIn("value__mean", X.columns)
         self.assertAlmostEqual(X.loc["5", "value__mean"], 5.516e-05, 4)
         self.assertIn("11", X.index)
-        self.assertEqual(X.shape, (100, 8))
+        self.assertEqual(X.shape, (100, 9))
 
         X = extract_features(df.drop(columns=["dimension", "time"]), column_id="my_id",
                              default_fc_parameters=MinimalFCParameters())
         self.assertIn("value__mean", X.columns)
         self.assertAlmostEqual(X.loc["5", "value__mean"], 5.516e-05, 4)
         self.assertIn("11", X.index)
-        self.assertEqual(X.shape, (100, 8))
+        self.assertEqual(X.shape, (100, 9))
 
     def test_pandas_no_pivot(self):
         df = self.df
@@ -62,7 +62,7 @@ class FeatureExtractionTestCase(TestCase):
         X = pd.DataFrame(X, columns=["my_id", "variable", "value"])
         self.assertIn("1__mean", X["variable"].values)
         self.assertAlmostEqual(X[(X["my_id"] == "5") & (X["variable"] == "1__mean")]["value"].iloc[0], 5.516e-05, 4)
-        self.assertEqual(X.shape, (100*16, 3))
+        self.assertEqual(X.shape, (100*18, 3))
 
         X = extract_features(df, column_id="my_id", column_sort="time",
                              column_kind="dimension",
@@ -71,7 +71,7 @@ class FeatureExtractionTestCase(TestCase):
         X = pd.DataFrame(X, columns=["my_id", "variable", "value"])
         self.assertIn("1__mean", X["variable"].values)
         self.assertAlmostEqual(X[(X["my_id"] == "5") & (X["variable"] == "1__mean")]["value"].iloc[0], 5.516e-05, 4)
-        self.assertEqual(X.shape, (100*16, 3))
+        self.assertEqual(X.shape, (100*18, 3))
 
         X = extract_features(df.drop(columns=["dimension"]), column_id="my_id",
                              column_sort="time",
@@ -80,7 +80,7 @@ class FeatureExtractionTestCase(TestCase):
         X = pd.DataFrame(X, columns=["my_id", "variable", "value"])
         self.assertIn("value__mean", X["variable"].values)
         self.assertAlmostEqual(X[(X["my_id"] == "5") & (X["variable"] == "value__mean")]["value"].iloc[0], 5.516e-05, 4)
-        self.assertEqual(X.shape, (100*8, 3))
+        self.assertEqual(X.shape, (100*9, 3))
 
         X = extract_features(df.drop(columns=["dimension", "time"]), column_id="my_id",
                              pivot=False,
@@ -88,7 +88,7 @@ class FeatureExtractionTestCase(TestCase):
         X = pd.DataFrame(X, columns=["my_id", "variable", "value"])
         self.assertIn("value__mean", X["variable"].values)
         self.assertAlmostEqual(X[(X["my_id"] == "5") & (X["variable"] == "value__mean")]["value"].iloc[0], 5.516e-05, 4)
-        self.assertEqual(X.shape, (100*8, 3))
+        self.assertEqual(X.shape, (100*9, 3))
 
     def test_dask(self):
         df = dd.from_pandas(self.df, npartitions=1)
@@ -99,7 +99,7 @@ class FeatureExtractionTestCase(TestCase):
         self.assertIn("1__mean", X.columns)
         self.assertAlmostEqual(X.loc["5", "1__mean"], 5.516e-05, 4)
         self.assertIn("11", X.index)
-        self.assertEqual(X.shape, (100, 16))
+        self.assertEqual(X.shape, (100, 18))
 
         X = extract_features(df, column_id="my_id", column_sort="time",
                              column_kind="dimension",
@@ -107,7 +107,7 @@ class FeatureExtractionTestCase(TestCase):
         self.assertIn("1__mean", X.columns)
         self.assertAlmostEqual(X.loc["5", "1__mean"], 5.516e-05, 4)
         self.assertIn("11", X.index)
-        self.assertEqual(X.shape, (100, 16))
+        self.assertEqual(X.shape, (100, 18))
 
         X = extract_features(df.drop(columns=["dimension"]), column_id="my_id",
                              column_sort="time",
@@ -115,14 +115,14 @@ class FeatureExtractionTestCase(TestCase):
         self.assertIn("value__mean", X.columns)
         self.assertAlmostEqual(X.loc["5", "value__mean"], 5.516e-05, 4)
         self.assertIn("11", X.index)
-        self.assertEqual(X.shape, (100, 8))
+        self.assertEqual(X.shape, (100, 9))
 
         X = extract_features(df.drop(columns=["dimension", "time"]), column_id="my_id",
                              default_fc_parameters=MinimalFCParameters()).compute()
         self.assertIn("value__mean", X.columns)
         self.assertAlmostEqual(X.loc["5", "value__mean"], 5.516e-05, 4)
         self.assertIn("11", X.index)
-        self.assertEqual(X.shape, (100, 8))
+        self.assertEqual(X.shape, (100, 9))
 
     def test_dask_no_pivot(self):
         df = dd.from_pandas(self.df, npartitions=1)
@@ -133,7 +133,7 @@ class FeatureExtractionTestCase(TestCase):
                              default_fc_parameters=MinimalFCParameters()).compute()
         self.assertIn("1__mean", X["variable"].values)
         self.assertAlmostEqual(X[(X["my_id"] == "5") & (X["variable"] == "1__mean")]["value"].iloc[0], 5.516e-05, 4)
-        self.assertEqual(X.shape, (100*16, 3))
+        self.assertEqual(X.shape, (100*18, 3))
 
         X = extract_features(df, column_id="my_id", column_sort="time",
                              column_kind="dimension",
@@ -141,7 +141,7 @@ class FeatureExtractionTestCase(TestCase):
                              default_fc_parameters=MinimalFCParameters()).compute()
         self.assertIn("1__mean", X["variable"].values)
         self.assertAlmostEqual(X[(X["my_id"] == "5") & (X["variable"] == "1__mean")]["value"].iloc[0], 5.516e-05, 4)
-        self.assertEqual(X.shape, (100*16, 3))
+        self.assertEqual(X.shape, (100*18, 3))
 
         X = extract_features(df.drop(columns=["dimension"]), column_id="my_id",
                              column_sort="time",
@@ -149,11 +149,11 @@ class FeatureExtractionTestCase(TestCase):
                              default_fc_parameters=MinimalFCParameters()).compute()
         self.assertIn("value__mean", X["variable"].values)
         self.assertAlmostEqual(X[(X["my_id"] == "5") & (X["variable"] == "value__mean")]["value"].iloc[0], 5.516e-05, 4)
-        self.assertEqual(X.shape, (100*8, 3))
+        self.assertEqual(X.shape, (100*9, 3))
 
         X = extract_features(df.drop(columns=["dimension", "time"]), column_id="my_id",
                              pivot=False,
                              default_fc_parameters=MinimalFCParameters()).compute()
         self.assertIn("value__mean", X["variable"].values)
         self.assertAlmostEqual(X[(X["my_id"] == "5") & (X["variable"] == "value__mean")]["value"].iloc[0], 5.516e-05, 4)
-        self.assertEqual(X.shape, (100*8, 3))
+        self.assertEqual(X.shape, (100*9, 3))
