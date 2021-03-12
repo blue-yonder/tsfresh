@@ -57,3 +57,6 @@ tsfresh/examples/data/
 tsfresh/notebooks/data/
 # ds_store
 *.DS_Store
+
+# dask
+dask-worker-space
