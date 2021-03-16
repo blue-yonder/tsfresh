@@ -2361,3 +2361,66 @@ def query_similarity_count(x, param):
         res[key] = count
 
     return [(key, value) for key, value in res.items()]
+
+
+@set_property("fctype", "simple")
+def slope_sign_change(x, t=0):
+    """
+    Returns the number of times that slope of the EMG signal changes sign. This feature meassures frequency. It uses a threshold to avoid noise. See SSC in [1].
+
+    :param x: the time series to calculate the feature of
+    :type x: numpy.ndarray
+    :param t: value used as threshold
+    :type t: float
+    :return: the value of this feature
+    :return type: int
+
+    References
+    |  [1] Phinyomark, A., Phukpattaranont, P., & Limsakul, C. (2012). Feature reduction and selection for EMG signal classification. Expert systems with applications, 39(8), 7420-7431.
+    """
+    # Calculation of feature as int
+    x = np.asarray(x)
+    left = x[1:-1] - x[:-2]
+    right = x[1:-1] - x[2:]
+    product = left * right
+    f = np.sum(product > t)
+    return f
+
+
+@set_property("fctype", "simple")
+def log_detector(x):
+    """
+    Returns a number related to the "force" of a signal. These approaches are based on a functional mathematical model for EMG signal generation. See Log detector in [1] and [2].
+
+    :param x: the time series to calculate the feature of
+    :type x: numpy.ndarray
+    :return: the value of this feature
+    :return type: float
+    
+    References
+    |  [1] Phinyomark, A., Phukpattaranont, P., & Limsakul, C. (2012). Feature reduction and selection for EMG signal classification. Expert systems with applications, 39(8), 7420-7431.
+    |  [2] Zardoshti-Kermani, M., Wheeler, B. C., Badie, K., & Hashemi, R. M. (1995). EMG feature evaluation for movement control of upper extremity prostheses. IEEE Transactions on Rehabilitation Engineering, 3(4), 324-333.
+    """
+    # Calculation of feature as float
+    x = np.asarray(x)
+    n = len(x)
+    x = x + (x == 0)*0.000000000001
+    return np.exp(np.sum(np.log(np.abs(x)))/n)
+
+
+@set_property("fctype", "simple")
+def willison_amplitude(x, t):
+    """
+    Returns how many times the difference between the signal amplitude among two adjoining segments exceeds a pre-defined threshold. See WAMP in [1].
+
+    :param x: the time series to calculate the feature of
+    :type x: numpy.ndarray
+    :return: the value of this feature
+    :return: type: int
+
+    References
+    |  [1] Phinyomark, A., Phukpattaranont, P., & Limsakul, C. (2012). Feature reduction and selection for EMG signal classification. Expert systems with applications, 39(8), 7420-7431.
+    """
+    # Calculation of feature as int
+    return np.sum(np.abs(x[1:] - x[:-1]) > t)
+    
