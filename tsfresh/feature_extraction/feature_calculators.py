@@ -27,7 +27,7 @@ from collections import defaultdict
 import numpy as np
 import pandas as pd
 from numpy.linalg import LinAlgError
-from scipy.signal import cwt, find_peaks_cwt, ricker, welch
+from scipy.signal import cwt, find_peaks_cwt, ricker, welch, periodogram
 from scipy.stats import linregress
 from statsmodels.tools.sm_exceptions import MissingDataError
 from matrixprofile.exceptions import NoSolutionPossible
@@ -1172,6 +1172,107 @@ def fft_aggregated(x, param):
     fft_abs = np.abs(np.fft.rfft(x))
 
     res = [calculation[config["aggtype"]](fft_abs) for config in param]
+    index = ['aggtype_"{}"'.format(config["aggtype"]) for config in param]
+    return zip(index, res)
+
+
+@set_property("fctype", "combiner")
+def psd_aggregated(x, param):
+    """
+    Returns the mean frequency, median frequency, and peak frequency of the estimated power spectral density using a periodogram. See [1],[2].
+
+    :param x: the time series to calculate the feature of
+    :type x: numpy.ndarray
+    :param param: contains  dictionaries {"aggtype": s} where s str and in ["mean_frequency", "median_frequency",
+        "peak_frequency", "mean_power"].
+    :type param: list
+    :return: the different feature values
+    :return type: pandas.Series
+    
+    References
+    |  [1] Phinyomark, A., Phukpattaranont, P., & Limsakul, C. (2012). Feature reduction and selection for EMG signal classification. Expert systems with applications, 39(8), 7420-7431.
+    |  [2] The SciPy community, 2021. scipy.signal.periodogram — SciPy v1.6.1 Reference Guide. [online] Docs.scipy.org. Available at: <https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.periodogram.html> [Accessed 15 March 2021].
+    """
+
+    assert {config["aggtype"] for config in param} <= {"mean_frequency", "median_frequency", "peak_frequency", "mean_power"}, \
+        'Attribute must be "mean_frequency", "median_frequency", "peak_frequency" or "mean_power"'
+
+    def get_mean_frequency(power_spectrum, frequency):
+        """
+        Returns the mean frequency from a given power spectral density. See the feature MNF in reference [1] in psd_aggregated(x, param)
+
+        :param power_spectrum: the power spectral density
+        :type power_spectrum: np.array
+        :param frequency: the frequency for each value of the power spectrum
+        :type frequency: np.array
+        :return: the value of the feature
+        :return type: float
+        """
+        return np.sum(frequency * power_spectrum) / np.sum(power_spectrum)
+
+    def get_median_frequency(power_spectrum, frequency):
+        """
+        Returns the median frequency from a given power spectral density. See the feature MDF in reference [1] in psd_aggregated(x, param)
+        
+        :param power_spectrum: the power spectral density
+        :type power_spectrum: np.array
+        :param frequency: the frequency for each value of the power spectrum
+        :type frequency: np.array
+        :return: the value of the feature
+        :return type: float
+        """
+        half_sum = np.sum(power_spectrum)/2
+        left_sum = 0
+        best_distance = np.abs(half_sum - left_sum)
+        best_index = -1
+        previous_distance = np.inf
+        for i, num in enumerate(power_spectrum):
+            left_sum += num
+            distance = np.abs(half_sum - left_sum)
+            if best_distance > distance:
+                best_index = i
+                best_distance = distance
+            #the array has only positive values, if there is no better distance, we have found the index
+            if best_distance == previous_distance:
+                return frequency[i]
+            previous_distance = distance
+
+    def get_peak_frequency(power_spectrum, frequency):
+        """
+        Returns the peak frequency from a given power spectral density. See the feature PKF in reference [1] in psd_aggregated(x, param)
+        
+        :param power_spectrum: the power spectral density
+        :type power_spectrum: np.array
+        :param frequency: the frequency for each value of the power spectrum
+        :type frequency: np.array
+        :return: the value of the feature
+        :return type: float
+        """
+        return frequency[np.argmax(power_spectrum)]
+
+    def get_mean_power(power_spectrum, frequency):
+        """
+        Returns the mean power from a given power spectral density. See the feature MNP in reference [1] in psd_aggregated(x, param)
+        
+        :param power_spectrum: the power spectral density
+        :type power_spectrum: np.array
+        :param frequency: the frequency for each value of the power spectrum
+        :type frequency: np.array
+        :return: the value of the feature
+        :return type: float
+        """
+        return np.sum(power_spectrum)/len(power_spectrum)
+    
+
+    calculation = dict(
+        mean_frequency = get_mean_frequency,
+        median_frequency = get_median_frequency,
+        peak_frequency = get_peak_frequency,
+        mean_power = get_mean_power
+    )
+    frequency, power_spectrum  = periodogram(x)
+
+    res = [calculation[config["aggtype"]](power_spectrum, frequency) for config in param]
     index = ['aggtype_"{}"'.format(config["aggtype"]) for config in param]
     return zip(index, res)
 
