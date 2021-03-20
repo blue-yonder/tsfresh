@@ -17,6 +17,12 @@ class TestSettingsObject(TestCase):
     This tests the base class ComprehensiveFCParameters
     """
 
+    def test_range_count_correctly_configured(self):
+        fset = ComprehensiveFCParameters()
+        params_range_count = fset["range_count"]
+        for param in params_range_count:
+            assert param["min"] < param["max"]
+
     def test_from_column_raises_on_wrong_column_format(self):
 
         self.assertRaises(TypeError, from_columns, 42)
