@@ -355,6 +355,12 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqualOnAllArrayTypes(lempel_ziv_complexity,
                                               [-1, np.nan, 5, 1, -4.5, 1, 5, 7, -3.4, 6],
                                               0.4, bins=10)
+        self.assertAlmostEqualOnAllArrayTypes(lempel_ziv_complexity,
+                                              np.linspace(0, 1, 10),
+                                              0.6, bins=3)
+        self.assertAlmostEqualOnAllArrayTypes(lempel_ziv_complexity,
+                                              [1, 1, 2, 3, 4, 5, 6, 0, 7, 8],
+                                              0.6, bins=3)
 
     def test_fourier_entropy(self):
         self.assertAlmostEqualOnAllArrayTypes(fourier_entropy, [1, 2, 1], 0.693147180, bins=2)
