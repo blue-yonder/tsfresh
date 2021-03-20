@@ -10,8 +10,7 @@
 [![Build Status](https://github.com/blue-yonder/tsfresh/workflows/Test%20Default%20Branch/badge.svg)](https://github.com/blue-yonder/tsfresh/actions)
 [![codecov](https://codecov.io/gh/blue-yonder/tsfresh/branch/main/graph/badge.svg)](https://codecov.io/gh/blue-yonder/tsfresh)
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/blue-yonder/tsfresh/blob/main/LICENSE.txt)
-[![Gitter chat](https://badges.gitter.im/tsfresh/Lobby.svg)](https://gitter.im/tsfresh/Lobby?utm_source=share-link&utm_medium=link&utm_campaign=share-link)
-[![py352 status](https://img.shields.io/badge/python3.5.2-supported-green.svg)](https://github.com/blue-yonder/tsfresh/issues/8)
+[![py36 status](https://img.shields.io/badge/python3.6.10-supported-green.svg)](https://github.com/blue-yonder/tsfresh/issues/8)
 [![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/blue-yonder/tsfresh/main?filepath=notebooks)
 [![Downloads](https://pepy.tech/badge/tsfresh)](https://pepy.tech/project/tsfresh)
 

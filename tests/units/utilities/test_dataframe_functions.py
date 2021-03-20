@@ -9,6 +9,8 @@ import pandas as pd
 from pandas.testing import assert_frame_equal, assert_series_equal
 
 from tsfresh.utilities import dataframe_functions
+from tsfresh import extract_relevant_features
+from tsfresh.feature_extraction.settings import MinimalFCParameters
 from tests.fixtures import warning_free
 
 
@@ -311,6 +313,64 @@ class RollingTestCase(TestCase):
         self.assertListEqual(list(df["a"].values), correct_values_a)
         self.assertListEqual(list(df["b"].values), correct_values_b)
 
+    def test_rolling_with_larger_shift(self):
+        first_class = pd.DataFrame({"a": [1, 2, 3, 4], "b": [5, 6, 7, 8], "time": range(4)})
+        second_class = pd.DataFrame({"a": [10, 11], "b": [12, 13], "time": range(20, 22)})
+
+        first_class["id"] = 1
+        second_class["id"] = 2
+
+        df_full = pd.concat([first_class, second_class], ignore_index=True)
+
+        """ df_full is
+            a   b  time  id
+        0   1   5     0   1
+        1   2   6     1   1
+        2   3   7     2   1
+        3   4   8     3   1
+        4  10  12    20   2
+        5  11  13    21   2
+        """
+        correct_indices = [
+            (1, 1),
+            (1, 1),
+            (1, 3),
+            (1, 3),
+            (1, 3),
+            (1, 3),
+            (2, 21),
+            (2, 21)
+        ]
+        correct_values_a = [1.0, 2.0, 1.0, 2.0, 3.0, 4.0, 10.0, 11.0]
+        correct_values_b = [5.0, 6.0, 5.0, 6.0, 7.0, 8.0, 12.0, 13.0]
+
+        df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
+                                                  column_kind=None, rolling_direction=2, n_jobs=0)
+
+        self.assertListEqual(list(df["id"]), correct_indices)
+        self.assertListEqual(list(df["a"].values), correct_values_a)
+        self.assertListEqual(list(df["b"].values), correct_values_b)
+
+        correct_indices = [
+            (1, 0),
+            (1, 0),
+            (1, 0),
+            (1, 0),
+            (1, 2),
+            (1, 2),
+            (2, 20),
+            (2, 20)
+        ]
+        correct_values_a = [1.0, 2.0, 3.0, 4.0, 3.0, 4.0, 10.0, 11.0]
+        correct_values_b = [5.0, 6.0, 7.0, 8.0, 7.0, 8.0, 12.0, 13.0]
+
+        df = dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
+                                                  column_kind=None, rolling_direction=-2, n_jobs=0)
+
+        self.assertListEqual(list(df["id"]), correct_indices)
+        self.assertListEqual(list(df["a"].values), correct_values_a)
+        self.assertListEqual(list(df["b"].values), correct_values_b)
+
     def test_stacked_rolling(self):
         first_class = pd.DataFrame({"a": [1, 2, 3, 4], "b": [5, 6, 7, 8], "time": range(4)})
         second_class = pd.DataFrame({"a": [10, 11], "b": [12, 13], "time": range(20, 22)})
@@ -510,10 +570,11 @@ class RollingTestCase(TestCase):
             dataframe_functions.roll_time_series(df_full, column_id="id", column_sort="time",
                                                  column_kind=None, rolling_direction=1, n_jobs=0)
 
-            self.assertEqual(len(w), 1)
-            self.assertEqual(str(w[0].message),
-                             "Your time stamps are not uniformly sampled, which makes rolling "
-                             "nonsensical in some domains.")
+            self.assertGreaterEqual(len(w), 1)
+            self.assertIn("Your time stamps are not uniformly sampled, which makes rolling "
+                          "nonsensical in some domains.",
+                          [str(warning.message) for warning in w]
+                          )
 
     def test_multicore_rolling(self):
         first_class = pd.DataFrame({"a": [1, 2, 3, 4], "b": [5, 6, 7, 8], "time": range(4)})
@@ -786,7 +847,7 @@ class MakeForecastingFrameTestCase(TestCase):
                                     "value": [0, 1, 2],
                                     "time": [0, 1, 2]})
 
-        expected_y = pd.Series(data=[1, 2, 3], index=[1, 2, 3], name="value")
+        expected_y = pd.Series(data=[1, 2, 3], index=[("id", 1), ("id", 2), ("id", 3)], name="value")
         assert_frame_equal(df.sort_index(axis=1).reset_index(drop=True), expected_df.sort_index(axis=1))
         assert_series_equal(y, expected_y)
 
@@ -797,7 +858,9 @@ class MakeForecastingFrameTestCase(TestCase):
                                     "kind": ["test"] * 3,
                                     "value": np.arange(3),
                                     "time": [0, 1, 2]})
+        expected_y = pd.Series(data=[1, 2, 3], index=[("id", 1), ("id", 2), ("id", 3)], name="value")
         assert_frame_equal(df.sort_index(axis=1).reset_index(drop=True), expected_df.sort_index(axis=1))
+        assert_series_equal(y, expected_y)
 
     def test_make_forecasting_frame_pdSeries(self):
 
@@ -805,8 +868,8 @@ class MakeForecastingFrameTestCase(TestCase):
         df, y = dataframe_functions.make_forecasting_frame(x=pd.Series(data=range(4), index=t_index),
                                                            kind="test", max_timeshift=1, rolling_direction=1)
 
-        expected_y = pd.Series(data=[1, 2, 3], index=pd.DatetimeIndex(["2011-01-01 01:00:00", "2011-01-01 02:00:00",
-                                                                       "2011-01-01 03:00:00"], freq="H"), name="value")
+        time_shifts = pd.DatetimeIndex(["2011-01-01 01:00:00", "2011-01-01 02:00:00", "2011-01-01 03:00:00"], freq="H")
+        expected_y = pd.Series(data=[1, 2, 3], index=zip(["id"]*3, time_shifts), name="value")
         expected_df = pd.DataFrame({"id": list(zip(["id"] * 3, pd.DatetimeIndex(["2011-01-01 01:00:00",
                                                                                  "2011-01-01 02:00:00",
                                                                                  "2011-01-01 03:00:00"]))),
@@ -816,6 +879,14 @@ class MakeForecastingFrameTestCase(TestCase):
                                     })
         assert_frame_equal(df.sort_index(axis=1).reset_index(drop=True), expected_df.sort_index(axis=1))
         assert_series_equal(y, expected_y)
+
+    def test_make_forecasting_frame_feature_extraction(self):
+        t_index = pd.date_range('1/1/2011', periods=4, freq='H')
+        df, y = dataframe_functions.make_forecasting_frame(x=pd.Series(data=range(4), index=t_index),
+                                                           kind="test", max_timeshift=1, rolling_direction=1)
+
+        extract_relevant_features(df, y, column_id="id", column_sort="time", column_value="value",
+                                  default_fc_parameters=MinimalFCParameters())
 
 
 class GetIDsTestCase(TestCase):

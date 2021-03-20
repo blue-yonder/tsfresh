@@ -335,6 +335,7 @@ def roll_time_series(df_or_dict, column_id, column_sort=None, column_kind=None,
        A negative rolling direction means, you go in negative time direction over your data.
        The time series named `([id=]4,[timeshift=]5)` with `max_timeshift` of 3 would then include the data
        of the times 5, 6 and 7.
+       The absolute value defines how much time to shift at each step.
      * It is possible to shift time series of different lengths, but:
      * We assume that the time series are uniformly sampled
      * For more information, please see :ref:`forecasting-label`.
@@ -359,6 +360,7 @@ def roll_time_series(df_or_dict, column_id, column_sort=None, column_kind=None,
     :type column_kind: basestring or None
 
     :param rolling_direction: The sign decides, if to shift our cut-out window backwards or forwards in "time".
+        The absolute value decides, how much to shift at each step.
     :type rolling_direction: int
 
     :param max_timeshift: If not None, the cut-out window is at maximum `max_timeshift` large. If none, it grows
@@ -455,6 +457,7 @@ def roll_time_series(df_or_dict, column_id, column_sort=None, column_kind=None,
                               "nonsensical in some domains.")
 
     # Roll the data frames if requested
+    rolling_amount = np.abs(rolling_direction)
     rolling_direction = np.sign(rolling_direction)
 
     grouped_data = df.groupby(grouper)
@@ -466,7 +469,10 @@ def roll_time_series(df_or_dict, column_id, column_sort=None, column_kind=None,
     if column_sort is None:
         df["sort"] = range(df.shape[0])
 
-    range_of_shifts = range(1, prediction_steps + 1)
+    if rolling_direction > 0:
+        range_of_shifts = list(reversed(range(prediction_steps, 0, -rolling_amount)))
+    else:
+        range_of_shifts = range(1, prediction_steps + 1, rolling_amount)
 
     if distributor is None:
         if n_jobs == 0:
@@ -559,7 +565,16 @@ def make_forecasting_frame(x, kind, max_timeshift, rolling_direction):
     mask = df_shift.groupby(['id'])['id'].transform(mask_first).astype(bool)
     df_shift = df_shift[mask]
 
-    return df_shift, df["value"][1:]
+    # Now create the target vector out of the values
+    # of the input series - not including the first one
+    # (as there is nothing to forecast from)
+    y = df["value"][1:]
+
+    # make sure that the format is the same as the
+    # df_shift index
+    y.index = map(lambda x: ("id", x), y.index)
+
+    return df_shift, y
 
 
 def add_sub_time_series_index(df_or_dict, sub_length, column_id=None, column_sort=None, column_kind=None):
@@ -569,7 +584,7 @@ def add_sub_time_series_index(df_or_dict, sub_length, column_id=None, column_sor
     - if column_id is None: for each kind (or if column_kind is None for the full dataframe) a new index built by
       "sub-packaging" the data in packages of length "sub_length". For example if you have data with the
       length of 11 and sub_length is 2, you will get 6 new packages: 0, 0; 1, 1; 2, 2; 3, 3; 4, 4; 5.
-    - if column_id is not None: the same as before, just for each id seperately. The old column_id values are added
+    - if column_id is not None: the same as before, just for each id separately. The old column_id values are added
       to the new "id" column after a comma
 
     You can use this functions to turn a long measurement into sub-packages, where you want to extract features on.

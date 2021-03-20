@@ -56,7 +56,7 @@ and end up with a pandas.DataFrame `timeseries` having the following shape
 +-----+-----+-----+-----+-----+-----+-----+-----+-----+
 
 The first column is the DataFrame index and has no meaning here.
-There are six different time series (a-f) for the different sensors. The different robots are denoted by the ids column.
+There are six different time series (`F_x`, `F_y`, `F_z`, `T_x`, `T_y`, `T_z`) for the different sensors. The different robots are denoted by the ids column.
 
 On the other hand, ``y`` contains the information which robot `id` reported a failure and which not:
 
@@ -93,7 +93,7 @@ And for id 20 reporting a failure:
 
 .. code:: python
 
-    timeseries[timeseries['id'] == 21].plot(subplots=True, sharex=True, figsize=(10,10))
+    timeseries[timeseries['id'] == 20].plot(subplots=True, sharex=True, figsize=(10,10))
     plt.show()
 
 .. image:: ../images/ts_example_robot_failures_fail.png

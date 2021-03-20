@@ -131,7 +131,8 @@ class ComprehensiveFCParameters(dict):
                                 product(["real", "imag", "abs", "angle"], range(100))],
             "fft_aggregated": [{"aggtype": s} for s in ["centroid", "variance", "skew", "kurtosis"]],
             "value_count": [{"value": value} for value in [0, 1, -1]],
-            "range_count": [{"min": -1, "max": 1}, {"min": 1e12, "max": 0}, {"min": 0, "max": 1e12}],
+            "range_count": [{"min": -1, "max": 1}, {"min": -1e12, "max": 0},
+                            {"min": 0, "max": 1e12}],
             "approximate_entropy": [{"m": 2, "r": r} for r in [.1, .3, .5, .7, .9]],
             "friedrich_coefficients": (lambda m: [{"coeff": coeff, "m": m, "r": 30} for coeff in range(m + 1)])(3),
             "max_langevin_fixed_point": [{"m": 3, "r": 30}],
@@ -152,7 +153,8 @@ class ComprehensiveFCParameters(dict):
             "lempel_ziv_complexity": [{"bins": x} for x in [2, 3, 5, 10, 100]],
             "fourier_entropy":  [{"bins": x} for x in [2, 3, 5, 10, 100]],
             "permutation_entropy":  [{"tau": 1, "dimension": x} for x in [3, 4, 5, 6, 7]],
-
+            "query_similarity_count": [{"query": None, "threshold": 0.0}],
+            "matrix_profile": [{"threshold": 0.98, "feature": f} for f in ["min", "max", "mean", "median", "25", "75"]]
         })
 
         super().__init__(name_to_param)

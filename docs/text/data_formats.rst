@@ -29,7 +29,7 @@ make up those DataFrames. Each will be described with an example from the robot 
 Need only to be specified on some data formats (see below):
 
 :`column_value`: This column contains the actual values of the time series.
-    This corresponds to the measured values for different the sensors on the robots.
+    This corresponds to the measured values of different sensors on the robots.
 
 :`column_kind`: This column indicates the names of the different time series types (e.g. different sensors in an
     industrial application as in the robot dataset).
@@ -129,7 +129,7 @@ Then you would set
     column_id="id", column_sort="time", column_kind="kind", column_value="value"
 
 to end up with the same extracted features as above.
-You can also omit the value column and let ``tsfresh`` can deduce it automatically.
+You can also omit the value column and let ``tsfresh`` deduce it automatically.
 
 
 Input Option 3. Dictionary of flat DataFrames

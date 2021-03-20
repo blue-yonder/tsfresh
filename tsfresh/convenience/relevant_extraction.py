@@ -134,7 +134,7 @@ def extract_relevant_features(timeseries_container, y, X=None,
 
     :param ml_task: The intended machine learning task. Either `'classification'`, `'regression'` or `'auto'`.
                     Defaults to `'auto'`, meaning the intended task is inferred from `y`.
-                    If `y` has a boolean, integer or object dtype, the task is assumend to be classification,
+                    If `y` has a boolean, integer or object dtype, the task is assumed to be classification,
                     else regression.
     :type ml_task: str
 

@@ -13,13 +13,22 @@ from tsfresh.utilities.dataframe_functions import check_for_nans_in_columns
 from tsfresh.feature_selection.relevance import calculate_relevance_table
 
 
-def select_features(X, y, test_for_binary_target_binary_feature=defaults.TEST_FOR_BINARY_TARGET_BINARY_FEATURE,
-                    test_for_binary_target_real_feature=defaults.TEST_FOR_BINARY_TARGET_REAL_FEATURE,
-                    test_for_real_target_binary_feature=defaults.TEST_FOR_REAL_TARGET_BINARY_FEATURE,
-                    test_for_real_target_real_feature=defaults.TEST_FOR_REAL_TARGET_REAL_FEATURE,
-                    fdr_level=defaults.FDR_LEVEL, hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
-                    n_jobs=defaults.N_PROCESSES, show_warnings=defaults.SHOW_WARNINGS,
-                    chunksize=defaults.CHUNKSIZE, ml_task='auto'):
+def select_features(
+    X,
+    y,
+    test_for_binary_target_binary_feature=defaults.TEST_FOR_BINARY_TARGET_BINARY_FEATURE,
+    test_for_binary_target_real_feature=defaults.TEST_FOR_BINARY_TARGET_REAL_FEATURE,
+    test_for_real_target_binary_feature=defaults.TEST_FOR_REAL_TARGET_BINARY_FEATURE,
+    test_for_real_target_real_feature=defaults.TEST_FOR_REAL_TARGET_REAL_FEATURE,
+    fdr_level=defaults.FDR_LEVEL,
+    hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
+    n_jobs=defaults.N_PROCESSES,
+    show_warnings=defaults.SHOW_WARNINGS,
+    chunksize=defaults.CHUNKSIZE,
+    ml_task="auto",
+    multiclass=False,
+    n_significant=1,
+):
     """
     Check the significance of all features (columns) of feature matrix X and return a possibly reduced feature matrix
     only containing relevant features.
@@ -116,9 +125,18 @@ def select_features(X, y, test_for_binary_target_binary_feature=defaults.TEST_FO
 
     :param ml_task: The intended machine learning task. Either `'classification'`, `'regression'` or `'auto'`.
                     Defaults to `'auto'`, meaning the intended task is inferred from `y`.
-                    If `y` has a boolean, integer or object dtype, the task is assumend to be classification,
+                    If `y` has a boolean, integer or object dtype, the task is assumed to be classification,
                     else regression.
     :type ml_task: str
+
+    :param multiclass: Whether the problem is multiclass classification. This modifies the way in which features
+                       are selected. Multiclass requires the features to be statistically significant for
+                       predicting n_significant features.
+    :type multiclass: bool
+
+    :param n_significant: The number of classes for which features should be statistically significant predictors
+                          to be regarded as 'relevant'. Only specify when multiclass=True
+    :type n_significant: int
 
     :return: The same DataFrame as X, but possibly with reduced number of columns ( = features).
     :rtype: pandas.DataFrame
@@ -128,11 +146,14 @@ def select_features(X, y, test_for_binary_target_binary_feature=defaults.TEST_FO
     """
     assert isinstance(X, pd.DataFrame), "Please pass features in X as pandas.DataFrame."
     check_for_nans_in_columns(X)
-    assert isinstance(y, (pd.Series, np.ndarray)), "The type of target vector y must be one of: " \
-                                                   "pandas.Series, numpy.ndarray"
+    assert isinstance(y, (pd.Series, np.ndarray)), (
+        "The type of target vector y must be one of: " "pandas.Series, numpy.ndarray"
+    )
     assert len(y) > 1, "y must contain at least two samples."
     assert len(X) == len(y), "X and y must contain the same number of samples."
-    assert len(set(y)) > 1, "Feature selection is only possible if more than 1 label/class is provided"
+    assert (
+        len(set(y)) > 1
+    ), "Feature selection is only possible if more than 1 label/class is provided"
 
     if isinstance(y, pd.Series) and set(X.index) != set(y.index):
         raise ValueError("Index of X and y must be identical if provided")
@@ -141,9 +162,17 @@ def select_features(X, y, test_for_binary_target_binary_feature=defaults.TEST_FO
         y = pd.Series(y, index=X.index)
 
     relevance_table = calculate_relevance_table(
-        X, y, ml_task=ml_task, n_jobs=n_jobs, show_warnings=show_warnings, chunksize=chunksize,
+        X,
+        y,
+        ml_task=ml_task,
+        multiclass=multiclass,
+        n_significant=n_significant,
+        n_jobs=n_jobs,
+        show_warnings=show_warnings,
+        chunksize=chunksize,
         test_for_binary_target_real_feature=test_for_binary_target_real_feature,
-        fdr_level=fdr_level, hypotheses_independent=hypotheses_independent,
+        fdr_level=fdr_level,
+        hypotheses_independent=hypotheses_independent,
     )
 
     relevant_features = relevance_table[relevance_table.relevant].feature

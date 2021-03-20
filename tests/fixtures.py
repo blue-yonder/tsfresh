@@ -147,3 +147,16 @@ class DataTestCase(TestCase):
         df = pd.DataFrame({'id': cid, 'kind': 'a', 'sort': csort, 'val': cval})
         y = pd.Series([2] * 30 + [5] * 20)
         return df, y
+
+    def create_test_data_sample_with_multiclass_target(self):
+        """
+        Small test data set with target.
+        :return: timeseries df
+        :return: target y which is the mean of each sample's timeseries
+        """
+        cid = np.repeat(range(75), 3)
+        csort = list(range(3)) * 75
+        cval = [1, 2, 3] * 30 + [4, 5, 6] * 20 + [7, 8, 9] * 25
+        df = pd.DataFrame({'id': cid, 'kind': 'a', 'sort': csort, 'val': cval})
+        y = pd.Series([2] * 30 + [5] * 20 + [8] * 25)
+        return df, y

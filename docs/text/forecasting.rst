@@ -16,7 +16,7 @@ You can think of it as shifting a cut-out window over your sorted time series da
 Then you continue shifting.
 In ``tsfresh``, the process of shifting a cut-out window over your data to create smaller time series cut-outs is called *rolling*.
 
-Rolling is a way, to turn a single time series into multiple time series, each of them ending one time step later than the one before.
+Rolling is a way, to turn a single time series into multiple time series, each of them ending one (or n) time step later than the one before.
 The rolling utilities implemented in `tsfresh` help you in this process of reshaping (and rolling) your data into a form, so that you can apply the usual :func:`tsfresh.extract_features` method.
 This means the step of extracting the time series windows and the feature extraction is separate.
 
@@ -88,7 +88,7 @@ There are three parameters to tune the window:
 * `max_timeshift` defines, how large the window is at maximum. The extracted time series will have at maximum a length of `max_timeshift + 1`.
   (they can also be smaller, as time stamps in the beginning have less past values).
 * `min_timeshift` defines the minimal size of each window. Shorter time series (from the beginning) will be omitted.
-* Advanced: `rolling_direction`: if you want to slide in positive (increasing sort) or negative (decreasing sort) direction. You barely need negative direction, so you probably not want to change the default.
+* Advanced: `rolling_direction`: if you want to slide in positive (increasing sort) or negative (decreasing sort) direction. You barely need negative direction, so you probably not want to change the default. The absolute value of this parameter decides, how much you want to shift per cut-out step.
 
 The column parameters are the same as in the usual :ref:`data-formats-label`.
 
@@ -180,7 +180,7 @@ You will end up with features generated for each of the parts above, which you c
 | (2,9)    |          221.0 |                         1.0 | ... |
 +----------+----------------+-----------------------------+-----+
 
-The features for e.g. for the id ``(1,3)`` are extracted using the data of ``id=1`` up to and including ``t=3`` (so ``t=1``, ``t=2`` and ``t=3``).
+The features for e.g. the id ``(1,3)`` are extracted using the data of ``id=1`` up to and including ``t=3`` (so ``t=1``, ``t=2`` and ``t=3``).
 
 If you want to train for a forecasting, `tsfresh` also offers the function :func:`tsfresh.utilities.dataframe_functions.make_forecasting_frame`, which will help you match the target vector properly.
 This process is visualized by the following figure.
@@ -237,3 +237,4 @@ For negative rolling, it is the first one, for example the above dataframe rolle
 which you could use to predict the current value using the future time series values (if that makes sense in your case).
 
 Choosing a non-default `max_timeshift` or `min_timeshift` would make the extracted sub-time-series smaller or even remove them completely (e.g. with `min_timeshift = 1` the ``(1,1)`` (i.e. ``id=1,timeshift=1``) of the positive rolling case would disappear).
+Using a ``rolling_direction`` with a larger absolute value (e.g. -2 or 2) will skip some of the windows (in this case, every second).
