@@ -45,7 +45,7 @@ What not to do with tsfresh?
 
 Currently, tsfresh is not suitable
 
-    * for usage with streaming data
+    * for usage with streaming data (The streaming data mentioned here is usually used for online operations, while time series data is usually used for offline operations. Online operation and offline operation are a pair of relative concepts.)
     * to train models on the features (we do not want to reinvent the wheel, check out the python package
       `scikit-learn <http://scikit-learn.org/stable/>`_ for example)
 
