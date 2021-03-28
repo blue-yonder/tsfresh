@@ -202,5 +202,5 @@ class TestMinimalSettingsObject(TestCase):
 
         self.assertCountEqual(extracted_features.columns, ["0__median", "0__standard_deviation", "0__sum_values",
                                                            "0__maximum", "0__variance", "0__minimum", "0__mean",
-                                                           "0__length", "0__root_mean_square"])
+                                                           "0__length", "0__root_mean_square", "0__absolut_maximum"])
         self.assertCountEqual(extracted_features.index, [0, 1])

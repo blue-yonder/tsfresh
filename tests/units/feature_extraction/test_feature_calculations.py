@@ -476,6 +476,15 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqualOnAllArrayTypes(root_mean_square, [1], 1)
         self.assertAlmostEqualOnAllArrayTypes(root_mean_square, [-1], 1)
 
+    def test_mean_n_absolute_max(self):
+        self.assertIsNanOnAllArrayTypes(mean_n_absolute_max, [], number_of_maxima=1)
+        self.assertIsNanOnAllArrayTypes(mean_n_absolute_max, [12,3], number_of_maxima=10)
+        self.assertIsNanOnAllArrayTypes(mean_n_absolute_max, [12,3], number_of_maxima=0)
+        self.assertIsNanOnAllArrayTypes(mean_n_absolute_max, [12,3], number_of_maxima=-1)
+        self.assertAlmostEqualOnAllArrayTypes(mean_n_absolute_max, [-1, -5, 4, 10], 6.33333333333, number_of_maxima=3)
+        self.assertAlmostEqualOnAllArrayTypes(mean_n_absolute_max, [0, -5, -9], 7.000000, number_of_maxima=2)
+        self.assertAlmostEqualOnAllArrayTypes(mean_n_absolute_max, [0,0,0], 0, number_of_maxima=1)
+    
     def test_absolute_sum_of_changes(self):
         self.assertEqualOnAllArrayTypes(absolute_sum_of_changes, [1, 1, 1, 1, 2, 1], 2)
         self.assertEqualOnAllArrayTypes(absolute_sum_of_changes, [1, -1, 1, -1], 6)

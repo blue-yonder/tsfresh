@@ -1548,6 +1548,26 @@ def c3(x, lag):
 
 
 @set_property("fctype", "simple")
+@set_property("minimal", True)
+def mean_n_absolute_max(x, number_of_maxima):
+    """
+    Calculates the arithmetic mean of the n absolut maximum values of the time series.
+
+    :param x: the time series to calculate the feature of
+    :type x: numpy.ndarray
+    :param number_of_maxima: the number of maxima, which should be considered
+    :type number_of_maxima: int
+
+    :return: the value of this feature
+    :return type: float
+    """    
+
+    if number_of_maxima < 1:
+        return np.nan
+    
+    return np.mean(np.sort(np.absolute(x))[-number_of_maxima:]) if len(x) > number_of_maxima else np.NaN
+
+@set_property("fctype", "simple")
 def binned_entropy(x, max_bins):
     """
     First bins the values of x into max_bins equidistant bins.
@@ -1887,6 +1907,19 @@ def maximum(x):
     :return type: float
     """
     return np.max(x)
+
+@set_property("fctype", "simple")
+@set_property("minimal", True)
+def absolut_maximum(x):
+    """
+    Calculates the highest absolut value of the time series x.
+
+    :param x: the time series to calculate the feature of
+    :type x: numpy.ndarray
+    :return: the value of this feature
+    :return type: float
+    """
+    return np.max(np.absolute(x))
 
 
 @set_property("fctype", "simple")

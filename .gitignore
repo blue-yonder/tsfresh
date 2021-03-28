@@ -30,7 +30,8 @@ __pycache__/*
 
 # Unittest and coverage
 htmlcov/*
-.coverage
+.coveragerc
+.coverage*
 .coverage.*
 .tox
 junit.xml
