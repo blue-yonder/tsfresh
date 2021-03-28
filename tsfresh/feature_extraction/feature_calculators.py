@@ -1560,12 +1560,13 @@ def mean_n_absolute_max(x, number_of_maxima):
 
     :return: the value of this feature
     :return type: float
-    """    
+    """
 
     if number_of_maxima < 1:
         return np.nan
-    
+
     return np.mean(np.sort(np.absolute(x))[-number_of_maxima:]) if len(x) > number_of_maxima else np.NaN
+
 
 @set_property("fctype", "simple")
 def binned_entropy(x, max_bins):
@@ -1907,6 +1908,7 @@ def maximum(x):
     :return type: float
     """
     return np.max(x)
+
 
 @set_property("fctype", "simple")
 @set_property("minimal", True)
