@@ -75,7 +75,7 @@ class FeatureExtractionTestCase(TestCase):
 
         X = extract_features(df.drop(columns=["dimension"]), column_id="my_id",
                              column_sort="time",
-                             pivotqq=False,
+                             pivot=False,
                              default_fc_parameters=MinimalFCParameters())
         X = pd.DataFrame(X, columns=["my_id", "variable", "value"])
         self.assertIn("value__mean", X["variable"].values)
