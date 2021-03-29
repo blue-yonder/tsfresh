@@ -1562,8 +1562,7 @@ def mean_n_absolute_max(x, number_of_maxima):
     :return type: float
     """
 
-    if number_of_maxima < 1:
-        return np.nan
+    assert number_of_maxima > 0, f" number_of_maxima={number_of_maxima} which is not greater than 1"
 
     return np.mean(np.sort(np.absolute(x))[-number_of_maxima:]) if len(x) > number_of_maxima else np.NaN
 
