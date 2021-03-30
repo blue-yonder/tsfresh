@@ -473,7 +473,7 @@ def partial_autocorrelation(x, param):
 @set_property("fctype", "combiner")
 def augmented_dickey_fuller(x, param):
     """
-    Does the time series have an unit root?
+    Does the time series have a unit root?
 
     The Augmented Dickey-Fuller test is a hypothesis test which checks whether a unit root is present in a time
     series sample. This feature calculator returns the value of the respective test statistic.
