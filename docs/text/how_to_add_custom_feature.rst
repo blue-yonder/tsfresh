@@ -81,7 +81,10 @@ or with parameter
     @set_property("fctype", "combiner")
     def your_feature_calculator(x, param):
         """
-        Description of your feature
+        Short description of your feature (should be a one liner as we parse the first line of the description)
+
+        Long detailed description, add somme equations, add some references, what kind of statistics is the feature
+        capturing? When should you use it? When not?
 
         :param x: the time series to calculate the feature of
         :type x: pandas.Series

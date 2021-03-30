@@ -220,6 +220,8 @@ def set_property(key, value):
 @set_property("fctype", "simple")
 def variance_larger_than_standard_deviation(x):
     """
+    Is variance higher than the standard deviation?
+
     Boolean variable denoting if the variance of x is greater than its standard deviation. Is equal to variance of x
     being larger than 1
 
@@ -235,7 +237,7 @@ def variance_larger_than_standard_deviation(x):
 @set_property("fctype", "simple")
 def ratio_beyond_r_sigma(x, r):
     """
-    Ratio of values that are more than r*std(x) (so r sigma) away from the mean of x.
+    Ratio of values that are more than r * std(x) (so r times sigma) away from the mean of x.
 
     :param x: the time series to calculate the feature of
     :type x: iterable
@@ -252,9 +254,10 @@ def ratio_beyond_r_sigma(x, r):
 @set_property("fctype", "simple")
 def large_standard_deviation(x, r):
     """
-    Boolean variable denoting if the standard dev of x is higher
-    than 'r' times the range = difference between max and min of x.
-    Hence it checks if
+    Does time series have *large* standard deviation?
+
+    Boolean variable denoting if the standard dev of x is higher than 'r' times the range = difference between max and
+    min of x. Hence it checks if
 
     .. math::
 
@@ -363,6 +366,8 @@ def sum_values(x):
 @set_property("fctype", "combiner")
 def agg_autocorrelation(x, param):
     """
+    Descriptive statistics on the autocorrelation of the time series.
+
     Calculates the value of an aggregation function :math:`f_{agg}` (e.g. the variance or the mean) over the
     autocorrelation :math:`R(l)` for different lags. The autocorrelation :math:`R(l)` for lag :math:`l` is defined as
 
@@ -409,10 +414,12 @@ def agg_autocorrelation(x, param):
 @set_property("fctype", "combiner")
 def partial_autocorrelation(x, param):
     """
-    Calculates the value of the partial autocorrelation function at the given lag. The lag `k` partial autocorrelation
-    of a time series :math:`\\lbrace x_t, t = 1 \\ldots T \\rbrace` equals the partial correlation of :math:`x_t` and
-    :math:`x_{t-k}`, adjusted for the intermediate variables
+    Calculates the value of the partial autocorrelation function at the given lag.
+
+    The lag `k` partial autocorrelation of a time series :math:`\\lbrace x_t, t = 1 \\ldots T \\rbrace` equals the
+    partial correlation of :math:`x_t` and :math:`x_{t-k}`, adjusted for the intermediate variables
     :math:`\\lbrace x_{t-1}, \\ldots, x_{t-k+1} \\rbrace` ([1]).
+
     Following [2], it can be defined as
 
     .. math::
@@ -466,6 +473,8 @@ def partial_autocorrelation(x, param):
 @set_property("fctype", "combiner")
 def augmented_dickey_fuller(x, param):
     """
+    Does the time series have a unit root?
+
     The Augmented Dickey-Fuller test is a hypothesis test which checks whether a unit root is present in a time
     series sample. This feature calculator returns the value of the respective test statistic.
 
@@ -569,6 +578,8 @@ def cid_ce(x, normalize):
 @set_property("fctype", "simple")
 def mean_abs_change(x):
     """
+    Average over first differences.
+
     Returns the mean over the absolute differences between subsequent time series values which is
 
     .. math::
@@ -587,6 +598,8 @@ def mean_abs_change(x):
 @set_property("fctype", "simple")
 def mean_change(x):
     """
+    Average over time series differences.
+
     Returns the mean over the differences between subsequent time series values which is
 
     .. math::
@@ -1247,9 +1260,11 @@ def index_mass_quantile(x, param):
 @set_property("fctype", "simple")
 def number_cwt_peaks(x, n):
     """
-    This feature calculator searches for different peaks in x. To do so, x is smoothed by a ricker wavelet and for
-    widths ranging from 1 to n. This feature calculator returns the number of peaks that occur at enough width scales
-    and with sufficiently high Signal-to-Noise-Ratio (SNR)
+    Number of different peaks in x.
+
+    To estimamte the numbers of peaks, x is smoothed by a ricker wavelet for widths ranging from 1 to n. This feature
+    calculator returns the number of peaks that occur at enough width scales and with sufficiently high
+    Signal-to-Noise-Ratio (SNR)
 
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
@@ -1469,6 +1484,8 @@ def change_quantiles(x, ql, qh, isabs, f_agg):
 @set_property("fctype", "simple")
 def time_reversal_asymmetry_statistic(x, lag):
     """
+    Returns the time reversal asymmetry statistic.
+
     This function calculates the value of
 
     .. math::
@@ -1510,6 +1527,8 @@ def time_reversal_asymmetry_statistic(x, lag):
 @set_property("fctype", "simple")
 def c3(x, lag):
     """
+    Uses c3 statistics to measure non linearity in the time series
+
     This function calculates the value of
 
     .. math::
