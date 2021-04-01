@@ -1921,7 +1921,7 @@ def absolute_maximum(x):
     :return: the value of this feature
     :return type: float
     """
-    return np.max(np.absolute(x))
+    return np.max(np.absolute(x)) if len(x) > 0 else np.NaN
 
 
 @set_property("fctype", "simple")
