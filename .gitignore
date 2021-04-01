@@ -60,3 +60,4 @@ tsfresh/notebooks/data/
 
 # dask
 dask-worker-space
+dask-worker-space/
