@@ -1913,7 +1913,7 @@ def maximum(x):
 @set_property("minimal", True)
 def absolut_maximum(x):
     """
-    Calculates the highest absolut value of the time series x.
+    Calculates the highest absolute value of the time series x.
 
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
