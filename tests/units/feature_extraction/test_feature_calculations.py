@@ -1004,6 +1004,11 @@ class FeatureCalculationTestCase(TestCase):
         self.assertEqualOnAllArrayTypes(approximate_entropy, [1, 2, 3], 0, m=2, r=0.5)
         self.assertAlmostEqualOnAllArrayTypes(approximate_entropy, [12, 13, 15, 16, 17] * 10, 0.282456191, m=2, r=0.9)
         self.assertRaises(ValueError, approximate_entropy, x=[12, 13, 15, 16, 17] * 10, m=2, r=-0.5)
+    
+    def test_absolute_maximum(self):
+        self.assertEqualOnAllArrayTypes(absolute_maximum, [-5, 0 , 1], 5)
+        self.assertEqualOnAllArrayTypes(absolute_maximum, [0], 0)
+        self.assertIsNanOnAllArrayTypes(absolute_maximum, [])
 
     def test_max_langevin_fixed_point(self):
         """

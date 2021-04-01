@@ -154,7 +154,8 @@ class ComprehensiveFCParameters(dict):
             "fourier_entropy":  [{"bins": x} for x in [2, 3, 5, 10, 100]],
             "permutation_entropy":  [{"tau": 1, "dimension": x} for x in [3, 4, 5, 6, 7]],
             "query_similarity_count": [{"query": None, "threshold": 0.0}],
-            "matrix_profile": [{"threshold": 0.98, "feature": f} for f in ["min", "max", "mean", "median", "25", "75"]]
+            "matrix_profile": [{"threshold":0.98, "feature":f} for f in ["min", "max", "mean", "median", "25", "75"]],
+            "mean_n_absolute_max": [{"number_of_maxima": 3, "number_of_maxima": 5, "number_of_maxima": 7}]
         })
 
         super().__init__(name_to_param)
