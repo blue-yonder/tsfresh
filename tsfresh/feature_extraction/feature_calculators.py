@@ -1548,7 +1548,6 @@ def c3(x, lag):
 
 
 @set_property("fctype", "simple")
-@set_property("minimal", True)
 def mean_n_absolute_max(x, number_of_maxima):
     """
     Calculates the arithmetic mean of the n absolute maximum values of the time series.
