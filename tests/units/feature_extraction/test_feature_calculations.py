@@ -478,13 +478,13 @@ class FeatureCalculationTestCase(TestCase):
 
     def test_mean_n_absolute_max(self):
         self.assertIsNanOnAllArrayTypes(mean_n_absolute_max, [], number_of_maxima=1)
-        self.assertIsNanOnAllArrayTypes(mean_n_absolute_max, [12,3], number_of_maxima=10)
-        self.assertRaises(AssertionError, mean_n_absolute_max, [12,3], number_of_maxima=0)
-        self.assertRaises(AssertionError, mean_n_absolute_max, [12,3], number_of_maxima=-1)
+        self.assertIsNanOnAllArrayTypes(mean_n_absolute_max, [12, 3], number_of_maxima=10)
+        self.assertRaises(AssertionError, mean_n_absolute_max, [12, 3], number_of_maxima=0)
+        self.assertRaises(AssertionError, mean_n_absolute_max, [12, 3], number_of_maxima=-1)
         self.assertAlmostEqualOnAllArrayTypes(mean_n_absolute_max, [-1, -5, 4, 10], 6.33333333333, number_of_maxima=3)
         self.assertAlmostEqualOnAllArrayTypes(mean_n_absolute_max, [0, -5, -9], 7.000000, number_of_maxima=2)
-        self.assertAlmostEqualOnAllArrayTypes(mean_n_absolute_max, [0,0,0], 0, number_of_maxima=1)
-    
+        self.assertAlmostEqualOnAllArrayTypes(mean_n_absolute_max, [0, 0, 0], 0, number_of_maxima=1)
+
     def test_absolute_sum_of_changes(self):
         self.assertEqualOnAllArrayTypes(absolute_sum_of_changes, [1, 1, 1, 1, 2, 1], 2)
         self.assertEqualOnAllArrayTypes(absolute_sum_of_changes, [1, -1, 1, -1], 6)
@@ -1004,9 +1004,9 @@ class FeatureCalculationTestCase(TestCase):
         self.assertEqualOnAllArrayTypes(approximate_entropy, [1, 2, 3], 0, m=2, r=0.5)
         self.assertAlmostEqualOnAllArrayTypes(approximate_entropy, [12, 13, 15, 16, 17] * 10, 0.282456191, m=2, r=0.9)
         self.assertRaises(ValueError, approximate_entropy, x=[12, 13, 15, 16, 17] * 10, m=2, r=-0.5)
-    
+
     def test_absolute_maximum(self):
-        self.assertEqualOnAllArrayTypes(absolute_maximum, [-5, 0 , 1], 5)
+        self.assertEqualOnAllArrayTypes(absolute_maximum, [-5, 0, 1], 5)
         self.assertEqualOnAllArrayTypes(absolute_maximum, [0], 0)
         self.assertIsNanOnAllArrayTypes(absolute_maximum, [])
 
