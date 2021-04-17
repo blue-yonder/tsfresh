@@ -46,8 +46,8 @@ You can write such a simple feature calculator, that returns exactly one feature
         :return type: bool, int or float
         """
         # Calculation of feature as float, int or bool
-        f = f(x)
-        return f
+        result = f(x)
+        return result
 
 or with parameter
 
@@ -77,6 +77,8 @@ or with parameter
 ~~~~~~~~~~~~~~~~~~~~
 
 .. code:: python
+    from tsfresh.utilities.string_manipulation import convert_to_output_format
+
 
     @set_property("fctype", "combiner")
     def your_feature_calculator(x, param):
@@ -96,13 +98,10 @@ or with parameter
                  and f the respective feature value as bool, int or float
         :return type: pandas.Series
         """
-        # s is a function that serializes the config
-        # f is a function that calculates the feature value for the config
-        return [(s(config), f(x, config)) for config in param]
+        # Do some pre-processing if needed for all parameters
+        # f is a function that calculates the feature value for each single parameter combination
+        return [(convert_to_output_format(config), f(x, config)) for config in param]
 
-
-After implementing the feature calculator, please add it to the :mod:`tsfresh.feature_extraction.feature_calculators`
-submodule. tsfresh will only find feature calculators that are in this submodule.
 
 Writing your own time-based feature calculators
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -132,8 +131,27 @@ For example, if we want to write a function that calculates the time between the
 Step 3. Add custom settings for your feature
 --------------------------------------------
 
-Finally, you have to add custom settings if your feature is a simple or combiner feature with parameters. To do so,
-just append your feature with sane default parameters to the ``name_to_param`` dictionary inside the
+Finally, you need to add your new custom feature to the extraction settings, otherwise it is not used
+during extraction.
+To do this, create a new settings object (by default, ``tsfresh`` uses the
+:class:`tsfresh.feature_extraction.settings.ComprehensiveFCParameters`) and
+add your function as a key to the dictionary.
+As a value, either use ``None`` if your function does not need parameters or a list of
+parameters you want to use (as dictionaries).
+
+.. code:: python
+    settings = ComprehensiveFCParameters()
+    settings[f] = [{"n": 1}, {"n": 2}]
+
+After that, make sure you pass your newly created settings in the call to ``extract_features``.
+
+Step 4. Add a pull request
+--------------------------
+
+We would very happy if you contribute your implemented features to tsfresh.
+
+For this, add your feature into the ``feature_calculators.py`` file and append your
+feature (as a name) with sane default parameters to the ``name_to_param`` dictionary inside the
 :class:`tsfresh.feature_extraction.settings.ComprehensiveFCParameters` constructor:
 
 .. code:: python
@@ -145,9 +163,6 @@ just append your feature with sane default parameters to the ``name_to_param`` d
         "your_feature_calculator" = [{"p1": x, "p2": y, ...} for x,y in ...],
     })
 
-
-That is it, tsfresh will calculate your feature the next time you run it.
-
 Please make sure, that the different feature extraction settings
 (e.g. :class:`tsfresh.feature_extraction.settings.EfficientFCParameters`,
 :class:`tsfresh.feature_extraction.settings.MinimalFCParameters` or
@@ -156,10 +171,5 @@ feature calculators to use. You can control, which feature extraction settings o
 feature calculator by giving your function attributes like "minimal" or "high_comp_cost". Please see the
 classes in :mod:`tsfresh.feature_extraction.settings` for more information.
 
-
-Step 4. Add a pull request
---------------------------
-
-We would very happy if you contribute your implemented features to tsfresh. So make sure to create a pull request at our
-`github page <https://github.com/blue-yonder/tsfresh>`_. We happily accept partly implemented feature calculators, which
-we can finalize collaboratively.
+After that, add some tests and create a pull request at our `github page <https://github.com/blue-yonder/tsfresh>`_.
+We happily accept partly implemented feature calculators, which we can finalize collaboratively.
