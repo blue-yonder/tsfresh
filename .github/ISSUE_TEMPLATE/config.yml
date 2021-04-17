@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: "Q&A and general Questions"
+    url: https://github.com/blue-yonder/tsfresh/discussions/categories/q-a
+    about: "If you have questions on how to use `tsfresh` for your use case, please ask on GitHub Discussions."
+  - name: "Discussion and feature requests"
+    url: https://github.com/blue-yonder/tsfresh/discussions
+    about: "For anything else, please use the general discussion forums."
