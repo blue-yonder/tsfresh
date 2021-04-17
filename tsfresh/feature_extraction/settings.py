@@ -5,11 +5,13 @@
 This file contains methods/objects for controlling which features will be extracted when calling extract_features.
 For the naming of the features, see :ref:`feature-naming-label`.
 """
+from collections import UserDict
 from inspect import getfullargspec
 
 import pandas as pd
 from builtins import range
 
+import cloudpickle
 from itertools import product
 
 from tsfresh.feature_extraction import feature_calculators
@@ -77,8 +79,30 @@ def from_columns(columns, columns_to_ignore=None):
     return kind_to_fc_parameters
 
 
+class PickeableSettings(UserDict):
+    """Base object for all settings, which is a picklable dict.
+    For user-specified functions, the settings dictionary might include functions as a key.
+    These functions unfortunately can not easily be transported to workers in multiprocessing
+    or multi-cloud setups, as they are not pickleable by default.
+    Therefore, we change the pickle-behavior of this class and use cloudpickle for
+    pickling and unpickling the keys of the dictionary, before pickling the full object.
+    cloudpickle is able to pickle much more functions than pickle can and pickle will
+    only see the already encoded keys (not the raw functions).
+    """
+    def __getstate__(self):
+        """Called on pickling. Encode the keys by cloudpickling them"""
+        state = {cloudpickle.dumps(key): value for key, value in self.items()}
+        return state
+
+    def __setstate__(self, state):
+        """Called on un-pickling. cloudunpickle the keys again"""
+        state = {cloudpickle.loads(key): value for key, value in state.items()}
+        # please note that the internal dictionary is stored as "data" in the UserDict
+        self.__dict__.update(data=state)
+
+
 # todo: this classes' docstrings are not completely up-to-date
-class ComprehensiveFCParameters(dict):
+class ComprehensiveFCParameters(PickeableSettings):
     """
     Create a new ComprehensiveFCParameters instance. You have to pass this instance to the
     extract_feature instance.
