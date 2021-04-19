@@ -16,40 +16,40 @@ jobs:
         python-version: [3.6, 3.7, 3.8]
         installation: ["lowest", "highest"]
         include:
-        - python-version: 3.6
-          installation: "lowest"
+         - python-version: 3.6
+            installation: "lowest"
 
-          NUMPY: "1.15.1"
-          PANDAS: "0.25.0"
-          SCIKITLEARN: "0.19.2"
-          DASK: "2.9.0"
-          DISTRIBUTED: "2.11.0"
-          SCIPY: "1.2.0"
-          STATSMODELS: "0.9.0"
+            NUMPY: "1.15.1"
+            PANDAS: "0.25.0"
+            SCIKITLEARN: "0.22.0"
+            DASK: "2.9.0"
+            DISTRIBUTED: "2.11.0"
+            SCIPY: "1.2.0"
+            STATSMODELS: "0.9.0"
 
-        - python-version: 3.7
-          installation: "lowest"
+          - python-version: 3.7
+            installation: "lowest"
 
-          NUMPY: "1.15.1"
-          PANDAS: "0.25.0"
-          SCIKITLEARN: "0.19.2"
-          DASK: "2.9.0"
-          DISTRIBUTED: "2.11.0"
-          SCIPY: "1.2.0"
-          STATSMODELS: "0.9.0"
+            NUMPY: "1.15.1"
+            PANDAS: "1.0.5" # see https://github.com/numpy/numpy/issues/18355
+            SCIKITLEARN: "0.22.0"
+            DASK: "2.9.0"
+            DISTRIBUTED: "2.11.0"
+            SCIPY: "1.2.0"
+            STATSMODELS: "0.9.0"
 
-        - python-version: 3.8
-          installation: "lowest"
+          - python-version: 3.8
+            installation: "lowest"
 
-          # only starting from these version, there is a wheel
-          NUMPY: "1.17.3"
-          PANDAS: "1.0.0"
-          SCIKITLEARN: "0.22.0"
-          DASK: "2.9.0"
-          DISTRIBUTED: "2.11.0"
-          # 1.2.0 is not installable with python 3.8...
-          SCIPY: "1.4.0"
-          STATSMODELS: "0.10.2"
+            # only starting from these version, there is a wheel
+            NUMPY: "1.17.3"
+            PANDAS: "1.0.0"
+            SCIKITLEARN: "0.22.0"
+            DASK: "2.9.0"
+            DISTRIBUTED: "2.11.0"
+            # 1.2.0 is not installable with python 3.8...
+            SCIPY: "1.4.0"
+            STATSMODELS: "0.10.2"
 
     steps:
     - uses: actions/checkout@v2
