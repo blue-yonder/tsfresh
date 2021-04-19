@@ -16,7 +16,7 @@ jobs:
         python-version: [3.6, 3.7, 3.8]
         installation: ["lowest", "highest"]
         include:
-         - python-version: 3.6
+          - python-version: 3.6
             installation: "lowest"
 
             NUMPY: "1.15.1"
