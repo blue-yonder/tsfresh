@@ -52,53 +52,53 @@ jobs:
             STATSMODELS: "0.10.2"
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
 
-    - name: Cache pip
-      uses: actions/cache@v2
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}-${{ hashFiles('test-requirements.txt') }}-${{ matrix.python-version }}-${{ matrix.installation }}
-        restore-keys: |
-          ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}-${{ hashFiles('test-requirements.txt') }}-${{ matrix.python-version }}-${{ matrix.installation }}
+      - name: Cache pip
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}-${{ hashFiles('test-requirements.txt') }}-${{ matrix.python-version }}-${{ matrix.installation }}
+          restore-keys: |
+            ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}-${{ hashFiles('test-requirements.txt') }}-${{ matrix.python-version }}-${{ matrix.installation }}
 
-    - name: Install dependencies
-      run: |
-        # Do all the installations
-        python -m pip install --upgrade pip wheel setuptools
+      - name: Install dependencies
+        run: |
+          # Do all the installations
+          python -m pip install --upgrade pip wheel setuptools
 
-        # Now downgrade packages if required by environment variables
-        [ -z "${{matrix.NUMPY}}" ] || pip install numpy==${{matrix.NUMPY}}
-        [ -z "${{matrix.PANDAS}}" ] || pip install pandas==${{matrix.PANDAS}}
-        [ -z "${{matrix.SCIKITLEARN}}" ] || pip install scikit-learn==${{matrix.SCIKITLEARN}}
-        [ -z "${{matrix.STATSMODELS}}" ] || pip install statsmodels==${{matrix.STATSMODELS}}
-        [ -z "${{matrix.DASK}}" ] || pip install dask==${{matrix.DASK}}
-        [ -z "${{matrix.DISTRIBUTED}}" ] || pip install distributed==${{matrix.DISTRIBUTED}}
-        # need to downgrade tornado manually
-        [ -z "${{matrix.SCIPY}}" ] || pip install scipy==${{matrix.SCIPY}}
+          # Now downgrade packages if required by environment variables
+          [ -z "${{matrix.NUMPY}}" ] || pip install numpy==${{matrix.NUMPY}}
+          [ -z "${{matrix.PANDAS}}" ] || pip install pandas==${{matrix.PANDAS}}
+          [ -z "${{matrix.SCIKITLEARN}}" ] || pip install scikit-learn==${{matrix.SCIKITLEARN}}
+          [ -z "${{matrix.STATSMODELS}}" ] || pip install statsmodels==${{matrix.STATSMODELS}}
+          [ -z "${{matrix.DASK}}" ] || pip install dask==${{matrix.DASK}}
+          [ -z "${{matrix.DISTRIBUTED}}" ] || pip install distributed==${{matrix.DISTRIBUTED}}
+          # need to downgrade tornado manually
+          [ -z "${{matrix.SCIPY}}" ] || pip install scipy==${{matrix.SCIPY}}
 
-        pip install -r requirements.txt -r test-requirements.txt
-        pip install .
+          pip install -r requirements.txt -r test-requirements.txt
+          pip install .
 
-        # Print out the pip versions for debugging
-        pip list
+          # Print out the pip versions for debugging
+          pip list
 
-    - name: Test with pytest
-      run: |
-        pytest --junitxml=junit/test-results-${{ matrix.python-version }}-${{ matrix.installation }}.xml --cov-report=xml tests
+      - name: Test with pytest
+        run: |
+          pytest --junitxml=junit/test-results-${{ matrix.python-version }}-${{ matrix.installation }}.xml --cov-report=xml tests
 
-    - name: Upload pytest test results
-      uses: actions/upload-artifact@v1
-      with:
-        name: pytest-results-${{ matrix.python-version }}-${{ matrix.installation }}
-        path: junit/test-results-${{ matrix.python-version }}-${{ matrix.installation }}.xml
-      # Use always() to always run this step to publish test results when there are test failures
-      if: ${{ always() }}
+      - name: Upload pytest test results
+        uses: actions/upload-artifact@v1
+        with:
+          name: pytest-results-${{ matrix.python-version }}-${{ matrix.installation }}
+          path: junit/test-results-${{ matrix.python-version }}-${{ matrix.installation }}.xml
+        # Use always() to always run this step to publish test results when there are test failures
+        if: ${{ always() }}
 
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v1
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
