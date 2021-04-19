@@ -62,5 +62,5 @@ class FullPipelineTestCase_robot_failures(TestCase):
                                   'F_x__variance',
                                   'F_x__variance_larger_than_standard_deviation'}
 
-        self.assertGreaterEqual(len(set(extracted_features.columns)), len(some_expected_features))
+        self.assertGreaterEqual(set(extracted_features.columns), some_expected_features)
         self.assertGreater(len(extracted_features), 0)
