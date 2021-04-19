@@ -292,12 +292,15 @@ def _do_extraction_on_chunk(chunk, default_fc_parameters, kind_to_fc_parameters,
         fc_parameters = default_fc_parameters
 
     def _f():
-        for function_name, parameter_list in fc_parameters.items():
-            func = getattr(feature_calculators, function_name)
+        for f_or_function_name, parameter_list in fc_parameters.items():
+            if callable(f_or_function_name):
+                func = f_or_function_name
+            else:
+                func = getattr(feature_calculators, f_or_function_name)
 
             # If the function uses the index, pass is at as a pandas Series.
             # Otherwise, convert to numpy array
-            if getattr(func, 'input', False) == 'pd.Series':
+            if getattr(func, 'input', None) == 'pd.Series':
                 # If it has a required index type, check that the data has the right index type.
                 index_type = getattr(func, 'index_type', None)
                 if index_type is not None:
@@ -306,14 +309,14 @@ def _do_extraction_on_chunk(chunk, default_fc_parameters, kind_to_fc_parameters,
                     except AssertionError:
                         warnings.warn(
                             "{} requires the data to have a index of type {}. Results will "
-                            "not be calculated".format(function_name, index_type)
+                            "not be calculated".format(f_or_function_name, index_type)
                         )
                         continue
                 x = data
             else:
                 x = data.values
 
-            if func.fctype == "combiner":
+            if getattr(func, "fctype", None) == "combiner":
                 result = func(x, param=parameter_list)
             else:
                 if parameter_list:
