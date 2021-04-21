@@ -110,6 +110,7 @@ class ExtractionTestCase(DataTestCase):
         self.assertEqual(
             sorted(extracted_features.index.unique().tolist()), sorted(df['id'].unique().tolist())
         )
+
     def test_extract_features_custom_function(self):
         df = self.create_test_data_sample()
 

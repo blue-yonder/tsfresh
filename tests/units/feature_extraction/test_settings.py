@@ -224,5 +224,5 @@ class TestSettingPickability(TestCase):
 
         for key in settings:
             self.assertTrue(not callable(key) or
-                (key(3) == 4 and settings[key] is None) or
-                (key(3) == 1 and settings[key] == {"this": "is a test"}))
+                            (key(3) == 4 and settings[key] is None) or
+                            (key(3) == 1 and settings[key] == {"this": "is a test"}))
