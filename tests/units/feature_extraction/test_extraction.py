@@ -11,7 +11,7 @@ from mock import Mock
 
 from tests.fixtures import DataTestCase
 from tsfresh.feature_extraction.extraction import extract_features
-from tsfresh.feature_extraction.settings import ComprehensiveFCParameters
+from tsfresh.feature_extraction.settings import ComprehensiveFCParameters, PickeableSettings
 from tsfresh.utilities.distribution import IterableDistributorBaseClass, MapDistributor
 
 
@@ -110,6 +110,34 @@ class ExtractionTestCase(DataTestCase):
         self.assertEqual(
             sorted(extracted_features.index.unique().tolist()), sorted(df['id'].unique().tolist())
         )
+    def test_extract_features_custom_function(self):
+        df = self.create_test_data_sample()
+
+        def custom_function(x, p):
+            return len(x) + p
+
+        settings = PickeableSettings({
+            'mean': None,
+            custom_function: [{"p": 1}, {"p": -1}],
+        })
+
+        extracted_features = extract_features(df, default_fc_parameters=settings,
+                                              column_value="val", column_id="id",
+                                              column_kind="kind",
+                                              column_sort="sort")
+
+        self.assertIsInstance(extracted_features, pd.DataFrame)
+
+        mean_a = extracted_features['a__mean'].values
+        custom_function_a_1 = extracted_features['a__custom_function__p_1'].values
+        custom_function_a_m1 = extracted_features['a__custom_function__p_-1'].values
+
+        self.assertAlmostEqual(mean_a[0], 34.55)
+        self.assertAlmostEqual(mean_a[1], 50.85)
+        self.assertAlmostEqual(custom_function_a_1[0], 21)
+        self.assertAlmostEqual(custom_function_a_1[1], 21)
+        self.assertAlmostEqual(custom_function_a_m1[0], 19)
+        self.assertAlmostEqual(custom_function_a_m1[1], 19)
 
     def test_extract_features_after_randomisation(self):
         df = self.create_test_data_sample()

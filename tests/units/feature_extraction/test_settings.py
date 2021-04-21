@@ -3,11 +3,13 @@
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
 from unittest import TestCase
+import pickle
+
 import numpy as np
 import pandas as pd
 from tsfresh.feature_extraction.extraction import extract_features
 from tsfresh.feature_extraction.settings import ComprehensiveFCParameters, MinimalFCParameters, \
-    EfficientFCParameters, from_columns, TimeBasedFCParameters, IndexBasedFCParameters
+    EfficientFCParameters, from_columns, TimeBasedFCParameters, IndexBasedFCParameters, PickeableSettings
 from tsfresh.feature_extraction import feature_calculators
 from pandas.testing import assert_frame_equal
 
@@ -204,3 +206,23 @@ class TestMinimalSettingsObject(TestCase):
                                                            "0__maximum", "0__variance", "0__minimum", "0__mean",
                                                            "0__length", "0__root_mean_square", "0__absolute_maximum"])
         self.assertCountEqual(extracted_features.index, [0, 1])
+
+
+class TestSettingPickability(TestCase):
+    def test_settings_pickable(self):
+        settings = PickeableSettings()
+        settings["test"] = 3
+        settings[lambda x: x + 1] = None
+        def f(x): return x - 2
+        settings[f] = {"this": "is a test"}
+
+        dumped_settings = pickle.dumps(settings)
+        settings = pickle.loads(dumped_settings)
+
+        self.assertIn("test", settings)
+        self.assertEqual(len(settings), 3)
+
+        for key in settings:
+            self.assertTrue(not callable(key) or
+                (key(3) == 4 and settings[key] is None) or
+                (key(3) == 1 and settings[key] == {"this": "is a test"}))
