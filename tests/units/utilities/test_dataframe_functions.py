@@ -679,6 +679,11 @@ class ImputeTestCase(TestCase):
         df = dataframe_functions.impute_dataframe_zero(df)
         self.assertEqual(list(df.value), [0, 0, 0, 1])
 
+        df = pd.DataFrame([])
+        dataframe_functions.impute_dataframe_zero(df)
+
+        self.assertEqual(len(df), 0)
+
     def test_toplevel_impute(self):
         df = pd.DataFrame(np.transpose([[0, 1, 2, np.NaN], [1, np.PINF, 2, 3], [1, -3, np.NINF, 3]]),
                           columns=["value_a", "value_b", "value_c"])
@@ -706,6 +711,11 @@ class ImputeTestCase(TestCase):
         self.assertEqual(list(df.value_a), [0, 1, 2, 1])
         self.assertEqual(list(df.value_b), [1, 3, 2, 3])
         self.assertEqual(list(df.value_c), [3, -3, -3, 3])
+
+        df = pd.DataFrame([])
+        dataframe_functions.impute(df)
+
+        self.assertEqual(len(df), 0)
 
     def test_impute_range(self):
         def get_df():
@@ -765,6 +775,11 @@ class ImputeTestCase(TestCase):
 
         self.assertEqual(df.columns, ["test"])
         self.assertListEqual(list(df["test"].values), [0, 1, 2, 3, 4])
+
+        df = pd.DataFrame([])
+        dataframe_functions.impute_dataframe_range(df, {}, {}, {})
+
+        self.assertEqual(len(df), 0)
 
 
 class RestrictTestCase(TestCase):
