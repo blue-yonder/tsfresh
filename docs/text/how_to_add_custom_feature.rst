@@ -77,6 +77,7 @@ or with parameter
 ~~~~~~~~~~~~~~~~~~~~
 
 .. code:: python
+
     from tsfresh.utilities.string_manipulation import convert_to_output_format
 
 
