@@ -192,7 +192,7 @@ def calculate_relevance_table(
         else:
             warnings.simplefilter("default")
 
-        if n_jobs == 0:
+        if n_jobs <= 1:
             map_function = map
         else:
             pool = Pool(
