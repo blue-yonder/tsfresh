@@ -2297,11 +2297,12 @@ def matrix_profile(x, param):
 
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
-    :param param: contains dictionaries {"sample_pct": x, "threshold": y, "feature": z}
-    with sample_pct and threshold being parameters of the matrixprofile
-    package https://matrixprofile.docs.matrixprofile.org/api.html#matrixprofile-compute
-    and feature being one of "min", "max", "mean", "median", "25", "75"
-    and decides which feature of the matrix profile to extract
+    :param param: contains dictionaries
+                  {"sample_pct": x, "threshold": y, "feature": z}
+                  with sample_pct and threshold being parameters of the matrixprofile
+                  package https://matrixprofile.docs.matrixprofile.org/api.html#matrixprofile-compute
+                  and feature being one of "min", "max", "mean", "median", "25", "75"
+                  and decides which feature of the matrix profile to extract
     :type param: list
     :return: the different feature values
     :return type: pandas.Series
