@@ -141,6 +141,7 @@ As a value, either use ``None`` if your function does not need parameters or a l
 parameters you want to use (as dictionaries).
 
 .. code:: python
+
     settings = ComprehensiveFCParameters()
     settings[f] = [{"n": 1}, {"n": 2}]
 
