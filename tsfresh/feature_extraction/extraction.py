@@ -233,7 +233,7 @@ def _do_extraction(df, column_id, column_value, column_kind, column_sort,
 
     if distributor is None:
         if isinstance(data, Iterable):
-            if n_jobs <= 1:
+            if n_jobs == 0 or n_jobs == 1:
                 distributor = MapDistributor(disable_progressbar=disable_progressbar,
                                              progressbar_title="Feature Extraction")
             else:
