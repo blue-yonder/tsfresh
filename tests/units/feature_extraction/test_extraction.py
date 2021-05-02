@@ -199,7 +199,7 @@ class ExtractionTestCase(DataTestCase):
 
         features_parallel = extract_features(df, column_id="id", column_sort="sort",
                                              column_kind="kind", column_value="val",
-                                             n_jobs=self.n_jobs)
+                                             n_jobs=2)
 
         features_serial = extract_features(df, column_id="id", column_sort="sort",
                                            column_kind="kind", column_value="val",

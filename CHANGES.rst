@@ -4,6 +4,12 @@ Changelog
 
 tsfresh uses `Semantic Versioning <http://semver.org/>`_
 
+Unreleased
+==========
+
+- Bugfixes:
+    - Disable multiprocessing for `n_jobs=1` (#852)
+
 Version 0.18.0
 ==============
 

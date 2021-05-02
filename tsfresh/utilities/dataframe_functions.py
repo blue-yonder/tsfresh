@@ -483,7 +483,7 @@ def roll_time_series(df_or_dict, column_id, column_sort=None, column_kind=None,
         range_of_shifts = range(1, prediction_steps + 1, rolling_amount)
 
     if distributor is None:
-        if n_jobs == 0:
+        if n_jobs == 0 or n_jobs == 1:
             distributor = MapDistributor(disable_progressbar=disable_progressbar,
                                          progressbar_title="Rolling")
         else:

@@ -192,7 +192,7 @@ def calculate_relevance_table(
         else:
             warnings.simplefilter("default")
 
-        if n_jobs == 0:
+        if n_jobs == 0 or n_jobs == 1:
             map_function = map
         else:
             pool = Pool(
@@ -227,7 +227,7 @@ def calculate_relevance_table(
             )
 
         if len(table_const) == len(relevance_table):
-            if n_jobs != 0:
+            if n_jobs < 0 or n_jobs > 1:
                 pool.close()
                 pool.terminate()
                 pool.join()
@@ -294,7 +294,7 @@ def calculate_relevance_table(
                 map_function,
             )
 
-        if n_jobs != 0:
+        if n_jobs < 0 or n_jobs > 1:
             pool.close()
             pool.terminate()
             pool.join()
