@@ -1,5 +1,5 @@
-<div align="center">
-  <img width="70%" src="./docs/images/tsfresh_logo.svg">
+<div align='center'>
+  <img width='70%' src='./docs/images/tsfresh_logo.svg'>
 </div>
 
 -----------------
@@ -16,7 +16,7 @@
 
 This repository contains the *TSFRESH* python package. The abbreviation stands for
 
-*"Time Series Feature extraction based on scalable hypothesis tests"*.
+*'Time Series Feature extraction based on scalable hypothesis tests'*.
 
 The package contains many feature extraction methods and a robust feature selection algorithm.
 

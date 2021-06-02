@@ -31,7 +31,7 @@ Version 0.18.0
     - Update relevant_feature_augmenter.py (#779)
     - Fix column names in quick_start.rst (#778)
     - Improve relevance table function documentation (#781)
-    - Fixed #789 Typo in "how to add custom feature" (#790)
+    - Fixed #789 Typo in 'how to add custom feature' (#790)
     - Convert to the correct type on warnings (#799)
     - Fix minor typos in the docs (#802)
     - Add unwanted filetypes to gitignore (#819)
@@ -42,7 +42,7 @@ Version 0.18.0
 Version 0.17.0
 ==============
 
-We changed the default branch from "master" to "main".
+We changed the default branch from 'master' to 'main'.
 
 - Breaking Change
     - Changed constructed id in roll_time_series from string to tuple (#700)
@@ -133,7 +133,7 @@ Version 0.14.0
     - Feature/pep8 (#607)
 - Added Features
     - Improve test coverage (#609)
-    - Add "autolag" parameter to augmented_dickey_fuller() (#612)
+    - Add 'autolag' parameter to augmented_dickey_fuller() (#612)
 - Bugfixes
     - Feature/pep8 (#607)
     - Fix filtering on warnings with multiprocessing on Windows (#610)
@@ -154,7 +154,7 @@ Version 0.13.0
     - Avoid division by zero in energy_ratio_by_chunks (#588)
     - Ensure that get_moment() uses float computations (#584)
     - Preserve index when column_value and column_kind not provided (#576)
-    - Add @set_property("input", "pd.Series") when needed (#582)
+    - Add @set_property('input', 'pd.Series') when needed (#582)
     - Fix off-by-one error in longest strike features (fixes #577) (#578)
     - Add `set_property` import (#572)
     - Fix typo (#571)
@@ -188,7 +188,7 @@ Version 0.11.2
 ==============
 - change chunking in energy_ratio_by_chunks to use all data points
 - fix warning for spkt_welch_density
-- adapt default settings for "value_count" and "range_count"
+- adapt default settings for 'value_count' and 'range_count'
 - added
     - maxlag parameter to agg_autocorrelation function
 - now, the kind column of the input DataFrame is cast as str, old derived FC_Settings can become invalid
@@ -340,8 +340,8 @@ Version 0.4.0
 - added a progress bar denoting the progress of the extraction process
 - added parallelization per sample
 - added unit tests for comparing results of feature extraction to older snapshots
-- added "high_comp_cost" attribute
-- added ReasonableFeatureExtraction settings only calculating features without "high_comp_cost" attribute
+- added 'high_comp_cost' attribute
+- added ReasonableFeatureExtraction settings only calculating features without 'high_comp_cost' attribute
 
 Version 0.3.1
 =============
@@ -353,7 +353,7 @@ Version 0.3.1
 Version 0.3.0
 =============
 
-- fixed bug with parsing of "NUMBER_OF_CPUS" environment variable
+- fixed bug with parsing of 'NUMBER_OF_CPUS' environment variable
 - now features are calculated in parallel for each type
 
 Version 0.2.0
