@@ -1232,8 +1232,8 @@ def number_peaks(x, n):
 @set_property("fctype", "combiner")
 def index_mass_quantile(x, param):
     """
-    Those apply features calculate the relative index i where q% of the mass of the time series x lie left of i.
-    For example for q = 50% this feature calculator will return the mass center of the time series
+    Calculates the relative index i of time series x where q% of the mass of x lies left of i.
+    For example for q = 50% this feature calculator will return the mass center of the time series.
 
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
