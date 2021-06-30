@@ -584,7 +584,7 @@ def mean_abs_change(x):
 
     .. math::
 
-        \\frac{1}{n} \\sum_{i=1,\\ldots, n-1} | x_{i+1} - x_{i}|
+        \\frac{1}{n-1} \\sum_{i=1,\\ldots, n-1} | x_{i+1} - x_{i}|
 
 
     :param x: the time series to calculate the feature of
