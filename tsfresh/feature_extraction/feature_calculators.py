@@ -2207,7 +2207,7 @@ def linear_trend_timewise(x, param):
     times_seconds = (ix - ix[0]).total_seconds()
     times_hours = np.asarray(times_seconds / float(3600))
 
-    linReg = linregress(times_hours, x.values)
+    linReg = linregress(times_hours, x.values.flatten())
 
     return [("attr_\"{}\"".format(config["attr"]), getattr(linReg, config["attr"]))
             for config in param]

@@ -314,7 +314,7 @@ def _do_extraction_on_chunk(chunk, default_fc_parameters, kind_to_fc_parameters,
                         continue
                 x = data
             else:
-                x = data.values
+                x = data.values.flatten()
 
             if getattr(func, "fctype", None) == "combiner":
                 result = func(x, param=parameter_list)
