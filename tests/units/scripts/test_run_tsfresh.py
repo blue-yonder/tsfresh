@@ -27,7 +27,10 @@ class RunTSFreshTestCase(TestCase):
             return df
 
         # Patcher object to be disabled in tearDown
-        self.patcher = patch('tsfresh.scripts.run_tsfresh.extract_features', side_effect=extract_features_mock)
+        self.patcher = patch(
+            "tsfresh.scripts.run_tsfresh.extract_features",
+            side_effect=extract_features_mock,
+        )
         # Mocked extract function
         self.mocked_extract_function = self.patcher.start()
 
@@ -48,7 +51,9 @@ class RunTSFreshTestCase(TestCase):
 
         output_file_name = "temporary_output_csv_file.csv"
         arguments_with_filenames = "{input_file_name} {arguments} --output-file-name {output_file_name}".format(
-            input_file_name=input_file_name, arguments=arguments, output_file_name=output_file_name
+            input_file_name=input_file_name,
+            arguments=arguments,
+            output_file_name=output_file_name,
         )
 
         run_tsfresh.main(arguments_with_filenames.split())
@@ -60,23 +65,28 @@ class RunTSFreshTestCase(TestCase):
             return None
 
     def test_invalid_arguments(self):
-        self.assertRaises(SystemExit, self.call_main_function, arguments="--invalid-argument")
+        self.assertRaises(
+            SystemExit, self.call_main_function, arguments="--invalid-argument"
+        )
 
     def test_csv_without_headers_wrong_arguments(self):
-        self.assertRaises(AttributeError, self.call_main_function,
-                          arguments="--column-id invalid")
+        self.assertRaises(
+            AttributeError, self.call_main_function, arguments="--column-id invalid"
+        )
 
     def test_csv_without_headers(self):
         input_csv = "1 1 1 1\n1 1 1 1"
-        output_csv = ",id,time,value\n" \
-                     "0,0,0,1\n" \
-                     "1,0,1,1\n" \
-                     "2,0,2,1\n" \
-                     "3,0,3,1\n" \
-                     "4,1,0,1\n" \
-                     "5,1,1,1\n" \
-                     "6,1,2,1\n" \
-                     "7,1,3,1\n"
+        output_csv = (
+            ",id,time,value\n"
+            "0,0,0,1\n"
+            "1,0,1,1\n"
+            "2,0,2,1\n"
+            "3,0,3,1\n"
+            "4,1,0,1\n"
+            "5,1,1,1\n"
+            "6,1,2,1\n"
+            "7,1,3,1\n"
+        )
 
         result_csv = self.call_main_function(input_csv_string=input_csv)
 
@@ -95,7 +105,8 @@ class RunTSFreshTestCase(TestCase):
 
         result_csv = self.call_main_function(
             input_csv_string=input_csv,
-            arguments="--column-id ID --column-sort SORT --column-value VALUE --column-kind KIND --csv-with-headers")
+            arguments="--column-id ID --column-sort SORT --column-value VALUE --column-kind KIND --csv-with-headers",
+        )
 
         self.assertEqual(result_csv, output_csv)
 

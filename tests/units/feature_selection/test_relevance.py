@@ -138,9 +138,11 @@ class TestCalculateRelevanceTable:
                 X, y_real, n_jobs=0, ml_task="regression", show_warnings=True
             )
             assert len(record) >= 1
-            assert ("No feature was found relevant for regression for fdr level = 0.05 (which corresponds "
-                    "to the maximal percentage of irrelevant features, consider using an higher fdr level "
-                    "or add other features.") in [str(warning.message) for warning in record]
+            assert (
+                "No feature was found relevant for regression for fdr level = 0.05 (which corresponds "
+                "to the maximal percentage of irrelevant features, consider using an higher fdr level "
+                "or add other features."
+            ) in [str(warning.message) for warning in record]
 
     def test_multiclass_requires_classification(self, X, y_real):
         with pytest.raises(AssertionError):

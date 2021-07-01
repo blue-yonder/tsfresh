@@ -9,12 +9,15 @@ import pandas as pd
 from distributed import LocalCluster, Client
 
 from tsfresh import extract_features
-from tsfresh.utilities.distribution import MultiprocessingDistributor, LocalDaskDistributor, ClusterDaskDistributor
+from tsfresh.utilities.distribution import (
+    MultiprocessingDistributor,
+    LocalDaskDistributor,
+    ClusterDaskDistributor,
+)
 from tests.fixtures import DataTestCase
 
 
 class MultiprocessingDistributorTestCase(TestCase):
-
     def test_partition(self):
 
         distributor = MultiprocessingDistributor(n_workers=1)
@@ -44,23 +47,35 @@ class MultiprocessingDistributorTestCase(TestCase):
 
 
 class LocalDaskDistributorTestCase(DataTestCase):
-
     def test_local_dask_cluster_extraction_one_worker(self):
 
         Distributor = LocalDaskDistributor(n_workers=1)
 
         df = self.create_test_data_sample()
-        extracted_features = extract_features(df, column_id="id", column_sort="sort", column_kind="kind",
-                                              column_value="val",
-                                              distributor=Distributor)
+        extracted_features = extract_features(
+            df,
+            column_id="id",
+            column_sort="sort",
+            column_kind="kind",
+            column_value="val",
+            distributor=Distributor,
+        )
 
         self.assertIsInstance(extracted_features, pd.DataFrame)
         self.assertTrue(np.all(extracted_features.a__maximum == np.array([71, 77])))
-        self.assertTrue(np.all(extracted_features.a__sum_values == np.array([691, 1017])))
-        self.assertTrue(np.all(extracted_features.a__abs_energy == np.array([32211, 63167])))
-        self.assertTrue(np.all(extracted_features.b__sum_values == np.array([757, 695])))
+        self.assertTrue(
+            np.all(extracted_features.a__sum_values == np.array([691, 1017]))
+        )
+        self.assertTrue(
+            np.all(extracted_features.a__abs_energy == np.array([32211, 63167]))
+        )
+        self.assertTrue(
+            np.all(extracted_features.b__sum_values == np.array([757, 695]))
+        )
         self.assertTrue(np.all(extracted_features.b__minimum == np.array([3, 1])))
-        self.assertTrue(np.all(extracted_features.b__abs_energy == np.array([36619, 35483])))
+        self.assertTrue(
+            np.all(extracted_features.b__abs_energy == np.array([36619, 35483]))
+        )
         self.assertTrue(np.all(extracted_features.b__mean == np.array([37.85, 34.75])))
         self.assertTrue(np.all(extracted_features.b__median == np.array([39.5, 28.0])))
 
@@ -69,17 +84,30 @@ class LocalDaskDistributorTestCase(DataTestCase):
         Distributor = LocalDaskDistributor(n_workers=2)
 
         df = self.create_test_data_sample()
-        extracted_features = extract_features(df, column_id="id", column_sort="sort", column_kind="kind",
-                                              column_value="val",
-                                              distributor=Distributor)
+        extracted_features = extract_features(
+            df,
+            column_id="id",
+            column_sort="sort",
+            column_kind="kind",
+            column_value="val",
+            distributor=Distributor,
+        )
 
         self.assertIsInstance(extracted_features, pd.DataFrame)
         self.assertTrue(np.all(extracted_features.a__maximum == np.array([71, 77])))
-        self.assertTrue(np.all(extracted_features.a__sum_values == np.array([691, 1017])))
-        self.assertTrue(np.all(extracted_features.a__abs_energy == np.array([32211, 63167])))
-        self.assertTrue(np.all(extracted_features.b__sum_values == np.array([757, 695])))
+        self.assertTrue(
+            np.all(extracted_features.a__sum_values == np.array([691, 1017]))
+        )
+        self.assertTrue(
+            np.all(extracted_features.a__abs_energy == np.array([32211, 63167]))
+        )
+        self.assertTrue(
+            np.all(extracted_features.b__sum_values == np.array([757, 695]))
+        )
         self.assertTrue(np.all(extracted_features.b__minimum == np.array([3, 1])))
-        self.assertTrue(np.all(extracted_features.b__abs_energy == np.array([36619, 35483])))
+        self.assertTrue(
+            np.all(extracted_features.b__abs_energy == np.array([36619, 35483]))
+        )
         self.assertTrue(np.all(extracted_features.b__mean == np.array([37.85, 34.75])))
         self.assertTrue(np.all(extracted_features.b__median == np.array([39.5, 28.0])))
 
@@ -87,46 +115,76 @@ class LocalDaskDistributorTestCase(DataTestCase):
 class ClusterDaskDistributorTestCase(DataTestCase):
     @skipIf(sys.version_info < (3, 6, 0), "dask requires python >= 3.6")
     def test_dask_cluster_extraction_one_worker(self):
-        cluster = LocalCluster(n_workers=1, threads_per_worker=1, dashboard_address=None)
+        cluster = LocalCluster(
+            n_workers=1, threads_per_worker=1, dashboard_address=None
+        )
         client = Client(cluster)
-        address = client.scheduler_info()['address']
+        address = client.scheduler_info()["address"]
         Distributor = ClusterDaskDistributor(address=address)
 
         df = self.create_test_data_sample()
-        extracted_features = extract_features(df, column_id="id", column_sort="sort", column_kind="kind",
-                                              column_value="val",
-                                              distributor=Distributor)
+        extracted_features = extract_features(
+            df,
+            column_id="id",
+            column_sort="sort",
+            column_kind="kind",
+            column_value="val",
+            distributor=Distributor,
+        )
 
         self.assertIsInstance(extracted_features, pd.DataFrame)
         self.assertTrue(np.all(extracted_features.a__maximum == np.array([71, 77])))
-        self.assertTrue(np.all(extracted_features.a__sum_values == np.array([691, 1017])))
-        self.assertTrue(np.all(extracted_features.a__abs_energy == np.array([32211, 63167])))
-        self.assertTrue(np.all(extracted_features.b__sum_values == np.array([757, 695])))
+        self.assertTrue(
+            np.all(extracted_features.a__sum_values == np.array([691, 1017]))
+        )
+        self.assertTrue(
+            np.all(extracted_features.a__abs_energy == np.array([32211, 63167]))
+        )
+        self.assertTrue(
+            np.all(extracted_features.b__sum_values == np.array([757, 695]))
+        )
         self.assertTrue(np.all(extracted_features.b__minimum == np.array([3, 1])))
-        self.assertTrue(np.all(extracted_features.b__abs_energy == np.array([36619, 35483])))
+        self.assertTrue(
+            np.all(extracted_features.b__abs_energy == np.array([36619, 35483]))
+        )
         self.assertTrue(np.all(extracted_features.b__mean == np.array([37.85, 34.75])))
         self.assertTrue(np.all(extracted_features.b__median == np.array([39.5, 28.0])))
         cluster.close()
 
     @skipIf(sys.version_info < (3, 6, 0), "dask requires python >= 3.6")
     def test_dask_cluster_extraction_two_workers(self):
-        cluster = LocalCluster(n_workers=2, threads_per_worker=1, dashboard_address=None)
+        cluster = LocalCluster(
+            n_workers=2, threads_per_worker=1, dashboard_address=None
+        )
         client = Client(cluster)
-        address = client.scheduler_info()['address']
+        address = client.scheduler_info()["address"]
         Distributor = ClusterDaskDistributor(address=address)
 
         df = self.create_test_data_sample()
-        extracted_features = extract_features(df, column_id="id", column_sort="sort", column_kind="kind",
-                                              column_value="val",
-                                              distributor=Distributor)
+        extracted_features = extract_features(
+            df,
+            column_id="id",
+            column_sort="sort",
+            column_kind="kind",
+            column_value="val",
+            distributor=Distributor,
+        )
 
         self.assertIsInstance(extracted_features, pd.DataFrame)
         self.assertTrue(np.all(extracted_features.a__maximum == np.array([71, 77])))
-        self.assertTrue(np.all(extracted_features.a__sum_values == np.array([691, 1017])))
-        self.assertTrue(np.all(extracted_features.a__abs_energy == np.array([32211, 63167])))
-        self.assertTrue(np.all(extracted_features.b__sum_values == np.array([757, 695])))
+        self.assertTrue(
+            np.all(extracted_features.a__sum_values == np.array([691, 1017]))
+        )
+        self.assertTrue(
+            np.all(extracted_features.a__abs_energy == np.array([32211, 63167]))
+        )
+        self.assertTrue(
+            np.all(extracted_features.b__sum_values == np.array([757, 695]))
+        )
         self.assertTrue(np.all(extracted_features.b__minimum == np.array([3, 1])))
-        self.assertTrue(np.all(extracted_features.b__abs_energy == np.array([36619, 35483])))
+        self.assertTrue(
+            np.all(extracted_features.b__abs_energy == np.array([36619, 35483]))
+        )
         self.assertTrue(np.all(extracted_features.b__mean == np.array([37.85, 34.75])))
         self.assertTrue(np.all(extracted_features.b__median == np.array([39.5, 28.0])))
         cluster.close()

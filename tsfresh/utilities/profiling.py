@@ -17,6 +17,7 @@ _logger = logging.getLogger(__name__)
 # todo: tackle a debate about the need for this profiler
 # todo: we need unit tests for the profiling routine
 
+
 def start_profiling():
     """
     Helper function to start the profiling process and return the profiler (to close it later).
@@ -62,5 +63,7 @@ def end_profiling(profiler, filename, sorting=None):
     ps.print_stats()
 
     with open(filename, "w+") as f:
-        _logger.info("[calculate_ts_features] Finished profiling of time series feature extraction")
+        _logger.info(
+            "[calculate_ts_features] Finished profiling of time series feature extraction"
+        )
         f.write(s.getvalue())
