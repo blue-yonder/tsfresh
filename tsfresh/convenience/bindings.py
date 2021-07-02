@@ -24,14 +24,14 @@ def _feature_extraction_on_chunk_helper(df, column_id, column_kind,
 
     if column_sort is not None:
         df = df.sort_values(column_sort)
-        data = df[[column_sort,column_value]].set_index(column_sort)
-    else: 
+        data = df[[column_sort, column_value]].set_index(column_sort)
+    else:
         data = df[column_value]
-        
+
     chunk = df[column_id].iloc[0], df[column_kind].iloc[0], data
     features = _do_extraction_on_chunk(chunk, default_fc_parameters=default_fc_parameters,
                                        kind_to_fc_parameters=kind_to_fc_parameters,
-                                       show_warnings = show_warnings)
+                                       show_warnings=show_warnings)
     features = pd.DataFrame(features, columns=[column_id, "variable", "value"])
     features["value"] = features["value"].astype("double")
 
@@ -41,7 +41,7 @@ def _feature_extraction_on_chunk_helper(df, column_id, column_kind,
 def dask_feature_extraction_on_chunk(df, column_id, column_kind,
                                      column_value, column_sort=None,
                                      default_fc_parameters=None, kind_to_fc_parameters=None,
-                                     show_warnings = True):
+                                     show_warnings=True):
     """
     Extract features on a grouped dask dataframe given the column names and the extraction settings.
     This wrapper function should only be used if you have a dask dataframe as input.
@@ -126,7 +126,7 @@ def dask_feature_extraction_on_chunk(df, column_id, column_kind,
                                  column_sort=column_sort, column_value=column_value,
                                  default_fc_parameters=default_fc_parameters,
                                  kind_to_fc_parameters=kind_to_fc_parameters,
-                                 show_warnings = show_warnings)
+                                 show_warnings=show_warnings)
     return df.apply(feature_extraction, meta=[(column_id, 'int64'), ('variable', 'object'), ('value', 'float64')])
 
 
