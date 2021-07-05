@@ -23,8 +23,8 @@ def _feature_extraction_on_chunk_helper(df, column_id, column_kind,
         default_fc_parameters = {}
 
     if column_sort is not None:
-        df = df.sort_values(column_sort)
-        data = df[[column_sort, column_value]].set_index(column_sort)
+        df = df[[column_sort, column_value]].set_index(column_sort)
+        data = df.sort_index(level = column_sort)
     else:
         data = df[column_value]
 
