@@ -2,18 +2,16 @@
 # This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
-import pandas as pd
+import mock
 import numpy as np
+import pandas as pd
 from sklearn import model_selection
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.pipeline import Pipeline
 
-from tests.fixtures import DataTestCase
-import mock
-
+from tests.fixtures import DataTestCase, warning_free
 from tsfresh.feature_extraction import MinimalFCParameters
 from tsfresh.transformers.relevant_feature_augmenter import RelevantFeatureAugmenter
-from tests.fixtures import warning_free
 
 
 class RelevantFeatureAugmenterTestCase(DataTestCase):

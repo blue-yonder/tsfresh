@@ -6,11 +6,12 @@ This module contains the filtering process for the extracted features. The filte
 other features that are not based on time series.
 """
 
-import pandas as pd
 import numpy as np
+import pandas as pd
+
 from tsfresh import defaults
-from tsfresh.utilities.dataframe_functions import check_for_nans_in_columns
 from tsfresh.feature_selection.relevance import calculate_relevance_table
+from tsfresh.utilities.dataframe_functions import check_for_nans_in_columns
 
 
 def select_features(

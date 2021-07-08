@@ -17,28 +17,30 @@ Feature calculators of type combiner should return the concatenated parameters s
 alphabetically ascending.
 """
 
-import itertools
 import functools
+import itertools
 import warnings
-from tsfresh.utilities.string_manipulation import convert_to_output_format
 from builtins import range
 from collections import defaultdict
 
+import matrixprofile as mp
 import numpy as np
 import pandas as pd
+import stumpy
+from matrixprofile.exceptions import NoSolutionPossible
 from numpy.linalg import LinAlgError
 from scipy.signal import cwt, find_peaks_cwt, ricker, welch
 from scipy.stats import linregress
 from statsmodels.tools.sm_exceptions import MissingDataError
-from matrixprofile.exceptions import NoSolutionPossible
-import matrixprofile as mp
-import stumpy
+
+from tsfresh.utilities.string_manipulation import convert_to_output_format
 
 with warnings.catch_warnings():
     # Ignore warnings of the patsy package
     warnings.simplefilter("ignore", DeprecationWarning)
 
     from statsmodels.tsa.ar_model import AR
+
 from statsmodels.tsa.stattools import acf, adfuller, pacf
 
 # todo: make sure '_' works in parameter names in all cases, add a warning if not
@@ -1777,13 +1779,10 @@ def approximate_entropy(x, m, r):
 
     def _phi(m):
         x_re = np.array([x[i : i + m] for i in range(N - m + 1)])
-        C = (
-            np.sum(
-                np.max(np.abs(x_re[:, np.newaxis] - x_re[np.newaxis, :]), axis=2) <= r,
-                axis=0,
-            )
-            / (N - m + 1)
-        )
+        C = np.sum(
+            np.max(np.abs(x_re[:, np.newaxis] - x_re[np.newaxis, :]), axis=2) <= r,
+            axis=0,
+        ) / (N - m + 1)
         return np.sum(np.log(C)) / (N - m + 1.0)
 
     return np.abs(_phi(m) - _phi(m + 1))

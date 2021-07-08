@@ -2,18 +2,19 @@
 # This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
+import os
+import shutil
+import tempfile
 from unittest import TestCase
+
+import numpy as np
+from pandas import DataFrame, Series
 
 from tsfresh import extract_features
 from tsfresh.examples.robot_execution_failures import (
-    load_robot_execution_failures,
     download_robot_execution_failures,
+    load_robot_execution_failures,
 )
-from pandas import DataFrame, Series
-import numpy as np
-import tempfile
-import os
-import shutil
 
 
 class RobotExecutionFailuresTestCase(TestCase):

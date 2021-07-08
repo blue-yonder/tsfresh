@@ -176,10 +176,7 @@ class ExtractionTestCase(DataTestCase):
             return len(x) + p
 
         settings = PickeableSettings(
-            {
-                "mean": None,
-                custom_function: [{"p": 1}, {"p": -1}],
-            }
+            {"mean": None, custom_function: [{"p": 1}, {"p": -1}],}
         )
 
         extracted_features = extract_features(

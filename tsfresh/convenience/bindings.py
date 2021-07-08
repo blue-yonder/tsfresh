@@ -1,9 +1,9 @@
 from functools import partial
 
+import pandas as pd
+
 from tsfresh.feature_extraction.extraction import _do_extraction_on_chunk
 from tsfresh.feature_extraction.settings import ComprehensiveFCParameters
-
-import pandas as pd
 
 
 def _feature_extraction_on_chunk_helper(
@@ -227,7 +227,7 @@ def spark_feature_extraction_on_chunk(
     :rtype: pyspark.sql.DataFrame[id: bigint, variable: string, value: double]
 
     """
-    from pyspark.sql.functions import pandas_udf, PandasUDFType
+    from pyspark.sql.functions import PandasUDFType, pandas_udf
 
     feature_extraction = partial(
         _feature_extraction_on_chunk_helper,

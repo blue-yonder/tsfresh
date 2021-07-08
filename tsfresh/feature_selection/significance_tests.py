@@ -32,11 +32,12 @@ References
 
 """
 
+import warnings
 from builtins import str
+
 import numpy as np
 import pandas as pd
 from scipy import stats
-import warnings
 
 
 def target_binary_feature_binary_test(x, y):

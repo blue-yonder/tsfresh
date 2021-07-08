@@ -21,5 +21,3 @@ bindings module
     :members:
     :undoc-members:
     :show-inheritance:
-
-

@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 # This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
+import numpy as np
+import pandas as pd
 import pytest
 from statsmodels.stats.multitest import multipletests
-
-import pandas as pd
-import numpy as np
 
 
 @pytest.mark.parametrize(

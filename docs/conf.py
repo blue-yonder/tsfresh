@@ -9,12 +9,6 @@
 # serve to show the default.
 
 import datetime
-import sys
-
-# If extensions (or modules to document with autodoc) are in another directory,
-# add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
-# sys.path.insert(0, os.path.abspath('.'))
 
 # -- Hack for ReadTheDocs ------------------------------------------------------
 # This hack is necessary since RTD does not issue `sphinx-apidoc` before running
@@ -23,10 +17,18 @@ import sys
 # DON'T FORGET: Check the box "Install your project inside a virtualenv using
 # setup.py install" in the RTD Advanced Settings.
 import os
+import sys
+
+# If extensions (or modules to document with autodoc) are in another directory,
+# add these directories to sys.path here. If the directory is relative to the
+# documentation root, use os.path.abspath to make it absolute, like shown here.
+# sys.path.insert(0, os.path.abspath('.'))
+
 
 on_rtd = os.environ.get("READTHEDOCS", None) == "True"
 if on_rtd:
     import inspect
+
     from sphinx import apidoc
 
     __location__ = os.path.join(
@@ -169,9 +171,7 @@ html_static_path = ["_static"]
 
 # From https://rackerlabs.github.io/docs-rackspace/tools/rtd-tables.html
 html_context = {
-    "css_files": [
-        "_static/theme_override.css",  # override wide tables in RTD theme
-    ],
+    "css_files": ["_static/theme_override.css",],  # override wide tables in RTD theme
 }
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,

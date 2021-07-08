@@ -2,23 +2,24 @@
 # This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
-from unittest import TestCase
 import pickle
+from unittest import TestCase
 
 import numpy as np
 import pandas as pd
+from pandas.testing import assert_frame_equal
+
+from tsfresh.feature_extraction import feature_calculators
 from tsfresh.feature_extraction.extraction import extract_features
 from tsfresh.feature_extraction.settings import (
     ComprehensiveFCParameters,
-    MinimalFCParameters,
     EfficientFCParameters,
-    from_columns,
-    TimeBasedFCParameters,
     IndexBasedFCParameters,
+    MinimalFCParameters,
     PickeableSettings,
+    TimeBasedFCParameters,
+    from_columns,
 )
-from tsfresh.feature_extraction import feature_calculators
-from pandas.testing import assert_frame_equal
 
 
 class TestSettingsObject(TestCase):

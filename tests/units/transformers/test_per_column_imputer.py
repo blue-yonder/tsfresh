@@ -2,15 +2,15 @@
 # This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
+import warnings
 from builtins import range
 from unittest import TestCase
-import pandas as pd
-import pandas.testing as pdt
-from sklearn.exceptions import NotFittedError
-import warnings
 
 import numpy as np
 import numpy.testing as npt
+import pandas as pd
+import pandas.testing as pdt
+from sklearn.exceptions import NotFittedError
 
 from tsfresh.transformers.per_column_imputer import PerColumnImputer
 

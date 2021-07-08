@@ -2,14 +2,16 @@
 # This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
+from unittest import TestCase
+
+import numpy as np
+import pandas as pd
+import pandas.testing as pdt
+
 from tests.fixtures import DataTestCase
-from tsfresh import extract_features, select_features, extract_relevant_features
+from tsfresh import extract_features, extract_relevant_features, select_features
 from tsfresh.feature_extraction.settings import ComprehensiveFCParameters
 from tsfresh.utilities.dataframe_functions import impute
-from unittest import TestCase
-import numpy as np
-import pandas.testing as pdt
-import pandas as pd
 
 
 class RelevantFeatureExtractionDataTestCase(DataTestCase):

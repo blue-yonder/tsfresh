@@ -5,6 +5,6 @@ The :mod:`tsfresh.feature_extraction` module contains methods to extract the fea
 from tsfresh.feature_extraction.extraction import extract_features
 from tsfresh.feature_extraction.settings import (
     ComprehensiveFCParameters,
-    MinimalFCParameters,
     EfficientFCParameters,
+    MinimalFCParameters,
 )

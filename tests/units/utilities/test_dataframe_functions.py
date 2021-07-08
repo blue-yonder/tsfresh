@@ -8,10 +8,10 @@ import numpy as np
 import pandas as pd
 from pandas.testing import assert_frame_equal, assert_series_equal
 
-from tsfresh.utilities import dataframe_functions
+from tests.fixtures import warning_free
 from tsfresh import extract_relevant_features
 from tsfresh.feature_extraction.settings import MinimalFCParameters
-from tests.fixtures import warning_free
+from tsfresh.utilities import dataframe_functions
 
 
 class RollingTestCase(TestCase):

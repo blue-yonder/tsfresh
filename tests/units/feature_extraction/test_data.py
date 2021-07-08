@@ -1,18 +1,18 @@
 import math
+from unittest import TestCase
+from unittest.mock import Mock
 
 import numpy as np
 import pandas as pd
 from dask import dataframe as dd
-from unittest import TestCase
-from unittest.mock import Mock
 
 from tests.fixtures import DataTestCase
 from tsfresh.feature_extraction.data import (
-    to_tsdata,
     LongTsFrameAdapter,
-    WideTsFrameAdapter,
-    TsDictAdapter,
     PartitionedTsData,
+    TsDictAdapter,
+    WideTsFrameAdapter,
+    to_tsdata,
 )
 from tsfresh.utilities.distribution import MultiprocessingDistributor
 

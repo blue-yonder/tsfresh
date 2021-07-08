@@ -12,9 +12,9 @@ import pandas as pd
 
 from tsfresh import defaults
 from tsfresh.utilities.distribution import (
+    DistributorBaseClass,
     MapDistributor,
     MultiprocessingDistributor,
-    DistributorBaseClass,
 )
 
 

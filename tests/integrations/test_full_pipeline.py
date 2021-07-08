@@ -2,20 +2,20 @@
 # This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
-from unittest import TestCase
 import os
 import shutil
 import tempfile
+from unittest import TestCase
 
 import pandas as pd
 from sklearn.pipeline import Pipeline
 
+from tests.fixtures import warning_free
 from tsfresh.examples.robot_execution_failures import (
-    load_robot_execution_failures,
     download_robot_execution_failures,
+    load_robot_execution_failures,
 )
 from tsfresh.transformers import RelevantFeatureAugmenter
-from tests.fixtures import warning_free
 
 
 class FullPipelineTestCase_robot_failures(TestCase):

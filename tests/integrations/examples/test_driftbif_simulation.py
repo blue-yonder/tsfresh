@@ -2,13 +2,14 @@
 # This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
-import numpy as np
 import unittest
-import pandas as pd
-import dask.dataframe as dd
 
-from tsfresh.examples.driftbif_simulation import velocity, load_driftbif, sample_tau
-from tsfresh import extract_relevant_features, extract_features
+import dask.dataframe as dd
+import numpy as np
+import pandas as pd
+
+from tsfresh import extract_features, extract_relevant_features
+from tsfresh.examples.driftbif_simulation import load_driftbif, sample_tau, velocity
 from tsfresh.feature_extraction import MinimalFCParameters
 
 
