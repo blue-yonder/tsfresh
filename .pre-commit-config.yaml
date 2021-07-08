@@ -4,6 +4,7 @@ repos:
     hooks:
       - id: black
         language_version: python3
+        exclude: "^docs/.*$"
   - repo: https://github.com/pycqa/isort
     rev: 5.7.0
     hooks:
@@ -11,6 +12,7 @@ repos:
         args:
           - "--profile"
           - "black"
+        exclude: "^docs/.*$"
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v3.2.0
     hooks:

@@ -39,10 +39,12 @@ Further, there are some technical decisions we made:
     6. Clear the Output of iPython notebooks. This improves the readability of related Git diffs.
 
 
-Installation
-''''''''''''
+Test framework
+''''''''''''''
 
-Install all the relevant python packages with
+After making your changes, you probably want to test your changes locally. To run our comprehensive suite of unit tests
+you have to install all the relevant python packages with
+
 
 .. code::
 
@@ -50,19 +52,13 @@ Install all the relevant python packages with
     pip install -r requirements.txt
     pip install -r rdocs-requirements.txt
     pip install -r test-requirements.txt
-    pre-commit install
     pip install -e .
 
 
 The last command will dynamically link the tsfresh package which means that changes to the code will directly show up
 for example in your test run.
 
-
-Test framework
-''''''''''''''
-
-After making your changes, you probably want to test your changes locally. To run our comprehensive suite of unit tests
-you have to:
+Then, if you have everything installed, you can run the tests with
 
 
 .. code::
@@ -70,10 +66,7 @@ you have to:
     pytest tests/
 
 
-Documentation
-'''''''''''''
-
-Build the documentation after installing as described above with
+or build the documentation with
 
 
 .. code::
@@ -81,14 +74,12 @@ Build the documentation after installing as described above with
     python setup.py docs
 
 
+
 The finished documentation can be found in the docs/_build/html folder.
 
-
-Styling
-'''''''
-
-We use black and isort for styling. They are automatically triggered on every commit after having installed pre-commit
-(as described above).
+On Github we use a Travis CI Folder that runs our test suite every time a commit or pull request is sent. The
+configuration of Travis is controlled by the
+`.travis.yml <https://github.com/blue-yonder/tsfresh/blob/main/.travis.yml>`_ file.
 
 
 We are looking forward to hear from you! =)
