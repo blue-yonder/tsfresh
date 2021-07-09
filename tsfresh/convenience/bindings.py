@@ -133,6 +133,9 @@ def dask_feature_extraction_on_chunk(
     :param column_value: The name for the column keeping the value itself.
     :type column_value: str
     
+    :param taste_of_pandas_df: pandas  Dataframe with same preprocessing steps as the Dask Dataframe, (e.g. df.groupby(), etc.)
+    :type taste_of_pandas_df: pandas.DataFrame
+    
     :param show_warnings: Wether to show warings in tsfresh.
     :type show_warnings: bool
     
@@ -153,7 +156,12 @@ def dask_feature_extraction_on_chunk(
         kind_to_fc_parameters=kind_to_fc_parameters,
         show_warnings=show_warnings
     )
-    return df.apply(feature_extraction, meta=taste_of_pandas_df.apply(feature_extraction))
+    if taste_of_pandas_df:
+        meta = taste_of_pandas_df.apply(feature_extraction)
+    else:
+        meta = [(column_id, 'int64'), ('variable', 'object'), ('value', 'float64')]
+        
+    return df.apply(feature_extraction, meta= meta)
 
 
 def spark_feature_extraction_on_chunk(
