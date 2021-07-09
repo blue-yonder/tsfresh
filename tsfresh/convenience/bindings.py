@@ -14,7 +14,7 @@ def _feature_extraction_on_chunk_helper(
     column_value,
     default_fc_parameters,
     kind_to_fc_parameters,
-    show_warnings= True
+    show_warnings=True,
 ):
     """
     Helper function wrapped around _do_extraction_on_chunk to use the correct format
@@ -29,7 +29,7 @@ def _feature_extraction_on_chunk_helper(
         default_fc_parameters = {}
 
     if column_sort is not None:
-    
+
         data = df[[column_sort, column_value]].set_index(column_sort)
         data = data.sort_index(level=column_sort)
     else:
@@ -40,7 +40,7 @@ def _feature_extraction_on_chunk_helper(
         chunk,
         default_fc_parameters=default_fc_parameters,
         kind_to_fc_parameters=kind_to_fc_parameters,
-        show_warnings=show_warnings
+        show_warnings=show_warnings,
     )
     features = pd.DataFrame(features, columns=[column_id, "variable", "value"])
     features["value"] = features["value"].astype("double")
@@ -56,8 +56,8 @@ def dask_feature_extraction_on_chunk(
     column_sort=None,
     default_fc_parameters=None,
     kind_to_fc_parameters=None,
-    taste_of_pandas_df = False,
-    show_warnings=True
+    taste_of_pandas_df=False,
+    show_warnings=True,
 ):
     """
     Extract features on a grouped dask dataframe given the column names and the extraction settings.
@@ -132,14 +132,14 @@ def dask_feature_extraction_on_chunk(
 
     :param column_value: The name for the column keeping the value itself.
     :type column_value: str
-    
+
     :param taste_of_pandas_df: pandas  Dataframe with same preprocessing steps as the Dask Dataframe, (e.g. df.groupby(), etc.)
     :type taste_of_pandas_df: pandas.DataFrame
-    
+
     :param show_warnings: Wether to show warings in tsfresh.
     :type show_warnings: bool
-    
-    
+
+
 
     :return: A dask dataframe with the columns ``column_id``, "variable" and "value". The index is taken
             from the grouped dataframe.
@@ -154,14 +154,14 @@ def dask_feature_extraction_on_chunk(
         column_value=column_value,
         default_fc_parameters=default_fc_parameters,
         kind_to_fc_parameters=kind_to_fc_parameters,
-        show_warnings=show_warnings
+        show_warnings=show_warnings,
     )
     if taste_of_pandas_df:
         meta = taste_of_pandas_df.apply(feature_extraction)
     else:
-        meta = [(column_id, 'int64'), ('variable', 'object'), ('value', 'float64')]
-        
-    return df.apply(feature_extraction, meta= meta)
+        meta = [(column_id, "int64"), ("variable", "object"), ("value", "float64")]
+
+    return df.apply(feature_extraction, meta=meta)
 
 
 def spark_feature_extraction_on_chunk(
@@ -171,7 +171,7 @@ def spark_feature_extraction_on_chunk(
     column_value,
     column_sort=None,
     default_fc_parameters=None,
-    kind_to_fc_parameters=None
+    kind_to_fc_parameters=None,
 ):
 
     """
