@@ -15,5 +15,3 @@ API documentation
     tsfresh.scripts
     tsfresh.transformers
     tsfresh.utilities
-
-

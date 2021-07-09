@@ -4,6 +4,7 @@
 
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
+
 import tsfresh.defaults
 from tsfresh.feature_extraction import extract_features
 from tsfresh.utilities.dataframe_functions import restrict_input_to_index
@@ -60,17 +61,24 @@ class FeatureAugmenter(BaseEstimator, TransformerMixin):
     :mod:`~tsfresh.feature_extraction.extraction`.
     """
 
-    def __init__(self, default_fc_parameters=None,
-                 kind_to_fc_parameters=None, column_id=None, column_sort=None,
-                 column_kind=None, column_value=None, timeseries_container=None,
-                 chunksize=tsfresh.defaults.CHUNKSIZE,
-                 n_jobs=tsfresh.defaults.N_PROCESSES, show_warnings=tsfresh.defaults.SHOW_WARNINGS,
-                 disable_progressbar=tsfresh.defaults.DISABLE_PROGRESSBAR,
-                 impute_function=tsfresh.defaults.IMPUTE_FUNCTION,
-                 profile=tsfresh.defaults.PROFILING,
-                 profiling_filename=tsfresh.defaults.PROFILING_FILENAME,
-                 profiling_sorting=tsfresh.defaults.PROFILING_SORTING
-                 ):
+    def __init__(
+        self,
+        default_fc_parameters=None,
+        kind_to_fc_parameters=None,
+        column_id=None,
+        column_sort=None,
+        column_kind=None,
+        column_value=None,
+        timeseries_container=None,
+        chunksize=tsfresh.defaults.CHUNKSIZE,
+        n_jobs=tsfresh.defaults.N_PROCESSES,
+        show_warnings=tsfresh.defaults.SHOW_WARNINGS,
+        disable_progressbar=tsfresh.defaults.DISABLE_PROGRESSBAR,
+        impute_function=tsfresh.defaults.IMPUTE_FUNCTION,
+        profile=tsfresh.defaults.PROFILING,
+        profiling_filename=tsfresh.defaults.PROFILING_FILENAME,
+        profiling_sorting=tsfresh.defaults.PROFILING_SORTING,
+    ):
         """
         Create a new FeatureAugmenter instance.
         :param default_fc_parameters: mapping from feature calculator names to parameters. Only those names
@@ -192,24 +200,35 @@ class FeatureAugmenter(BaseEstimator, TransformerMixin):
         :rtype: pandas.DataFrame
         """
         if self.timeseries_container is None:
-            raise RuntimeError("You have to provide a time series using the set_timeseries_container function before.")
+            raise RuntimeError(
+                "You have to provide a time series using the set_timeseries_container function before."
+            )
 
         # Extract only features for the IDs in X.index
-        timeseries_container_X = restrict_input_to_index(self.timeseries_container, self.column_id, X.index)
+        timeseries_container_X = restrict_input_to_index(
+            self.timeseries_container, self.column_id, X.index
+        )
 
-        extracted_features = extract_features(timeseries_container_X,
-                                              default_fc_parameters=self.default_fc_parameters,
-                                              kind_to_fc_parameters=self.kind_to_fc_parameters,
-                                              column_id=self.column_id, column_sort=self.column_sort,
-                                              column_kind=self.column_kind, column_value=self.column_value,
-                                              chunksize=self.chunksize,
-                                              n_jobs=self.n_jobs, show_warnings=self.show_warnings,
-                                              disable_progressbar=self.disable_progressbar,
-                                              impute_function=self.impute_function,
-                                              profile=self.profile,
-                                              profiling_filename=self.profiling_filename,
-                                              profiling_sorting=self.profiling_sorting)
+        extracted_features = extract_features(
+            timeseries_container_X,
+            default_fc_parameters=self.default_fc_parameters,
+            kind_to_fc_parameters=self.kind_to_fc_parameters,
+            column_id=self.column_id,
+            column_sort=self.column_sort,
+            column_kind=self.column_kind,
+            column_value=self.column_value,
+            chunksize=self.chunksize,
+            n_jobs=self.n_jobs,
+            show_warnings=self.show_warnings,
+            disable_progressbar=self.disable_progressbar,
+            impute_function=self.impute_function,
+            profile=self.profile,
+            profiling_filename=self.profiling_filename,
+            profiling_sorting=self.profiling_sorting,
+        )
 
-        X = pd.merge(X, extracted_features, left_index=True, right_index=True, how="left")
+        X = pd.merge(
+            X, extracted_features, left_index=True, right_index=True, how="left"
+        )
 
         return X

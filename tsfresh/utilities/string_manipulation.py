@@ -3,6 +3,7 @@
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
 import ast
+
 import numpy as np
 
 
@@ -67,4 +68,7 @@ def convert_to_output_format(param):
         else:
             return str(x)
 
-    return "__".join(str(key) + "_" + add_parenthesis_if_string_value(param[key]) for key in sorted(param.keys()))
+    return "__".join(
+        str(key) + "_" + add_parenthesis_if_string_value(param[key])
+        for key in sorted(param.keys())
+    )

@@ -48,7 +48,7 @@ Currently, tsfresh is not suitable
     * for usage with streaming data (The streaming data mentioned here is usually used for online operations, while time series data is usually used for offline operations. Online operation and offline operation are a pair of relative concepts.)
     * to train models on the features (we do not want to reinvent the wheel, check out the python package
       `scikit-learn <http://scikit-learn.org/stable/>`_ for example)
-    * for usage with highly irregular time series (for many features). Timestamps are used only to order observations. Many features are interval-agnostic (e.g., number of peaks) and can be used with any series. But some features (e.g., linear trend) assume equal spacing in time, and should be used with care when this assumption is not appropriate. 
+    * for usage with highly irregular time series (for many features). Timestamps are used only to order observations. Many features are interval-agnostic (e.g., number of peaks) and can be used with any series. But some features (e.g., linear trend) assume equal spacing in time, and should be used with care when this assumption is not appropriate.
 
 However, some of these use cases could be implemented, if you have an application in mind, open
 an issue at `<https://github.com/blue-yonder/tsfresh/issues>`_, or feel free to contact us.

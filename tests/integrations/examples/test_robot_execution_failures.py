@@ -2,15 +2,19 @@
 # This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
-from unittest import TestCase
-
-from tsfresh import extract_features
-from tsfresh.examples.robot_execution_failures import load_robot_execution_failures, download_robot_execution_failures
-from pandas import DataFrame, Series
-import numpy as np
-import tempfile
 import os
 import shutil
+import tempfile
+from unittest import TestCase
+
+import numpy as np
+from pandas import DataFrame, Series
+
+from tsfresh import extract_features
+from tsfresh.examples.robot_execution_failures import (
+    download_robot_execution_failures,
+    load_robot_execution_failures,
+)
 
 
 class RobotExecutionFailuresTestCase(TestCase):
@@ -28,7 +32,10 @@ class RobotExecutionFailuresTestCase(TestCase):
         self.assertEqual(len(self.X), 1320)
         self.assertIsInstance(self.X, DataFrame)
         self.assertIsInstance(self.y, Series)
-        self.assertCountEqual(['id', 'time', 'F_x', 'F_y', 'F_z', 'T_x', 'T_y', 'T_z'], list(self.X.columns))
+        self.assertCountEqual(
+            ["id", "time", "F_x", "F_y", "F_z", "T_x", "T_y", "T_z"],
+            list(self.X.columns),
+        )
 
     def test_extraction_runs_through(self):
         df = extract_features(self.X[self.X.id < 3], column_id="id", column_sort="time")
@@ -42,7 +49,9 @@ class RobotExecutionFailuresTestCase(TestCase):
         assert len(y.unique()) == 2
 
     def test_multilabel_target_on_request(self):
-        _, y = load_robot_execution_failures(multiclass=True, file_name=self.temporary_file)
+        _, y = load_robot_execution_failures(
+            multiclass=True, file_name=self.temporary_file
+        )
 
         assert len(y.unique()) > 2
         assert y.dtype == np.object

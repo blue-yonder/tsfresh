@@ -11,4 +11,3 @@ python:
    - requirements: rdocs-requirements.txt
    - method: pip
      path: .
-  

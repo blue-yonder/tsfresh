@@ -5,11 +5,15 @@ from functools import partial
 
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
+
 from tsfresh import defaults
 from tsfresh.feature_extraction.settings import from_columns
 from tsfresh.transformers.feature_augmenter import FeatureAugmenter
 from tsfresh.transformers.feature_selector import FeatureSelector
-from tsfresh.utilities.dataframe_functions import impute_dataframe_range, get_range_values_per_column
+from tsfresh.utilities.dataframe_functions import (
+    get_range_values_per_column,
+    impute_dataframe_range,
+)
 
 
 # Pro: It offers more control
@@ -90,7 +94,10 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
         filter_only_tsfresh_features=True,
         default_fc_parameters=None,
         kind_to_fc_parameters=None,
-        column_id=None, column_sort=None, column_kind=None, column_value=None,
+        column_id=None,
+        column_sort=None,
+        column_kind=None,
+        column_value=None,
         timeseries_container=None,
         chunksize=defaults.CHUNKSIZE,
         n_jobs=defaults.N_PROCESSES,
@@ -226,7 +233,9 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
         self.profile = profile
         self.profiling_filename = profiling_filename
         self.profiling_sorting = profiling_sorting
-        self.test_for_binary_target_binary_feature = test_for_binary_target_binary_feature
+        self.test_for_binary_target_binary_feature = (
+            test_for_binary_target_binary_feature
+        )
         self.test_for_binary_target_real_feature = test_for_binary_target_real_feature
         self.test_for_real_target_binary_feature = test_for_real_target_binary_feature
         self.test_for_real_target_real_feature = test_for_real_target_real_feature
@@ -298,7 +307,9 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
         """
 
         if self.timeseries_container is None:
-            raise RuntimeError("You have to provide a time series using the set_timeseries_container function before.")
+            raise RuntimeError(
+                "You have to provide a time series using the set_timeseries_container function before."
+            )
 
         if self.feature_selector is None:
             raise RuntimeError("You have to call fit before calling transform.")
@@ -308,34 +319,46 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
 
         self.feature_extractor.set_timeseries_container(self.timeseries_container)
 
-        relevant_time_series_features = set(self.feature_selector.relevant_features) - set(pd.DataFrame(X).columns)
+        relevant_time_series_features = set(
+            self.feature_selector.relevant_features
+        ) - set(pd.DataFrame(X).columns)
         relevant_extraction_settings = from_columns(relevant_time_series_features)
 
         # Set imputing strategy
-        impute_function = partial(impute_dataframe_range, col_to_max=self.col_to_max,
-                                  col_to_min=self.col_to_min, col_to_median=self.col_to_median)
+        impute_function = partial(
+            impute_dataframe_range,
+            col_to_max=self.col_to_max,
+            col_to_min=self.col_to_min,
+            col_to_median=self.col_to_median,
+        )
 
-        relevant_feature_extractor = FeatureAugmenter(kind_to_fc_parameters=relevant_extraction_settings,
-                                                      default_fc_parameters={},
-                                                      column_id=self.feature_extractor.column_id,
-                                                      column_sort=self.feature_extractor.column_sort,
-                                                      column_kind=self.feature_extractor.column_kind,
-                                                      column_value=self.feature_extractor.column_value,
-                                                      chunksize=self.feature_extractor.chunksize,
-                                                      n_jobs=self.feature_extractor.n_jobs,
-                                                      show_warnings=self.feature_extractor.show_warnings,
-                                                      disable_progressbar=self.feature_extractor.disable_progressbar,
-                                                      impute_function=impute_function,
-                                                      profile=self.feature_extractor.profile,
-                                                      profiling_filename=self.feature_extractor.profiling_filename,
-                                                      profiling_sorting=self.feature_extractor.profiling_sorting)
+        relevant_feature_extractor = FeatureAugmenter(
+            kind_to_fc_parameters=relevant_extraction_settings,
+            default_fc_parameters={},
+            column_id=self.feature_extractor.column_id,
+            column_sort=self.feature_extractor.column_sort,
+            column_kind=self.feature_extractor.column_kind,
+            column_value=self.feature_extractor.column_value,
+            chunksize=self.feature_extractor.chunksize,
+            n_jobs=self.feature_extractor.n_jobs,
+            show_warnings=self.feature_extractor.show_warnings,
+            disable_progressbar=self.feature_extractor.disable_progressbar,
+            impute_function=impute_function,
+            profile=self.feature_extractor.profile,
+            profiling_filename=self.feature_extractor.profiling_filename,
+            profiling_sorting=self.feature_extractor.profiling_sorting,
+        )
 
-        relevant_feature_extractor.set_timeseries_container(self.feature_extractor.timeseries_container)
+        relevant_feature_extractor.set_timeseries_container(
+            self.feature_extractor.timeseries_container
+        )
 
         X_augmented = relevant_feature_extractor.transform(X)
 
         if self.filter_only_tsfresh_features:
-            return X_augmented.copy().loc[:, self.feature_selector.relevant_features + X.columns.tolist()]
+            return X_augmented.copy().loc[
+                :, self.feature_selector.relevant_features + X.columns.tolist()
+            ]
         else:
             return X_augmented.copy().loc[:, self.feature_selector.relevant_features]
 
@@ -357,10 +380,14 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
         """
         X_augmented = self._fit_and_augment(X, y)
 
-        selected_features = X_augmented.copy().loc[:, self.feature_selector.relevant_features]
+        selected_features = X_augmented.copy().loc[
+            :, self.feature_selector.relevant_features
+        ]
 
         if self.filter_only_tsfresh_features:
-            selected_features = pd.merge(selected_features, X, left_index=True, right_index=True, how="left")
+            selected_features = pd.merge(
+                selected_features, X, left_index=True, right_index=True, how="left"
+            )
 
         return selected_features
 
@@ -381,7 +408,9 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
         :rtype: pandas.DataFrame
         """
         if self.timeseries_container is None:
-            raise RuntimeError("You have to provide a time series using the set_timeseries_container function before.")
+            raise RuntimeError(
+                "You have to provide a time series using the set_timeseries_container function before."
+            )
 
         self.feature_extractor = FeatureAugmenter(
             default_fc_parameters=self.default_fc_parameters,
@@ -397,7 +426,7 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
             disable_progressbar=self.disable_progressbar,
             profile=self.profile,
             profiling_filename=self.profiling_filename,
-            profiling_sorting=self.profiling_sorting
+            profiling_sorting=self.profiling_sorting,
         )
 
         self.feature_selector = FeatureSelector(
@@ -423,9 +452,17 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
 
         X_augmented = self.feature_extractor.transform(X_tmp)
 
-        self.col_to_max, self.col_to_min, self.col_to_median = get_range_values_per_column(X_augmented)
-        X_augmented = impute_dataframe_range(X_augmented, col_to_max=self.col_to_max, col_to_median=self.col_to_median,
-                                             col_to_min=self.col_to_min)
+        (
+            self.col_to_max,
+            self.col_to_min,
+            self.col_to_median,
+        ) = get_range_values_per_column(X_augmented)
+        X_augmented = impute_dataframe_range(
+            X_augmented,
+            col_to_max=self.col_to_max,
+            col_to_median=self.col_to_median,
+            col_to_min=self.col_to_min,
+        )
 
         self.feature_selector.fit(X_augmented, y)
 

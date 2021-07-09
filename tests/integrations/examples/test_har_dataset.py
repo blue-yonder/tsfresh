@@ -2,11 +2,17 @@
 # This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
-from unittest import TestCase
-from tsfresh.examples.har_dataset import download_har_dataset, load_har_dataset, load_har_classes
-from pandas import DataFrame, Series
-import tempfile
 import shutil
+import tempfile
+from unittest import TestCase
+
+from pandas import DataFrame, Series
+
+from tsfresh.examples.har_dataset import (
+    download_har_dataset,
+    load_har_classes,
+    load_har_dataset,
+)
 
 
 class HumanActivityTestCase(TestCase):

@@ -2,17 +2,18 @@
 # This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
+import warnings
+
+import mock
 import numpy as np
 import pandas as pd
 import pytest
-import mock
-import warnings
 
 from tsfresh.feature_selection.relevance import (
-    infer_ml_task,
     calculate_relevance_table,
     combine_relevance_tables,
     get_feature_type,
+    infer_ml_task,
 )
 
 
@@ -138,9 +139,11 @@ class TestCalculateRelevanceTable:
                 X, y_real, n_jobs=0, ml_task="regression", show_warnings=True
             )
             assert len(record) >= 1
-            assert ("No feature was found relevant for regression for fdr level = 0.05 (which corresponds "
-                    "to the maximal percentage of irrelevant features, consider using an higher fdr level "
-                    "or add other features.") in [str(warning.message) for warning in record]
+            assert (
+                "No feature was found relevant for regression for fdr level = 0.05 (which corresponds "
+                "to the maximal percentage of irrelevant features, consider using an higher fdr level "
+                "or add other features."
+            ) in [str(warning.message) for warning in record]
 
     def test_multiclass_requires_classification(self, X, y_real):
         with pytest.raises(AssertionError):

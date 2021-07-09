@@ -2,11 +2,12 @@
 # This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
+import numpy as np
 import pandas as pd
+
 from tests.fixtures import DataTestCase
 from tsfresh.feature_extraction.settings import ComprehensiveFCParameters
 from tsfresh.transformers import FeatureAugmenter
-import numpy as np
 
 
 class FeatureAugmenterTestCase(DataTestCase):
@@ -14,15 +15,21 @@ class FeatureAugmenterTestCase(DataTestCase):
         self.test_df = self.create_test_data_sample()
 
         fc_parameters = {"length": None}
-        self.kind_to_fc_parameters = {"a": fc_parameters.copy(),
-                                      "b": fc_parameters.copy()}
+        self.kind_to_fc_parameters = {
+            "a": fc_parameters.copy(),
+            "b": fc_parameters.copy(),
+        }
 
     def test_fit_and_transform(self):
-        augmenter = FeatureAugmenter(column_value="val", column_id="id", column_sort="sort",
-                                     column_kind="kind",
-                                     kind_to_fc_parameters=self.kind_to_fc_parameters,
-                                     n_jobs=0,
-                                     disable_progressbar=True)
+        augmenter = FeatureAugmenter(
+            column_value="val",
+            column_id="id",
+            column_sort="sort",
+            column_kind="kind",
+            kind_to_fc_parameters=self.kind_to_fc_parameters,
+            n_jobs=0,
+            disable_progressbar=True,
+        )
 
         # Fit should do nothing
         returned_df = augmenter.fit()
@@ -45,7 +52,9 @@ class FeatureAugmenterTestCase(DataTestCase):
         self.assertEqual(X_transformed.shape, (2, 3))
 
         # Preserve old features
-        self.assertCountEqual(list(X_transformed.columns), ["feature_1", "a__length", "b__length"])
+        self.assertCountEqual(
+            list(X_transformed.columns), ["feature_1", "a__length", "b__length"]
+        )
 
         # Features are not allowed to be NaN
         for index, row in X_transformed.iterrows():
@@ -54,11 +63,15 @@ class FeatureAugmenterTestCase(DataTestCase):
             self.assertFalse(np.isnan(row["b__length"]))
 
     def test_add_features_to_only_a_part(self):
-        augmenter = FeatureAugmenter(column_value="val", column_id="id", column_sort="sort",
-                                     column_kind="kind",
-                                     kind_to_fc_parameters=self.kind_to_fc_parameters,
-                                     n_jobs=0,
-                                     disable_progressbar=True)
+        augmenter = FeatureAugmenter(
+            column_value="val",
+            column_id="id",
+            column_sort="sort",
+            column_kind="kind",
+            kind_to_fc_parameters=self.kind_to_fc_parameters,
+            n_jobs=0,
+            disable_progressbar=True,
+        )
 
         augmenter.set_timeseries_container(self.test_df)
 
@@ -81,14 +94,22 @@ class FeatureAugmenterTestCase(DataTestCase):
             self.assertFalse(np.isnan(row["b__length"]))
 
     def test_no_ids_present(self):
-        augmenter = FeatureAugmenter(column_value="val", column_id="id", column_sort="sort",
-                                     column_kind="kind",
-                                     kind_to_fc_parameters=self.kind_to_fc_parameters,
-                                     n_jobs=0,
-                                     disable_progressbar=True)
+        augmenter = FeatureAugmenter(
+            column_value="val",
+            column_id="id",
+            column_sort="sort",
+            column_kind="kind",
+            kind_to_fc_parameters=self.kind_to_fc_parameters,
+            n_jobs=0,
+            disable_progressbar=True,
+        )
 
         augmenter.set_timeseries_container(self.test_df)
 
         X_with_not_all_ids = pd.DataFrame([{"feature_1": 1}], index=[-999])
-        self.assertRaisesRegex(AttributeError, r"The ids of the time series container",
-                               augmenter.transform, X_with_not_all_ids)
+        self.assertRaisesRegex(
+            AttributeError,
+            r"The ids of the time series container",
+            augmenter.transform,
+            X_with_not_all_ids,
+        )

@@ -6,16 +6,16 @@ Contains methods to start and stop the profiler that checks the runtime of the d
 """
 
 import cProfile
-import pstats
 import io
 import logging
-
+import pstats
 
 _logger = logging.getLogger(__name__)
 
 
 # todo: tackle a debate about the need for this profiler
 # todo: we need unit tests for the profiling routine
+
 
 def start_profiling():
     """
@@ -62,5 +62,7 @@ def end_profiling(profiler, filename, sorting=None):
     ps.print_stats()
 
     with open(filename, "w+") as f:
-        _logger.info("[calculate_ts_features] Finished profiling of time series feature extraction")
+        _logger.info(
+            "[calculate_ts_features] Finished profiling of time series feature extraction"
+        )
         f.write(s.getvalue())
