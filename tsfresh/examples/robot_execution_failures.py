@@ -21,21 +21,24 @@ References
 
 """
 
-from builtins import map
+import logging
 import os
+from builtins import map
+
 import pandas as pd
 import requests
-import logging
 
 _logger = logging.getLogger(__name__)
 
-UCI_MLD_REF_MSG = ("The example data could not be found. You need to download the Robot Execution Failures "
-                   "LP1 Data Set from the UCI Machine Learning Repository. To do so, you can call the function "
-                   "tsfresh.examples.robot_execution_failures.download_robot_execution_failures")
+UCI_MLD_REF_MSG = (
+    "The example data could not be found. You need to download the Robot Execution Failures "
+    "LP1 Data Set from the UCI Machine Learning Repository. To do so, you can call the function "
+    "tsfresh.examples.robot_execution_failures.download_robot_execution_failures"
+)
 UCI_MLD_REF_URL = "https://raw.githubusercontent.com/MaxBenChrist/robot-failure-dataset/master/lp1.data.txt"
 
 module_path = os.path.dirname(__file__)
-data_file_name = os.path.join(module_path, 'data', 'robotfailure-mld', 'lp1.data')
+data_file_name = os.path.join(module_path, "data", "robotfailure-mld", "lp1.data")
 
 
 def download_robot_execution_failures(file_name=data_file_name):
@@ -52,21 +55,27 @@ def download_robot_execution_failures(file_name=data_file_name):
     >>> download_robot_execution_failures()
     """
     if os.path.exists(file_name):
-        _logger.warning("You have already downloaded the Robot Execution Failures LP1 Data Set.")
+        _logger.warning(
+            "You have already downloaded the Robot Execution Failures LP1 Data Set."
+        )
         return
 
     os.makedirs(os.path.dirname(file_name), exist_ok=True)
 
     if not os.access(os.path.dirname(file_name), os.W_OK):
-        raise RuntimeError("You don't have the necessary permissions to download the Robot Execution Failures LP1 Data "
-                           "Set into the module path. Consider installing the module in a virtualenv you "
-                           "own or run this function with appropriate permissions.")
+        raise RuntimeError(
+            "You don't have the necessary permissions to download the Robot Execution Failures LP1 Data "
+            "Set into the module path. Consider installing the module in a virtualenv you "
+            "own or run this function with appropriate permissions."
+        )
 
     r = requests.get(UCI_MLD_REF_URL)
 
     if r.status_code != 200:
-        raise RuntimeError("Could not download the Robot Execution Failures LP1 Data Set from the UCI Machine Learning "
-                           "Repository. HTTP status code: {}".format(r.status_code))
+        raise RuntimeError(
+            "Could not download the Robot Execution Failures LP1 Data Set from the UCI Machine Learning "
+            "Repository. HTTP status code: {}".format(r.status_code)
+        )
 
     with open(file_name, "w") as f:
         f.write(r.text)
@@ -102,20 +111,22 @@ def load_robot_execution_failures(multiclass=False, file_name=data_file_name):
 
         for line in f.readlines():
             # New sample --> increase id, reset time and determine target
-            if line[0] not in ['\t', '\n']:
+            if line[0] not in ["\t", "\n"]:
                 cur_id += 1
                 time = 0
                 if multiclass:
                     id_to_target[cur_id] = line.strip()
                 else:
-                    id_to_target[cur_id] = (line.strip() == 'normal')
+                    id_to_target[cur_id] = line.strip() == "normal"
             # Data row --> split and convert values, create complete df row
-            elif line[0] == '\t':
-                values = list(map(int, line.split('\t')[1:]))
+            elif line[0] == "\t":
+                values = list(map(int, line.split("\t")[1:]))
                 df_rows.append([cur_id, time] + values)
                 time += 1
 
-    df = pd.DataFrame(df_rows, columns=['id', 'time', 'F_x', 'F_y', 'F_z', 'T_x', 'T_y', 'T_z'])
+    df = pd.DataFrame(
+        df_rows, columns=["id", "time", "F_x", "F_y", "F_z", "T_x", "T_y", "T_z"]
+    )
     y = pd.Series(id_to_target)
 
     return df, y

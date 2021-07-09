@@ -3,31 +3,43 @@
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
 import pandas as pd
-from tsfresh.feature_extraction import extract_features
+
 from tsfresh import defaults
+from tsfresh.feature_extraction import extract_features
 from tsfresh.feature_selection import select_features
-from tsfresh.utilities.dataframe_functions import restrict_input_to_index, impute, get_ids
+from tsfresh.utilities.dataframe_functions import (
+    get_ids,
+    impute,
+    restrict_input_to_index,
+)
 
 
-def extract_relevant_features(timeseries_container, y, X=None,
-                              default_fc_parameters=None,
-                              kind_to_fc_parameters=None,
-                              column_id=None, column_sort=None, column_kind=None, column_value=None,
-                              show_warnings=defaults.SHOW_WARNINGS,
-                              disable_progressbar=defaults.DISABLE_PROGRESSBAR,
-                              profile=defaults.PROFILING,
-                              profiling_filename=defaults.PROFILING_FILENAME,
-                              profiling_sorting=defaults.PROFILING_SORTING,
-                              test_for_binary_target_binary_feature=defaults.TEST_FOR_BINARY_TARGET_BINARY_FEATURE,
-                              test_for_binary_target_real_feature=defaults.TEST_FOR_BINARY_TARGET_REAL_FEATURE,
-                              test_for_real_target_binary_feature=defaults.TEST_FOR_REAL_TARGET_BINARY_FEATURE,
-                              test_for_real_target_real_feature=defaults.TEST_FOR_REAL_TARGET_REAL_FEATURE,
-                              fdr_level=defaults.FDR_LEVEL,
-                              hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
-                              n_jobs=defaults.N_PROCESSES,
-                              distributor=None,
-                              chunksize=defaults.CHUNKSIZE,
-                              ml_task='auto'):
+def extract_relevant_features(
+    timeseries_container,
+    y,
+    X=None,
+    default_fc_parameters=None,
+    kind_to_fc_parameters=None,
+    column_id=None,
+    column_sort=None,
+    column_kind=None,
+    column_value=None,
+    show_warnings=defaults.SHOW_WARNINGS,
+    disable_progressbar=defaults.DISABLE_PROGRESSBAR,
+    profile=defaults.PROFILING,
+    profiling_filename=defaults.PROFILING_FILENAME,
+    profiling_sorting=defaults.PROFILING_SORTING,
+    test_for_binary_target_binary_feature=defaults.TEST_FOR_BINARY_TARGET_BINARY_FEATURE,
+    test_for_binary_target_real_feature=defaults.TEST_FOR_BINARY_TARGET_REAL_FEATURE,
+    test_for_real_target_binary_feature=defaults.TEST_FOR_REAL_TARGET_BINARY_FEATURE,
+    test_for_real_target_real_feature=defaults.TEST_FOR_REAL_TARGET_REAL_FEATURE,
+    fdr_level=defaults.FDR_LEVEL,
+    hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
+    n_jobs=defaults.N_PROCESSES,
+    distributor=None,
+    chunksize=defaults.CHUNKSIZE,
+    ml_task="auto",
+):
     """
     High level convenience function to extract time series features from `timeseries_container`. Then return feature
     matrix `X` possibly augmented with relevant features with respect to target vector `y`.
@@ -141,46 +153,64 @@ def extract_relevant_features(timeseries_container, y, X=None,
     :return: Feature matrix X, possibly extended with relevant time series features.
     """
 
-    assert isinstance(y, pd.Series), "y needs to be a pandas.Series, received type: {}.".format(type(y))
-    assert len(set(y)) > 1, "Feature selection is only possible if more than 1 label/class is provided"
+    assert isinstance(
+        y, pd.Series
+    ), "y needs to be a pandas.Series, received type: {}.".format(type(y))
+    assert (
+        len(set(y)) > 1
+    ), "Feature selection is only possible if more than 1 label/class is provided"
 
     if X is not None:
-        timeseries_container = restrict_input_to_index(timeseries_container, column_id, X.index)
+        timeseries_container = restrict_input_to_index(
+            timeseries_container, column_id, X.index
+        )
 
     ids_container = get_ids(df_or_dict=timeseries_container, column_id=column_id)
     ids_y = set(y.index)
     if ids_container != ids_y:
         if len(ids_container - ids_y) > 0:
-            raise ValueError("The following ids are in the time series container but are missing in y: "
-                             "{}".format(ids_container - ids_y))
+            raise ValueError(
+                "The following ids are in the time series container but are missing in y: "
+                "{}".format(ids_container - ids_y)
+            )
         if len(ids_y - ids_container) > 0:
-            raise ValueError("The following ids are in y but are missing inside the time series container: "
-                             "{}".format(ids_y - ids_container))
+            raise ValueError(
+                "The following ids are in y but are missing inside the time series container: "
+                "{}".format(ids_y - ids_container)
+            )
 
-    X_ext = extract_features(timeseries_container,
-                             default_fc_parameters=default_fc_parameters,
-                             kind_to_fc_parameters=kind_to_fc_parameters,
-                             show_warnings=show_warnings,
-                             disable_progressbar=disable_progressbar,
-                             profile=profile,
-                             profiling_filename=profiling_filename,
-                             profiling_sorting=profiling_sorting,
-                             n_jobs=n_jobs,
-                             column_id=column_id, column_sort=column_sort,
-                             column_kind=column_kind, column_value=column_value,
-                             distributor=distributor,
-                             impute_function=impute)
+    X_ext = extract_features(
+        timeseries_container,
+        default_fc_parameters=default_fc_parameters,
+        kind_to_fc_parameters=kind_to_fc_parameters,
+        show_warnings=show_warnings,
+        disable_progressbar=disable_progressbar,
+        profile=profile,
+        profiling_filename=profiling_filename,
+        profiling_sorting=profiling_sorting,
+        n_jobs=n_jobs,
+        column_id=column_id,
+        column_sort=column_sort,
+        column_kind=column_kind,
+        column_value=column_value,
+        distributor=distributor,
+        impute_function=impute,
+    )
 
-    X_sel = select_features(X_ext, y,
-                            test_for_binary_target_binary_feature=test_for_binary_target_binary_feature,
-                            test_for_binary_target_real_feature=test_for_binary_target_real_feature,
-                            test_for_real_target_binary_feature=test_for_real_target_binary_feature,
-                            test_for_real_target_real_feature=test_for_real_target_real_feature,
-                            fdr_level=fdr_level, hypotheses_independent=hypotheses_independent,
-                            n_jobs=n_jobs,
-                            show_warnings=show_warnings,
-                            chunksize=chunksize,
-                            ml_task=ml_task)
+    X_sel = select_features(
+        X_ext,
+        y,
+        test_for_binary_target_binary_feature=test_for_binary_target_binary_feature,
+        test_for_binary_target_real_feature=test_for_binary_target_real_feature,
+        test_for_real_target_binary_feature=test_for_real_target_binary_feature,
+        test_for_real_target_real_feature=test_for_real_target_real_feature,
+        fdr_level=fdr_level,
+        hypotheses_independent=hypotheses_independent,
+        n_jobs=n_jobs,
+        show_warnings=show_warnings,
+        chunksize=chunksize,
+        ml_task=ml_task,
+    )
 
     if X is None:
         X = X_sel

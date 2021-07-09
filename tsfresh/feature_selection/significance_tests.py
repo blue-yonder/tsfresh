@@ -32,11 +32,12 @@ References
 
 """
 
+import warnings
 from builtins import str
+
 import numpy as np
 import pandas as pd
 from scipy import stats
-import warnings
 
 
 def target_binary_feature_binary_test(x, y):
@@ -72,8 +73,7 @@ def target_binary_feature_binary_test(x, y):
     n_y1_x1 = np.sum(y[x == x1] == y1)
     n_y0_x1 = len(y[x == x1]) - n_y1_x1
 
-    table = np.array([[n_y1_x1, n_y1_x0],
-                      [n_y0_x1, n_y0_x0]])
+    table = np.array([[n_y1_x1, n_y1_x0], [n_y0_x1, n_y0_x0]])
 
     # Perform the Fisher test
     oddsratio, p_value = stats.fisher_exact(table, alternative="two-sided")
@@ -115,17 +115,21 @@ def target_binary_feature_real_test(x, y, test):
     x_y1 = x[y == y1]
     x_y0 = x[y == y0]
 
-    if test == 'mann':
+    if test == "mann":
         # Perform Mann-Whitney-U test
-        U, p_mannwhitu = stats.mannwhitneyu(x_y1, x_y0, use_continuity=True, alternative='two-sided')
+        U, p_mannwhitu = stats.mannwhitneyu(
+            x_y1, x_y0, use_continuity=True, alternative="two-sided"
+        )
         return p_mannwhitu
-    elif test == 'smir':
+    elif test == "smir":
         # Perform Kolmogorov-Smirnov test
         KS, p_ks = stats.ks_2samp(x_y1, x_y0)
         return p_ks
     else:
-        raise ValueError("Please use a valid entry for test_for_binary_target_real_feature. " +
-                         "Valid entries are 'mann' and 'smir'.")
+        raise ValueError(
+            "Please use a valid entry for test_for_binary_target_real_feature. "
+            + "Valid entries are 'mann' and 'smir'."
+        )
 
 
 def target_real_feature_binary_test(x, y):
@@ -224,9 +228,12 @@ def __check_for_binary_target(y):
         if len(set(y)) > 2:
             raise ValueError("Target is not binary!")
 
-        warnings.warn("The binary target should have "
-                      "values 1 and 0 (or True and False). "
-                      "Instead found" + str(set(y)), RuntimeWarning)
+        warnings.warn(
+            "The binary target should have "
+            "values 1 and 0 (or True and False). "
+            "Instead found" + str(set(y)),
+            RuntimeWarning,
+        )
 
 
 def __check_for_binary_feature(x):
@@ -244,11 +251,16 @@ def __check_for_binary_feature(x):
     """
     if not set(x) == {0, 1}:
         if len(set(x)) > 2:
-            raise ValueError("[target_binary_feature_binary_test] Feature is not binary!")
+            raise ValueError(
+                "[target_binary_feature_binary_test] Feature is not binary!"
+            )
 
-        warnings.warn("A binary feature should have only "
-                      "values 1 and 0 (incl. True and False). "
-                      "Instead found " + str(set(x)) + " in feature ''" + str(x.name) + "''.", RuntimeWarning)
+        warnings.warn(
+            "A binary feature should have only "
+            "values 1 and 0 (incl. True and False). "
+            "Instead found " + str(set(x)) + " in feature ''" + str(x.name) + "''.",
+            RuntimeWarning,
+        )
 
 
 def _check_for_nans(x, y):
@@ -261,6 +273,6 @@ def _check_for_nans(x, y):
     :raises: `ValueError` if target or feature contains NaNs.
     """
     if np.isnan(x.values).any():
-        raise ValueError('Feature {} contains NaN values'.format(x.name))
+        raise ValueError("Feature {} contains NaN values".format(x.name))
     elif np.isnan(y.values).any():
-        raise ValueError('Target contains NaN values')
+        raise ValueError("Target contains NaN values")

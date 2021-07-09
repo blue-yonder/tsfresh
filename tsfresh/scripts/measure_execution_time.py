@@ -5,17 +5,23 @@
 # Do these calculations in a controlled environment
 # (e.g. a cloud provider VM)
 # You will need to have b2luigi installed.
-from tsfresh.feature_extraction import ComprehensiveFCParameters, MinimalFCParameters, extract_features
-
-import pandas as pd
-import numpy as np
-from time import time
-import b2luigi as luigi
 import json
+from time import time
+
+import b2luigi as luigi
+import numpy as np
+import pandas as pd
+
+from tsfresh.feature_extraction import (
+    ComprehensiveFCParameters,
+    MinimalFCParameters,
+    extract_features,
+)
 
 
 class DataCreationTask(luigi.Task):
     """Create random data for testing"""
+
     num_ids = luigi.IntParameter(default=100)
     time_series_length = luigi.IntParameter()
     random_seed = luigi.IntParameter()
@@ -26,14 +32,18 @@ class DataCreationTask(luigi.Task):
     def run(self):
         np.random.seed(self.random_seed)
 
-        df = pd.concat([
-            pd.DataFrame({
-                "id": [i] * self.time_series_length,
-                "time": range(self.time_series_length),
-                "value": np.random.randn(self.time_series_length)
-            })
-            for i in range(self.num_ids)
-        ])
+        df = pd.concat(
+            [
+                pd.DataFrame(
+                    {
+                        "id": [i] * self.time_series_length,
+                        "time": range(self.time_series_length),
+                        "value": np.random.randn(self.time_series_length),
+                    }
+                )
+                for i in range(self.num_ids)
+            ]
+        )
 
         with self._get_output_target("data.csv").open("w") as f:
             df.to_csv(f)
@@ -42,6 +52,7 @@ class DataCreationTask(luigi.Task):
 @luigi.requires(DataCreationTask)
 class TimingTask(luigi.Task):
     """Run tsfresh with the given parameters"""
+
     feature_parameter = luigi.DictParameter(hashed=True)
     n_jobs = luigi.IntParameter()
     try_number = luigi.IntParameter()
@@ -56,9 +67,14 @@ class TimingTask(luigi.Task):
             df = pd.read_csv(f)
 
         start_time = time()
-        extract_features(df, column_id="id", column_sort="time", n_jobs=self.n_jobs,
-                         default_fc_parameters=self.feature_parameter,
-                         disable_progressbar=True)
+        extract_features(
+            df,
+            column_id="id",
+            column_sort="time",
+            n_jobs=self.n_jobs,
+            default_fc_parameters=self.feature_parameter,
+            disable_progressbar=True,
+        )
         end_time = time()
 
         single_parameter_name = list(self.feature_parameter.keys())[0]
@@ -69,7 +85,9 @@ class TimingTask(luigi.Task):
             "n_ids": self.num_ids,
             "n_jobs": self.n_jobs,
             "feature": single_parameter_name,
-            "number_parameters": len(single_parameter_params) if single_parameter_params else 0,
+            "number_parameters": len(single_parameter_params)
+            if single_parameter_params
+            else 0,
             "time_series_length": int((df["id"] == 0).sum()),
             "try_number": self.try_number,
         }
@@ -81,6 +99,7 @@ class TimingTask(luigi.Task):
 @luigi.requires(DataCreationTask)
 class FullTimingTask(luigi.Task):
     """Run tsfresh with all calculators for comparison"""
+
     n_jobs = luigi.IntParameter()
 
     def output(self):
@@ -93,8 +112,13 @@ class FullTimingTask(luigi.Task):
             df = pd.read_csv(f)
 
         start_time = time()
-        extract_features(df, column_id="id", column_sort="time", n_jobs=self.n_jobs,
-                         disable_progressbar=True)
+        extract_features(
+            df,
+            column_id="id",
+            column_sort="time",
+            n_jobs=self.n_jobs,
+            disable_progressbar=True,
+        )
         end_time = time()
 
         result_json = {
@@ -110,6 +134,7 @@ class FullTimingTask(luigi.Task):
 
 class CombinerTask(luigi.Task):
     """Collect all tasks into a single result.csv file"""
+
     def complete(self):
         return False
 
@@ -117,14 +142,18 @@ class CombinerTask(luigi.Task):
         settings = ComprehensiveFCParameters()
         for job in [0, 1, 4]:
             for time_series_length in [100, 500, 1000, 5000]:
-                yield FullTimingTask(time_series_length=time_series_length,
-                                     n_jobs=job,
-                                     num_ids=10,
-                                     random_seed=42)
-                yield FullTimingTask(time_series_length=time_series_length,
-                                     n_jobs=job,
-                                     num_ids=100,
-                                     random_seed=42)
+                yield FullTimingTask(
+                    time_series_length=time_series_length,
+                    n_jobs=job,
+                    num_ids=10,
+                    random_seed=42,
+                )
+                yield FullTimingTask(
+                    time_series_length=time_series_length,
+                    n_jobs=job,
+                    num_ids=100,
+                    random_seed=42,
+                )
 
                 for feature_name in settings:
                     yield TimingTask(
@@ -133,7 +162,7 @@ class CombinerTask(luigi.Task):
                         n_jobs=job,
                         num_ids=100,
                         try_number=0,
-                        random_seed=42
+                        random_seed=42,
                     )
 
                     for try_number in range(3):
@@ -143,7 +172,7 @@ class CombinerTask(luigi.Task):
                             try_number=try_number,
                             num_ids=10,
                             time_series_length=time_series_length,
-                            random_seed=42
+                            random_seed=42,
                         )
 
     def output(self):

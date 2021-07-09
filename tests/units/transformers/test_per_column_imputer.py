@@ -2,15 +2,15 @@
 # This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
+import warnings
 from builtins import range
 from unittest import TestCase
-import pandas as pd
-import pandas.testing as pdt
-from sklearn.exceptions import NotFittedError
-import warnings
 
 import numpy as np
 import numpy.testing as npt
+import pandas as pd
+import pandas.testing as pdt
+from sklearn.exceptions import NotFittedError
 
 from tsfresh.transformers.per_column_imputer import PerColumnImputer
 
@@ -38,8 +38,10 @@ class PerColumnImputerTestCase(TestCase):
         with warnings.catch_warnings(record=True) as w:
             imputer.fit(X)
             self.assertEqual(len(w), 1)
-            self.assertEqual("The columns ['NaNs' 'PINF' 'NINF'] did not have any finite values. Filling with zeros.",
-                             str(w[0].message))
+            self.assertEqual(
+                "The columns ['NaNs' 'PINF' 'NINF'] did not have any finite values. Filling with zeros.",
+                str(w[0].message),
+            )
 
         selected_X = imputer.transform(X)
 
@@ -59,8 +61,10 @@ class PerColumnImputerTestCase(TestCase):
         with warnings.catch_warnings(record=True) as w:
             imputer.fit(X)
             self.assertEqual(len(w), 1)
-            self.assertEqual("The columns ['NaNs' 'PINF' 'NINF'] did not have any finite values. Filling with zeros.",
-                             str(w[0].message))
+            self.assertEqual(
+                "The columns ['NaNs' 'PINF' 'NINF'] did not have any finite values. Filling with zeros.",
+                str(w[0].message),
+            )
 
         selected_X = imputer.transform(X)
 
@@ -69,8 +73,10 @@ class PerColumnImputerTestCase(TestCase):
         with warnings.catch_warnings(record=True) as w:
             imputer.fit(X_numpy)
             self.assertEqual(len(w), 1)
-            self.assertEqual("The columns [0 1 2] did not have any finite values. Filling with zeros.",
-                             str(w[0].message))
+            self.assertEqual(
+                "The columns [0 1 2] did not have any finite values. Filling with zeros.",
+                str(w[0].message),
+            )
 
         selected_X_numpy = imputer.transform(X_numpy)
 

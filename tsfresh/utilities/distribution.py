@@ -13,8 +13,8 @@ import math
 import warnings
 from collections.abc import Generator, Iterable
 from functools import partial
+from itertools import islice, repeat, takewhile
 from multiprocessing import Pool
-from itertools import takewhile, islice, repeat
 
 from tqdm import tqdm
 
@@ -70,7 +70,15 @@ class DistributorBaseClass:
 
     Dependent on the implementation of the distribute function, this is done in parallel or using a cluster of nodes.
     """
-    def map_reduce(self, map_function, data, function_kwargs=None, chunk_size=None, data_length=None):
+
+    def map_reduce(
+        self,
+        map_function,
+        data,
+        function_kwargs=None,
+        chunk_size=None,
+        data_length=None,
+    ):
         """
         This method contains the core functionality of the DistributorBaseClass class.
 
@@ -135,7 +143,9 @@ class IterableDistributorBaseClass(DistributorBaseClass):
         # (= we have reached the end)
         # The islice(iterator, n) gets the next n elements from the iterator.
         # The list(...) makes sure we do not pass
-        return takewhile(bool, (list(islice(iterator, chunk_size)) for _ in repeat(None)))
+        return takewhile(
+            bool, (list(islice(iterator, chunk_size)) for _ in repeat(None))
+        )
 
     def __init__(self):
         """
@@ -160,7 +170,14 @@ class IterableDistributorBaseClass(DistributorBaseClass):
             chunk_size += 1
         return chunk_size
 
-    def map_reduce(self, map_function, data, function_kwargs=None, chunk_size=None, data_length=None):
+    def map_reduce(
+        self,
+        map_function,
+        data,
+        function_kwargs=None,
+        chunk_size=None,
+        data_length=None,
+    ):
         """
         This method contains the core functionality of the DistributorBaseClass class.
 
@@ -190,7 +207,9 @@ class IterableDistributorBaseClass(DistributorBaseClass):
         :rtype: list
         """
         if not isinstance(data, Iterable):
-            raise ValueError("You passed data, which can not be handled by this distributor!")
+            raise ValueError(
+                "You passed data, which can not be handled by this distributor!"
+            )
 
         if data_length is None:
             data_length = len(data)
@@ -204,11 +223,20 @@ class IterableDistributorBaseClass(DistributorBaseClass):
 
         if hasattr(self, "progressbar_title"):
             total_number_of_expected_results = math.ceil(data_length / chunk_size)
-            result = tqdm(self.distribute(_function_with_partly_reduce, chunk_generator, map_kwargs),
-                          total=total_number_of_expected_results,
-                          desc=self.progressbar_title, disable=self.disable_progressbar)
+            result = tqdm(
+                self.distribute(
+                    _function_with_partly_reduce, chunk_generator, map_kwargs
+                ),
+                total=total_number_of_expected_results,
+                desc=self.progressbar_title,
+                disable=self.disable_progressbar,
+            )
         else:
-            result = self.distribute(_function_with_partly_reduce, chunk_generator, map_kwargs),
+            result = (
+                self.distribute(
+                    _function_with_partly_reduce, chunk_generator, map_kwargs
+                ),
+            )
 
         result = list(itertools.chain.from_iterable(result))
 
@@ -246,7 +274,9 @@ class MapDistributor(IterableDistributorBaseClass):
     Distributor using the python build-in map, which calculates each job sequentially one after the other.
     """
 
-    def __init__(self, disable_progressbar=False, progressbar_title="Feature Extraction"):
+    def __init__(
+        self, disable_progressbar=False, progressbar_title="Feature Extraction"
+    ):
         """
         Creates a new MapDistributor instance
 
@@ -299,12 +329,15 @@ class LocalDaskDistributor(IterableDistributorBaseClass):
         :type n_workers: int
         """
 
-        from distributed import LocalCluster, Client
         import tempfile
+
+        from distributed import Client, LocalCluster
 
         # attribute .local_dir_ is the path where the local dask workers store temporary files
         self.local_dir_ = tempfile.mkdtemp()
-        cluster = LocalCluster(n_workers=n_workers, processes=False, local_directory=self.local_dir_)
+        cluster = LocalCluster(
+            n_workers=n_workers, processes=False, local_directory=self.local_dir_
+        )
 
         self.client = Client(cluster)
         self.n_workers = n_workers
@@ -329,7 +362,9 @@ class LocalDaskDistributor(IterableDistributorBaseClass):
         if isinstance(partitioned_chunks, Iterable):
             # since dask 2.0.0 client map no longer accepts iterables
             partitioned_chunks = list(partitioned_chunks)
-        result = self.client.gather(self.client.map(partial(func, **kwargs), partitioned_chunks))
+        result = self.client.gather(
+            self.client.map(partial(func, **kwargs), partitioned_chunks)
+        )
         return [item for sublist in result for item in sublist]
 
     def close(self):
@@ -388,7 +423,9 @@ class ClusterDaskDistributor(IterableDistributorBaseClass):
         if isinstance(partitioned_chunks, Iterable):
             # since dask 2.0.0 client map no longer accepts iterables
             partitioned_chunks = list(partitioned_chunks)
-        result = self.client.gather(self.client.map(partial(func, **kwargs), partitioned_chunks))
+        result = self.client.gather(
+            self.client.map(partial(func, **kwargs), partitioned_chunks)
+        )
         return [item for sublist in result for item in sublist]
 
     def close(self):
@@ -403,8 +440,13 @@ class MultiprocessingDistributor(IterableDistributorBaseClass):
     Distributor using a multiprocessing Pool to calculate the jobs in parallel on the local machine.
     """
 
-    def __init__(self, n_workers, disable_progressbar=False, progressbar_title="Feature Extraction",
-                 show_warnings=True):
+    def __init__(
+        self,
+        n_workers,
+        disable_progressbar=False,
+        progressbar_title="Feature Extraction",
+        show_warnings=True,
+    ):
         """
         Creates a new MultiprocessingDistributor instance
 
@@ -417,7 +459,11 @@ class MultiprocessingDistributor(IterableDistributorBaseClass):
         :param show_warnings: whether to show warnings or not.
         :type show_warnings: bool
         """
-        self.pool = Pool(processes=n_workers, initializer=initialize_warnings_in_workers, initargs=(show_warnings,))
+        self.pool = Pool(
+            processes=n_workers,
+            initializer=initialize_warnings_in_workers,
+            initargs=(show_warnings,),
+        )
         self.n_workers = n_workers
         self.disable_progressbar = disable_progressbar
         self.progressbar_title = progressbar_title
@@ -452,5 +498,12 @@ class ApplyDistributor(DistributorBaseClass):
     def __init__(self, meta):
         self.meta = meta
 
-    def map_reduce(self, map_function, data, function_kwargs=None, chunk_size=None, data_length=None):
+    def map_reduce(
+        self,
+        map_function,
+        data,
+        function_kwargs=None,
+        chunk_size=None,
+        data_length=None,
+    ):
         return data.apply(map_function, meta=self.meta, **function_kwargs)

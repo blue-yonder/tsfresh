@@ -10,20 +10,20 @@ Afterwards the Benjamini Hochberg procedure which is a multiple testing procedur
 which to cut off (solely based on the p-values).
 """
 
-from multiprocessing import Pool
 import warnings
+from functools import partial, reduce
+from multiprocessing import Pool
 
 import numpy as np
 import pandas as pd
-from functools import partial, reduce
 from statsmodels.stats.multitest import multipletests
 
 from tsfresh import defaults
 from tsfresh.feature_selection.significance_tests import (
+    target_binary_feature_binary_test,
     target_binary_feature_real_test,
     target_real_feature_binary_test,
     target_real_feature_real_test,
-    target_binary_feature_binary_test,
 )
 from tsfresh.utilities.distribution import initialize_warnings_in_workers
 

@@ -17,28 +17,30 @@ Feature calculators of type combiner should return the concatenated parameters s
 alphabetically ascending.
 """
 
-import itertools
 import functools
+import itertools
 import warnings
-from tsfresh.utilities.string_manipulation import convert_to_output_format
 from builtins import range
 from collections import defaultdict
 
+import matrixprofile as mp
 import numpy as np
 import pandas as pd
+import stumpy
+from matrixprofile.exceptions import NoSolutionPossible
 from numpy.linalg import LinAlgError
 from scipy.signal import cwt, find_peaks_cwt, ricker, welch
 from scipy.stats import linregress
 from statsmodels.tools.sm_exceptions import MissingDataError
-from matrixprofile.exceptions import NoSolutionPossible
-import matrixprofile as mp
-import stumpy
+
+from tsfresh.utilities.string_manipulation import convert_to_output_format
 
 with warnings.catch_warnings():
     # Ignore warnings of the patsy package
     warnings.simplefilter("ignore", DeprecationWarning)
 
     from statsmodels.tsa.ar_model import AR
+
 from statsmodels.tsa.stattools import acf, adfuller, pacf
 
 # todo: make sure '_' works in parameter names in all cases, add a warning if not
@@ -145,15 +147,17 @@ def _estimate_friedrich_coefficients(x, m, r):
     """
     assert m > 0, "Order of polynomial need to be positive integer, found {}".format(m)
 
-    df = pd.DataFrame({'signal': x[:-1], 'delta': np.diff(x)})
+    df = pd.DataFrame({"signal": x[:-1], "delta": np.diff(x)})
     try:
-        df['quantiles'] = pd.qcut(df.signal, r)
+        df["quantiles"] = pd.qcut(df.signal, r)
     except ValueError:
         return [np.NaN] * (m + 1)
 
-    quantiles = df.groupby('quantiles')
+    quantiles = df.groupby("quantiles")
 
-    result = pd.DataFrame({'x_mean': quantiles.signal.mean(), 'y_mean': quantiles.delta.mean()})
+    result = pd.DataFrame(
+        {"x_mean": quantiles.signal.mean(), "y_mean": quantiles.delta.mean()}
+    )
     result.dropna(inplace=True)
 
     try:
@@ -176,7 +180,10 @@ def _aggregate_on_chunks(x, f_agg, chunk_len):
     :return: A list of the aggregation function over the chunks
     :return type: list
     """
-    return [getattr(x[i * chunk_len: (i + 1) * chunk_len], f_agg)() for i in range(int(np.ceil(len(x) / chunk_len)))]
+    return [
+        getattr(x[i * chunk_len : (i + 1) * chunk_len], f_agg)()
+        for i in range(int(np.ceil(len(x) / chunk_len)))
+    ]
 
 
 def _into_subchunks(x, subchunk_length, every_n=1):
@@ -209,11 +216,15 @@ def set_property(key, value):
     """
     This method returns a decorator that sets the property key of the function to value
     """
+
     def decorate_func(func):
         setattr(func, key, value)
         if func.__doc__ and key == "fctype":
-            func.__doc__ = func.__doc__ + "\n\n    *This function is of type: " + value + "*\n"
+            func.__doc__ = (
+                func.__doc__ + "\n\n    *This function is of type: " + value + "*\n"
+            )
         return func
+
     return decorate_func
 
 
@@ -297,8 +308,10 @@ def symmetry_looking(x, param):
         x = np.asarray(x)
     mean_median_difference = np.abs(np.mean(x) - np.median(x))
     max_min_difference = np.max(x) - np.min(x)
-    return [("r_{}".format(r["r"]), mean_median_difference < (r["r"] * max_min_difference))
-            for r in param]
+    return [
+        ("r_{}".format(r["r"]), mean_median_difference < (r["r"] * max_min_difference))
+        for r in param
+    ]
 
 
 @set_property("fctype", "simple")
@@ -403,12 +416,17 @@ def agg_autocorrelation(x, param):
     n = len(x)
     max_maxlag = max([config["maxlag"] for config in param])
 
-    if np.abs(var) < 10**-10 or n == 1:
+    if np.abs(var) < 10 ** -10 or n == 1:
         a = [0] * len(x)
     else:
         a = acf(x, unbiased=True, fft=n > THRESHOLD_TO_USE_FFT, nlags=max_maxlag)[1:]
-    return [("f_agg_\"{}\"__maxlag_{}".format(config["f_agg"], config["maxlag"]),
-             getattr(np, config["f_agg"])(a[:int(config["maxlag"])])) for config in param]
+    return [
+        (
+            'f_agg_"{}"__maxlag_{}'.format(config["f_agg"], config["maxlag"]),
+            getattr(np, config["f_agg"])(a[: int(config["maxlag"])]),
+        )
+        for config in param
+    ]
 
 
 @set_property("fctype", "combiner")
@@ -584,7 +602,7 @@ def mean_abs_change(x):
 
     .. math::
 
-        \\frac{1}{n} \\sum_{i=1,\\ldots, n-1} | x_{i+1} - x_{i}|
+        \\frac{1}{n-1} \\sum_{i=1,\\ldots, n-1} | x_{i+1} - x_{i}|
 
 
     :param x: the time series to calculate the feature of
@@ -1061,9 +1079,15 @@ def fft_coefficient(x, param):
     :return type: pandas.Series
     """
 
-    assert min([config["coeff"] for config in param]) >= 0, "Coefficients must be positive or zero."
-    assert {config["attr"] for config in param} <= {"imag", "real", "abs", "angle"}, \
-        'Attribute must be "real", "imag", "angle" or "abs"'
+    assert (
+        min([config["coeff"] for config in param]) >= 0
+    ), "Coefficients must be positive or zero."
+    assert {config["attr"] for config in param} <= {
+        "imag",
+        "real",
+        "abs",
+        "angle",
+    }, 'Attribute must be "real", "imag", "angle" or "abs"'
 
     fft = np.fft.rfft(x)
 
@@ -1077,9 +1101,16 @@ def fft_coefficient(x, param):
         elif agg == "angle":
             return np.angle(x, deg=True)
 
-    res = [complex_agg(fft[config["coeff"]], config["attr"]) if config["coeff"] < len(fft)
-           else np.NaN for config in param]
-    index = ['attr_"{}"__coeff_{}'.format(config["attr"], config["coeff"]) for config in param]
+    res = [
+        complex_agg(fft[config["coeff"]], config["attr"])
+        if config["coeff"] < len(fft)
+        else np.NaN
+        for config in param
+    ]
+    index = [
+        'attr_"{}"__coeff_{}'.format(config["attr"], config["coeff"])
+        for config in param
+    ]
     return zip(index, res)
 
 
@@ -1097,8 +1128,12 @@ def fft_aggregated(x, param):
     :return type: pandas.Series
     """
 
-    assert {config["aggtype"] for config in param} <= {"centroid", "variance", "skew", "kurtosis"}, \
-        'Attribute must be "centroid", "variance", "skew", "kurtosis"'
+    assert {config["aggtype"] for config in param} <= {
+        "centroid",
+        "variance",
+        "skew",
+        "kurtosis",
+    }, 'Attribute must be "centroid", "variance", "skew", "kurtosis"'
 
     def get_moment(y, moment):
         """
@@ -1112,7 +1147,7 @@ def fft_aggregated(x, param):
         :return: the moment requested
         :return type: float
         """
-        return y.dot(np.arange(len(y), dtype=float)**moment) / y.sum()
+        return y.dot(np.arange(len(y), dtype=float) ** moment) / y.sum()
 
     def get_centroid(y):
         """
@@ -1150,8 +1185,8 @@ def fft_aggregated(x, param):
             return np.nan
         else:
             return (
-                get_moment(y, 3) - 3 * get_centroid(y) * variance - get_centroid(y)**3
-            ) / get_variance(y)**(1.5)
+                get_moment(y, 3) - 3 * get_centroid(y) * variance - get_centroid(y) ** 3
+            ) / get_variance(y) ** (1.5)
 
     def get_kurtosis(y):
         """
@@ -1171,15 +1206,17 @@ def fft_aggregated(x, param):
             return np.nan
         else:
             return (
-                get_moment(y, 4) - 4 * get_centroid(y) * get_moment(y, 3)
-                + 6 * get_moment(y, 2) * get_centroid(y)**2 - 3 * get_centroid(y)
-            ) / get_variance(y)**2
+                get_moment(y, 4)
+                - 4 * get_centroid(y) * get_moment(y, 3)
+                + 6 * get_moment(y, 2) * get_centroid(y) ** 2
+                - 3 * get_centroid(y)
+            ) / get_variance(y) ** 2
 
     calculation = dict(
         centroid=get_centroid,
         variance=get_variance,
         skew=get_skew,
-        kurtosis=get_kurtosis
+        kurtosis=get_kurtosis,
     )
 
     fft_abs = np.abs(np.fft.rfft(x))
@@ -1218,14 +1255,14 @@ def number_peaks(x, n):
 
     res = None
     for i in range(1, n + 1):
-        result_first = (x_reduced > _roll(x, i)[n:-n])
+        result_first = x_reduced > _roll(x, i)[n:-n]
 
         if res is None:
             res = result_first
         else:
             res &= result_first
 
-        res &= (x_reduced > _roll(x, -i)[n:-n])
+        res &= x_reduced > _roll(x, -i)[n:-n]
     return np.sum(res)
 
 
@@ -1253,8 +1290,13 @@ def index_mass_quantile(x, param):
     else:
         # at least one value is not zero
         mass_centralized = np.cumsum(abs_x) / s
-        return [("q_{}".format(config["q"]),
-                 (np.argmax(mass_centralized >= config["q"]) + 1) / len(x)) for config in param]
+        return [
+            (
+                "q_{}".format(config["q"]),
+                (np.argmax(mass_centralized >= config["q"]) + 1) / len(x),
+            )
+            for config in param
+        ]
 
 
 @set_property("fctype", "simple")
@@ -1273,7 +1315,9 @@ def number_cwt_peaks(x, n):
     :return: the value of this feature
     :return type: int
     """
-    return len(find_peaks_cwt(vector=x, widths=np.array(list(range(1, n + 1))), wavelet=ricker))
+    return len(
+        find_peaks_cwt(vector=x, widths=np.array(list(range(1, n + 1))), wavelet=ricker)
+    )
 
 
 @set_property("fctype", "combiner")
@@ -1297,8 +1341,10 @@ def linear_trend(x, param):
     # todo: we could use the index of the DataFrame here
     linReg = linregress(range(len(x)), x)
 
-    return [("attr_\"{}\"".format(config["attr"]), getattr(linReg, config["attr"]))
-            for config in param]
+    return [
+        ('attr_"{}"'.format(config["attr"]), getattr(linReg, config["attr"]))
+        for config in param
+    ]
 
 
 @set_property("fctype", "combiner")
@@ -1369,15 +1415,21 @@ def spkt_welch_density(x, param):
     coeff = [config["coeff"] for config in param]
     indices = ["coeff_{}".format(i) for i in coeff]
 
-    if len(pxx) <= np.max(coeff):  # There are fewer data points in the time series than requested coefficients
+    if len(pxx) <= np.max(
+        coeff
+    ):  # There are fewer data points in the time series than requested coefficients
 
         # filter coefficients that are not contained in pxx
         reduced_coeff = [coefficient for coefficient in coeff if len(pxx) > coefficient]
-        not_calculated_coefficients = [coefficient for coefficient in coeff
-                                       if coefficient not in reduced_coeff]
+        not_calculated_coefficients = [
+            coefficient for coefficient in coeff if coefficient not in reduced_coeff
+        ]
 
         # Fill up the rest of the requested coefficients with np.NaNs
-        return zip(indices, list(pxx[reduced_coeff]) + [np.NaN] * len(not_calculated_coefficients))
+        return zip(
+            indices,
+            list(pxx[reduced_coeff]) + [np.NaN] * len(not_calculated_coefficients),
+        )
     else:
         return zip(indices, pxx[coeff])
 
@@ -1418,7 +1470,9 @@ def ar_coefficient(x, param):
         if k not in calculated_ar_params:
             try:
                 calculated_AR = AR(x_as_list)
-                calculated_ar_params[k] = calculated_AR.fit(maxlag=k, solver="mle").params
+                calculated_ar_params[k] = calculated_AR.fit(
+                    maxlag=k, solver="mle"
+                ).params
             except (LinAlgError, ValueError):
                 calculated_ar_params[k] = [np.NaN] * k
 
@@ -1521,7 +1575,9 @@ def time_reversal_asymmetry_statistic(x, lag):
     else:
         one_lag = _roll(x, -lag)
         two_lag = _roll(x, 2 * -lag)
-        return np.mean((two_lag * two_lag * one_lag - one_lag * x * x)[0:(n - 2 * lag)])
+        return np.mean(
+            (two_lag * two_lag * one_lag - one_lag * x * x)[0 : (n - 2 * lag)]
+        )
 
 
 @set_property("fctype", "simple")
@@ -1563,7 +1619,7 @@ def c3(x, lag):
     if 2 * lag >= n:
         return 0
     else:
-        return np.mean((_roll(x, 2 * -lag) * _roll(x, -lag) * x)[0:(n - 2 * lag)])
+        return np.mean((_roll(x, 2 * -lag) * _roll(x, -lag) * x)[0 : (n - 2 * lag)])
 
 
 @set_property("fctype", "simple")
@@ -1580,7 +1636,9 @@ def mean_n_absolute_max(x, number_of_maxima):
     :return type: float
     """
 
-    assert number_of_maxima > 0, f" number_of_maxima={number_of_maxima} which is not greater than 1"
+    assert (
+        number_of_maxima > 0
+    ), f" number_of_maxima={number_of_maxima} which is not greater than 1"
 
     n_absolute_maximum_values = np.sort(np.absolute(x))[-number_of_maxima:]
 
@@ -1616,7 +1674,7 @@ def binned_entropy(x, max_bins):
     hist, bin_edges = np.histogram(x, bins=max_bins)
     probs = hist / x.size
     probs[probs == 0] = 1.0
-    return - np.sum(probs * np.log(probs))
+    return -np.sum(probs * np.log(probs))
 
 
 # todo - include latex formula
@@ -1645,7 +1703,9 @@ def sample_entropy(x):
         return np.nan
 
     m = 2  # common value for m, according to wikipedia...
-    tolerance = 0.2 * np.std(x)  # 0.2 is a common value for r, according to wikipedia...
+    tolerance = 0.2 * np.std(
+        x
+    )  # 0.2 is a common value for r, according to wikipedia...
 
     # Split time series and save all templates of length m
     # Basically we turn [1, 2, 3, 4] into [1, 2], [2, 3], [3, 4]
@@ -1669,7 +1729,9 @@ def sample_entropy(x):
     # Similar for computing A
     xmp1 = _into_subchunks(x, m + 1)
 
-    A = np.sum([np.sum(np.abs(xmi - xmp1).max(axis=1) <= tolerance) - 1 for xmi in xmp1])
+    A = np.sum(
+        [np.sum(np.abs(xmi - xmp1).max(axis=1) <= tolerance) - 1 for xmi in xmp1]
+    )
 
     # Return SampEn
     return -np.log(A / B)
@@ -1716,9 +1778,11 @@ def approximate_entropy(x, m, r):
         return 0
 
     def _phi(m):
-        x_re = np.array([x[i:i + m] for i in range(N - m + 1)])
-        C = np.sum(np.max(np.abs(x_re[:, np.newaxis] - x_re[np.newaxis, :]),
-                          axis=2) <= r, axis=0) / (N - m + 1)
+        x_re = np.array([x[i : i + m] for i in range(N - m + 1)])
+        C = np.sum(
+            np.max(np.abs(x_re[:, np.newaxis] - x_re[np.newaxis, :]), axis=2) <= r,
+            axis=0,
+        ) / (N - m + 1)
         return np.sum(np.log(C)) / (N - m + 1.0)
 
     return np.abs(_phi(m) - _phi(m + 1))
@@ -1760,7 +1824,7 @@ def lempel_ziv_complexity(x, bins):
     x = np.asarray(x)
 
     bins = np.linspace(np.min(x), np.max(x), bins + 1)[1:]
-    sequence = np.searchsorted(bins, x, side='left')
+    sequence = np.searchsorted(bins, x, side="left")
 
     sub_strings = set()
     n = len(sequence)
@@ -1769,7 +1833,7 @@ def lempel_ziv_complexity(x, bins):
     inc = 1
     while ind + inc <= n:
         # convert to tuple in order to make it hashable
-        sub_str = tuple(sequence[ind:ind + inc])
+        sub_str = tuple(sequence[ind : ind + inc])
         if sub_str in sub_strings:
             inc += 1
         else:
@@ -1862,7 +1926,7 @@ def autocorrelation(x, lag):
     if len(x) < lag:
         return np.nan
     # Slice the relevant subseries based on the lag
-    y1 = x[:(len(x) - lag)]
+    y1 = x[: (len(x) - lag)]
     y2 = x[lag:]
     # Subtract the mean of the whole series x
     x_mean = np.mean(x)
@@ -2029,11 +2093,13 @@ def friedrich_coefficients(x, param):
     res = {}
 
     for parameter_combination in param:
-        m = parameter_combination['m']
-        r = parameter_combination['r']
+        m = parameter_combination["m"]
+        r = parameter_combination["r"]
         coeff = parameter_combination["coeff"]
 
-        assert coeff >= 0, "Coefficients must be positive or zero. Found {}".format(coeff)
+        assert coeff >= 0, "Coefficients must be positive or zero. Found {}".format(
+            coeff
+        )
 
         # calculate the current friedrich coefficients if they do not exist yet
         if m not in calculated or r not in calculated[m]:
@@ -2121,7 +2187,9 @@ def agg_linear_trend(x, param):
                 calculated_agg[f_agg][chunk_len] = np.NaN
             else:
                 aggregate_result = _aggregate_on_chunks(x, f_agg, chunk_len)
-                lin_reg_result = linregress(range(len(aggregate_result)), aggregate_result)
+                lin_reg_result = linregress(
+                    range(len(aggregate_result)), aggregate_result
+                )
                 calculated_agg[f_agg][chunk_len] = lin_reg_result
 
         attr = parameter_combination["attr"]
@@ -2131,7 +2199,9 @@ def agg_linear_trend(x, param):
         else:
             res_data.append(getattr(calculated_agg[f_agg][chunk_len], attr))
 
-        res_index.append("attr_\"{}\"__chunk_len_{}__f_agg_\"{}\"".format(attr, chunk_len, f_agg))
+        res_index.append(
+            'attr_"{}"__chunk_len_{}__f_agg_"{}"'.format(attr, chunk_len, f_agg)
+        )
 
     return zip(res_index, res_data)
 
@@ -2171,9 +2241,14 @@ def energy_ratio_by_chunks(x, param):
         if full_series_energy == 0:
             res_data.append(np.NaN)
         else:
-            res_data.append(np.sum(np.array_split(x, num_segments)[segment_focus] ** 2.0) / full_series_energy)
+            res_data.append(
+                np.sum(np.array_split(x, num_segments)[segment_focus] ** 2.0)
+                / full_series_energy
+            )
 
-        res_index.append("num_segments_{}__segment_focus_{}".format(num_segments, segment_focus))
+        res_index.append(
+            "num_segments_{}__segment_focus_{}".format(num_segments, segment_focus)
+        )
 
     # Materialize as list for Python 3 compatibility with name handling
     return list(zip(res_index, res_data))
@@ -2209,8 +2284,10 @@ def linear_trend_timewise(x, param):
 
     linReg = linregress(times_hours, x.values.flatten())
 
-    return [("attr_\"{}\"".format(config["attr"]), getattr(linReg, config["attr"]))
-            for config in param]
+    return [
+        ('attr_"{}"'.format(config["attr"]), getattr(linReg, config["attr"]))
+        for config in param
+    ]
 
 
 @set_property("fctype", "simple")
@@ -2226,7 +2303,7 @@ def count_above(x, t):
     :return: the value of this feature
     :return type: float
     """
-    return np.sum(x >= t)/len(x)
+    return np.sum(x >= t) / len(x)
 
 
 @set_property("fctype", "simple")
@@ -2242,42 +2319,44 @@ def count_below(x, t):
     :return: the value of this feature
     :return type: float
     """
-    return np.sum(x <= t)/len(x)
+    return np.sum(x <= t) / len(x)
 
 
 @set_property("fctype", "simple")
 def benford_correlation(x):
     """
-    Useful for anomaly detection applications [1][2]. Returns the correlation from first digit distribution when
-    compared to the Newcomb-Benford's Law distribution [3][4].
+     Useful for anomaly detection applications [1][2]. Returns the correlation from first digit distribution when
+     compared to the Newcomb-Benford's Law distribution [3][4].
 
-    .. math::
+     .. math::
 
-        P(d)=\\log_{10}\\left(1+\\frac{1}{d}\\right)
+         P(d)=\\log_{10}\\left(1+\\frac{1}{d}\\right)
 
-    where :math:`P(d)` is the Newcomb-Benford distribution for :math:`d` that is the leading digit of the number
-    {1, 2, 3, 4, 5, 6, 7, 8, 9}.
+     where :math:`P(d)` is the Newcomb-Benford distribution for :math:`d` that is the leading digit of the number
+     {1, 2, 3, 4, 5, 6, 7, 8, 9}.
 
-    .. rubric:: References
+     .. rubric:: References
 
-    |  [1] A Statistical Derivation of the Significant-Digit Law, Theodore P. Hill, Statistical Science, 1995
-    |  [2] The significant-digit phenomenon, Theodore P. Hill, The American Mathematical Monthly, 1995
-    |  [3] The law of anomalous numbers, Frank Benford, Proceedings of the American philosophical society, 1938
-    |  [4] Note on the frequency of use of the different digits in natural numbers, Simon Newcomb, American Journal of
-    |  mathematics, 1881
+     |  [1] A Statistical Derivation of the Significant-Digit Law, Theodore P. Hill, Statistical Science, 1995
+     |  [2] The significant-digit phenomenon, Theodore P. Hill, The American Mathematical Monthly, 1995
+     |  [3] The law of anomalous numbers, Frank Benford, Proceedings of the American philosophical society, 1938
+     |  [4] Note on the frequency of use of the different digits in natural numbers, Simon Newcomb, American Journal of
+     |  mathematics, 1881
 
-   :param x: the time series to calculate the feature of
-   :type x: numpy.ndarray
-   :return: the value of this feature
-   :return type: float
-   """
+    :param x: the time series to calculate the feature of
+    :type x: numpy.ndarray
+    :return: the value of this feature
+    :return type: float
+    """
     x = np.asarray(x)
 
     # retrieve first digit from data
-    x = np.array([int(str(np.format_float_scientific(i))[:1]) for i in np.abs(np.nan_to_num(x))])
+    x = np.array(
+        [int(str(np.format_float_scientific(i))[:1]) for i in np.abs(np.nan_to_num(x))]
+    )
 
     # benford distribution
-    benford_distribution = np.array([np.log10(1 + 1/n) for n in range(1, 10)])
+    benford_distribution = np.array([np.log10(1 + 1 / n) for n in range(1, 10)])
 
     data_distribution = np.array([(x == n).mean() for n in range(1, 10)])
 
@@ -2314,10 +2393,12 @@ def matrix_profile(x, param):
         """Calculate the matrix profile using the specified window, or the max subsequence if no window is specified"""
         try:
             if "windows" in kwargs:
-                m_p = mp.compute(x, **kwargs)['mp']
+                m_p = mp.compute(x, **kwargs)["mp"]
 
             else:
-                m_p = mp.algorithms.maximum_subsequence(x, include_pmp=True, **kwargs)['pmp'][-1]
+                m_p = mp.algorithms.maximum_subsequence(x, include_pmp=True, **kwargs)[
+                    "pmp"
+                ][-1]
 
             return m_p
 
@@ -2333,7 +2414,7 @@ def matrix_profile(x, param):
     for kwargs in param:
         kwargs = kwargs.copy()
         key = convert_to_output_format(kwargs)
-        feature = kwargs.pop('feature')
+        feature = kwargs.pop("feature")
 
         featureless_key = convert_to_output_format(kwargs)
         if featureless_key not in matrix_profiles:
@@ -2402,8 +2483,8 @@ def query_similarity_count(x, param):
     for i, kwargs in enumerate(param):
         key = convert_to_output_format(kwargs)
         normalize = kwargs.get("normalize", True)
-        threshold = kwargs.get('threshold', 0.0)
-        Q = kwargs.get('query', None)
+        threshold = kwargs.get("threshold", 0.0)
+        Q = kwargs.get("query", None)
         Q = np.asarray(Q).astype(float)
         count = np.nan
         if Q is not None and Q.size >= 3:

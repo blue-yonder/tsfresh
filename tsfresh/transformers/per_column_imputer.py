@@ -2,10 +2,14 @@
 # This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
+import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.exceptions import NotFittedError
-from tsfresh.utilities.dataframe_functions import get_range_values_per_column, impute_dataframe_range
-import pandas as pd
+
+from tsfresh.utilities.dataframe_functions import (
+    get_range_values_per_column,
+    impute_dataframe_range,
+)
 
 
 class PerColumnImputer(BaseEstimator, TransformerMixin):
@@ -26,7 +30,12 @@ class PerColumnImputer(BaseEstimator, TransformerMixin):
     the column-wise computed min, max and median values.
     """
 
-    def __init__(self, col_to_NINF_repl_preset=None, col_to_PINF_repl_preset=None, col_to_NAN_repl_preset=None):
+    def __init__(
+        self,
+        col_to_NINF_repl_preset=None,
+        col_to_PINF_repl_preset=None,
+        col_to_NAN_repl_preset=None,
+    ):
         """
         Create a new PerColumnImputer instance, optionally with dictionaries containing replacements for
         ``NaNs`` and ``infs``.
@@ -65,22 +74,28 @@ class PerColumnImputer(BaseEstimator, TransformerMixin):
 
         if self.col_to_NINF_repl_preset is not None:
             if not set(X.columns) >= set(self.col_to_NINF_repl_preset.keys()):
-                raise ValueError("Preset dictionary 'col_to_NINF_repl_preset' contain more keys "
-                                 "than the column names in X")
+                raise ValueError(
+                    "Preset dictionary 'col_to_NINF_repl_preset' contain more keys "
+                    "than the column names in X"
+                )
             col_to_min.update(self.col_to_NINF_repl_preset)
         self._col_to_NINF_repl = col_to_min
 
         if self.col_to_PINF_repl_preset is not None:
             if not set(X.columns) >= set(self.col_to_PINF_repl_preset.keys()):
-                raise ValueError("Preset dictionary 'col_to_PINF_repl_preset' contain more keys "
-                                 "than the column names in X")
+                raise ValueError(
+                    "Preset dictionary 'col_to_PINF_repl_preset' contain more keys "
+                    "than the column names in X"
+                )
             col_to_max.update(self.col_to_PINF_repl_preset)
         self._col_to_PINF_repl = col_to_max
 
         if self.col_to_NAN_repl_preset is not None:
             if not set(X.columns) >= set(self.col_to_NAN_repl_preset.keys()):
-                raise ValueError("Preset dictionary 'col_to_NAN_repl_preset' contain more keys "
-                                 "than the column names in X")
+                raise ValueError(
+                    "Preset dictionary 'col_to_NAN_repl_preset' contain more keys "
+                    "than the column names in X"
+                )
             col_to_median.update(self.col_to_NAN_repl_preset)
         self._col_to_NAN_repl = col_to_median
 
@@ -103,9 +118,15 @@ class PerColumnImputer(BaseEstimator, TransformerMixin):
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
 
-        if self._col_to_NINF_repl is None or self._col_to_PINF_repl is None or self._col_to_NAN_repl is None:
+        if (
+            self._col_to_NINF_repl is None
+            or self._col_to_PINF_repl is None
+            or self._col_to_NAN_repl is None
+        ):
             raise NotFittedError("PerColumnImputer is not fitted")
 
-        X = impute_dataframe_range(X, self._col_to_PINF_repl, self._col_to_NINF_repl, self._col_to_NAN_repl)
+        X = impute_dataframe_range(
+            X, self._col_to_PINF_repl, self._col_to_NINF_repl, self._col_to_NAN_repl
+        )
 
         return X

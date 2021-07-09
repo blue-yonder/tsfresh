@@ -18,18 +18,19 @@ References
 
 """
 
-from io import BytesIO
-import requests
-from zipfile import ZipFile
-import pandas as pd
-import os
 import logging
+import os
 import shutil
+from io import BytesIO
+from zipfile import ZipFile
+
+import pandas as pd
+import requests
 
 _logger = logging.getLogger(__name__)
 
 module_path = os.path.dirname(__file__)
-data_file_name = os.path.join(module_path, 'data', 'UCI HAR Dataset')
+data_file_name = os.path.join(module_path, "data", "UCI HAR Dataset")
 
 
 def download_har_dataset(folder_name=data_file_name):
@@ -43,14 +44,16 @@ def download_har_dataset(folder_name=data_file_name):
     >>> har_dataset.download_har_dataset()
     """
 
-    zipurl = 'https://github.com/MaxBenChrist/human-activity-dataset/blob/master/UCI%20HAR%20Dataset.zip?raw=True'
+    zipurl = "https://github.com/MaxBenChrist/human-activity-dataset/blob/master/UCI%20HAR%20Dataset.zip?raw=True"
 
     if not os.access(module_path, os.W_OK):
-        raise RuntimeError("You don't have the necessary permissions to download the Human Activity Dataset "
-                           "Set into the module path. Consider installing the module in a virtualenv you "
-                           "own or run this function with appropriate permissions.")
+        raise RuntimeError(
+            "You don't have the necessary permissions to download the Human Activity Dataset "
+            "Set into the module path. Consider installing the module in a virtualenv you "
+            "own or run this function with appropriate permissions."
+        )
 
-    if os.path.exists(os.path.join(folder_name, 'UCI HAR Dataset')):
+    if os.path.exists(os.path.join(folder_name, "UCI HAR Dataset")):
         _logger.warning("You have already downloaded the Human Activity Data Set.")
         return
 
@@ -58,27 +61,42 @@ def download_har_dataset(folder_name=data_file_name):
 
     r = requests.get(zipurl, stream=True)
     if r.status_code != 200:
-        raise RuntimeError("Could not download the Human Activity Data Set from GitHub."
-                           "HTTP status code: {}".format(r.status_code))
+        raise RuntimeError(
+            "Could not download the Human Activity Data Set from GitHub."
+            "HTTP status code: {}".format(r.status_code)
+        )
 
     with ZipFile(BytesIO(r.content)) as zfile:
         zfile.extractall(path=folder_name)
 
 
 def load_har_dataset(folder_name=data_file_name):
-    data_file_name_dataset = os.path.join(folder_name, 'UCI HAR Dataset', 'train', 'Inertial Signals',
-                                          'body_acc_x_train.txt')
+    data_file_name_dataset = os.path.join(
+        folder_name,
+        "UCI HAR Dataset",
+        "train",
+        "Inertial Signals",
+        "body_acc_x_train.txt",
+    )
     try:
         return pd.read_csv(data_file_name_dataset, delim_whitespace=True, header=None)
     except OSError:
-        raise OSError('File {} was not found. Have you downloaded the dataset with download_har_dataset() '
-                      'before?'.format(data_file_name_dataset))
+        raise OSError(
+            "File {} was not found. Have you downloaded the dataset with download_har_dataset() "
+            "before?".format(data_file_name_dataset)
+        )
 
 
 def load_har_classes(folder_name=data_file_name):
-    data_file_name_classes = os.path.join(folder_name, 'UCI HAR Dataset', 'train', 'y_train.txt')
+    data_file_name_classes = os.path.join(
+        folder_name, "UCI HAR Dataset", "train", "y_train.txt"
+    )
     try:
-        return pd.read_csv(data_file_name_classes, delim_whitespace=True, header=None, squeeze=True)
+        return pd.read_csv(
+            data_file_name_classes, delim_whitespace=True, header=None, squeeze=True
+        )
     except OSError:
-        raise OSError('File {} was not found. Have you downloaded the dataset with download_har_dataset() '
-                      'before?'.format(data_file_name_classes))
+        raise OSError(
+            "File {} was not found. Have you downloaded the dataset with download_har_dataset() "
+            "before?".format(data_file_name_classes)
+        )

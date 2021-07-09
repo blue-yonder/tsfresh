@@ -203,5 +203,3 @@ If you want to user another framework than Dask, you will have to write your own
 To construct your custom Distributor, you will have to define an object that inherits from the abstract base class
 :class:`tsfresh.utilities.distribution.DistributorBaseClass`.
 The :mod:`tsfresh.utilities.distribution` module contains more information about what you will need to implement.
-
-

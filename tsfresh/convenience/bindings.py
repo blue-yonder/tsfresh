@@ -1,9 +1,9 @@
 from functools import partial
 
+import pandas as pd
+
 from tsfresh.feature_extraction.extraction import _do_extraction_on_chunk
 from tsfresh.feature_extraction.settings import ComprehensiveFCParameters
-
-import pandas as pd
 
 
 def _feature_extraction_on_chunk_helper(
@@ -15,7 +15,7 @@ def _feature_extraction_on_chunk_helper(
     default_fc_parameters,
     kind_to_fc_parameters,
     show_warnings= True
-    ):
+):
     """
     Helper function wrapped around _do_extraction_on_chunk to use the correct format
     of the "chunk" and output a pandas dataframe.
@@ -42,7 +42,6 @@ def _feature_extraction_on_chunk_helper(
         kind_to_fc_parameters=kind_to_fc_parameters,
         show_warnings=show_warnings
     )
-                                       
     features = pd.DataFrame(features, columns=[column_id, "variable", "value"])
     features["value"] = features["value"].astype("double")
 
@@ -50,16 +49,16 @@ def _feature_extraction_on_chunk_helper(
 
 
 def dask_feature_extraction_on_chunk(
-        df,
-        column_id,
-        column_kind,
-        column_value,
-        column_sort=None,
-        default_fc_parameters=None,
-        kind_to_fc_parameters=None,
-        taste_of_pandas = False,
-        show_warnings=True
-    ):
+    df,
+    column_id,
+    column_kind,
+    column_value,
+    column_sort=None,
+    default_fc_parameters=None,
+    kind_to_fc_parameters=None,
+    taste_of_pandas_df = False,
+    show_warnings=True
+):
     """
     Extract features on a grouped dask dataframe given the column names and the extraction settings.
     This wrapper function should only be used if you have a dask dataframe as input.
@@ -154,16 +153,19 @@ def dask_feature_extraction_on_chunk(
         kind_to_fc_parameters=kind_to_fc_parameters,
         show_warnings=show_warnings
     )
-    
-    return df.apply(
-        feature_extraction,
-        meta=taste_of_pandas.apply(_feature_extraction_on_chunk_helper)
-    )
+    return df.apply(feature_extraction, meta=taste_of_pandas_df.apply(feature_extraction))
 
 
-def spark_feature_extraction_on_chunk(df, column_id, column_kind,
-                                      column_value, column_sort=None,
-                                      default_fc_parameters=None, kind_to_fc_parameters=None):
+def spark_feature_extraction_on_chunk(
+    df,
+    column_id,
+    column_kind,
+    column_value,
+    column_sort=None,
+    default_fc_parameters=None,
+    kind_to_fc_parameters=None
+):
+
     """
     Extract features on a grouped spark dataframe given the column names and the extraction settings.
     This wrapper function should only be used if you have a spark dataframe as input.
@@ -237,16 +239,23 @@ def spark_feature_extraction_on_chunk(df, column_id, column_kind,
     :rtype: pyspark.sql.DataFrame[id: bigint, variable: string, value: double]
 
     """
-    from pyspark.sql.functions import pandas_udf, PandasUDFType
+    from pyspark.sql.functions import PandasUDFType, pandas_udf
 
-    feature_extraction = partial(_feature_extraction_on_chunk_helper,
-                                 column_id=column_id, column_kind=column_kind,
-                                 column_sort=column_sort, column_value=column_value,
-                                 default_fc_parameters=default_fc_parameters,
-                                 kind_to_fc_parameters=kind_to_fc_parameters)
+    feature_extraction = partial(
+        _feature_extraction_on_chunk_helper,
+        column_id=column_id,
+        column_kind=column_kind,
+        column_sort=column_sort,
+        column_value=column_value,
+        default_fc_parameters=default_fc_parameters,
+        kind_to_fc_parameters=kind_to_fc_parameters,
+    )
 
-    type_string = "{column_id} long, variable string, value double".format(column_id=column_id)
-    feature_extraction_udf = pandas_udf(type_string,
-                                        PandasUDFType.GROUPED_MAP)(feature_extraction)
+    type_string = "{column_id} long, variable string, value double".format(
+        column_id=column_id
+    )
+    feature_extraction_udf = pandas_udf(type_string, PandasUDFType.GROUPED_MAP)(
+        feature_extraction
+    )
 
     return df.apply(feature_extraction_udf)

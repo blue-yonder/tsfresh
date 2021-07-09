@@ -2,9 +2,11 @@
 # This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
+from unittest import TestCase
+
 import numpy as np
 import pandas as pd
-from unittest import TestCase
+
 from tsfresh.feature_selection.relevance import calculate_relevance_table
 
 
@@ -26,7 +28,9 @@ class FeatureSignificanceTestCase(TestCase):
         z[z == 2] = 1
 
         X["rel1"] = z
-        X["rel2"] = y * np.abs(np.random.normal(0, 1, 1000)) + np.random.normal(0, 1, 1000)
+        X["rel2"] = y * np.abs(np.random.normal(0, 1, 1000)) + np.random.normal(
+            0, 1, 1000
+        )
         X["rel3"] = y + np.random.normal(0, 0.3, 1000)
         X["rel4"] = y ** 2 + np.random.normal(0, 1, 1000)
         X["rel5"] = np.sqrt(y) + np.random.binomial(2, 0.1, 1000)
@@ -48,7 +52,7 @@ class FeatureSignificanceTestCase(TestCase):
 
         # Make sure all selected variables are relevant
         for kept_feature in feat_rej:
-            self.assertIn(kept_feature, ['rel1', 'rel2', 'rel3', 'rel4', 'rel5'])
+            self.assertIn(kept_feature, ["rel1", "rel2", "rel3", "rel4", "rel5"])
 
         self.assertGreater(len(feat_rej), 0)
 
@@ -116,7 +120,7 @@ class FeatureSignificanceTestCase(TestCase):
 
         # Make sure all selected variables are relevant
         for kept_feature in feat_rej:
-            self.assertIn(kept_feature, ['rel1', 'rel2', 'rel3', 'rel4', 'rel5'])
+            self.assertIn(kept_feature, ["rel1", "rel2", "rel3", "rel4", "rel5"])
 
         self.assertGreater(len(feat_rej), 0)
 
@@ -157,7 +161,7 @@ class FeatureSignificanceTestCase(TestCase):
 
         # Make sure all selected variables are relevant
         for kept_feature in feat_rej:
-            self.assertIn(kept_feature, ['rel1', 'rel2', 'rel3', 'rel4'])
+            self.assertIn(kept_feature, ["rel1", "rel2", "rel3", "rel4"])
 
         self.assertGreater(len(feat_rej), 0)
 
@@ -203,7 +207,7 @@ class FeatureSignificanceTestCase(TestCase):
 
         # Make sure all selected variables are relevant
         for kept_feature in feat_rej:
-            self.assertIn(kept_feature, ['rel1', 'rel2', 'rel3', 'rel4'])
+            self.assertIn(kept_feature, ["rel1", "rel2", "rel3", "rel4"])
 
         self.assertGreater(len(feat_rej), 0)
 
@@ -253,7 +257,7 @@ class FeatureSignificanceTestCase(TestCase):
 
         # Make sure all selected variables are relevant
         for kept_feature in feat_rej:
-            self.assertIn(kept_feature, ['rel1', 'rel2'])
+            self.assertIn(kept_feature, ["rel1", "rel2"])
 
         self.assertGreater(len(feat_rej), 0)
 
@@ -277,7 +281,7 @@ class FeatureSignificanceTestCase(TestCase):
 
         # Make sure all selected variables are relevant
         for kept_feature in feat_rej:
-            self.assertIn(kept_feature, ['rel1', 'rel2'])
+            self.assertIn(kept_feature, ["rel1", "rel2"])
 
         self.assertGreater(len(feat_rej), 0)
 

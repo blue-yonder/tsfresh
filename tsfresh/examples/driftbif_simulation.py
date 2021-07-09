@@ -4,9 +4,10 @@
 
 # Thanks to Andreas W. Kempa-Liehr for providing this snippet
 
-import pandas as pd
-import numpy as np
 import logging
+
+import numpy as np
+import pandas as pd
 
 _logger = logging.getLogger(__name__)
 
@@ -163,8 +164,10 @@ def load_driftbif(n, length, m=2, classification=True, kappa_3=0.3, seed=False):
     # todo: add ratio of classes
 
     if m > 2:
-        logging.warning("You set the dimension parameter for the dissipative soliton to m={}, however it is only"
-                        "properly defined for m=1 or m=2.".format(m))
+        logging.warning(
+            "You set the dimension parameter for the dissipative soliton to m={}, however it is only"
+            "properly defined for m=1 or m=2.".format(m)
+        )
 
     id = np.repeat(range(n), length * m)
     dimensions = list(np.repeat(range(m), length)) * n
@@ -183,7 +186,14 @@ def load_driftbif(n, length, m=2, classification=True, kappa_3=0.3, seed=False):
         values.append(ds.simulate(length, v0=np.zeros(m)).transpose().flatten())
     time = np.stack([ds.delta_t * np.arange(length)] * n * m).flatten()
 
-    df = pd.DataFrame({'id': id, "time": time, "value": np.stack(values).flatten(), "dimension": dimensions})
+    df = pd.DataFrame(
+        {
+            "id": id,
+            "time": time,
+            "value": np.stack(values).flatten(),
+            "dimension": dimensions,
+        }
+    )
     y = pd.Series(labels)
     y.index = range(n)
 

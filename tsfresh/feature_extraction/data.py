@@ -1,8 +1,9 @@
 import itertools
-from collections import namedtuple, defaultdict
+from collections import defaultdict, namedtuple
 from typing import Iterable, Sized
 
 import pandas as pd
+
 try:
     from dask import dataframe as dd
 except ImportError:  # pragma: no cover
@@ -14,7 +15,9 @@ def _binding_helper(f, kwargs, column_sort, column_id, column_kind, column_value
         if column_sort is not None:
             x = x.sort_values(column_sort)
 
-        chunk = Timeseries(x[column_id].iloc[0], x[column_kind].iloc[0], x[column_value])
+        chunk = Timeseries(
+            x[column_id].iloc[0], x[column_kind].iloc[0], x[column_value]
+        )
         result = f(chunk, **kwargs)
 
         result = pd.DataFrame(result, columns=[column_id, "variable", "value"])
@@ -25,7 +28,7 @@ def _binding_helper(f, kwargs, column_sort, column_id, column_kind, column_value
     return wrapped_feature_extraction
 
 
-class Timeseries(namedtuple('Timeseries', ['id', 'kind', 'data'])):
+class Timeseries(namedtuple("Timeseries", ["id", "kind", "data"])):
     """
     Timeseries tuple used for feature extraction.
 
@@ -45,6 +48,7 @@ class TsData:
     Timeseries instances (which distributors can use to apply the function on).
     Other methods can be overwritten if a more efficient solution exists for the underlying data store.
     """
+
     pass
 
 
@@ -53,6 +57,7 @@ class PartitionedTsData(Iterable[Timeseries], Sized, TsData):
     Special class of TsData, which can be partitioned.
     Derived classes should implement __iter__ and __len__.
     """
+
     def __init__(self, df, column_id):
         self.df_id_type = df[column_id].dtype
 
@@ -108,10 +113,14 @@ def _check_colname(*columns):
 
     for col in columns:
         if str(col).endswith("_"):
-            raise ValueError("Dict keys are not allowed to end with '_': {}".format(col))
+            raise ValueError(
+                "Dict keys are not allowed to end with '_': {}".format(col)
+            )
 
         if "__" in str(col):
-            raise ValueError("Dict keys are not allowed to contain '__': {}".format(col))
+            raise ValueError(
+                "Dict keys are not allowed to contain '__': {}".format(col)
+            )
 
 
 def _check_nan(df, *columns):
@@ -140,7 +149,9 @@ def _get_value_columns(df, *other_columns):
     value_columns = [col for col in df.columns if col not in other_columns]
 
     if len(value_columns) == 0:
-        raise ValueError("Could not guess the value column! Please hand it to the function as an argument.")
+        raise ValueError(
+            "Could not guess the value column! Please hand it to the function as an argument."
+        )
 
     return value_columns
 
@@ -225,11 +236,15 @@ class LongTsFrameAdapter(PartitionedTsData):
             raise ValueError("A value for column_kind needs to be supplied")
 
         if column_value is None:
-            possible_value_columns = _get_value_columns(df, column_id, column_sort, column_kind)
+            possible_value_columns = _get_value_columns(
+                df, column_id, column_sort, column_kind
+            )
             if len(possible_value_columns) != 1:
-                raise ValueError("Could not guess the value column, as the number of unused columns os not equal to 1."
-                                 f"These columns where currently unused: {','.join(possible_value_columns)}"
-                                 "Please hand it to the function as an argument.")
+                raise ValueError(
+                    "Could not guess the value column, as the number of unused columns os not equal to 1."
+                    f"These columns where currently unused: {','.join(possible_value_columns)}"
+                    "Please hand it to the function as an argument."
+                )
             self.column_value = possible_value_columns[0]
         else:
             self.column_value = column_value
@@ -281,10 +296,14 @@ class TsDictAdapter(PartitionedTsData):
             for key, df in ts_dict.items():
                 _check_nan(df, column_sort)
 
-            self.grouped_dict = {key: df.sort_values([column_sort]).groupby(column_id)
-                                 for key, df in ts_dict.items()}
+            self.grouped_dict = {
+                key: df.sort_values([column_sort]).groupby(column_id)
+                for key, df in ts_dict.items()
+            }
         else:
-            self.grouped_dict = {key: df.groupby(column_id) for key, df in ts_dict.items()}
+            self.grouped_dict = {
+                key: df.groupby(column_id) for key, df in ts_dict.items()
+            }
 
         super().__init__(df, column_id)
 
@@ -298,7 +317,9 @@ class TsDictAdapter(PartitionedTsData):
 
 
 class DaskTsAdapter(TsData):
-    def __init__(self, df, column_id, column_kind=None, column_value=None, column_sort=None):
+    def __init__(
+        self, df, column_id, column_kind=None, column_value=None, column_sort=None
+    ):
         if column_id is None:
             raise ValueError("column_id must be set")
 
@@ -306,7 +327,9 @@ class DaskTsAdapter(TsData):
             raise ValueError(f"Column not found: {column_id}")
 
         # Get all columns, which are not id, kind or sort
-        possible_value_columns = _get_value_columns(df, column_id, column_sort, column_kind)
+        possible_value_columns = _get_value_columns(
+            df, column_id, column_sort, column_kind
+        )
 
         # The user has already a kind column. That means we just need to group by id (and additionally by id)
         if column_kind is not None:
@@ -318,7 +341,9 @@ class DaskTsAdapter(TsData):
             # We assume the last remaining column is the value - but there needs to be one!
             if column_value is None:
                 if len(possible_value_columns) != 1:
-                    raise ValueError("Could not guess the value column! Please hand it to the function as an argument.")
+                    raise ValueError(
+                        "Could not guess the value column! Please hand it to the function as an argument."
+                    )
                 column_value = possible_value_columns[0]
         else:
             # Ok, the user has no kind, so it is in Wide format.
@@ -342,8 +367,12 @@ class DaskTsAdapter(TsData):
             id_vars = [column_id, column_sort] if column_sort else [column_id]
 
             # Now melt and group
-            df_melted = df.melt(id_vars=id_vars, value_vars=value_vars,
-                                var_name=column_kind, value_name=column_value)
+            df_melted = df.melt(
+                id_vars=id_vars,
+                value_vars=value_vars,
+                var_name=column_kind,
+                value_name=column_value,
+            )
 
             self.df = df_melted.groupby([column_id, column_kind])
 
@@ -361,8 +390,14 @@ class DaskTsAdapter(TsData):
         After the call, turn it back into pandas dataframes
         for further processing.
         """
-        bound_function = _binding_helper(f, kwargs, self.column_sort, self.column_id,
-                                         self.column_kind, self.column_value)
+        bound_function = _binding_helper(
+            f,
+            kwargs,
+            self.column_sort,
+            self.column_id,
+            self.column_kind,
+            self.column_value,
+        )
         return self.df.apply(bound_function, meta=meta)
 
     def pivot(self, results):
@@ -376,13 +411,16 @@ class DaskTsAdapter(TsData):
         """
         results = results.reset_index(drop=True).persist()
         results = results.categorize(columns=["variable"])
-        feature_table = results.pivot_table(index=self.column_id, columns="variable",
-                                            values="value", aggfunc="sum")
+        feature_table = results.pivot_table(
+            index=self.column_id, columns="variable", values="value", aggfunc="sum"
+        )
 
         return feature_table
 
 
-def to_tsdata(df, column_id=None, column_kind=None, column_value=None, column_sort=None):
+def to_tsdata(
+    df, column_id=None, column_kind=None, column_value=None, column_sort=None
+):
     """
     Wrap supported data formats as a TsData object, i.e. an iterable of individual time series.
 
@@ -426,7 +464,9 @@ def to_tsdata(df, column_id=None, column_kind=None, column_value=None, column_so
 
     elif isinstance(df, pd.DataFrame):
         if column_kind is not None:
-            return LongTsFrameAdapter(df, column_id, column_kind, column_value, column_sort)
+            return LongTsFrameAdapter(
+                df, column_id, column_kind, column_value, column_sort
+            )
         else:
             if column_value is not None:
                 return WideTsFrameAdapter(df, column_id, column_sort, [column_value])
@@ -440,5 +480,7 @@ def to_tsdata(df, column_id=None, column_kind=None, column_value=None, column_so
         return DaskTsAdapter(df, column_id, column_kind, column_value, column_sort)
 
     else:
-        raise ValueError("df must be a DataFrame or a dict of DataFrames. "
-                         "See https://tsfresh.readthedocs.io/en/latest/text/data_formats.html")
+        raise ValueError(
+            "df must be a DataFrame or a dict of DataFrames. "
+            "See https://tsfresh.readthedocs.io/en/latest/text/data_formats.html"
+        )
