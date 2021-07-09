@@ -6,10 +6,16 @@ from tsfresh.feature_extraction.settings import ComprehensiveFCParameters
 import pandas as pd
 
 
-def _feature_extraction_on_chunk_helper(df, column_id, column_kind,
-                                        column_sort, column_value,
-                                        default_fc_parameters, kind_to_fc_parameters,
-                                        show_warnings= True):
+def _feature_extraction_on_chunk_helper(
+    df,
+    column_id,
+    column_kind,
+    column_sort,
+    column_value,
+    default_fc_parameters,
+    kind_to_fc_parameters,
+    show_warnings= True
+    ):
     """
     Helper function wrapped around _do_extraction_on_chunk to use the correct format
     of the "chunk" and output a pandas dataframe.
@@ -23,25 +29,37 @@ def _feature_extraction_on_chunk_helper(df, column_id, column_kind,
         default_fc_parameters = {}
 
     if column_sort is not None:
-        df = df[[column_sort, column_value]].set_index(column_sort)
-        data = df.sort_index(level = column_sort)
+    
+        data = df[[column_sort, column_value]].set_index(column_sort)
+        data = data.sort_index(level=column_sort)
     else:
         data = df[column_value]
 
     chunk = df[column_id].iloc[0], df[column_kind].iloc[0], data
-    features = _do_extraction_on_chunk(chunk, default_fc_parameters=default_fc_parameters,
-                                       kind_to_fc_parameters=kind_to_fc_parameters,
-                                       show_warnings=show_warnings)
+    features = _do_extraction_on_chunk(
+        chunk,
+        default_fc_parameters=default_fc_parameters,
+        kind_to_fc_parameters=kind_to_fc_parameters,
+        show_warnings=show_warnings
+    )
+                                       
     features = pd.DataFrame(features, columns=[column_id, "variable", "value"])
     features["value"] = features["value"].astype("double")
 
-    return features[[column_id, "variable", "value"]]
+    return features
 
 
-def dask_feature_extraction_on_chunk(df, column_id, column_kind,
-                                     column_value, column_sort=None,
-                                     default_fc_parameters=None, kind_to_fc_parameters=None,
-                                     show_warnings=True):
+def dask_feature_extraction_on_chunk(
+        df,
+        column_id,
+        column_kind,
+        column_value,
+        column_sort=None,
+        default_fc_parameters=None,
+        kind_to_fc_parameters=None,
+        taste_of_pandas = False,
+        show_warnings=True
+    ):
     """
     Extract features on a grouped dask dataframe given the column names and the extraction settings.
     This wrapper function should only be used if you have a dask dataframe as input.
@@ -115,19 +133,32 @@ def dask_feature_extraction_on_chunk(df, column_id, column_kind,
 
     :param column_value: The name for the column keeping the value itself.
     :type column_value: str
+    
+    :param show_warnings: Wether to show warings in tsfresh.
+    :type show_warnings: bool
+    
+    
 
     :return: A dask dataframe with the columns ``column_id``, "variable" and "value". The index is taken
             from the grouped dataframe.
     :rtype: dask.dataframe.DataFrame (id int64, variable object, value float64)
 
     """
-    feature_extraction = partial(_feature_extraction_on_chunk_helper,
-                                 column_id=column_id, column_kind=column_kind,
-                                 column_sort=column_sort, column_value=column_value,
-                                 default_fc_parameters=default_fc_parameters,
-                                 kind_to_fc_parameters=kind_to_fc_parameters,
-                                 show_warnings=show_warnings)
-    return df.apply(feature_extraction, meta=[(column_id, 'int64'), ('variable', 'object'), ('value', 'float64')])
+    feature_extraction = partial(
+        _feature_extraction_on_chunk_helper,
+        column_id=column_id,
+        column_kind=column_kind,
+        column_sort=column_sort,
+        column_value=column_value,
+        default_fc_parameters=default_fc_parameters,
+        kind_to_fc_parameters=kind_to_fc_parameters,
+        show_warnings=show_warnings
+    )
+    
+    return df.apply(
+        feature_extraction,
+        meta=taste_of_pandas.apply(_feature_extraction_on_chunk_helper)
+    )
 
 
 def spark_feature_extraction_on_chunk(df, column_id, column_kind,
