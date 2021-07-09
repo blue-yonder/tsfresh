@@ -8,3 +8,4 @@ seaborn>=0.7.1
 ipython>=5.3.0
 notebook>=4.4.1
 pandas-datareader>=0.5.0
+pre-commit

@@ -2,10 +2,9 @@
 # This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
-from tsfresh.utilities.string_manipulation import convert_to_output_format
-
-
 from unittest import TestCase
+
+from tsfresh.utilities.string_manipulation import convert_to_output_format
 
 
 class StringUtilities(TestCase):

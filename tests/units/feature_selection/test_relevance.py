@@ -2,17 +2,18 @@
 # This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
+import warnings
+
+import mock
 import numpy as np
 import pandas as pd
 import pytest
-import mock
-import warnings
 
 from tsfresh.feature_selection.relevance import (
-    infer_ml_task,
     calculate_relevance_table,
     combine_relevance_tables,
     get_feature_type,
+    infer_ml_task,
 )
 
 

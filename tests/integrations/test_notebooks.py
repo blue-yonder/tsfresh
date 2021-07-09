@@ -5,10 +5,10 @@
 import os
 import subprocess
 import tempfile
-import nbformat
-
-import pytest
 from unittest import TestCase
+
+import nbformat
+import pytest
 
 default_timeout = 900
 

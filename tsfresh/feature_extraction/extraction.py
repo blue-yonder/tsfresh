@@ -17,10 +17,10 @@ from tsfresh.feature_extraction.data import to_tsdata
 from tsfresh.feature_extraction.settings import ComprehensiveFCParameters
 from tsfresh.utilities import profiling
 from tsfresh.utilities.distribution import (
+    ApplyDistributor,
+    DistributorBaseClass,
     MapDistributor,
     MultiprocessingDistributor,
-    DistributorBaseClass,
-    ApplyDistributor,
 )
 from tsfresh.utilities.string_manipulation import convert_to_output_format
 

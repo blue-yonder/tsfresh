@@ -1,7 +1,7 @@
 # Testcase for benchmarking tsfresh feature extraction and selection
-import pytest
-import pandas as pd
 import numpy as np
+import pandas as pd
+import pytest
 
 from tsfresh import extract_features, extract_relevant_features
 from tsfresh.feature_extraction.settings import (

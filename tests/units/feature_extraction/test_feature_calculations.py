@@ -2,21 +2,22 @@
 # This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
+import math
+import warnings
 from random import shuffle
 from unittest import TestCase
-import warnings
+
 from matrixprofile.exceptions import NoSolutionPossible
 
-from tsfresh.feature_extraction.feature_calculators import *
-from tsfresh.feature_extraction.feature_calculators import _roll
-from tsfresh.feature_extraction.feature_calculators import _get_length_sequences_where
-from tsfresh.feature_extraction.feature_calculators import (
-    _estimate_friedrich_coefficients,
-)
-from tsfresh.feature_extraction.feature_calculators import _aggregate_on_chunks
-from tsfresh.feature_extraction.feature_calculators import _into_subchunks
 from tsfresh.examples.driftbif_simulation import velocity
-import math
+from tsfresh.feature_extraction.feature_calculators import *
+from tsfresh.feature_extraction.feature_calculators import (
+    _aggregate_on_chunks,
+    _estimate_friedrich_coefficients,
+    _get_length_sequences_where,
+    _into_subchunks,
+    _roll,
+)
 
 
 class FeatureCalculationTestCase(TestCase):
@@ -588,8 +589,7 @@ class FeatureCalculationTestCase(TestCase):
 
     def test_variation_coefficient(self):
         self.assertIsNanOnAllArrayTypes(
-            variation_coefficient,
-            [1, 1, -1, -1],
+            variation_coefficient, [1, 1, -1, -1],
         )
         self.assertAlmostEqualOnAllArrayTypes(
             variation_coefficient, [1, 2, -3, -1], -7.681145747868608

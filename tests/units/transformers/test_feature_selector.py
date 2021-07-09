@@ -4,9 +4,9 @@
 
 from builtins import range
 from unittest import TestCase
-import pandas as pd
 
 import numpy as np
+import pandas as pd
 
 from tsfresh.transformers.feature_selector import FeatureSelector
 

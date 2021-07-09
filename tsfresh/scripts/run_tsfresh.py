@@ -20,11 +20,13 @@ There are a few limitations though
 
 """
 
-import pandas as pd
-import sys
-from tsfresh import extract_features
 import argparse
 import os
+import sys
+
+import pandas as pd
+
+from tsfresh import extract_features
 
 
 def _preprocess(df):

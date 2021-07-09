@@ -2,9 +2,9 @@
 # This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
-from unittest import TestCase
-from contextlib import contextmanager
 import warnings
+from contextlib import contextmanager
+from unittest import TestCase
 
 import numpy as np
 import pandas as pd

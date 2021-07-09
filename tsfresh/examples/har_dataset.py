@@ -18,13 +18,14 @@ References
 
 """
 
-from io import BytesIO
-import requests
-from zipfile import ZipFile
-import pandas as pd
-import os
 import logging
+import os
 import shutil
+from io import BytesIO
+from zipfile import ZipFile
+
+import pandas as pd
+import requests
 
 _logger = logging.getLogger(__name__)
 

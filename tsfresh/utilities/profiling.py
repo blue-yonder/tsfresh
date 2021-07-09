@@ -6,10 +6,9 @@ Contains methods to start and stop the profiler that checks the runtime of the d
 """
 
 import cProfile
-import pstats
 import io
 import logging
-
+import pstats
 
 _logger = logging.getLogger(__name__)
 

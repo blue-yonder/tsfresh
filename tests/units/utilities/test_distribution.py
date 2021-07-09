@@ -2,19 +2,20 @@
 # This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
-from unittest import TestCase, skipIf
 import sys
+from unittest import TestCase, skipIf
+
 import numpy as np
 import pandas as pd
-from distributed import LocalCluster, Client
+from distributed import Client, LocalCluster
 
+from tests.fixtures import DataTestCase
 from tsfresh import extract_features
 from tsfresh.utilities.distribution import (
-    MultiprocessingDistributor,
-    LocalDaskDistributor,
     ClusterDaskDistributor,
+    LocalDaskDistributor,
+    MultiprocessingDistributor,
 )
-from tests.fixtures import DataTestCase
 
 
 class MultiprocessingDistributorTestCase(TestCase):

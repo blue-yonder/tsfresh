@@ -5,17 +5,18 @@
 # Do these calculations in a controlled environment
 # (e.g. a cloud provider VM)
 # You will need to have b2luigi installed.
+import json
+from time import time
+
+import b2luigi as luigi
+import numpy as np
+import pandas as pd
+
 from tsfresh.feature_extraction import (
     ComprehensiveFCParameters,
     MinimalFCParameters,
     extract_features,
 )
-
-import pandas as pd
-import numpy as np
-from time import time
-import b2luigi as luigi
-import json
 
 
 class DataCreationTask(luigi.Task):

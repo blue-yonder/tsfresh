@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 # This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
-import pytest
 import numpy as np
 import pandas as pd
+import pytest
 
 from tsfresh.defaults import TEST_FOR_BINARY_TARGET_REAL_FEATURE
 from tsfresh.feature_selection.significance_tests import (
     target_binary_feature_binary_test,
     target_binary_feature_real_test,
-    target_real_feature_real_test,
     target_real_feature_binary_test,
+    target_real_feature_real_test,
 )
 
 

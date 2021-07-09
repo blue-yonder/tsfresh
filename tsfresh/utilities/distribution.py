@@ -13,8 +13,8 @@ import math
 import warnings
 from collections.abc import Generator, Iterable
 from functools import partial
+from itertools import islice, repeat, takewhile
 from multiprocessing import Pool
-from itertools import takewhile, islice, repeat
 
 from tqdm import tqdm
 
@@ -329,8 +329,9 @@ class LocalDaskDistributor(IterableDistributorBaseClass):
         :type n_workers: int
         """
 
-        from distributed import LocalCluster, Client
         import tempfile
+
+        from distributed import Client, LocalCluster
 
         # attribute .local_dir_ is the path where the local dask workers store temporary files
         self.local_dir_ = tempfile.mkdtemp()

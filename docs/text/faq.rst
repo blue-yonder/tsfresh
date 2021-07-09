@@ -42,7 +42,7 @@ FAQ
 
     5. **Does tsfresh support irregularly spaced time series?**
 
-	Yes, but be careful. As its name suggests, the ``column_sort`` (i.e., timestamp) parameter is only used to sort observations. 
-	Beyond sorting, tsfresh does not use the timestamp in calculations. 
-	While many features do not need a timestamp (or only need it for ordering), others will assume that observations are evenly spaced in time (e.g., one second between each observation). 
+	Yes, but be careful. As its name suggests, the ``column_sort`` (i.e., timestamp) parameter is only used to sort observations.
+	Beyond sorting, tsfresh does not use the timestamp in calculations.
+	While many features do not need a timestamp (or only need it for ordering), others will assume that observations are evenly spaced in time (e.g., one second between each observation).
 	Since tsfresh ignores spacing, care should be taken when selecting features to use with a highly irregular series.

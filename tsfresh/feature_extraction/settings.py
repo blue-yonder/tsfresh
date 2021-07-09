@@ -5,14 +5,13 @@
 This file contains methods/objects for controlling which features will be extracted when calling extract_features.
 For the naming of the features, see :ref:`feature-naming-label`.
 """
+from builtins import range
 from collections import UserDict
 from inspect import getfullargspec
-
-import pandas as pd
-from builtins import range
+from itertools import product
 
 import cloudpickle
-from itertools import product
+import pandas as pd
 
 from tsfresh.feature_extraction import feature_calculators
 from tsfresh.utilities.string_manipulation import get_config_from_string

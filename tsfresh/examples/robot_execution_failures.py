@@ -21,11 +21,12 @@ References
 
 """
 
-from builtins import map
+import logging
 import os
+from builtins import map
+
 import pandas as pd
 import requests
-import logging
 
 _logger = logging.getLogger(__name__)
 

@@ -1,10 +1,10 @@
 from unittest import TestCase
 
+import pandas as pd
+from dask import dataframe as dd
+
 from tsfresh.convenience.bindings import dask_feature_extraction_on_chunk
 from tsfresh.feature_extraction.settings import MinimalFCParameters
-
-from dask import dataframe as dd
-import pandas as pd
 
 
 class DaskBindingsTestCase(TestCase):

@@ -1,5 +1,5 @@
 import itertools
-from collections import namedtuple, defaultdict
+from collections import defaultdict, namedtuple
 from typing import Iterable, Sized
 
 import pandas as pd

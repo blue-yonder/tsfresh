@@ -2,13 +2,14 @@
 # This file as well as the whole tsfresh package are licenced under the MIT licence (see the LICENCE.txt)
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
+import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.exceptions import NotFittedError
+
 from tsfresh.utilities.dataframe_functions import (
     get_range_values_per_column,
     impute_dataframe_range,
 )
-import pandas as pd
 
 
 class PerColumnImputer(BaseEstimator, TransformerMixin):
