@@ -343,7 +343,10 @@ def _roll_out_time_series(
         else:
             timeshift_value = timeshift - 1
         # and now create new ones ids out of the old ones
-        df_temp["id"] = df_temp[column_id].apply(lambda row: (row, timeshift_value))
+        if isinstance(column_id, list):
+            df_temp["id"] = df_temp[column_id].apply(tuple, axis=1).apply(lambda row: row + (timeshift_value,))
+        else:
+            df_temp["id"] = df_temp[column_id].apply(lambda row: (row, timeshift_value))
 
         return df_temp
 
@@ -482,7 +485,14 @@ def roll_time_series(
             "Your time series container has zero or one rows!. Can not perform rolling."
         )
 
-    if column_id is not None:
+    if isinstance(column_id, list):
+        if not all(item in df.columns for item in column_id):
+            raise AttributeError(
+                "The given columns for the id are not present in the data."
+            )
+        if len(column_id) == 1:
+            column_id = column_id[0]
+    elif isinstance(column_id, str):
         if column_id not in df:
             raise AttributeError(
                 "The given column for the id is not present in the data."
@@ -491,13 +501,15 @@ def roll_time_series(
         raise ValueError(
             "You have to set the column_id which contains the ids of the different time series"
         )
-
-    if column_kind is not None:
-        grouper = [column_kind, column_id]
-    else:
-        grouper = [
-            column_id,
-        ]
+    grouper = []
+    if column_kind is not None and isinstance(column_id, str):
+        grouper.extend([column_kind, column_id])
+    elif column_kind is not None and isinstance(column_id, list):
+        grouper.append(column_kind).extend(column_id)
+    elif isinstance(column_id, str):
+        grouper.append(column_id)
+    elif isinstance(column_id, list):
+        grouper.extend(column_id)
 
     if column_sort is not None:
         # Require no Nans in column
@@ -512,7 +524,7 @@ def roll_time_series(
 
             differences = df.groupby(grouper)[column_sort].apply(
                 lambda x: x.values[:-1] - x.values[1:]
-            )
+            ).dropna()
             # Write all of them into one big list
             differences = sum(map(list, differences), [])
             # Test if all differences are the same
@@ -575,7 +587,9 @@ def roll_time_series(
     distributor.close()
 
     df_shift = pd.concat(shifted_chunks, ignore_index=True)
-
+    # drop inital column_id if it isn't overwritten already as it is not needed for feature calculation and is included in the id
+    if column_id != "id":
+        df_shift = df_shift.drop(column_id, axis=1)
     return df_shift.sort_values(by=["id", column_sort or "sort"])
 
 
