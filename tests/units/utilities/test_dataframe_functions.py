@@ -145,6 +145,85 @@ class RollingTestCase(TestCase):
             n_jobs=0,
         )
 
+    def test_multiple_index(self):
+        xy_class = pd.DataFrame(
+            {"a": [1, 2], "b": [5, 6], "time": range(2),  "first_id": ["x", "y"]})
+
+        yx_class = pd.DataFrame(
+            {"a": [3, 4], "b": [7, 8], "time": range(2), "first_id": ["y", "x"]})
+
+        df_intermediate = pd.concat([xy_class, yx_class])
+        a_class = df_intermediate.copy()
+        a_class["second_id"] = "a"
+        b_class = df_intermediate
+        b_class["second_id"] = "b"
+        df_full = pd.concat([a_class, b_class], ignore_index=True)
+
+        """ df_full is
+            a	b	 time  first_id	second_id
+        0	1	5  	    0	    x	    a
+        1	2	6	    1   	y	    a
+        2	3	7	    0   	y	    a
+        3	4	8	    1   	x	    a
+        4	1	5	    0   	x	    b
+        5	2	6	    1   	y	    b
+        6	3	7	    0   	y	    b
+        7	4	8	    1   	x	    b
+        """
+        correct_indices = [
+            ('x', 'a', 0),
+            ('x', 'a', 1),
+            ('x', 'a', 1),
+            ('x', 'b', 0),
+            ('x', 'b', 1),
+            ('x', 'b', 1),
+            ('y', 'a', 0),
+            ('y', 'a', 1),
+            ('y', 'a', 1),
+            ('y', 'b', 0),
+            ('y', 'b', 1),
+            ('y', 'b', 1)
+        ]
+        correct_values_a = [
+            1.0,
+            1.0,
+            4.0,
+            1.0,
+            1.0,
+            4.0,
+            3.0,
+            3.0,
+            2.0,
+            3.0,
+            3.0,
+            2.0
+        ]
+        correct_values_b = [
+            5.0,
+            5.0,
+            8.0,
+            5.0,
+            5.0,
+            8.0,
+            7.0,
+            7.0,
+            6.0,
+            7.0,
+            7.0,
+            6.0,
+        ]
+        df = dataframe_functions.roll_time_series(
+            df_full,
+            column_id=["first_id", "second_id"],
+            column_sort="time",
+            column_kind=None,
+            rolling_direction=1,
+            n_jobs=0,
+        )
+        self.assertListEqual(list(df["id"]), correct_indices)
+        self.assertListEqual(list(df["a"].values), correct_values_a)
+        self.assertListEqual(list(df["b"].values), correct_values_b)
+
     def test_positive_rolling(self):
         first_class = pd.DataFrame(
             {"a": [1, 2, 3, 4], "b": [5, 6, 7, 8], "time": range(4)}
