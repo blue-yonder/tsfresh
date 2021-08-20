@@ -147,10 +147,12 @@ class RollingTestCase(TestCase):
 
     def test_multiple_index(self):
         xy_class = pd.DataFrame(
-            {"a": [1, 2], "b": [5, 6], "time": range(2),  "first_id": ["x", "y"]})
+            {"a": [1, 2], "b": [5, 6], "time": range(2), "first_id": ["x", "y"]}
+        )
 
         yx_class = pd.DataFrame(
-            {"a": [3, 4], "b": [7, 8], "time": range(2), "first_id": ["y", "x"]})
+            {"a": [3, 4], "b": [7, 8], "time": range(2), "first_id": ["y", "x"]}
+        )
 
         df_intermediate = pd.concat([xy_class, yx_class])
         a_class = df_intermediate.copy()
@@ -171,33 +173,20 @@ class RollingTestCase(TestCase):
         7	4	8	    1   	x	    b
         """
         correct_indices = [
-            ('x', 'a', 0),
-            ('x', 'a', 1),
-            ('x', 'a', 1),
-            ('x', 'b', 0),
-            ('x', 'b', 1),
-            ('x', 'b', 1),
-            ('y', 'a', 0),
-            ('y', 'a', 1),
-            ('y', 'a', 1),
-            ('y', 'b', 0),
-            ('y', 'b', 1),
-            ('y', 'b', 1)
+            ("x", "a", 0),
+            ("x", "a", 1),
+            ("x", "a", 1),
+            ("x", "b", 0),
+            ("x", "b", 1),
+            ("x", "b", 1),
+            ("y", "a", 0),
+            ("y", "a", 1),
+            ("y", "a", 1),
+            ("y", "b", 0),
+            ("y", "b", 1),
+            ("y", "b", 1),
         ]
-        correct_values_a = [
-            1.0,
-            1.0,
-            4.0,
-            1.0,
-            1.0,
-            4.0,
-            3.0,
-            3.0,
-            2.0,
-            3.0,
-            3.0,
-            2.0
-        ]
+        correct_values_a = [1.0, 1.0, 4.0, 1.0, 1.0, 4.0, 3.0, 3.0, 2.0, 3.0, 3.0, 2.0]
         correct_values_b = [
             5.0,
             5.0,

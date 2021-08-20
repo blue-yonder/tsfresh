@@ -344,7 +344,11 @@ def _roll_out_time_series(
             timeshift_value = timeshift - 1
         # and now create new ones ids out of the old ones
         if isinstance(column_id, list):
-            df_temp["id"] = df_temp[column_id].apply(tuple, axis=1).apply(lambda row: row + (timeshift_value,))
+            df_temp["id"] = (
+                df_temp[column_id]
+                .apply(tuple, axis=1)
+                .apply(lambda row: row + (timeshift_value,))
+            )
         else:
             df_temp["id"] = df_temp[column_id].apply(lambda row: (row, timeshift_value))
 
@@ -522,9 +526,11 @@ def roll_time_series(
             # if rolling is enabled, the data should be uniformly sampled in this column
             # Build the differences between consecutive time sort values
 
-            differences = df.groupby(grouper)[column_sort].apply(
-                lambda x: x.values[:-1] - x.values[1:]
-            ).dropna()
+            differences = (
+                df.groupby(grouper)[column_sort]
+                .apply(lambda x: x.values[:-1] - x.values[1:])
+                .dropna()
+            )
             # Write all of them into one big list
             differences = sum(map(list, differences), [])
             # Test if all differences are the same
