@@ -343,14 +343,7 @@ def _roll_out_time_series(
         else:
             timeshift_value = timeshift - 1
         # and now create new ones ids out of the old ones
-        if isinstance(column_id, list):
-            df_temp["id"] = (
-                df_temp[column_id]
-                .apply(tuple, axis=1)
-                .apply(lambda row: row + (timeshift_value,))
-            )
-        else:
-            df_temp["id"] = df_temp[column_id].apply(lambda row: (row, timeshift_value))
+        df_temp["id"] = df_temp[column_id].apply(lambda row: (row, timeshift_value))
 
         return df_temp
 
@@ -401,8 +394,8 @@ def roll_time_series(
     :type df_or_dict: pandas.DataFrame or dict
 
     :param column_id: it must be present in the pandas DataFrame or in all DataFrames in the dictionary.
-        It is not allowed to have NaN values in this column. Multiple id column names which define together one time series can be passed as well.
-    :type column_id: basestring or list
+        It is not allowed to have NaN values in this column.
+    :type column_id: basestring
 
     :param column_sort: if not None, sort the rows by this column. It is not allowed to
         have NaN values in this column. If not given, will be filled by an increasing number,
@@ -489,14 +482,7 @@ def roll_time_series(
             "Your time series container has zero or one rows!. Can not perform rolling."
         )
 
-    if isinstance(column_id, list):
-        if not all(item in df.columns for item in column_id):
-            raise AttributeError(
-                "The given columns for the id are not present in the data."
-            )
-        if len(column_id) == 1:
-            column_id = column_id[0]
-    elif isinstance(column_id, str):
+    if column_id is not None:
         if column_id not in df:
             raise AttributeError(
                 "The given column for the id is not present in the data."
@@ -505,15 +491,13 @@ def roll_time_series(
         raise ValueError(
             "You have to set the column_id which contains the ids of the different time series"
         )
-    grouper = []
-    if column_kind is not None and isinstance(column_id, str):
-        grouper.extend([column_kind, column_id])
-    elif column_kind is not None and isinstance(column_id, list):
-        grouper.append(column_kind).extend(column_id)
-    elif isinstance(column_id, str):
-        grouper.append(column_id)
-    elif isinstance(column_id, list):
-        grouper.extend(column_id)
+
+    if column_kind is not None:
+        grouper = [column_kind, column_id]
+    else:
+        grouper = [
+            column_id,
+        ]
 
     if column_sort is not None:
         # Require no Nans in column
@@ -544,8 +528,8 @@ def roll_time_series(
     rolling_amount = np.abs(rolling_direction)
     rolling_direction = np.sign(rolling_direction)
 
-    grouped_data = df.groupby(grouper)
-    prediction_steps = grouped_data.count().max().max()
+    grouped_data = df.groupby(grouper, as_index=False)
+    prediction_steps = grouped_data.size().max()
 
     max_timeshift = max_timeshift or prediction_steps
 

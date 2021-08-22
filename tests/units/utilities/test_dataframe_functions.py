@@ -160,31 +160,35 @@ class RollingTestCase(TestCase):
         b_class = df_intermediate
         b_class["second_id"] = "b"
         df_full = pd.concat([a_class, b_class], ignore_index=True)
+        df_full["full_id"] = df_full.apply(
+            lambda row: (row["first_id"], row["second_id"]), axis=1
+        )
+        df_full = df_full.drop(columns=["first_id", "second_id"])
 
         """ df_full is
-            a	b	 time  first_id	second_id
-        0	1	5  	    0	    x	    a
-        1	2	6	    1   	y	    a
-        2	3	7	    0   	y	    a
-        3	4	8	    1   	x	    a
-        4	1	5	    0   	x	    b
-        5	2	6	    1   	y	    b
-        6	3	7	    0   	y	    b
-        7	4	8	    1   	x	    b
+            a	b	 time     full_id
+        0	1	5  	    0	    x, a
+        1	2	6	    1   	y, a
+        2	3	7	    0   	y, a
+        3	4	8	    1   	x, a
+        4	1	5	    0   	x, b
+        5	2	6	    1   	y, b
+        6	3	7	    0   	y, b
+        7	4	8	    1   	x, b
         """
         correct_indices = [
-            ("x", "a", 0),
-            ("x", "a", 1),
-            ("x", "a", 1),
-            ("x", "b", 0),
-            ("x", "b", 1),
-            ("x", "b", 1),
-            ("y", "a", 0),
-            ("y", "a", 1),
-            ("y", "a", 1),
-            ("y", "b", 0),
-            ("y", "b", 1),
-            ("y", "b", 1),
+            (("x", "a"), 0),
+            (("x", "a"), 1),
+            (("x", "a"), 1),
+            (("x", "b"), 0),
+            (("x", "b"), 1),
+            (("x", "b"), 1),
+            (("y", "a"), 0),
+            (("y", "a"), 1),
+            (("y", "a"), 1),
+            (("y", "b"), 0),
+            (("y", "b"), 1),
+            (("y", "b"), 1),
         ]
         correct_values_a = [1.0, 1.0, 4.0, 1.0, 1.0, 4.0, 3.0, 3.0, 2.0, 3.0, 3.0, 2.0]
         correct_values_b = [
@@ -203,7 +207,7 @@ class RollingTestCase(TestCase):
         ]
         df = dataframe_functions.roll_time_series(
             df_full,
-            column_id=["first_id", "second_id"],
+            column_id="full_id",
             column_sort="time",
             column_kind=None,
             rolling_direction=1,
