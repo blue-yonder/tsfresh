@@ -3,17 +3,17 @@
 Large Input Data
 ================
 
-If you are dealing with large time series data, you are facing multiple problems.
-The two most important ones are
+If you are working with large time series data, you are probably facing multiple problems.
+The two most important ones are:
 
 * long execution times for feature extraction
-* large memory consumptions, even beyond what a single machine can handle
+* large memory consumption, even beyond what a single machine can handle
 
-To solve only the first problem, you can parallelize the computation as described in :ref:`tsfresh-on-a-cluster-label`.
-Please note, that parallelization on your local computer is already turned on by default.
+To solve the first problem, you can parallelize the computation as described in :ref:`tsfresh-on-a-cluster-label`.
+Note, that parallelization on your local computer is already turned on by default.
 
-However, for even larger data you need to handle both problems at once.
-You have multiple possibilities here:
+However, for larger data sets you need to handle both problems at the same time.
+You have multiple options to do so, which we will discuss in the following paragraphs.
 
 Dask - the simple way
 ---------------------
@@ -24,7 +24,7 @@ Dask dataframes allow you to scale your computation beyond your local memory (vi
 and even to large clusters of machines.
 Its dataframe API is very similar to pandas dataframes and might even be a drop-in replacement.
 
-All arguments discussed in :ref:`data-formats-label` are also valid for the dask case.
+All arguments discussed in :ref:`data-formats-label` are also valid for dask dataframes.
 The input data will be transformed into the correct format for *tsfresh* using dask methods
 and the feature extraction will be added as additional computations to the computation graph.
 You can then add additional computations to the result or trigger the computation as usual with ``.compute()``.
@@ -35,7 +35,7 @@ You can then add additional computations to the result or trigger the computatio
     Especially for very large data samples, this computation can be a large
     performance bottleneck.
     We therefore recommend to turn the pivoting off, if you do not really need it
-    and work with the unpivoted data as much as possible.
+    and work with the un-pivoted data as much as possible.
 
 For example, to read in data from parquet and do the feature extraction:
 
@@ -47,7 +47,8 @@ For example, to read in data from parquet and do the feature extraction:
     df = dd.read_parquet(...)
 
     X = extract_features(df,
-                         column_id="id", column_sort="time",
+                         column_id="id",
+                         column_sort="time",
                          pivot=False)
 
     result = X.compute()
@@ -55,7 +56,7 @@ For example, to read in data from parquet and do the feature extraction:
 Dask - more control
 -------------------
 
-The feature extraction method needs to perform some data transformations, before it
+The feature extraction method needs to perform some data transformations before it
 can call the actual feature calculators.
 If you want to optimize your data flow, you might want to have more control on how
 exactly the feature calculation is added to you dask computation graph.
