@@ -1,34 +1,34 @@
 How to add a custom feature
 ===========================
 
-It may be beneficial to add a custom feature to those that are calculated by tsfresh. To do so, one has to follow four
+If you want to extract custom made features from your time series, tsfresh allows you to do so in a few
 simple steps:
 
 Step 1. Decide which type of feature you want to implement
 ----------------------------------------------------------
 
-In tsfresh we differentiate between two types of feature calculation methods
+tsfresh supports two types of feature calculation methods:
 
     *1.* simple
 
     *2.* combiner
 
-The difference lays in the number of calculated features for a singular time series.
-The feature_calculator returns either one (*1.*) or multiple features (*2.*).
-So if you want to add a singular feature stick with *1.*, the simple feature calculator class.
-If it is beneficial to calculate multiples features at the same time (to e.g. perform auxiliary calculations only once
-for all features), stick with type *2.*.
+The difference lays in the number of features calculated for a singular time series.
+The feature_calculator is simple if it returns one (*1.*) feature, and it is a combiner and returns multiple features (*2.*).
+So if you want to add a singular feature, you should select *1.*, the simple feature calculator class.
+If it is however, better to calculate multiple features at the same time (e.g., to perform auxiliary calculations only
+once for all features), then you should choose type *2.*.
 
 
 Step 2. Write the feature calculator
 ------------------------------------
 
-Depending on which type of feature you are implementing, you can use the following feature calculator skeletons:
+Depending on which type of feature calculator you are implementing, you can use the following feature calculator skeletons:
 
 1. simple features
 ~~~~~~~~~~~~~~~~~~
 
-You can write such a simple feature calculator, that returns exactly one feature, without parameter
+You can write a simple feature calculator that returns exactly one feature, without parameters as follows:
 
 .. code:: python
 
@@ -49,7 +49,7 @@ You can write such a simple feature calculator, that returns exactly one feature
         result = f(x)
         return result
 
-or with parameter
+or with parameters:
 
 .. code:: python
 
@@ -75,6 +75,8 @@ or with parameter
 
 2. combiner features
 ~~~~~~~~~~~~~~~~~~~~
+
+Alternatively, you can write a combiner feature calculator that returns multiple features as follows:
 
 .. code:: python
 
@@ -107,12 +109,12 @@ or with parameter
 Writing your own time-based feature calculators
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Writing your own time-based feature calculators is no different from usual. Only two new properties must be set using the `@set_property` decorator:
+Writing your own time-based feature calculators is no different than usual. Only two new properties must be set using the `@set_property` decorator:
 
 * Adding ``@set_property("input", "pd.Series")`` tells the function that the input of the function is a ``pd.Series`` rather than a ``numpy`` array.
-  This allows the index to be used.
+  This allows the index to be used automatically.
 * Adding ``@set_property("index_type", pd.DatetimeIndex)`` tells the function that the input is a `DatetimeIndex`,
-  allowing it to perform calculations based on time datatypes.
+  allowing it to perform calculations based on time data types.
 
 For example, if we want to write a function that calculates the time between the first and last measurement, it could look something like this:
 
@@ -137,7 +139,7 @@ during extraction.
 To do this, create a new settings object (by default, ``tsfresh`` uses the
 :class:`tsfresh.feature_extraction.settings.ComprehensiveFCParameters`) and
 add your function as a key to the dictionary.
-As a value, either use ``None`` if your function does not need parameters or a list of
+As a value, either use ``None`` if your function does not need parameters or a list with the
 parameters you want to use (as dictionaries).
 
 .. code:: python
@@ -147,13 +149,13 @@ parameters you want to use (as dictionaries).
 
 After that, make sure you pass your newly created settings in the call to ``extract_features``.
 
-Step 4. Add a pull request
---------------------------
+Step 4. Make a pull request
+---------------------------
 
-We would very happy if you contribute your implemented features to tsfresh.
+We would be very happy if you contribute your custom features to tsfresh.
 
-For this, add your feature into the ``feature_calculators.py`` file and append your
-feature (as a name) with sane default parameters to the ``name_to_param`` dictionary inside the
+To do this, add your feature into the ``feature_calculators.py`` file and append your
+feature (as a name) with safe default parameters to the ``name_to_param`` dictionary inside the
 :class:`tsfresh.feature_extraction.settings.ComprehensiveFCParameters` constructor:
 
 .. code:: python
@@ -165,13 +167,13 @@ feature (as a name) with sane default parameters to the ``name_to_param`` dictio
         "your_feature_calculator" = [{"p1": x, "p2": y, ...} for x,y in ...],
     })
 
-Please make sure, that the different feature extraction settings
+Make sure, that the different feature extraction settings
 (e.g. :class:`tsfresh.feature_extraction.settings.EfficientFCParameters`,
 :class:`tsfresh.feature_extraction.settings.MinimalFCParameters` or
 :class:`tsfresh.feature_extraction.settings.ComprehensiveFCParameters`) do include different sets of
 feature calculators to use. You can control, which feature extraction settings object will include your new
-feature calculator by giving your function attributes like "minimal" or "high_comp_cost". Please see the
+feature calculator by giving your function attributes like "minimal" or "high_comp_cost". See the
 classes in :mod:`tsfresh.feature_extraction.settings` for more information.
 
-After that, add some tests and create a pull request at our `github page <https://github.com/blue-yonder/tsfresh>`_.
-We happily accept partly implemented feature calculators, which we can finalize collaboratively.
+After that, add some tests and make a pull request to our `github repo <https://github.com/blue-yonder/tsfresh>`_.
+We happily accept partly implemented feature calculators, which we can finalize together.
