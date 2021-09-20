@@ -113,9 +113,9 @@ For extracting all features, we do:
     from tsfresh import extract_features
     extracted_features = extract_features(timeseries, column_id="id", column_sort="time")
 
-You end up with a DataFrame `extracted_features` with all more than 1200 different extracted features.
-We will now remove all ``NaN`` values (that were created by feature calculators, than can not be used on the given
-data, e.g. because it has too low statistics) and select only the relevant features next:
+You end up with the DataFrame `extracted_features` with more than 1200 different extracted features.
+We will now first, remove all ``NaN`` values (which were created by feature calculators that can not be used on the
+given data, e.g., because the statistics are too low), and then select only the relevant features:
 
 .. code-block:: python
 
@@ -139,10 +139,11 @@ Further, you can even perform the extraction, imputing and filtering at the same
                                                          column_id='id', column_sort='time')
 
 
-You can now use the features contained in the DataFrame `features_filtered` (which is equal to
+You can now use the features in the DataFrame `features_filtered` (which is equal to
 `features_filtered_direct`) in conjunction with `y` to train your classification model.
-Please see the `robot_failure_example.ipynb` Jupyter Notebook in the folder named notebook for this.
-In this notebook a RandomForestClassifier is trained on the extracted features.
+You can find an example in the Jupyter notebook
+`01 Feature Extraction and Selection.ipynb <https://github.com/blue-yonder/tsfresh/blob/main/notebooks/examples/01%20Feature%20Extraction%20and%20Selection.ipynb>`_
+were we train a RandomForestClassifier using the extracted features.
 
 References
 
