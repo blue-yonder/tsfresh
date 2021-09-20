@@ -1,10 +1,10 @@
 Introduction
 ============
 
-Why do you need such a module?
-------------------------------
+Why tsfresh?
+------------
 
-tsfresh is used to to extract characteristics from time series. Let's assume you recorded the ambient temperature around
+tsfresh is used to to extract characteristics from time series. Let's assume you recorded the room temperature around
 your computer over one day as the following time series:
 
 .. image:: ../images/introduction_ts_exa.png
@@ -14,7 +14,7 @@ your computer over one day as the following time series:
 
 (and yes, it is pretty cold!)
 
-Now you want to calculate different characteristics such as the maximal or minimal temperature, the average temperature
+Now you want to calculate different characteristics such as the maximum or minimum temperature, the average temperature
 or the number of temporary temperature peaks:
 
 .. image:: ../images/introduction_ts_exa_features.png
@@ -22,33 +22,33 @@ or the number of temporary temperature peaks:
    :alt: some characteristics of the time series
    :align: center
 
-Without tsfresh, you would have to calculate all those characteristics by hand. With tsfresh this process is automated
-and all those features can be calculated automatically.
+Without tsfresh, you would have to calculate all those characteristics manually; tsfresh automates this process
+calculating and returning all those features automatically.
 
-Further tsfresh is compatible with pythons :mod:`pandas` and :mod:`scikit-learn` APIs, two important packages for Data
-Science endeavours in python.
+In addition, tsfresh is compatible with the Python libraries :mod:`pandas` and :mod:`scikit-learn`, so you can easily
+integrate the feature extraction with your current routines.
 
-What to do with these features?
--------------------------------
+What can we do with these features?
+-----------------------------------
 
-The extracted features can be used to describe or cluster time series based on the extracted characteristics.
-Further, they can be used to build models that perform classification/regression tasks on the time series.
-Often the features give new insights into time series and their dynamics.
+The extracted features can be used to describe the time series, i.e., often these features give new insights into the
+time series and their dynamics. They can also be used to cluster time series and to train machine learning models that
+perform classification or regression tasks on time series.
 
-The tsfresh package has been used successfully in projects involving
+The tsfresh package has been successfully used in the following projects:
 
-    * the prediction of the life span of machines
-    * the prediction of the quality of steel billets during a continuous casting process [1]_
+    * prediction of machines life span
+    * prediction of steel billets quality during a continuous casting process [1]_
 
-What not to do with tsfresh?
-----------------------------
+What can't we do with tsfresh?
+------------------------------
 
-Currently, tsfresh is not suitable
+Currently, tsfresh is not suitable:
 
-    * for usage with streaming data (The streaming data mentioned here is usually used for online operations, while time series data is usually used for offline operations. Online operation and offline operation are a pair of relative concepts.)
-    * to train models on the features (we do not want to reinvent the wheel, check out the python package
-      `scikit-learn <http://scikit-learn.org/stable/>`_ for example)
-    * for usage with highly irregular time series (for many features). Timestamps are used only to order observations. Many features are interval-agnostic (e.g., number of peaks) and can be used with any series. But some features (e.g., linear trend) assume equal spacing in time, and should be used with care when this assumption is not appropriate.
+    * for streaming data (by streaming data we mean data that is usually used for online operations, while time series data is usually used for offline operations)
+    * to train models on the extracted features (we do not want to reinvent the wheel, to train machine learning models check out the Python package
+      `scikit-learn <http://scikit-learn.org/stable/>`_)
+    * for usage with highly irregular time series; tsfresh uses timestamps only to order observations, while many features are interval-agnostic (e.g., number of peaks) and can be determined for any series, some otherfeatures (e.g., linear trend) assume equal spacing in time, and should be used with care when this assumption is not met.
 
 However, some of these use cases could be implemented, if you have an application in mind, open
 an issue at `<https://github.com/blue-yonder/tsfresh/issues>`_, or feel free to contact us.
@@ -58,9 +58,9 @@ What else is out there?
 
 There is a matlab package called `hctsa <https://github.com/benfulcher/hctsa>`_ which can be used to automatically
 extract features from time series.
-It is also possible to use hctsa from within python by means of the `pyopy <https://github.com/strawlab/pyopy>`_
+It is also possible to use hctsa from within Python through the `pyopy <https://github.com/strawlab/pyopy>`_
 package.
-There also exist `featuretools <https://www.featuretools.com/>`_, `FATS <http://isadoranun.github.io/tsfeat/>`_ and `cesium <http://cesium-ml.org/>`_.
+Other available packagers are `featuretools <https://www.featuretools.com/>`_, `FATS <http://isadoranun.github.io/tsfeat/>`_ and `cesium <http://cesium-ml.org/>`_.
 
 References
 ----------
