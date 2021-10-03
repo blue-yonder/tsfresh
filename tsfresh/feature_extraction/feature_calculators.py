@@ -18,6 +18,7 @@ alphabetically ascending.
 """
 
 import functools
+import inspect
 import itertools
 import warnings
 from builtins import range
@@ -41,9 +42,21 @@ with warnings.catch_warnings():
 
     from statsmodels.tsa.ar_model import AR
 
-from statsmodels.tsa.stattools import acf, adfuller, pacf
+from statsmodels.tsa.stattools import acf as _acf, adfuller, pacf
 
 # todo: make sure '_' works in parameter names in all cases, add a warning if not
+
+
+if 'adjusted' in inspect.getfullargspec(_acf).args:
+    acf = _acf
+else:
+    # Make compatible version for statsmodels.tsa.stattools.acf
+    # when unbiased is renamed to adjusted in v0.14.0
+    @functools.wraps(_acf)
+    def acf(*args, **kwargs):
+        if 'adjusted' in kwargs:
+            kwargs['unbiased'] = kwargs.pop('adjusted')
+        return _acf(*args, **kwargs)
 
 
 def _roll(a, shift):
@@ -419,7 +432,7 @@ def agg_autocorrelation(x, param):
     if np.abs(var) < 10 ** -10 or n == 1:
         a = [0] * len(x)
     else:
-        a = acf(x, unbiased=True, fft=n > THRESHOLD_TO_USE_FFT, nlags=max_maxlag)[1:]
+        a = acf(x, adjusted=True, fft=n > THRESHOLD_TO_USE_FFT, nlags=max_maxlag)[1:]
     return [
         (
             'f_agg_"{}"__maxlag_{}'.format(config["f_agg"], config["maxlag"]),
