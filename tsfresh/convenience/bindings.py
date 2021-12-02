@@ -223,7 +223,7 @@ def spark_feature_extraction_on_chunk(
     :param column_value: The name for the column keeping the value itself.
     :type column_value: str
 
-    :return: A dask dataframe with the columns ``column_id``, "variable" and "value".
+    :return: A spark dataframe with the columns ``column_id``, "variable" and "value".
     :rtype: pyspark.sql.DataFrame[id: bigint, variable: string, value: double]
 
     """
