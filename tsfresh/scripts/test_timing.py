@@ -67,7 +67,7 @@ def plot_results():
     plt.savefig("timing.png")
 
 
-def test_timing():
+def measure_temporal_complexity():
     from tsfresh.examples.robot_execution_failures import (
         download_robot_execution_failures,
         load_robot_execution_failures,
@@ -96,5 +96,5 @@ def test_timing():
 
 
 if __name__ == "__main__":
-    test_timing()
+    measure_temporal_complexity()
     plot_results()
