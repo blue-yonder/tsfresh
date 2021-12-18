@@ -8,7 +8,7 @@ from subprocess import check_output
 import pandas as pd
 
 
-def test_with_length(length, df):
+def simulate_with_length(length, df):
     from tsfresh import extract_features
 
     start = time.time()
@@ -87,9 +87,9 @@ def measure_temporal_complexity():
     results = []
 
     for length in lengths_to_test:
-        results.append(test_with_length(length, df))
-        results.append(test_with_length(length, df))
-        results.append(test_with_length(length, df))
+        results.append(simulate_with_length(length, df))
+        results.append(simulate_with_length(length, df))
+        results.append(simulate_with_length(length, df))
 
     results = pd.DataFrame(results)
     results.to_csv("{hash}.dat".format(hash=commit_hash))
