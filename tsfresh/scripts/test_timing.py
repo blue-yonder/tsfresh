@@ -8,7 +8,7 @@ from subprocess import check_output
 import pandas as pd
 
 
-def test_with_length(length, df):
+def simulate_with_length(length, df):
     from tsfresh import extract_features
 
     start = time.time()
@@ -67,7 +67,7 @@ def plot_results():
     plt.savefig("timing.png")
 
 
-def test_timing():
+def measure_temporal_complexity():
     from tsfresh.examples.robot_execution_failures import (
         download_robot_execution_failures,
         load_robot_execution_failures,
@@ -87,14 +87,14 @@ def test_timing():
     results = []
 
     for length in lengths_to_test:
-        results.append(test_with_length(length, df))
-        results.append(test_with_length(length, df))
-        results.append(test_with_length(length, df))
+        results.append(simulate_with_length(length, df))
+        results.append(simulate_with_length(length, df))
+        results.append(simulate_with_length(length, df))
 
     results = pd.DataFrame(results)
     results.to_csv("{hash}.dat".format(hash=commit_hash))
 
 
 if __name__ == "__main__":
-    test_timing()
+    measure_temporal_complexity()
     plot_results()
