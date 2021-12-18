@@ -32,6 +32,7 @@ from numpy.linalg import LinAlgError
 from scipy.signal import cwt, find_peaks_cwt, ricker, welch
 from scipy.stats import linregress
 from statsmodels.tools.sm_exceptions import MissingDataError
+from statsmodels.tsa.ar_model import AutoReg
 
 from tsfresh.utilities.string_manipulation import convert_to_output_format
 
@@ -39,7 +40,7 @@ with warnings.catch_warnings():
     # Ignore warnings of the patsy package
     warnings.simplefilter("ignore", DeprecationWarning)
 
-    from statsmodels.tsa.ar_model import AR
+
 
 from statsmodels.tsa.stattools import acf, adfuller, pacf
 
@@ -1469,15 +1470,12 @@ def ar_coefficient(x, param):
 
         if k not in calculated_ar_params:
             try:
-                calculated_AR = AR(x_as_list)
-                calculated_ar_params[k] = calculated_AR.fit(
-                    maxlag=k, solver="mle"
-                ).params
+                calculated_AR = AutoReg(x_as_list, lags=k, trend='c')
+                calculated_ar_params[k] = calculated_AR.fit().params
             except (LinAlgError, ValueError):
                 calculated_ar_params[k] = [np.NaN] * k
 
         mod = calculated_ar_params[k]
-
         if p <= k:
             try:
                 res[column_name] = mod[p]
