@@ -54,7 +54,6 @@ class FullPipelineTestCase_robot_failures(TestCase):
         some_expected_features = {
             "F_x__abs_energy",
             "F_x__absolute_sum_of_changes",
-            "F_x__ar_coefficient__coeff_0__k_10",
             "F_x__autocorrelation__lag_1",
             "F_x__binned_entropy__max_bins_10",
             "F_x__count_above_mean",
