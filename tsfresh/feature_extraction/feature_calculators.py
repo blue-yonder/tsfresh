@@ -419,7 +419,7 @@ def agg_autocorrelation(x, param):
     if np.abs(var) < 10 ** -10 or n == 1:
         a = [0] * len(x)
     else:
-        a = acf(x, unbiased=True, fft=n > THRESHOLD_TO_USE_FFT, nlags=max_maxlag)[1:]
+        a = acf(x, adjusted=True, fft=n > THRESHOLD_TO_USE_FFT, nlags=max_maxlag)[1:]
     return [
         (
             'f_agg_"{}"__maxlag_{}'.format(config["f_agg"], config["maxlag"]),
