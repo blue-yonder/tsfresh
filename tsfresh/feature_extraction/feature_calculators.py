@@ -1472,7 +1472,7 @@ def ar_coefficient(x, param):
             try:
                 calculated_AR = AutoReg(x_as_list, lags=k, trend='c')
                 calculated_ar_params[k] = calculated_AR.fit().params
-            except (LinAlgError, ValueError):
+            except (ZeroDivisionError, LinAlgError, ValueError):
                 calculated_ar_params[k] = [np.NaN] * k
 
         mod = calculated_ar_params[k]
