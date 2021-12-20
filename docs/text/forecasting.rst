@@ -48,7 +48,7 @@ The rolling mechanism
 ---------------------
 
 We look into the following flat DataFrame example, which is a tsfresh suitable format (see :ref:`data-formats-label`).
-Note, that Rolling also works for all other time series formats.
+Note, that rolling also works for all other time series formats.
 
 +----+------+----+----+
 | id | time | x  | y  |
