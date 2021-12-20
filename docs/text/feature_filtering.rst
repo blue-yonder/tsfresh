@@ -15,7 +15,7 @@ It is an efficient, scalable feature extraction algorithm, which filters the ava
 machine learning pipeline with respect to their significance for the classification or regression task, while
 controlling the expected percentage of selected but irrelevant features.
 
-The filtering process consists of three phases which are sketched in the following figure:
+The filtering process consists of three phases depicted in the following figure:
 
 .. image:: ../images/feature_extraction_process_20160815_mc_1.png
    :scale: 70 %
@@ -27,30 +27,30 @@ Phase 1 - Feature extraction
 
 Firstly, the algorithm characterizes time series with comprehensive and well-established feature mappings and considers
 additional features describing meta-information.
-The feature calculators used to derive the features are contained in
+The feature calculators used to derive the features are those in
 :mod:`tsfresh.feature_extraction.feature_calculators`.
 
-In the figure from above, this corresponds to the change from raw time series to aggregated features.
+In the above figure, this corresponds to the change from raw time series to aggregated features.
 
 Phase 2 - Feature significance testing
 ''''''''''''''''''''''''''''''''''''''
 
 In a second step, each feature vector is individually and independently evaluated with respect to its significance for
 predicting the target under investigation.
-Those tests are contained in the submodule :mod:`tsfresh.feature_selection.significance_tests`.
+Those tests are located in the submodule :mod:`tsfresh.feature_selection.significance_tests`.
 The result of these tests is a vector of p-values, quantifying the significance of each feature for predicting the
 label/target.
 
-In the figure from above, this corresponds to the change from aggregated features to p-values.
+In the above figure, this corresponds to the change from aggregated features to p-values.
 
 Phase 3 - Multiple test procedure
 '''''''''''''''''''''''''''''''''
 
-The vector of p-values is evaluated on basis of the Benjamini-Yekutieli procedure [2]_ in order to decide which features
+The vector of p-values is evaluated on the basis of the Benjamini-Yekutieli procedure [2]_ in order to decide which features
 to keep.
 This multiple testing procedure is taken from the statsmodel package.
 
-In the figure from above, this corresponds to the change from p-values to selected features.
+In the above figure, this corresponds to the change from p-values to selected features.
 
 
 References

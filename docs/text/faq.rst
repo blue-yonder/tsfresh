@@ -15,14 +15,14 @@ FAQ
        Yes, the :func:`tsfresh.dataframe_functions.roll_time_series` function allows to conveniently create a rolled
        time series dataframe from your data. You just have to transform your data into one of the supported tsfresh
        :ref:`data-formats-label`.
-       Then, the :func:`tsfresh.dataframe_functions.roll_time_series` give you a DataFrame with the rolled time series,
+       Then, the :func:`tsfresh.dataframe_functions.roll_time_series` will return a DataFrame with the rolled time series,
        that you can pass to tsfresh.
-       On the following page you can find a detailed description: :ref:`forecasting-label`.
+       You can find more details here: :ref:`forecasting-label`.
 
 
     3. **How can I use tsfresh with windows?**
 
-       We recommend to use `Anaconda <https://www.continuum.io/downloads#windows>`_. After installing, open the
+       We recommend to use `Anaconda <https://www.continuum.io/downloads#windows>`_. After installation, open the
        Anaconda Prompt, create an environment and set up tsfresh
        (Please be aware that we're using multiprocessing, which can be `problematic <http://stackoverflow.com/questions/18204782/runtimeerror-on-windows-trying-python-multiprocessing>`_.):
 

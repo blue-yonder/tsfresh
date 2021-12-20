@@ -3,15 +3,16 @@
 Data Formats
 ============
 
-tsfresh offers three different options to specify the time series data to be used in the
-:func:`tsfresh.extract_features` function (and all utility functions that expect a time series, e.g. the
-:func:`tsfresh.utilities.dataframe_functions.roll_time_series` function).
+tsfresh offers three different options to specify the format of the time series data to use with the function
+:func:`tsfresh.extract_features` (and all utility functions that expect a time series, for that
+matter, like for example :func:`tsfresh.utilities.dataframe_functions.roll_time_series`).
 
 Irrespective of the input format, tsfresh will always return the calculated features in the same output format
 described below.
 
-Typically, the input format options consist of :class:`pandas.DataFrame` objects.
-(see :ref:`large-data-label` for other input types)
+Typically, the input format options are :class:`pandas.DataFrame` objects, which we will discuss here, and also
+Dask dataframes and PySpark computational graphs, which are discussed here :ref:`large-data-label`.
+
 There are four important column types that
 make up those DataFrames. Each will be described with an example from the robot failures dataset
 (see :ref:`quick-start-label`).
@@ -24,7 +25,7 @@ make up those DataFrames. Each will be described with an example from the robot 
     In general, it is not required to have equidistant time steps or the same time scale for the different ids and/or kinds.
     Some features might make however only sense for equidistant time stamps.
     If you omit this column, the DataFrame is assumed to be already sorted in ascending order.
-    The robot sensor measurements each have a time stamp which is used in this column.
+    Each of the robot sensor measurements have a time stamp which is used as the `column_sort`.
 
 Need only to be specified on some data formats (see below):
 
@@ -35,18 +36,18 @@ Need only to be specified on some data formats (see below):
     industrial application as in the robot dataset).
     For each kind of time series the features are calculated individually.
 
-Important: None of these columns is allowed to contain any ``NaN``, ``Inf`` or ``-Inf`` values.
+Important: None of these columns is allowed to contain ``NaN``, ``Inf`` or ``-Inf`` values.
 
-In the following we describe the different input formats, that are build on those columns:
+In the following paragrpahs, we describe the different input formats that are build based off those columns:
 
 * A flat DataFrame
 * A stacked DataFrame
 * A dictionary of flat DataFrames
 
-The difference between a flat and a stacked DataFrame is indicated by specifying or not specifying the parameters
+The difference between a flat and a stacked DataFrame is indicated by specifying (or not) the parameters
 ``column_value`` and ``column_kind`` in the :func:`tsfresh.extract_features` function.
 
-If you do not know which one to choose, you probably want to try out the flat or stacked DataFrame.
+If you are unsure which one to choose, try either the flat or stacked DataFrame.
 
 Input Option 1. Flat DataFrame or Wide DataFrame
 ------------------------------------------------
@@ -55,8 +56,7 @@ If both ``column_value`` and ``column_kind`` are set to ``None``, the time serie
 DataFrame. This means that each different time series must be saved as its own column.
 
 Example: Imagine you record the values of time series x and y for different objects A and B for three different
-times t1, t2 and t3. Now you want to calculate some feature with tsfresh. Your resulting DataFrame may look
-like this:
+times t1, t2 and t3. Your resulting DataFrame may look like this:
 
 +----+------+----------+----------+
 | id | time | x        | y        |
@@ -74,13 +74,13 @@ like this:
 | B  | t3   | x(B, t3) | y(B, t3) |
 +----+------+----------+----------+
 
-and you would pass
+Now, you want to calculate some features with tsfresh so you would pass:
 
 .. code:: python
 
     column_id="id", column_sort="time", column_kind=None, column_value=None
 
-to the extraction functions, to extract features separately for all ids and separately for the x and y values.
+to the extraction function, to extract features separately for all ids and separately for the x and y values.
 You can also omit the ``column_kind=None, column_value=None`` as this is the default.
 
 Input Option 2. Stacked DataFrame or Long DataFrame
@@ -92,7 +92,7 @@ This representation has several advantages over the flat Data Frame.
 For example, the time stamps of the different time series do not have to align.
 
 It does not contain different columns for the different types of time series but only one
-value column and a kind column. The example from above would look like this:
+value column and a kind column. Following with our previous example, the dataframe would look like this:
 
 +----+------+------+----------+
 | id | time | kind | value    |
@@ -122,13 +122,13 @@ value column and a kind column. The example from above would look like this:
 | B  | t3   | y    | y(B, t3) |
 +----+------+------+----------+
 
-Then you would set
+Then you would set:
 
 .. code:: python
 
     column_id="id", column_sort="time", column_kind="kind", column_value="value"
 
-to end up with the same extracted features as above.
+to end up with the same extracted features.
 You can also omit the value column and let ``tsfresh`` deduce it automatically.
 
 
@@ -139,7 +139,7 @@ Instead of passing a DataFrame which must be split up by its different kinds by 
 dictionary mapping from the kind as string to a DataFrame containing only the time series data of that kind.
 So essentially you are using a singular DataFrame for each kind of time series.
 
-The data from the example can be split into two DataFrames resulting in the following dictionary
+The data from the example can be split into two DataFrames resulting in the following dictionary:
 
 { "x":
 
@@ -192,8 +192,8 @@ In this case we do not need to specify the kind column as the kind is the respec
 Output Format
 -------------
 
-The resulting feature matrix for all three input options will be the same.
-It will always be a :class:`pandas.DataFrame` with the following layout
+The resulting feature matrix, containing the extracted features, is the same for all three input options.
+It will always be a :class:`pandas.DataFrame` with the following layout:
 
 +----+-------------+-----+-------------+-------------+-----+-------------+
 | id | x_feature_1 | ... | x_feature_N | y_feature_1 | ... | y_feature_N |
@@ -203,8 +203,8 @@ It will always be a :class:`pandas.DataFrame` with the following layout
 | B  | ...         | ... | ...         | ...         | ... | ...         |
 +----+-------------+-----+-------------+-------------+-----+-------------+
 
-where the x features are calculated using all x values (independently for A and B), y features using all y values
-and so on.
+where the x features are calculated using all x values (independently for A and B), the y features using all y values
+(independently for A and B), and so on.
 
-This form of DataFrame is also the expected input format to the feature selection algorithms (e.g. the
+This DataFrame is also the expected input format to the feature selection algorithms used by tsfresh (e.g. the
 :func:`tsfresh.select_features` function).

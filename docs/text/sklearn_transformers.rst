@@ -3,20 +3,20 @@
 scikit-learn Transformers
 =========================
 
-tsfresh includes three scikit-learn compatible transformers.
-You can easily add them to your existing data science pipeline.
-If you are not familiar with scikit-learn's pipeline we recommend you take a look at the official documentation [1]_.
+tsfresh includes three scikit-learn compatible transformers, which allow you to easily incorporate feature extraction
+and feature selection from time series into your existing machine learning pipelines.
 
-The purpose of such a pipeline is to assemble several preprocessing steps that can be cross-validated together while
-setting different parameters.
-Our tsfresh transformer allows you to extract and filter the time series features during such a preprocessing sequence.
+The scikit-learn pipeline allows you to assemble several pre-processing steps that will be executed in sequence and
+thus, can be cross-validated together while setting different parameters (for more details about the scikit-learn's
+pipeline, take a look at the official documentation [1]_).
+Our tsfresh transformers allow you to extract and filter the time series features during these pre-processing sequence.
 
-The first two estimators contained in tsfresh are the :class:`~tsfresh.transformers.feature_augmenter.FeatureAugmenter`,
-which extracts the features, and the :class:`~tsfresh.transformers.feature_selector.FeatureSelector`, which only
+The first two estimators in tsfresh are the :class:`~tsfresh.transformers.feature_augmenter.FeatureAugmenter`,
+which extracts the features, and the :class:`~tsfresh.transformers.feature_selector.FeatureSelector`, which
 performs the feature selection algorithm.
 It is preferable to combine extracting and filtering of the features in a single step to avoid unnecessary feature
 calculations.
-Hence, we have the :class:`~tsfresh.transformers.feature_augmenter.RelevantFeatureAugmenter`, which combines both the
+Hence, the :class:`~tsfresh.transformers.feature_augmenter.RelevantFeatureAugmenter` combines both the
 extraction and filtering of the features in a single step.
 
 Example
@@ -39,8 +39,10 @@ transformer and the classifier in one step.
     from tsfresh.examples.robot_execution_failures import download_robot_execution_failures
     download_robot_execution_failures()
 
-    pipeline = Pipeline([('augmenter', RelevantFeatureAugmenter(column_id='id', column_sort='time')),
-                ('classifier', RandomForestClassifier())])
+    pipeline = Pipeline([
+                ('augmenter', RelevantFeatureAugmenter(column_id='id', column_sort='time')),
+                ('classifier', RandomForestClassifier()),
+                ])
 
     df_ts, y = load_robot_execution_failures()
     X = pd.DataFrame(index=y.index)
@@ -48,19 +50,21 @@ transformer and the classifier in one step.
     pipeline.set_params(augmenter__timeseries_container=df_ts)
     pipeline.fit(X, y)
 
-The parameters of the augment transformer correspond to the parameters of the top-level convenience function
+The parameters of the :class:`~tsfresh.transformers.relevant_feature_augmenter.RelevantFeatureAugmenter` correspond to
+the parameters of the top-level convenience function
 :func:`~tsfresh.convenience.relevant_extraction.extract_relevant_features`.
-In the example, we only set the names of two columns ``column_id='id'``, ``column_sort='time'``
-(see :ref:`data-formats-label` for an explanation of those parameters).
+In the above example, we only set the names of two columns ``column_id='id'``, ``column_sort='time'``
+(see :ref:`data-formats-label` for more details on those parameters).
 
 Because we cannot pass the time series container directly as a parameter to the augmenter step when calling fit or
-transform on a :class:`sklearn.pipeline.Pipeline` we have to set it manually by calling
+transform on a :class:`sklearn.pipeline.Pipeline`, we have to set it manually by calling
 ``pipeline.set_params(augmenter__timeseries_container=df_ts)``.
 In general, you can change the time series container from which the features are extracted by calling either the
 pipeline's :func:`~sklearn.pipeline.Pipeline.set_params` method or the transformers
 :func:`~tsfresh.transformers.relevant_feature_augmenter.RelevantFeatureAugmenter.set_timeseries_container` method.
 
-For further examples, see the Jupyter Notebook pipeline_example.ipynb in the notebooks folder of the tsfresh package.
+For further examples, visit the Jupyter Notebook 02 sklearn Pipeline.ipynb in the notebooks folder of the tsfresh
+github repository.
 
 
 References
