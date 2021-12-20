@@ -74,7 +74,7 @@ times t1, t2 and t3. Your resulting DataFrame may look like this:
 | B  | t3   | x(B, t3) | y(B, t3) |
 +----+------+----------+----------+
 
-Now you want to calculate some features with tsfresh so you would pass:
+Now, you want to calculate some features with tsfresh so you would pass:
 
 .. code:: python
 
