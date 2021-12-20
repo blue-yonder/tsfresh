@@ -153,7 +153,7 @@ If you group by ``id``, you will end up with the following parts (or "windows"):
 | (2,9) |    9  |11 | 13 |
 +-------+-------+---+----+
 
-Now you can run the usual feature extraction procedure on the rolled data:
+Now, you can run the usual feature extraction procedure on the rolled data:
 
 .. code:: python
 
@@ -198,7 +198,7 @@ Parameters and Implementation Notes
 -----------------------------------
 
 The above example demonstrates the overall rolling mechanism, which creates new time series.
-Now we discuss the naming convention for the new time series.
+Now, we discuss the naming convention for the new time series.
 
 For identifying every subsequence, `tsfresh` uses the time stamp of the point that will be predicted together with the old identifier as "id".
 For positive rolling, this `timeshift` is the last time stamp in the subsequence.
