@@ -41,7 +41,6 @@ with warnings.catch_warnings():
     warnings.simplefilter("ignore", DeprecationWarning)
 
 
-
 from statsmodels.tsa.stattools import acf, adfuller, pacf
 
 # todo: make sure '_' works in parameter names in all cases, add a warning if not
@@ -1470,7 +1469,7 @@ def ar_coefficient(x, param):
 
         if k not in calculated_ar_params:
             try:
-                calculated_AR = AutoReg(x_as_list, lags=k, trend='c')
+                calculated_AR = AutoReg(x_as_list, lags=k, trend="c")
                 calculated_ar_params[k] = calculated_AR.fit().params
             except (ZeroDivisionError, LinAlgError, ValueError):
                 calculated_ar_params[k] = [np.NaN] * k

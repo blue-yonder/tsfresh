@@ -18,7 +18,7 @@ This repository contains the *TSFRESH* python package. The abbreviation stands f
 
 *"Time Series Feature extraction based on scalable hypothesis tests"*.
 
-The package provides systematic time-series feature extraction by combining established algorithms from statistics, time-series analysis, signal processing, and nonlinear dynamics with a robust feature selection algorithm. In this context, the term *time-series* is interpreted in the broadest possible sense, such that any types of sampled data or even event sequences can be characterised. 
+The package provides systematic time-series feature extraction by combining established algorithms from statistics, time-series analysis, signal processing, and nonlinear dynamics with a robust feature selection algorithm. In this context, the term *time-series* is interpreted in the broadest possible sense, such that any types of sampled data or even event sequences can be characterised.
 
 ## Spend less time on feature engineering
 
@@ -61,12 +61,12 @@ The FRESH algorithm is described in the following whitepaper:
     _Distributed and parallel time series feature extraction for industrial big data applications._
     ArXiv e-print 1610.07717,  [https://arxiv.org/abs/1610.07717](https://arxiv.org/abs/1610.07717).
 
-Due to the fact that tsfresh basically provides time-series feature extraction for free, you can now concentrate on engineering new time-series, 
+Due to the fact that tsfresh basically provides time-series feature extraction for free, you can now concentrate on engineering new time-series,
 like e.g. differences of signals from synchronous measurements, which provide even better time-series features:
 
 * Kempa-Liehr, A.W., Oram, J., Wong, A., Finch, M., Besier, T. (2020).
-    _Feature engineering workflow for activity recognition from synchronized inertial measurement units._ 
-    In: Pattern Recognition. ACPR 2019. Ed. by M. Cree et al. Vol. 1180. Communications in Computer and Information Science (CCIS). 
+    _Feature engineering workflow for activity recognition from synchronized inertial measurement units._
+    In: Pattern Recognition. ACPR 2019. Ed. by M. Cree et al. Vol. 1180. Communications in Computer and Information Science (CCIS).
     Singapore: Springer 2020, 223–231. [doi: 10.1007/978-981-15-3651-9_20](https://doi.org/10.1007/978-981-15-3651-9_20).
 
 Systematic time-series features engineering allows to work with time-series samples of different lengths, because every time-series is projected
@@ -75,14 +75,14 @@ into a well-defined feature space. This approach allows the design of robust mac
 * Kennedy, A., Gemma, N., Rattenbury, N., Kempa-Liehr, A.W. (2021).
     _Modelling the projected separation of microlensing events using systematic time-series feature engineering._
     Astronomy and Computing 35.100460 (2021), 1–14, [doi: 10.1016/j.ascom.2021.100460](https://doi.org/10.1016/j.ascom.2021.100460)
-    
+
 Natural language processing of written texts is an example of applying systematic time-series feature engineering to event sequences,
 which is described in the following open access paper:
 
 * Tang, Y., Blincoe, K., Kempa-Liehr, A.W. (2020).
     _Enriching Feature Engineering for Short Text Samples by Language Time Series Analysis._
     EPJ Data Science 9.26 (2020), 1–59. [doi: 10.1140/epjds/s13688-020-00244-9](https://doi.org/10.1140/epjds/s13688-020-00244-9)
-    
+
 
 
 ## Advantages of tsfresh
