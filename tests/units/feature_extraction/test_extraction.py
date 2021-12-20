@@ -13,7 +13,7 @@ from tests.fixtures import DataTestCase
 from tsfresh.feature_extraction.extraction import extract_features
 from tsfresh.feature_extraction.settings import (
     ComprehensiveFCParameters,
-    PicklableSettings,
+    PickableSettings,
 )
 from tsfresh.utilities.distribution import IterableDistributorBaseClass, MapDistributor
 
@@ -175,7 +175,7 @@ class ExtractionTestCase(DataTestCase):
         def custom_function(x, p):
             return len(x) + p
 
-        settings = PicklableSettings(
+        settings = PickableSettings(
             {"mean": None, custom_function: [{"p": 1}, {"p": -1}],}
         )
 

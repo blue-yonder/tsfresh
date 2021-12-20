@@ -80,11 +80,11 @@ def from_columns(columns, columns_to_ignore=None):
     return kind_to_fc_parameters
 
 
-class PicklableSettings(UserDict):
-    """Base object for all settings, which is a picklable dict.
+class PickableSettings(UserDict):
+    """Base object for all settings, which is a pickable dict.
     For user-specified functions, the settings dictionary might include functions as a key.
     These functions unfortunately can not easily be transported to workers in multiprocessing
-    or multi-cloud setups, as they are not picklable by default.
+    or multi-cloud setups, as they are not pickable by default.
     Therefore, we change the pickle-behavior of this class and use cloudpickle for
     pickling and unpickling the keys of the dictionary, before pickling the full object.
     cloudpickle is able to pickle much more functions than pickle can and pickle will
@@ -104,7 +104,7 @@ class PicklableSettings(UserDict):
 
 
 # todo: this classes' docstrings are not completely up-to-date
-class ComprehensiveFCParameters(PicklableSettings):
+class ComprehensiveFCParameters(PickableSettings):
     """
     Create a new ComprehensiveFCParameters instance. You have to pass this instance to the
     extract_feature instance.
