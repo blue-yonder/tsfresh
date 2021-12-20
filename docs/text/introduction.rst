@@ -4,8 +4,12 @@ Introduction
 Why tsfresh?
 ------------
 
-tsfresh is used to to extract characteristics from time series. Let's assume you recorded the room temperature around
-your computer over one day as the following time series:
+tsfresh is used for systematic feature engineering from time-series and other sequential data [1]_.
+These data have in common that they are ordered by an independent variable.
+The most common independent variable is time (time series).
+Other examples for sequential data are reflectance and absorption spectra,
+which have wavelength as their ordering dimension.
+In order keeps things simple, we are simplify referring to all different types of sequential data as time-series.
 
 .. image:: ../images/introduction_ts_exa.png
    :scale: 70 %
@@ -38,7 +42,7 @@ perform classification or regression tasks on time series.
 The tsfresh package has been successfully used in the following projects:
 
     * prediction of machines life span
-    * prediction of steel billets quality during a continuous casting process [1]_
+    * prediction of steel billets quality during a continuous casting process [2]_
 
 What can't we do with tsfresh?
 ------------------------------
@@ -65,6 +69,11 @@ Other available packagers are `featuretools <https://www.featuretools.com/>`_, `
 References
 ----------
 
-   .. [1] Christ, M., Kempa-Liehr, A.W. and Feindt, M. (2016).
-         Distributed and parallel time series feature extraction for industrial big data applications.
-         ArXiv e-prints: 1610.07717 URL: http://adsabs.harvard.edu/abs/2016arXiv161007717C
+   .. [1] Christ, M., Braun, N., Neuffer, J. and Kempa-Liehr A.W. (2018).
+          *Time Series FeatuRe Extraction on basis of Scalable Hypothesis tests (tsfresh – A Python package)*.
+          Neurocomputing 307 (2018) 72-77,
+          `doi: 10.1016/j.neucom.2018.03.067 <https://doi.org/10.1016/j.neucom.2018.03.067>`_.
+   .. [2] Christ, M., Kempa-Liehr, A.W. and Feindt, M. (2016).
+          *Distributed and parallel time series feature extraction for industrial big data applications*.
+          Asian Conference on Machine Learning (ACML), Workshop on Learning on Big Data (WLBD).
+          `<https://arxiv.org/abs/1610.07717v1>`_.
