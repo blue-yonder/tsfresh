@@ -16,7 +16,7 @@ from tsfresh.feature_extraction.settings import (
     EfficientFCParameters,
     IndexBasedFCParameters,
     MinimalFCParameters,
-    PickeableSettings,
+    PicklableSettings,
     TimeBasedFCParameters,
     from_columns,
 )
@@ -328,7 +328,7 @@ class TestMinimalSettingsObject(TestCase):
 
 class TestSettingPickability(TestCase):
     def test_settings_pickable(self):
-        settings = PickeableSettings()
+        settings = PicklableSettings()
         settings["test"] = 3
         settings[lambda x: x + 1] = None
 
