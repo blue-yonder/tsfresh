@@ -41,8 +41,13 @@ perform classification or regression tasks on time series.
 
 The tsfresh package has been successfully used in the following projects:
 
-    * prediction of machines life span
-    * prediction of steel billets quality during a continuous casting process [2]_
+    * prediction of steel billets quality during a continuous casting process [2]_,
+    * activity recognition from synchronized sensors [3]_,
+    * volcanic eruption forecasting [4]_,
+    * authorship attribution from written text samples [5]_,
+    * characterisation of extrasolar planetary systems from time-series with missing data [6]_,
+    * sensor anomaly detection [7]_,
+    * and `many many more <https://scholar.google.de/scholar?cites=365611925060572663>`_.
 
 What can't we do with tsfresh?
 ------------------------------
@@ -77,3 +82,25 @@ References
           *Distributed and parallel time series feature extraction for industrial big data applications*.
           Asian Conference on Machine Learning (ACML), Workshop on Learning on Big Data (WLBD).
           `<https://arxiv.org/abs/1610.07717v1>`_.
+   .. [3] Kempa-Liehr, A.W., Oram, J., Wong, A., Finch, M. and Besier, T. (2020).
+          *Feature engineering workflow for activity recognition from synchronized inertial measurement units*.
+          In: Pattern Recognition. ACPR 2019. Ed. by M. Cree et al. Vol. 1180.
+          Communications in Computer and Information Science (CCIS).
+          Singapore: Springer 2020, 223–231.
+          `doi: 10.1007/978-981-15-3651-9_20 <https://doi.org/10.1007/978-981-15-3651-9_20>`_.
+   .. [4] D. E. Dempsey, S. J. Cronin, S. Mei, and A. W. Kempa-Liehr (2020).
+          *Automatic precursor recognition and real-time forecasting of sudden explosive volcanic eruptions at Whakaari, New Zealand*.
+          Nature Communications 11.3562, pp. 1–8.
+          `doi: 10.1038/s41467-020-17375-2 <https://dx.doi.org/10.1038/s41467-020-17375-2>`_.
+   .. [5] Tang, Y., Blincoe, K., Kempa-Liehr, A.W. (2020).
+          *Enriching Feature Engineering for Short Text Samples by Language Time Series Analysis*.
+          EPJ Data Science 9.26 (2020), 1–59.
+          `doi: 10.1140/epjds/s13688-020-00244-9 <https://doi.org/10.1140/epjds/s13688-020-00244-9>`_.
+   .. [6] Kennedy, A., Gemma, N., Rattenbury, N., Kempa-Liehr, A.W. (2021).
+          *Modelling the projected separation of microlensing events using systematic time-series feature engineering*.
+          Astronomy and Computing 35.100460 (2021), 1–14,
+          `doi: 10.1016/j.ascom.2021.100460 <https://doi.org/10.1016/j.ascom.2021.100460>`_.
+   .. [7] Hui Yie Teh, Kevin I-Kai Wang, and Andreas W. Kempa-Liehr (2021).
+          *Expect the Unexpected: Unsupervised feature selection for automated sensor anomaly detection*.
+          IEEE Sensors Journal 15.16, pp. 18033–18046.
+          `doi: 10.1109/JSEN.2021.3084970 <https://doi.org/10.1109/JSEN.2021.3084970>`_.
