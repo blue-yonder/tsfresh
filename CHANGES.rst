@@ -4,11 +4,28 @@ Changelog
 
 tsfresh uses `Semantic Versioning <http://semver.org/>`_
 
-Unreleased
-==========
+Version 0.19.0
+==============
 
-- Bugfixes:
+- Breaking Change
+    - Drop Python 3.6 support due to dependency on statsmodels 0.13
+
+- Added Features
+    - Improve documentation (#831, #834, #851, #853, #870)
+    - Add absolute_maximum and mean_n_absolute_max features (#833)
+    - Make settings pickable (#845, #847, #910)
     - Disable multiprocessing for `n_jobs=1` (#852)
+    - Add black, isort, and pre-commit (#876)
+
+- Bugfixes/Typos/Documentation:
+    - Fix conversion of time-series into sequence for lempel_ziv_complexity (#806)
+    - Fix range count config (#827)
+    - Reword documentation (#893)
+    - Fix statsmodels deprecation issues (#898, #912)
+    - Fix typo in requirements (#903)
+    - Bump statsmodels to v0.13 (#
+    - Updated references
+
 
 Version 0.18.0
 ==============
