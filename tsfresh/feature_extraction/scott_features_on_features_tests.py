@@ -6,12 +6,17 @@ from tsfresh.feature_extraction.settings import MinimalFCParameters
 # Read in data
 ts = pd.read_csv("test_data.csv")
 
+print("Minimal: {}".format(MinimalFCParameters()))
 
 X = extract_features_on_sub_features(timeseries_container = ts,
                                      sub_feature_split = 2,
-                                     sub_default_fc_parameters = MinimalFCParameters,
-                                     default_fc_parameters = MinimalFCParameters,
+                                     sub_default_fc_parameters = MinimalFCParameters(),
+                                     default_fc_parameters = MinimalFCParameters(),
                                      column_id = "measurement_id",
                                      column_sort = "t",
                                      column_kind = None,
                                      column_value = None)
+
+print(X)
+#for col in X.columns:
+#    print(col)

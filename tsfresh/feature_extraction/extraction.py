@@ -14,8 +14,9 @@ from dask import dataframe as dd
 
 from tsfresh import defaults
 from tsfresh.feature_extraction import feature_calculators
-from tsfresh.feature_extraction.data import to_tsdata, IterableSplitTsData, ApplyableSplitTsData
 from tsfresh.feature_extraction.settings import ComprehensiveFCParameters
+from data import to_tsdata, IterableSplitTsData, ApplyableSplitTsData
+
 from tsfresh.utilities import profiling
 from tsfresh.utilities.distribution import MapDistributor, MultiprocessingDistributor, \
     DistributorBaseClass, ApplyDistributor
@@ -148,7 +149,6 @@ def extract_features(timeseries_container, default_fc_parameters=None,
             warnings.simplefilter("ignore")
         else:
             warnings.simplefilter("default")
-
         result = _do_extraction(df=timeseries_container,
                                 column_id=column_id, column_value=column_value,
                                 column_kind=column_kind,
@@ -290,6 +290,7 @@ def _do_extraction_on_chunk(chunk, default_fc_parameters, kind_to_fc_parameters)
         fc_parameters = default_fc_parameters
 
     def _f():
+
         for function_name, parameter_list in fc_parameters.items():
             func = getattr(feature_calculators, function_name)
 
@@ -325,7 +326,6 @@ def _do_extraction_on_chunk(chunk, default_fc_parameters, kind_to_fc_parameters)
                 if key:
                     feature_name += "__" + str(key)
                 yield (sample_id, feature_name, item)
-
     return list(_f())
 
 
@@ -343,6 +343,7 @@ def extract_features_on_sub_features(timeseries_container,
 
     sub_features = extract_features(split_ts_data, default_fc_parameters=sub_default_fc_parameters,
                                     kind_to_fc_parameters=sub_kind_to_fc_parameters, **kwargs, pivot=False)
+
 
     column_kind = column_kind or "variable"
     column_id = column_id or "id"
