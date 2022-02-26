@@ -315,7 +315,7 @@ def _do_extraction_on_chunk(chunk, default_fc_parameters, kind_to_fc_parameters)
             if func.fctype == "combiner":
                 result = func(x, param=parameter_list)
             else:
-                if parameter_list:
+                if parameter_list: 
                     result = ((convert_to_output_format(param), func(x, **param)) for param in
                               parameter_list)
                 else:
@@ -345,6 +345,7 @@ def extract_features_on_sub_features(timeseries_container,
                                     kind_to_fc_parameters=sub_kind_to_fc_parameters, **kwargs, pivot=False)
 
 
+    # the some features can produce NaNs which need to be removed before the next round of feature extraction
     column_kind = column_kind or "variable"
     column_id = column_id or "id"
     column_sort = column_sort or "sort"
@@ -356,6 +357,7 @@ def extract_features_on_sub_features(timeseries_container,
     # We need to do this separately for dask dataframes,
     # as the return type is not a list, but already a dataframe
     if isinstance(sub_features, dd.DataFrame):
+        # TODO: dropping NAs for Dask dataframes... write tests
         sub_features = sub_features.reset_index(drop=True)
 
         sub_features[column_kind] = sub_features[column_kind].apply(lambda col: col.replace("_", ""), meta=(column_kind, object))
@@ -364,13 +366,13 @@ def extract_features_on_sub_features(timeseries_container,
         sub_features[column_id] = sub_features[column_id].apply(lambda x: x[0], meta=(column_id, ts_data.df_id_type))
 
     else:
-        sub_features = pd.DataFrame(sub_features, columns=[column_id, column_kind, column_value])
+        sub_features = pd.DataFrame(sub_features, columns=[column_id, column_kind, column_value]).dropna()
+        print("First round done: {}".format(sub_features))
 
-        sub_features[column_kind] = sub_features[column_kind].apply(lambda col: col.replace("_", ""))
+        sub_features[column_kind] = sub_features[column_kind].apply(lambda col: col.replace("__", "||"))
 
         sub_features[column_sort] = sub_features[column_id].apply(lambda x: x[1])
         sub_features[column_id] = sub_features[column_id].apply(lambda x: x[0])
-
     X = extract_features(sub_features, column_id=column_id, column_sort=column_sort, column_kind=column_kind, column_value=column_value,
                          default_fc_parameters=default_fc_parameters, kind_to_fc_parameters=kind_to_fc_parameters,
                          **kwargs)
