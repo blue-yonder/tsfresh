@@ -387,10 +387,10 @@ def extract_features_on_sub_features(timeseries_container,
         sub_features[column_sort] = sub_features[column_id].apply(lambda x: x[1])
         sub_features[column_id] = sub_features[column_id].apply(lambda x: x[0])
 
-        print("Sub features\n{}".format(sub_features))
-
     X = extract_features(sub_features, column_id=column_id, column_sort=column_sort, column_kind=column_kind, column_value=column_value,
                          default_fc_parameters=default_fc_parameters, kind_to_fc_parameters=kind_to_fc_parameters,
                          **kwargs)
+    # Drop all feature dynamics that have at least one NaN
+    X = X.dropna(axis = "columns", how = "any")
 
     return X
