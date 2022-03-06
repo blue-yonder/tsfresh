@@ -396,7 +396,7 @@ def extract_features_on_sub_features(timeseries_container,
     # Drop all feature dynamics that have at least one NaN. 
     # https://stackoverflow.com/questions/52850269/dask-drop-nas-on-columns
     if isinstance(sub_features, dd.DataFrame):
-        #colsToDrop = X.isna().compute().any()
+        #ColsToDrop = X.isna().compute().any()
         #X = X.loc[:,~colsToDrop]
         # X = X.loc[X["variable"]]
         # https://stackoverflow.com/questions/26266362/how-to-count-the-nan-values-in-a-column-in-pandas-dataframe?fbclid=IwAR1uJW8bDdyGtCdaczTdt0PyAPKN2u6mniW18GsBq05l_QY8jgaUXyjcFBg
