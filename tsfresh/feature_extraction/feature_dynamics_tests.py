@@ -1,3 +1,4 @@
+import dask.dataframe as dd
 import pandas as pd
 from extraction import extract_features, extract_features_on_sub_features
 from tsfresh.feature_extraction.settings import MinimalFCParameters, EfficientFCParameters
@@ -9,9 +10,9 @@ from tsfresh.feature_extraction.settings import MinimalFCParameters, EfficientFC
 
 
 if __name__ == "__main__":
-    
+    ts_path = "./test_data.csv" 
     # Read in data
-    ts = pd.read_csv("./test_data.csv")
+    ts = pd.read_csv(ts_path)
     print(ts)
 
     # # running on minimal
@@ -48,6 +49,22 @@ if __name__ == "__main__":
     #                     show_warnings = True)
     #print(X)
 
+    #X = extract_features_on_sub_features(timeseries_container = ts,
+    #                                    sub_feature_split = 3,
+    #                                    n_jobs = 0,
+    #                                    sub_default_fc_parameters = EfficientFCParameters(),
+    #                                    default_fc_parameters = EfficientFCParameters(),
+    #                                    column_id = "measurement_id",
+    #                                    column_sort = "t",
+    #                                    column_kind = None,
+    #                                    column_value = None,
+    #                                    show_warnings = True)
+
+    #print(X)
+
+
+    # Dask dataframes test
+    ts = dd.read_csv(ts_path)
     X = extract_features_on_sub_features(timeseries_container = ts,
                                         sub_feature_split = 3,
                                         n_jobs = 0,
@@ -58,5 +75,6 @@ if __name__ == "__main__":
                                         column_kind = None,
                                         column_value = None,
                                         show_warnings = True)
-
+    
     print(X)
+    print("Fin.")

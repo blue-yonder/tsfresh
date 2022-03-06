@@ -367,18 +367,20 @@ def extract_features_on_sub_features(timeseries_container,
     # We need to do this separately for dask dataframes,
     # as the return type is not a list, but already a dataframe
     if isinstance(sub_features, dd.DataFrame):
-        # TODO: dropping NAs for Dask dataframes... write tests
         sub_features = sub_features.reset_index(drop=True)
 
-        sub_features[column_kind] = sub_features[column_kind].apply(lambda col: col.replace("_", ""), meta=(column_kind, object))
+        sub_features[column_kind] = sub_features[column_kind].apply(lambda col: col.replace("__", "||"), meta=(column_kind, object))
 
         sub_features[column_sort] = sub_features[column_id].apply(lambda x: x[1], meta=(column_id, "int64"))
         sub_features[column_id] = sub_features[column_id].apply(lambda x: x[0], meta=(column_id, ts_data.df_id_type))
 
+        # Need to drop features for all windows which contain at least one NaN
+        target_list = sub_features[sub_features[column_value].isnull()][column_kind].unique().compute()
+        sub_features = sub_features[~sub_features[column_kind].isin(target_list)]
     else:
         sub_features = pd.DataFrame(sub_features, columns=[column_id, column_kind, column_value]) 
 
-        # Need to drop features for all windows which contain at one NaN
+        # Need to drop features for all windows which contain at least one NaN
         target_list = sub_features[sub_features[column_value].isnull()][column_kind].unique()
         sub_features = sub_features[~sub_features[column_kind].isin(target_list)]
 
@@ -390,7 +392,19 @@ def extract_features_on_sub_features(timeseries_container,
     X = extract_features(sub_features, column_id=column_id, column_sort=column_sort, column_kind=column_kind, column_value=column_value,
                          default_fc_parameters=default_fc_parameters, kind_to_fc_parameters=kind_to_fc_parameters,
                          **kwargs)
-    # Drop all feature dynamics that have at least one NaN
-    X = X.dropna(axis = "columns", how = "any")
+    
+    # Drop all feature dynamics that have at least one NaN. 
+    # https://stackoverflow.com/questions/52850269/dask-drop-nas-on-columns
+    if isinstance(sub_features, dd.DataFrame):
+        #colsToDrop = X.isna().compute().any()
+        #X = X.loc[:,~colsToDrop]
+        # X = X.loc[X["variable"]]
+        # https://stackoverflow.com/questions/26266362/how-to-count-the-nan-values-in-a-column-in-pandas-dataframe?fbclid=IwAR1uJW8bDdyGtCdaczTdt0PyAPKN2u6mniW18GsBq05l_QY8jgaUXyjcFBg
+        #X = X[:,~X.isnull().sum(axis = 1) > 0]
+        #print("stop here")
+        pass
+        
+    else:
+        X.dropna(axis = "columns", how = "any")
 
     return X
