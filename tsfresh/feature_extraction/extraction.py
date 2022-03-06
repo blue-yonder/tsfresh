@@ -5,9 +5,11 @@
 This module contains the main function to interact with tsfresh: extract features
 """
 
+import numpy as np
 import logging
 import warnings
 from collections import Iterable
+from numpy import dtype
 
 import pandas as pd
 from dask import dataframe as dd
@@ -313,12 +315,20 @@ def _do_extraction_on_chunk(chunk, default_fc_parameters, kind_to_fc_parameters)
                 x = data.values
 
             if func.fctype == "combiner":
+                # Casting ndarray with dtype object to dtype float as dtype object is not compatible with some feature calculators
+                x = np.asarray(x, dtype = float)
                 result = func(x, param=parameter_list)
             else:
-                if parameter_list: 
+                if parameter_list:
+                    #if function_name == "binned_entropy": 
+                    #    print("Stop here")
+                    # Casting ndarray with dtype object to dtype float as dtype object is not compatible with some feature calculators
+                    x = np.asarray(x, dtype = float)
                     result = ((convert_to_output_format(param), func(x, **param)) for param in
                               parameter_list)
                 else:
+                    # Casting ndarray with dtype object to dtype float as dtype object is not compatible with some feature calculators
+                    x = np.asarray(x, dtype = float)
                     result = [("", func(x))]
 
             for key, item in result:
@@ -366,13 +376,19 @@ def extract_features_on_sub_features(timeseries_container,
         sub_features[column_id] = sub_features[column_id].apply(lambda x: x[0], meta=(column_id, ts_data.df_id_type))
 
     else:
-        sub_features = pd.DataFrame(sub_features, columns=[column_id, column_kind, column_value]).dropna()
-        print("First round done: {}".format(sub_features))
+        sub_features = pd.DataFrame(sub_features, columns=[column_id, column_kind, column_value]) 
+
+        # Need to drop features for all windows which contain at one NaN
+        target_list = sub_features[sub_features[column_value].isnull()][column_kind].unique()
+        sub_features = sub_features[~sub_features[column_kind].isin(target_list)]
 
         sub_features[column_kind] = sub_features[column_kind].apply(lambda col: col.replace("__", "||"))
 
         sub_features[column_sort] = sub_features[column_id].apply(lambda x: x[1])
         sub_features[column_id] = sub_features[column_id].apply(lambda x: x[0])
+
+        print("Sub features\n{}".format(sub_features))
+
     X = extract_features(sub_features, column_id=column_id, column_sort=column_sort, column_kind=column_kind, column_value=column_value,
                          default_fc_parameters=default_fc_parameters, kind_to_fc_parameters=kind_to_fc_parameters,
                          **kwargs)
