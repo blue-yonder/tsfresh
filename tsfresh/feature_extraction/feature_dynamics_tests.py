@@ -25,7 +25,7 @@ if __name__ == "__main__":
     ts = pd.read_csv(ts_path)
     print(ts)
 
-    response = pd.Series(np.array([0,1,0,1,0,1]), index = [1,2,3,4,5,6])    
+    response = pd.Series(np.array([0,1,0,1,0,1,0,1,0,1]), index = [1,2,3,4,5,6,7,8,9,10])    
 
     # # running on minimal
     # X = extract_features(timeseries_container= ts,
@@ -37,19 +37,18 @@ if __name__ == "__main__":
 
     # print(X)
 
-    # X = extract_features_on_sub_features(timeseries_container = ts,
-    #                                     sub_feature_split = 3, # window size
-    #                                     n_jobs = 0,
-    #                                     sub_default_fc_parameters = MinimalFCParameters(),
-    #                                     default_fc_parameters = MinimalFCParameters(),
-    #                                     column_id = "measurement_id",
-    #                                     column_sort = "t",
-    #                                     column_kind = None,
-    #                                     column_value = None,
-    #                                     show_warnings = True)
-    # print(X)
+    X = extract_features_on_sub_features(timeseries_container = ts,
+                                        sub_feature_split = 3, # window size
+                                        n_jobs = 0,
+                                        sub_default_fc_parameters = MinimalFCParameters(),
+                                        default_fc_parameters = MinimalFCParameters(),
+                                        column_id = "measurement_id",
+                                        column_sort = "t",
+                                        column_kind = None,
+                                        column_value = None,
+                                        show_warnings = True)
+    print(X)
 
-    # drop feature calculators that are problematic...
 
 
     # # running on efficient
@@ -61,18 +60,18 @@ if __name__ == "__main__":
     #                     show_warnings = True)
     #print(X)
 
-    X = extract_features_on_sub_features(timeseries_container = ts,
-                                        sub_feature_split = 3,
-                                        n_jobs = 0,
-                                        sub_default_fc_parameters = EfficientFCParameters(),
-                                        default_fc_parameters = EfficientFCParameters(),
-                                        column_id = "measurement_id",
-                                        column_sort = "t",
-                                        column_kind = None,
-                                        column_value = None,
-                                        show_warnings = False)
+    #X = extract_features_on_sub_features(timeseries_container = ts,
+    #                                    sub_feature_split = 3,
+    #                                    n_jobs = 0,
+    #                                    sub_default_fc_parameters = EfficientFCParameters(),
+    #                                    default_fc_parameters = EfficientFCParameters(),
+    #                                    column_id = "measurement_id",
+    #                                    column_sort = "t",
+    #                                    column_kind = None,
+    #                                    column_value = None,
+    #                                    show_warnings = False)
 
-    print(X)
+    #print(X)
     
 
     # Now select features...
@@ -84,7 +83,7 @@ if __name__ == "__main__":
     rel_feature_names = X_filtered.columns
     print(rel_feature_names)
 
-    # Now generate a dictionary to extract JUST these features
+    # Now generate a dictionary(s) to extract JUST these features
     feature_time_series_dict, feature_dynamics_dict = derive_features_dictionaries(rel_feature_names)
     print("Success")
     

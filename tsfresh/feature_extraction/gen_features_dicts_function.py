@@ -1,3 +1,5 @@
+from tsfresh.feature_extraction.settings import from_columns
+
 def derive_features_dictionaries(feature_names):
     '''
     Derives and writes out two feature dictionaries which can be used with the feature dynamics framework.
