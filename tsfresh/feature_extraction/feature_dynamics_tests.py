@@ -83,7 +83,8 @@ if __name__ == "__main__":
     if engineer_more_ts:
 
         ts_meta = ts[["measurement_id","t"]]
-        all_ts_kinds = engineer_input_timeseries(ts = ts.drop(["measurement_id","t"],axis=1),compute_deriv=True,compute_phasediff=True, n_layers = 2)
+        all_ts_kinds = engineer_input_timeseries(ts = ts.drop(["measurement_id","t"],axis=1),compute_deriv=True,compute_phasediff=True)
+        # NOTE: you could call engineer_input_timeseries again to get second order differencing etc... 
         ts = all_ts_kinds.join(ts_meta) 
     
     print(ts)
