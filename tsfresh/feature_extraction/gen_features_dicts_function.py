@@ -17,7 +17,7 @@ def derive_features_dictionaries(feature_names):
     # type check might not be neccessary
     #assert feature_names and all(isinstance(feature_dynamic, str) for feature_dynamic in feature_names)
 
-    replacement_token = "||" # set this as the standard...
+    replacement_token = "||" # set this as the standard as per the docstring...
 
     f_on_f_mapping = from_columns(feature_names)
     f_mapping = from_columns([str(x).replace(replacement_token,"__") for x in [*f_on_f_mapping]])
