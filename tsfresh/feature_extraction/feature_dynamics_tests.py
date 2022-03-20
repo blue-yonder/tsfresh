@@ -8,7 +8,7 @@ from tsfresh.feature_extraction.settings import MinimalFCParameters, EfficientFC
 from tsfresh import select_features
 
 # temp place for new function...
-from gen_features_dicts_function import derive_features_dictionaries
+from gen_features_dicts_function import derive_features_dictionaries, gen_pdf_for_feature_dynamics
 from gen_input_timeseries_function import engineer_input_timeseries
 
 
@@ -23,7 +23,7 @@ def read_ts(ts_path, response_path, container_type):
         ts = pd.read_csv(ts_path)
     return ts, pd.read_csv(response_path).set_index("measurement_id").squeeze()
 
-def controller(run_dask, run_pandas, run_efficient, run_minimal, run_select, run_extract_on_selected, engineer_more_ts):
+def controller(run_dask, run_pandas, run_efficient, run_minimal, run_select, run_extract_on_selected, engineer_more_ts, run_pdf):
 
     assert run_dask + run_pandas < 2 and run_dask + run_pandas > 0, 'select one of run_dask and run_pandas'
     if run_dask:
@@ -51,7 +51,8 @@ def controller(run_dask, run_pandas, run_efficient, run_minimal, run_select, run
         },
         "Select":run_select,
         "Extract On Selected":run_extract_on_selected,
-        "Engineer More Timeseries":engineer_more_ts}
+        "Engineer More Timeseries":engineer_more_ts,
+        "Explain Features with pdf" :run_pdf}
     
     return config_dict
 
@@ -61,20 +62,21 @@ if __name__ == "__main__":
     ###############################
     ###############################
     # Control variables here
-    run_dask = True
-    run_pandas = False
-    run_efficient = True
-    run_minimal = False
+    run_dask = False
+    run_pandas = True
+    run_efficient = False
+    run_minimal = True
     run_select = True
     run_extract_on_selected = True
     engineer_more_ts = False
     ts_path = "./test_data.csv" 
     response_path = "./response.csv"
+    run_pdf = True
     ###############################
     ###############################
      
     # Set up config
-    config = controller(run_dask, run_pandas, run_efficient, run_minimal, run_select, run_extract_on_selected,engineer_more_ts)
+    config = controller(run_dask, run_pandas, run_efficient, run_minimal, run_select, run_extract_on_selected,engineer_more_ts,run_pdf)
 
     # Read in data
     ts, response = read_ts(ts_path,response_path,config["Container"])
@@ -105,6 +107,10 @@ if __name__ == "__main__":
                                         show_warnings = False)
     print(X)
     
+    if config["Explain Features with pdf"]:
+        gen_pdf_for_feature_dynamics(feature_dynamics_names = X.columns)
+        print("done")
+
     if config["Select"]:
         # Now select features...
 
@@ -125,8 +131,8 @@ if __name__ == "__main__":
             X = extract_features_on_sub_features(timeseries_container = ts,
                                                 sub_feature_split = 3, # window size
                                                 n_jobs = 0,
-                                                sub_default_fc_parameters = config["Feature Calculators"]["Feature Timeseries"],
-                                                default_fc_parameters = config["Feature Calculators"]["Feature Dynamics"],
+                                                sub_default_fc_parameters = feature_time_series_dict,
+                                                default_fc_parameters = feature_dynamics_dict,
                                                 column_id = "measurement_id",
                                                 column_sort = "t",
                                                 column_kind = None,

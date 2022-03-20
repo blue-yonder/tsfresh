@@ -1,6 +1,7 @@
 from tsfresh.feature_extraction.settings import from_columns
+from typing import*
 
-def derive_features_dictionaries(feature_names):
+def derive_features_dictionaries(feature_names: List[str]):
     '''
     Derives and writes out two feature dictionaries which can be used with the feature dynamics framework.
 
@@ -23,3 +24,17 @@ def derive_features_dictionaries(feature_names):
     f_mapping = from_columns([str(x).replace(replacement_token,"__") for x in [*f_on_f_mapping]])
 
     return f_mapping, f_on_f_mapping
+
+def gen_pdf_for_feature_dynamics(feature_dynamics_names: List[str]) -> None:
+    '''
+    
+    '''
+    print('skee')
+    f_mapping, f_on_f_mapping = derive_features_dictionaries(feature_names = feature_dynamics_names)
+
+    feat_ts = list(f_on_f_mapping.keys())
+    #x = (i.split('||') for i in list(f_on_f_mapping.keys())) ## [input_ts, 'feature] pair
+    #list(zip(*x))
+    
+    print('skee')
+
