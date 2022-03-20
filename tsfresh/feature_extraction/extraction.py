@@ -320,8 +320,6 @@ def _do_extraction_on_chunk(chunk, default_fc_parameters, kind_to_fc_parameters)
                 result = func(x, param=parameter_list)
             else:
                 if parameter_list:
-                    #if function_name == "binned_entropy": 
-                    #    print("Stop here")
                     # Casting ndarray with dtype object to dtype float as dtype object is not compatible with some feature calculators
                     x = np.asarray(x, dtype = float)
                     result = ((convert_to_output_format(param), func(x, **param)) for param in

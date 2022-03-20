@@ -9,10 +9,13 @@ from tsfresh import select_features
 
 # temp place for new function...
 from gen_features_dicts_function import derive_features_dictionaries
+from gen_input_timeseries_function import engineer_input_timeseries
 
+
+# NOTE: The intent of this file is NOT to be a test suite but more of a "debug playground"
 
 ##############################################################################################
-# throwaway functions..
+# throwaway functions.. just to make testing/debugging easier.
 def read_ts(ts_path, response_path, container_type):
     if container_type == "dask":
         ts = dd.read_csv(ts_path)
@@ -20,7 +23,7 @@ def read_ts(ts_path, response_path, container_type):
         ts = pd.read_csv(ts_path)
     return ts, pd.read_csv(response_path).set_index("measurement_id").squeeze()
 
-def controller(run_dask, run_pandas, run_efficient, run_minimal, run_select, run_extract_on_selected):
+def controller(run_dask, run_pandas, run_efficient, run_minimal, run_select, run_extract_on_selected, engineer_more_ts):
 
     assert run_dask + run_pandas < 2 and run_dask + run_pandas > 0, 'select one of run_dask and run_pandas'
     if run_dask:
@@ -47,7 +50,8 @@ def controller(run_dask, run_pandas, run_efficient, run_minimal, run_select, run
             "Feature Dynamics":default_fc_parameters
         },
         "Select":run_select,
-        "Extract On Selected":run_extract_on_selected}
+        "Extract On Selected":run_extract_on_selected,
+        "Engineer More Timeseries":engineer_more_ts}
     
     return config_dict
 
@@ -57,22 +61,32 @@ if __name__ == "__main__":
     ###############################
     ###############################
     # Control variables here
-    run_dask = True
-    run_pandas = False
+    run_dask = False
+    run_pandas = True
     run_efficient = False
     run_minimal = True
     run_select = True
     run_extract_on_selected = True
+    engineer_more_ts = True
     ts_path = "./test_data.csv" 
     response_path = "./response.csv"
     ###############################
     ###############################
      
     # Set up config
-    config = controller(run_dask, run_pandas, run_efficient, run_minimal, run_select, run_extract_on_selected)
+    config = controller(run_dask, run_pandas, run_efficient, run_minimal, run_select, run_extract_on_selected,engineer_more_ts)
 
     # Read in data
     ts, response = read_ts(ts_path,response_path,config["Container"])
+    
+    # Engineer some input timeseries
+    if engineer_more_ts:
+
+        ts_meta = ts[["measurement_id","t"]]
+        all_ts_kinds = engineer_input_timeseries(ts = ts.drop(["measurement_id","t"],axis=1),compute_deriv=True,compute_phasediff=True)
+        # NOTE: you could call engineer_input_timeseries again to get second order differencing etc... 
+        ts = all_ts_kinds.join(ts_meta) 
+    
     print(ts)
     print(response)
 
