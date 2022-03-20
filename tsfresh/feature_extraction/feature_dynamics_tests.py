@@ -61,13 +61,13 @@ if __name__ == "__main__":
     ###############################
     ###############################
     # Control variables here
-    run_dask = False
-    run_pandas = True
-    run_efficient = False
-    run_minimal = True
+    run_dask = True
+    run_pandas = False
+    run_efficient = True
+    run_minimal = False
     run_select = True
     run_extract_on_selected = True
-    engineer_more_ts = True
+    engineer_more_ts = False
     ts_path = "./test_data.csv" 
     response_path = "./response.csv"
     ###############################
@@ -80,7 +80,7 @@ if __name__ == "__main__":
     ts, response = read_ts(ts_path,response_path,config["Container"])
     
     # Engineer some input timeseries
-    if engineer_more_ts:
+    if engineer_more_ts: ##TODO fix for dask?
 
         ts_meta = ts[["measurement_id","t"]]
         all_ts_kinds = engineer_input_timeseries(ts = ts.drop(["measurement_id","t"],axis=1),compute_deriv=True,compute_phasediff=True)
