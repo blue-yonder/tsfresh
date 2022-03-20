@@ -1,7 +1,5 @@
 import dask.dataframe as dd
 import pandas as pd
-import numpy as np
-from sympy import true
 
 from extraction import extract_features, extract_features_on_sub_features
 from tsfresh.feature_extraction.settings import MinimalFCParameters, EfficientFCParameters
@@ -43,7 +41,7 @@ def controller(run_dask, run_pandas, run_efficient, run_minimal, run_select, run
     assert not(run_extract_on_selected) or run_select, 'must select features if you want to extract on selected features'
 
     config_dict = {
-        "Container": container_type,
+        "Container":container_type,
         "Feature Calculators":
         {
             "Feature Timeseries":sub_default_fc_parameters,
@@ -52,20 +50,21 @@ def controller(run_dask, run_pandas, run_efficient, run_minimal, run_select, run
         "Select":run_select,
         "Extract On Selected":run_extract_on_selected,
         "Engineer More Timeseries":engineer_more_ts,
-        "Explain Features with pdf" :run_pdf}
+        "Explain Features with pdf":run_pdf}
     
     return config_dict
 
 ##############################################################################################
 
 if __name__ == "__main__":
+
     ###############################
     ###############################
     # Control variables here
-    run_dask = False
-    run_pandas = True
-    run_efficient = False
-    run_minimal = True
+    run_dask = True
+    run_pandas = False
+    run_efficient = True
+    run_minimal = False
     run_select = True
     run_extract_on_selected = True
     engineer_more_ts = False
@@ -74,7 +73,7 @@ if __name__ == "__main__":
     run_pdf = True
     ###############################
     ###############################
-     
+
     # Set up config
     config = controller(run_dask, run_pandas, run_efficient, run_minimal, run_select, run_extract_on_selected,engineer_more_ts,run_pdf)
 
@@ -82,7 +81,7 @@ if __name__ == "__main__":
     ts, response = read_ts(ts_path,response_path,config["Container"])
     
     # Engineer some input timeseries
-    if engineer_more_ts: ##TODO fix for dask?
+    if engineer_more_ts: # TODO fix for dask?
 
         ts_meta = ts[["measurement_id","t"]]
         all_ts_kinds = engineer_input_timeseries(ts = ts.drop(["measurement_id","t"],axis=1),compute_deriv=True,compute_phasediff=True)
@@ -131,8 +130,8 @@ if __name__ == "__main__":
             X = extract_features_on_sub_features(timeseries_container = ts,
                                                 sub_feature_split = 3, # window size
                                                 n_jobs = 0,
-                                                sub_default_fc_parameters = feature_time_series_dict,
-                                                default_fc_parameters = feature_dynamics_dict,
+                                                sub_kind_to_fc_parameters = feature_time_series_dict,
+                                                kind_to_fc_parameters = feature_dynamics_dict,
                                                 column_id = "measurement_id",
                                                 column_sort = "t",
                                                 column_kind = None,

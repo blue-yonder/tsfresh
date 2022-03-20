@@ -391,14 +391,11 @@ def extract_features_on_sub_features(timeseries_container,
                          default_fc_parameters=default_fc_parameters, kind_to_fc_parameters=kind_to_fc_parameters,
                          **kwargs)
     
-    # Drop all feature dynamics that have at least one NaN. 
-    # https://stackoverflow.com/questions/52850269/dask-drop-nas-on-columns
+    # Drop all feature dynamics that are associated with at least one NaN. 
     if isinstance(sub_features, dd.DataFrame):
-        ColsToDrop = X.isna().compute().any()
-        toKeep = list(ColsToDrop[ColsToDrop.values == False].index)
-        X = X.loc[:,toKeep]
-        print("This worked")
+        cols_to_keep = X.isna().compute().any() == False
+        X = X.loc[:,cols_to_keep.tolist()]
     else:
         X = X.dropna(axis = "columns", how = "any")
-
+    
     return X
