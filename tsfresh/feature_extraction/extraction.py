@@ -17,7 +17,7 @@ from dask import dataframe as dd
 from tsfresh import defaults
 from tsfresh.feature_extraction import feature_calculators
 from tsfresh.feature_extraction.settings import ComprehensiveFCParameters
-from data import to_tsdata, IterableSplitTsData, ApplyableSplitTsData
+from tsfresh.feature_extraction.data import to_tsdata, IterableSplitTsData, ApplyableSplitTsData
 
 from tsfresh.utilities import profiling
 from tsfresh.utilities.distribution import MapDistributor, MultiprocessingDistributor, \

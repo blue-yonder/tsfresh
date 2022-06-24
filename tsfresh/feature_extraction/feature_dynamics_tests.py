@@ -1,25 +1,58 @@
 import dask.dataframe as dd
 import pandas as pd
+import numpy as np
 
 from extraction import extract_features, extract_features_on_sub_features
 from tsfresh.feature_extraction.settings import MinimalFCParameters, EfficientFCParameters
 from tsfresh import select_features
 
 # temp place for new function...
-from gen_features_dicts_function import derive_features_dictionaries, gen_pdf_for_feature_dynamics
-from gen_input_timeseries_function import engineer_input_timeseries
+from tsfresh.feature_extraction.gen_features_dicts_function import derive_features_dictionaries, gen_pdf_for_feature_dynamics
+from tsfresh.feature_extraction.gen_input_timeseries_function import engineer_input_timeseries
 
 
 # NOTE: The intent of this file is NOT to be a test suite but more of a "debug playground"
+y1 = ['0', '0', '0', '345346', '1356', '135', '1', '1', '1', '1', '1', '1', '32425436', '0', '0', 
+    '345346', '0', '44444444444', '1', '1', '1', '1', '1', '1', '32425436', '0', '0', '345346', '0', 
+    '44444444444', '1', '1', '1', '1', '1', '1', '32425436', '0', '0', '345346', '0', '44444444444', 
+    '1', '1', '1', '1', '1', '1', '32425436', '0', '0', '345346', '0', '44444444444', '1', '1', '1', 
+    '1', '1', '1']
 
-##############################################################################################
-# throwaway functions.. just to make testing/debugging easier.
-def read_ts(ts_path, response_path, container_type):
-    if container_type == "dask":
-        ts = dd.read_csv(ts_path)
-    elif container_type == "pandas":
-        ts = pd.read_csv(ts_path)
-    return ts, pd.read_csv(response_path).set_index("measurement_id").squeeze()
+y2 = ['457', '352', '3524', '124532', '24', '24', '214', '21', '46', '42521', '532', '634', '32', 
+    '64375', '235', '325', '563323', '6', '32', '532', '52', '57', '324', '643', '32', '436', '34', 
+    '57', '34', '65', '643', '34', '346', '43', '54', '8', '4', '43', '537', '543', '43', '56', '32', 
+    '34', '32', '5', '65', '43', '435', '54', '7654', '5', '67', '54', '345', '43', '32', '32', '65', '76']
+
+y3 = ['3454', '13452', '23534', '12432', '412432', '324', '43', '5', '64', '356', '3245235', '32', '325', 
+    '5467', '657', '235', '234', '34', '2344234', '56', '21435', '214', '1324', '4567', '34232', '132214', 
+    '42', '34', '343', '3443', '124', '5477', '36478', '879', '414', '45', '7899', '786', '657', '677', 
+    '45645', '3534', '424', '354545', '36645', '67867', '56867', '78876', '5646', '3523', '2434', '324423', 
+    '68', '89', '456', '435', '3455', '35443', '24332', '12313']
+
+measurement_id = ['1', '1', '1', '1', '1', '1', '2', '2', '2', '2', '2', '2', '3', '3', '3', '3', '3', '3', 
+                '4', '4', '4', '4', '4', '4', '5', '5', '5', '5', '5', '5', '6', '6', '6', '6', '6', '6', 
+                '7', '7', '7', '7', '7', '7', '8', '8', '8', '8', '8', '8', '9', '9', '9', '9', '9', '9', 
+                '10', '10', '10', '10', '10', '10']
+
+ts = (
+    pd.DataFrame({
+            "t" : np.repeat([1,2,3,4,5,6], 10),
+            "y1" : np.asarray(y1),
+            "y2" : np.asarray(y2),
+            "y3" : np.asarray(y3),
+            "measurement_id" : np.asarray(measurement_id,dtype=int) 
+            }) 
+)
+
+response = (
+    pd.DataFrame({
+            "response" : np.asarray([0,1] * 5),
+            "measurement_id" : np.asarray(np.arange(1, 11, dtype=int)) 
+            })
+            .set_index("measurement_id")
+            .squeeze()
+)
+
 
 def controller(run_dask, run_pandas, run_efficient, run_minimal, run_select, run_extract_on_selected, engineer_more_ts, run_pdf):
 
@@ -61,10 +94,10 @@ if __name__ == "__main__":
     ###############################
     ###############################
     # Control variables here
-    run_dask = True
-    run_pandas = False
-    run_efficient = True
-    run_minimal = False
+    run_dask = False
+    run_pandas = True
+    run_efficient = False
+    run_minimal = True
     run_select = True
     run_extract_on_selected = True
     engineer_more_ts = False
@@ -76,9 +109,6 @@ if __name__ == "__main__":
 
     # Set up config
     config = controller(run_dask, run_pandas, run_efficient, run_minimal, run_select, run_extract_on_selected,engineer_more_ts,run_pdf)
-
-    # Read in data
-    ts, response = read_ts(ts_path,response_path,config["Container"])
     
     # Engineer some input timeseries
     if engineer_more_ts: # TODO fix for dask?
