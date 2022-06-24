@@ -8,6 +8,8 @@ from tsfresh.feature_extraction.settings import (
 )
 from tsfresh import select_features
 
+import sys
+
 # temp place for new function...
 from gen_features_dicts_function import (
     derive_features_dictionaries,
@@ -19,13 +21,19 @@ from gen_input_timeseries_function import engineer_input_timeseries
 # NOTE: The intent of this file is NOT to be a test suite but more of a "debug playground"
 
 ##############################################################################################
-# throwaway functions.. just to make testing/debugging easier.
+# throwaway functions
 def read_ts(ts_path, response_path, container_type):
     if container_type == "dask":
         ts = dd.read_csv(ts_path)
     elif container_type == "pandas":
         ts = pd.read_csv(ts_path)
     return ts, pd.read_csv(response_path).set_index("measurement_id").squeeze()
+
+
+def remove_key(d, key):
+    r = dict(d)
+    del r[key]
+    return r
 
 
 def controller(
@@ -51,6 +59,7 @@ def controller(
         run_efficient + run_minimal < 2 and run_efficient + run_minimal > 0
     ), "select one of run_efficient and run_minimal"
     if run_efficient:
+        # Ignore time-based feature calculators "linear_trend_timewise"
         sub_default_fc_parameters = EfficientFCParameters()
         default_fc_parameters = EfficientFCParameters()
     elif run_minimal:
@@ -90,7 +99,7 @@ if __name__ == "__main__":
     run_minimal = True
     run_select = True
     run_extract_on_selected = True
-    engineer_more_ts = False
+    engineer_more_ts = True
     ts_path = "./test_data.csv"
     response_path = "./response.csv"
     run_pdf = True
@@ -113,7 +122,9 @@ if __name__ == "__main__":
     ts, response = read_ts(ts_path, response_path, config["Container"])
 
     # Engineer some input timeseries
-    if engineer_more_ts:  # TODO fix for dask?
+    if engineer_more_ts:
+        if run_dask:
+            ts = ts.compute()
 
         ts_meta = ts[["measurement_id", "t"]]
         all_ts_kinds = engineer_input_timeseries(
@@ -121,15 +132,17 @@ if __name__ == "__main__":
             compute_deriv=True,
             compute_phasediff=True,
         )
+
         # NOTE: you could call engineer_input_timeseries again to get second order differencing etc...
+
         ts = all_ts_kinds.join(ts_meta)
+
+        if run_dask:
+            ts = dd.from_pandas(ts, npartitions=3)
 
     print(ts)
     print(response)
 
-    # Dask dataframes test - cannot figure out how to drop NaN columns.. TODO: Figure this out
-    # NOTE: May be related to the fact that Dask Name is: pivot_table_sum-agg
-    # NOTE: The columns of X are "CategoricalIndex"...
     X = extract_features_on_sub_features(
         timeseries_container=ts,
         sub_feature_split=3,  # window size
@@ -149,6 +162,7 @@ if __name__ == "__main__":
         print("done")
 
     if config["Select"]:
+
         # Now select features...
 
         # select_features does not support dask dataframes
