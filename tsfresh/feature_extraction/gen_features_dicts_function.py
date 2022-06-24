@@ -1,8 +1,9 @@
 from tsfresh.feature_extraction.settings import from_columns
-from typing import*
+from typing import *
+
 
 def derive_features_dictionaries(feature_names: List[str]):
-    '''
+    """
     Derives and writes out two feature dictionaries which can be used with the feature dynamics framework.
 
     Return the dictionaries as a single object, and a flag specifying what type of dictionary... i.e. if it is columns --> feature dict
@@ -13,28 +14,32 @@ def derive_features_dictionaries(feature_names: List[str]):
         returns:
             f_mapping (dict):
             f_on_f_mapping (dict):
-    '''
+    """
 
     # type check might not be neccessary
-    #assert feature_names and all(isinstance(feature_dynamic, str) for feature_dynamic in feature_names)
+    # assert feature_names and all(isinstance(feature_dynamic, str) for feature_dynamic in feature_names)
 
-    replacement_token = "||" # set this as the standard as per the docstring...
+    replacement_token = "||"  # set this as the standard as per the docstring...
 
     f_on_f_mapping = from_columns(feature_names)
-    f_mapping = from_columns([str(x).replace(replacement_token,"__") for x in [*f_on_f_mapping]])
+    f_mapping = from_columns(
+        [str(x).replace(replacement_token, "__") for x in [*f_on_f_mapping]]
+    )
 
     return f_mapping, f_on_f_mapping
 
+
 def gen_pdf_for_feature_dynamics(feature_dynamics_names: List[str]) -> None:
-    '''
-    
-    '''
-    print('skee')
-    f_mapping, f_on_f_mapping = derive_features_dictionaries(feature_names = feature_dynamics_names)
+    """ """
+    print("skee")
+    f_mapping, f_on_f_mapping = derive_features_dictionaries(
+        feature_names=feature_dynamics_names
+    )
 
     feat_ts = list(f_on_f_mapping.keys())
-    #x = (i.split('||') for i in list(f_on_f_mapping.keys())) ## [input_ts, 'feature] pair
-    #list(zip(*x))
-    
-    print('skee')
+    # x = (i.split('||') for i in list(f_on_f_mapping.keys())) ## [input_ts, 'feature] pair
+    # list(zip(*x))
 
+    # #TODO: Finish this function...
+
+    print("skee")
