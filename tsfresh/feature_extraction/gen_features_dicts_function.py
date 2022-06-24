@@ -31,7 +31,6 @@ def derive_features_dictionaries(feature_names: List[str]):
 
 def gen_pdf_for_feature_dynamics(feature_dynamics_names: List[str]) -> None:
     """ """
-    print("skee")
     f_mapping, f_on_f_mapping = derive_features_dictionaries(
         feature_names=feature_dynamics_names
     )
@@ -41,5 +40,3 @@ def gen_pdf_for_feature_dynamics(feature_dynamics_names: List[str]) -> None:
     # list(zip(*x))
 
     # #TODO: Finish this function...
-
-    print("skee")
