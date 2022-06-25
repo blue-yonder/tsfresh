@@ -1,6 +1,7 @@
 import itertools
 import pandas as pd
 from dask import dataframe as dd
+from pandas.api.types import is_numeric_dtype
 import sys
 
 ########
@@ -18,6 +19,7 @@ def engineer_input_timeseries(ts, compute_deriv, compute_phasediff):
     """
 
     assert isinstance(ts, pd.DataFrame)
+    assert all(is_numeric_dtype(ts[col]) for col in ts.columns.tolist()), "All columns in `ts` must be numeric vectors (float or int type)"
 
     # first order differencing
     def timediff(ts, ts_kinds):
