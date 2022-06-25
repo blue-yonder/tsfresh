@@ -262,9 +262,9 @@ def gen_timeseries_data(container_type="pandas"):
     ts = pd.DataFrame(
         {
             "t": np.repeat([1, 2, 3, 4, 5, 6], 10),
-            "y1": np.asarray(y1, dtype=int),
-            "y2": np.asarray(y2, dtype=int),
-            "y3": np.asarray(y3, dtype=int),
+            "y1": np.asarray(y1, dtype=float),
+            "y2": np.asarray(y2, dtype=float),
+            "y3": np.asarray(y3, dtype=float),
             "measurement_id": np.asarray(measurement_id, dtype=int),
         }
     )
