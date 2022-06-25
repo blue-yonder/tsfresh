@@ -15,7 +15,7 @@ from tsfresh.feature_extraction.settings import ComprehensiveFCParameters
 from tsfresh.utilities.distribution import IterableDistributorBaseClass, MapDistributor
 
 
-class ExtractionTestCase(DataTestCase):
+class DynamicsExtractionTestCase(DataTestCase):
     """The unit tests in this module make sure if the time series features are created properly"""
 
     def setUp(self):
