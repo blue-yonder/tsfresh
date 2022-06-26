@@ -402,7 +402,7 @@ def extract_feature_dynamics(timeseries_container,
     see at https://ieeexplore.ieee.org/document/9679945.
 
     :param timeseries_container: The pandas.DataFrame with the time series to compute the features for.
-    :type timeseries_container: pandas.DataFrame a dictionary of pandas.DataFrames or dask.DataFrame.
+    :type timeseries_container: pandas.DataFrame or dask.DataFrame.
     
     :param window_length: The size of the window from which the first set of features is extracted.
     :type sub_feature_split: int

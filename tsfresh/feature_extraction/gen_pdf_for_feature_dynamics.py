@@ -27,7 +27,9 @@ def dictionary_to_string(dictionary: dict) -> str:
 
 
 def gen_pdf_for_feature_dynamics(
-    feature_dynamics_names: List[str], window_length: int
+    feature_dynamics_names: List[str],
+    window_length: int,
+    output_path: str = "feature_dynamics_interpretation",
 ) -> None:
     """ """
     print("In here now...")
@@ -57,6 +59,6 @@ def gen_pdf_for_feature_dynamics(
         )
 
     md2pdf(
-        pdf_file_path="feature_dynamics_interpretation.pdf",
-        md_file_path="feature_dynamics_interpretation.md",
+        pdf_file_path=f"{output_path}.pdf",
+        md_file_path=f"{output_path}.md",
     )

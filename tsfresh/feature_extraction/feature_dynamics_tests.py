@@ -83,12 +83,12 @@ if __name__ == "__main__":
     # Control variables here
     run_dask = False
     run_pandas = True
-    run_efficient = True
-    run_minimal = False
+    run_efficient = False
+    run_minimal = True
     run_select = True
     run_extract_on_selected = False
-    engineer_more_ts = False
-    run_pdf = True
+    engineer_more_ts = True
+    run_pdf = False
     ###############################
     ###############################
 
@@ -114,15 +114,17 @@ if __name__ == "__main__":
             ts = ts.compute()
 
         ts = engineer_input_timeseries(
-            ts=ts,
+            timeseries=ts,
             column_sort="t",
             column_id="measurement_id",
             compute_differences_within_series=True,
             compute_differences_between_series=True,
         )
 
-        # To include second order differences, run the function again.
-        ts = ts.merge(engineer_input_timeseries(ts=ts[["dt_y1", "dt_y2", "dt_y3"]]))
+        # Include second order differences:.
+        ts = ts.merge(
+            engineer_input_timeseries(timeseries=ts[["dt_y1", "dt_y2", "dt_y3"]])
+        )
         print(ts)
 
         if run_dask:
@@ -168,10 +170,7 @@ if __name__ == "__main__":
 
         # interpret feature dynamics
         if config["Explain Features with pdf"]:
-            print("What the fuck")
             subset_of_rel_feature_names = rel_feature_names[0:5]
-            print(subset_of_rel_feature_names)
-            print(type(subset_of_rel_feature_names))
             gen_pdf_for_feature_dynamics(
                 feature_dynamics_names=subset_of_rel_feature_names,
                 window_length=window_length,
@@ -192,4 +191,4 @@ if __name__ == "__main__":
             )
             print(f"Relevant Feature Dynamics Matrix{X}")
 
-        print("...success...")
+        print("Success")

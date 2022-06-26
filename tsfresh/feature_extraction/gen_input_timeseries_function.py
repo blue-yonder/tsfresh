@@ -2,21 +2,20 @@ import itertools
 import pandas as pd
 from dask import dataframe as dd
 from pandas.api.types import is_numeric_dtype
-import sys
+from typing import List
 
 ########
 # Where I will put a function which generates input timeseries from timeseries.
 def engineer_input_timeseries(
-    ts,
-    column_id=None,
-    column_sort=None,
-    compute_differences_within_series=True,
-    compute_differences_between_series=False,
-):
+    timeseries: pd.DataFrame,
+    column_id: str = None,
+    column_sort: str = None,
+    compute_differences_within_series: bool = True,
+    compute_differences_between_series: bool = False,
+) -> pd.DataFrame:
     """
     time series differencing and phase difference operations to add new engineered time series to the input time series
-    NOTE: For generalisation, the convention specified in [Scott] the honours project paper has been changed.
-    NOTE: Call this function n times on each output for nth order differencing etc.
+    NOTE: The naming convention specified in P4P has been changed.
 
     params:
          ts (pd.DataFrame): time series input with n ts_kinds (n columns)
@@ -25,8 +24,8 @@ def engineer_input_timeseries(
          column_id (str):
          column_sort (str):
     """
-    # First order differencing
-    def series_differencing(ts, ts_kinds):
+
+    def series_differencing(ts: pd.DataFrame, ts_kinds: List[str]) -> pd.DataFrame:
         for ts_kind in ts_kinds:
             ts["dt_" + ts_kind] = ts[ts_kind].diff()
             ts.loc[
@@ -34,8 +33,7 @@ def engineer_input_timeseries(
             ] = 0  # adjust for the NaN value for temporal derivatives at first index...
         return ts
 
-    #
-    def diff_between_series(ts, ts_kinds):
+    def diff_between_series(ts: pd.DataFrame, ts_kinds: str) -> pd.DataFrame:
         assert (
             len(ts_kinds) > 1
         ), "Can only difference `ts` if there is more than one series"
@@ -47,7 +45,9 @@ def engineer_input_timeseries(
             )
         return ts
 
-    assert isinstance(ts, pd.DataFrame), "`ts` expected to be a pd.DataFrame"
+    assert isinstance(timeseries, pd.DataFrame), "`ts` expected to be a pd.DataFrame"
+
+    ts = timeseries.copy()
 
     ts_meta = ts[[column for column in [column_id, column_sort] if column is not None]]
     ts = ts.drop(
@@ -58,7 +58,6 @@ def engineer_input_timeseries(
         is_numeric_dtype(ts[col]) for col in ts.columns.tolist()
     ), "All columns except `column_id` and `column_sort` in `ts` must be float or int"
 
-    # compute phase differences and derivatives
     ts_kinds = ts.columns
     if compute_differences_within_series:
         ts = series_differencing(ts, ts_kinds)
