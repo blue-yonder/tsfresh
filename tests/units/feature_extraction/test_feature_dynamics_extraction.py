@@ -16,14 +16,14 @@ from tsfresh.utilities.distribution import IterableDistributorBaseClass, MapDist
 
 
 class DynamicsExtractionTestCase(DataTestCase):
-    """The unit tests in this module make sure if the time series features are created properly"""
+    """The unit tests in this module make sure if the time series feature dynamics are created properly"""
 
     def setUp(self):
         self.n_jobs = 1
         self.directory = tempfile.gettempdir()
 
     def test_extract_features(self):
-        # todo: implement more methods and test more aspects
+        # TODO: implement more methods and test more aspects
         df = self.create_test_data_sample()
         extracted_features = extract_features(
             df,
@@ -34,21 +34,29 @@ class DynamicsExtractionTestCase(DataTestCase):
             n_jobs=self.n_jobs,
         )
         self.assertIsInstance(extracted_features, pd.DataFrame)
+        # TODO: Change to feature dynamics
         self.assertTrue(np.all(extracted_features.a__maximum == np.array([71, 77])))
+        # TODO: Change to feature dynamics
         self.assertTrue(
             np.all(extracted_features.a__sum_values == np.array([691, 1017]))
         )
+        # TODO: Change to feature dynamics
         self.assertTrue(
             np.all(extracted_features.a__abs_energy == np.array([32211, 63167]))
         )
+        # TODO: Change to feature dynamics
         self.assertTrue(
             np.all(extracted_features.b__sum_values == np.array([757, 695]))
         )
+        # TODO: Change to feature dynamics
         self.assertTrue(np.all(extracted_features.b__minimum == np.array([3, 1])))
+        # TODO: Change to feature dynamics
         self.assertTrue(
             np.all(extracted_features.b__abs_energy == np.array([36619, 35483]))
         )
+        # TODO: Change to feature dynamics
         self.assertTrue(np.all(extracted_features.b__mean == np.array([37.85, 34.75])))
+        # TODO: Change to feature dynamics
         self.assertTrue(np.all(extracted_features.b__median == np.array([39.5, 28.0])))
 
         df_sts = self.create_one_valued_time_series()
@@ -62,12 +70,15 @@ class DynamicsExtractionTestCase(DataTestCase):
         )
 
         self.assertIsInstance(extracted_features_sts, pd.DataFrame)
+        # TODO: Change to feature dynamics
         self.assertTrue(
             np.all(extracted_features_sts.a__maximum == np.array([1.0, 6.0]))
         )
+        # TODO: Change to feature dynamics
         self.assertTrue(
             np.all(extracted_features_sts.a__sum_values == np.array([1.0, 11.0]))
         )
+        # TODO: Change to feature dynamics
         self.assertTrue(
             np.all(extracted_features_sts.a__count_above_mean == np.array([0, 1]))
         )
@@ -86,7 +97,7 @@ class DynamicsExtractionTestCase(DataTestCase):
         assert len(extracted_features) == 2
 
     def test_extract_features_for_one_time_series(self):
-        # todo: implement more methods and test more aspects
+        # TODO: implement more methods and test more aspects
         df = self.create_test_data_sample()
         settings = ComprehensiveFCParameters()
 
@@ -100,14 +111,19 @@ class DynamicsExtractionTestCase(DataTestCase):
         )
 
         self.assertIsInstance(extracted_features, pd.DataFrame)
+        # TODO: Change to feature dynamics
         self.assertTrue(
             np.all(extracted_features.b__sum_values == np.array([757, 695]))
         )
+        # TODO: Change to feature dynamics
         self.assertTrue(np.all(extracted_features.b__minimum == np.array([3, 1])))
+        # TODO: Change to feature dynamics
         self.assertTrue(
             np.all(extracted_features.b__abs_energy == np.array([36619, 35483]))
         )
+        # TODO: Change to feature dynamics
         self.assertTrue(np.all(extracted_features.b__mean == np.array([37.85, 34.75])))
+        # TODO: Change to feature dynamics
         self.assertTrue(np.all(extracted_features.b__median == np.array([39.5, 28.0])))
 
         df_sts = self.create_one_valued_time_series()
@@ -121,12 +137,15 @@ class DynamicsExtractionTestCase(DataTestCase):
         )
 
         self.assertIsInstance(extracted_features_sts, pd.DataFrame)
+        # TODO: Change to feature dynamics
         self.assertTrue(
             np.all(extracted_features_sts.a__maximum == np.array([1.0, 6.0]))
         )
+        # TODO: Change to feature dynamics
         self.assertTrue(
             np.all(extracted_features_sts.a__sum_values == np.array([1.0, 11.0]))
         )
+        # TODO: Change to feature dynamics
         self.assertTrue(
             np.all(extracted_features_sts.a__count_above_mean == np.array([0, 1]))
         )
