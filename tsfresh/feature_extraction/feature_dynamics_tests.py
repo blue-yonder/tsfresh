@@ -14,7 +14,9 @@ from tsfresh.feature_extraction.gen_input_timeseries_function import (
     engineer_input_timeseries,
 )
 
-from tsfresh.feature_extraction.gen_example_timeseries_data import gen_example_timeseries_data
+from tsfresh.feature_extraction.gen_example_timeseries_data import (
+    gen_example_timeseries_data,
+)
 
 # NOTE: The intent of this file is NOT to be a test suite but more of a "debug playground"
 
@@ -84,8 +86,8 @@ if __name__ == "__main__":
     # Control variables here
     run_dask = False
     run_pandas = True
-    run_efficient = True
-    run_minimal = False
+    run_efficient = False
+    run_minimal = True
     run_select = True
     run_extract_on_selected = True
     engineer_more_ts = True
@@ -132,24 +134,28 @@ if __name__ == "__main__":
 
     print(f"\nTime series input:\n\n{ts}")
     print(f"\nTime series response vector:\n\n{response}")
-    window_size = 3
+    window_length = 3
     X = extract_features_on_sub_features(
         timeseries_container=ts,
-        sub_feature_split=window_size,  # window size
+        window_length=window_length,
         n_jobs=0,
-        sub_default_fc_parameters=config["Feature Calculators"]["Feature Timeseries"],
-        default_fc_parameters=config["Feature Calculators"]["Feature Dynamics"],
+        feature_timeseries_fc_parameters=config["Feature Calculators"][
+            "Feature Timeseries"
+        ],
+        feature_dynamics_fc_parameters=config["Feature Calculators"][
+            "Feature Dynamics"
+        ],
         column_id="measurement_id",
         column_sort="t",
         column_kind=None,
         column_value=None,
         show_warnings=False,
     )
-    print(f"\nFeature dynamics matrix:\n\n {X}")
+    print(f"\nFeature dynamics matrix:\n\n{X}")
 
     if config["Explain Features with pdf"]:
         gen_pdf_for_feature_dynamics(
-            feature_dynamics_names=X.columns, sub_feature_split=window_size
+            feature_dynamics_names=X.columns, window_length=window_length
         )
         print("done")
 
@@ -172,16 +178,17 @@ if __name__ == "__main__":
         # interpret feature dynamics
         if config["Explain Features with pdf"]:
             gen_pdf_for_feature_dynamics(
-                feature_dynamics_names=rel_feature_names, sub_feature_split=window_size
+                feature_dynamics_names=rel_feature_names,
+                window_length=window_length,
             )
 
         if config["Extract On Selected"]:
             X = extract_features_on_sub_features(
                 timeseries_container=ts,
-                sub_feature_split=window_size,  # window size
+                window_length=window_length,
                 n_jobs=0,
-                sub_kind_to_fc_parameters=feature_time_series_dict,
-                kind_to_fc_parameters=feature_dynamics_dict,
+                feature_timeseries_kind_to_fc_parameters=feature_time_series_dict,
+                feature_dynamics_kind_to_fc_parameters=feature_dynamics_dict,
                 column_id="measurement_id",
                 column_sort="t",
                 column_kind=None,
