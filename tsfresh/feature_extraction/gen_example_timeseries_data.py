@@ -283,4 +283,4 @@ def gen_example_timeseries_data(container_type="pandas"):
         .squeeze()
     )
 
-    return {"ts": ts, "response": response}
+    return ts, response
