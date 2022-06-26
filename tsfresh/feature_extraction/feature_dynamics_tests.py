@@ -139,15 +139,19 @@ if __name__ == "__main__":
         timeseries_container=ts,
         window_length=window_length,
         n_jobs=0,
-        sub_default_fc_parameters=config["Feature Calculators"]["Feature Timeseries"],
-        default_fc_parameters=config["Feature Calculators"]["Feature Dynamics"],
+        feature_timeseries_fc_parameters=config["Feature Calculators"][
+            "Feature Timeseries"
+        ],
+        feature_dynamics_fc_parameters=config["Feature Calculators"][
+            "Feature Dynamics"
+        ],
         column_id="measurement_id",
         column_sort="t",
         column_kind=None,
         column_value=None,
         show_warnings=False,
     )
-    print(f"\nFeature dynamics matrix:\n\n {X}")
+    print(f"\nFeature dynamics matrix:\n\n{X}")
 
     if config["Explain Features with pdf"]:
         gen_pdf_for_feature_dynamics(
@@ -181,10 +185,10 @@ if __name__ == "__main__":
         if config["Extract On Selected"]:
             X = extract_features_on_sub_features(
                 timeseries_container=ts,
-                window_length=window_length,  # window size
+                window_length=window_length,
                 n_jobs=0,
-                sub_kind_to_fc_parameters=feature_time_series_dict,
-                kind_to_fc_parameters=feature_dynamics_dict,
+                feature_timeseries_kind_to_fc_parameters=feature_time_series_dict,
+                feature_dynamics_kind_to_fc_parameters=feature_dynamics_dict,
                 column_id="measurement_id",
                 column_sort="t",
                 column_kind=None,

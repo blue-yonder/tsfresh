@@ -388,8 +388,8 @@ def _do_extraction_on_chunk(chunk, default_fc_parameters, kind_to_fc_parameters)
 
 def extract_features_on_sub_features(timeseries_container,
                                      window_length,
-                                     sub_default_fc_parameters=None, sub_kind_to_fc_parameters=None,
-                                     default_fc_parameters=None, kind_to_fc_parameters=None,
+                                     feature_timeseries_fc_parameters=None, feature_timeseries_kind_to_fc_parameters=None,
+                                     feature_dynamics_fc_parameters=None, feature_dynamics_kind_to_fc_parameters=None,
                                      column_id=None, column_sort=None, column_kind=None, column_value=None,
                                      **kwargs):
     """
@@ -407,20 +407,20 @@ def extract_features_on_sub_features(timeseries_container,
     :param window_length: The size of the window from which the first set of features is extracted.
     :type sub_feature_split: int
 
-    :param sub_default_fc_parameters: mapping from feature calculator names to parameters. 
+    :param feature_timeseries_fc_parameters: mapping from feature calculator names to parameters. 
            These are applied to the first set of features generated.
     :type sub_default_fc_parameters: dict
 
-    :param sub_kind_to_fc_parameters: apping from kind names to objects of the same type as the ones for
+    :param feature_timeseries_kind_to_fc_parameters: apping from kind names to objects of the same type as the ones for
             default_fc_parameters.These are applied to the first set of features generated.
     :type sub_kind_to_fc_parameters: dict
 
-    :param default_fc_parameters: mapping from feature calculator names to parameters. Only those names
+    :param feature_dynamics_fc_parameters: mapping from feature calculator names to parameters. Only those names
            which are keys in this dict will be calculated. See the class:`ComprehensiveFCParameters` for
            more information.
     :type default_fc_parameters: dict
 
-    :param kind_to_fc_parameters: mapping from kind names to objects of the same type as the ones for
+    :param feature_dynamics_kind_to_fc_parameters: mapping from kind names to objects of the same type as the ones for
             default_fc_parameters. If you put a kind as a key here, the fc_parameters
             object (which is the value), will be used instead of the default_fc_parameters. This means that kinds, for
             which kind_of_fc_parameters doe not have any entries, will be ignored by the feature selection.
@@ -468,10 +468,10 @@ def extract_features_on_sub_features(timeseries_container,
     else:
         split_ts_data = ApplyableSplitTsData(ts_data, window_length)
 
-    sub_features = extract_features(
+    feature_timeseries = extract_features(
         split_ts_data,
-        default_fc_parameters=sub_default_fc_parameters,
-        kind_to_fc_parameters=sub_kind_to_fc_parameters,
+        default_fc_parameters=feature_timeseries_fc_parameters,
+        kind_to_fc_parameters=feature_timeseries_kind_to_fc_parameters,
         **kwargs,
         pivot=False
     )
@@ -487,58 +487,59 @@ def extract_features_on_sub_features(timeseries_container,
     # Also, we split up the index into the id and the sort
     # We need to do this separately for dask dataframes,
     # as the return type is not a list, but already a dataframe
-    if isinstance(sub_features, dd.DataFrame):
-        sub_features = sub_features.reset_index(drop=True)
+    if isinstance(feature_timeseries, dd.DataFrame):
+        feature_timeseries = feature_timeseries.reset_index(drop=True)
 
-        sub_features[column_kind] = sub_features[column_kind].apply(
+        feature_timeseries[column_kind] = feature_timeseries[column_kind].apply(
             lambda col: col.replace("__", "||"), meta=(column_kind, object)
         )
 
-        sub_features[column_sort] = sub_features[column_id].apply(
+        feature_timeseries[column_sort] = feature_timeseries[column_id].apply(
             lambda x: x[1], meta=(column_id, "int64")
         )
-        sub_features[column_id] = sub_features[column_id].apply(
+        feature_timeseries[column_id] = feature_timeseries[column_id].apply(
             lambda x: x[0], meta=(column_id, ts_data.df_id_type)
         )
 
         # Need to drop features for all windows which contain at least one NaN
         target_list = (
-            sub_features[sub_features[column_value].isnull()][column_kind]
+            feature_timeseries[feature_timeseries[column_value].isnull()][column_kind]
             .unique()
             .compute()
         )
-        sub_features = sub_features[~sub_features[column_kind].isin(target_list)]
+        feature_timeseries = feature_timeseries[~feature_timeseries[column_kind].isin(target_list)]
     else:
-        sub_features = pd.DataFrame(
-            sub_features, columns=[column_id, column_kind, column_value]
+        feature_timeseries = pd.DataFrame(
+            feature_timeseries, columns=[column_id, column_kind, column_value]
         )
 
         # Need to drop features for all windows which contain at least one NaN
-        target_list = sub_features[sub_features[column_value].isnull()][
+        target_list = feature_timeseries[feature_timeseries[column_value].isnull()][
             column_kind
         ].unique()
-        sub_features = sub_features[~sub_features[column_kind].isin(target_list)]
+        
+        feature_timeseries = feature_timeseries[~feature_timeseries[column_kind].isin(target_list)]
 
-        sub_features[column_kind] = sub_features[column_kind].apply(
+        feature_timeseries[column_kind] = feature_timeseries[column_kind].apply(
             lambda col: col.replace("__", "||")
         )
 
-        sub_features[column_sort] = sub_features[column_id].apply(lambda x: x[1])
-        sub_features[column_id] = sub_features[column_id].apply(lambda x: x[0])
+        feature_timeseries[column_sort] = feature_timeseries[column_id].apply(lambda x: x[1])
+        feature_timeseries[column_id] = feature_timeseries[column_id].apply(lambda x: x[0])
 
     X = extract_features(
-        sub_features,
+        feature_timeseries,
         column_id=column_id,
         column_sort=column_sort,
         column_kind=column_kind,
         column_value=column_value,
-        default_fc_parameters=default_fc_parameters,
-        kind_to_fc_parameters=kind_to_fc_parameters,
+        default_fc_parameters=feature_dynamics_fc_parameters,
+        kind_to_fc_parameters=feature_dynamics_kind_to_fc_parameters,
         **kwargs
     )
 
     # Drop all feature dynamics that are associated with at least one NaN.
-    if isinstance(sub_features, dd.DataFrame):
+    if isinstance(feature_timeseries, dd.DataFrame):
         cols_to_keep = X.isna().compute().any() == False
         X = X.loc[:, cols_to_keep.tolist()]
     else:
