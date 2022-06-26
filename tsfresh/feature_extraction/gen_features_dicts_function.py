@@ -16,11 +16,7 @@ def derive_features_dictionaries(feature_names: List[str]) -> Tuple[dict, dict]:
             feature_dynamics_mapping (dict):
     """
 
-    # type check might not be neccessary
-    # assert feature_names and all(isinstance(feature_dynamic, str) for feature_dynamic in feature_names)
-
-    replacement_token = "||"  # set this as the standard as per the docstring...
-
+    replacement_token = "||"
     feature_dynamics_mapping = from_columns(feature_names)
     feature_timeseries_mapping = from_columns(
         [str(x).replace(replacement_token, "__") for x in [*feature_dynamics_mapping]]
