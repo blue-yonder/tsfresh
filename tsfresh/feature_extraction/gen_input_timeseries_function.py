@@ -18,7 +18,7 @@ def engineer_input_timeseries(ts, compute_deriv, compute_phasediff):
          compute_phasediff (bool): True if
     """
 
-    assert isinstance(ts, pd.DataFrame)
+    assert isinstance(ts, pd.DataFrame), "`ts` expected to be a pd.DataFrame"
     assert all(is_numeric_dtype(ts[col]) for col in ts.columns.tolist()), "All columns in `ts` must be numeric vectors (float or int type)"
 
     # first order differencing

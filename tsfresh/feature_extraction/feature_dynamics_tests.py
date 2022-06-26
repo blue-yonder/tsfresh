@@ -84,8 +84,8 @@ if __name__ == "__main__":
     # Control variables here
     run_dask = False
     run_pandas = True
-    run_efficient = False
-    run_minimal = True
+    run_efficient = True
+    run_minimal = False
     run_select = True
     run_extract_on_selected = True
     engineer_more_ts = True
@@ -132,10 +132,10 @@ if __name__ == "__main__":
 
     print(f"\nTime series input:\n\n{ts}")
     print(f"\nTime series response vector:\n\n{response}")
-
+    window_size = 3
     X = extract_features_on_sub_features(
         timeseries_container=ts,
-        sub_feature_split=3,  # window size
+        sub_feature_split=window_size,  # window size
         n_jobs=0,
         sub_default_fc_parameters=config["Feature Calculators"]["Feature Timeseries"],
         default_fc_parameters=config["Feature Calculators"]["Feature Dynamics"],
@@ -148,7 +148,9 @@ if __name__ == "__main__":
     print(f"\nFeature dynamics matrix:\n\n {X}")
 
     if config["Explain Features with pdf"]:
-        gen_pdf_for_feature_dynamics(feature_dynamics_names=X.columns)
+        gen_pdf_for_feature_dynamics(
+            feature_dynamics_names=X.columns, sub_feature_split=window_size
+        )
         print("done")
 
     if config["Select"]:
@@ -169,12 +171,14 @@ if __name__ == "__main__":
 
         # interpret feature dynamics
         if config["Explain Features with pdf"]:
-            gen_pdf_for_feature_dynamics(feature_dynamics_names=rel_feature_names)
+            gen_pdf_for_feature_dynamics(
+                feature_dynamics_names=rel_feature_names, sub_feature_split=window_size
+            )
 
         if config["Extract On Selected"]:
             X = extract_features_on_sub_features(
                 timeseries_container=ts,
-                sub_feature_split=3,  # window size
+                sub_feature_split=window_size,  # window size
                 n_jobs=0,
                 sub_kind_to_fc_parameters=feature_time_series_dict,
                 kind_to_fc_parameters=feature_dynamics_dict,
