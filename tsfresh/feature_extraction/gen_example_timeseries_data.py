@@ -3,7 +3,7 @@ import numpy as np
 import dask.dataframe as dd
 
 
-def gen_timeseries_data(container_type="pandas"):
+def gen_example_timeseries_data(container_type="pandas"):
 
     assert container_type == "pandas" or container_type == "dask"
 
