@@ -387,7 +387,7 @@ def _do_extraction_on_chunk(chunk, default_fc_parameters, kind_to_fc_parameters)
 
 
 def extract_features_on_sub_features(timeseries_container,
-                                     sub_feature_split,
+                                     window_length,
                                      sub_default_fc_parameters=None, sub_kind_to_fc_parameters=None,
                                      default_fc_parameters=None, kind_to_fc_parameters=None,
                                      column_id=None, column_sort=None, column_kind=None, column_value=None,
@@ -404,7 +404,7 @@ def extract_features_on_sub_features(timeseries_container,
     :param timeseries_container: The pandas.DataFrame with the time series to compute the features for.
     :type timeseries_container: pandas.DataFrame a dictionary of pandas.DataFrames or dask.DataFrame.
     
-    :param sub_feature_split: The size of the window from which the first set of features is extracted.
+    :param window_length: The size of the window from which the first set of features is extracted.
     :type sub_feature_split: int
 
     :param sub_default_fc_parameters: mapping from feature calculator names to parameters. 
@@ -464,9 +464,9 @@ def extract_features_on_sub_features(timeseries_container,
 
     ts_data = to_tsdata(timeseries_container, column_id=column_id, column_sort=column_sort, column_kind=column_kind, column_value=column_value)
     if isinstance(ts_data, Iterable):
-        split_ts_data = IterableSplitTsData(ts_data, sub_feature_split)
+        split_ts_data = IterableSplitTsData(ts_data, window_length)
     else:
-        split_ts_data = ApplyableSplitTsData(ts_data, sub_feature_split)
+        split_ts_data = ApplyableSplitTsData(ts_data, window_length)
 
     sub_features = extract_features(
         split_ts_data,

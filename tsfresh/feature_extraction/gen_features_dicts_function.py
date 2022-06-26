@@ -1,6 +1,5 @@
 from tsfresh.feature_extraction.settings import from_columns
 from typing import List, Tuple
-import shutil
 from md2pdf.core import md2pdf
 
 
@@ -54,7 +53,7 @@ def dictionary_to_string(dictionary: dict) -> str:
 
 
 def gen_pdf_for_feature_dynamics(
-    feature_dynamics_names: List[str], sub_feature_split: int
+    feature_dynamics_names: List[str], window_length: int
 ) -> None:
     """ """
     feature_dynamics_summary = "\n\n\n".join(
@@ -62,7 +61,7 @@ def gen_pdf_for_feature_dynamics(
             dictionary_to_string(
                 interpret_feature_dynamic(
                     feature_dynamic=feature_dynamics_name,
-                    sub_feature_split=sub_feature_split,
+                    window_length=window_length,
                 )
             )
             for feature_dynamics_name in feature_dynamics_names
@@ -73,7 +72,7 @@ def gen_pdf_for_feature_dynamics(
     linebreak = "---"
     context = "**Read more at:**"
     link1 = "* [How to interpret feature dynamics](www.google.com)"
-    link2 = "* [List of feature calculators](https://tsfresh.readthedocs.io/en/latest/text/list\_of\_features.html)"
+    link2 = "* [List of feature calculators](https://tsfresh.readthedocs.io/en/latest/text/list_of_features.html)"
 
     with open("feature_dynamics_interpretation.md", "w") as f:
         f.write(
