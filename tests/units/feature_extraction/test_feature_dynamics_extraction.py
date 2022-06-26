@@ -23,7 +23,7 @@ class DynamicsExtractionTestCase(DataTestCase):
         self.n_jobs = 1
         self.directory = tempfile.gettempdir()
 
-    def test_extract_features(self):
+    def test_extract_feature_dynamics(self):
         # TODO: implement more methods and test more aspects
         df = self.create_test_data_sample()
         extracted_feature_dynamics = extract_feature_dynamics(
@@ -96,7 +96,7 @@ class DynamicsExtractionTestCase(DataTestCase):
             )
         )
 
-    def test_extract_features_uses_only_kind_to_fc_settings(self):
+    def test_extract_feature_dynamics_uses_only_kind_to_fc_settings(self):
         df = self.create_test_data_sample()
         extracted_features = extract_feature_dynamics(
             df,
@@ -109,7 +109,7 @@ class DynamicsExtractionTestCase(DataTestCase):
         )
         assert len(extracted_features) == 2
 
-    def test_extract_features_for_one_time_series(self):
+    def test_extract_feature_dynamics_for_one_time_series(self):
         # TODO: implement more methods and test more aspects
         df = self.create_test_data_sample()
         settings = ComprehensiveFCParameters()
@@ -173,7 +173,7 @@ class DynamicsExtractionTestCase(DataTestCase):
             )
         )
 
-    def test_extract_features_for_index_based_functions(self):
+    def test_extract_feature_dynamics_for_index_based_functions(self):
         df = self.create_test_data_sample_with_time_index()
 
         settings = {
@@ -199,7 +199,7 @@ class DynamicsExtractionTestCase(DataTestCase):
             sorted(df["id"].unique().tolist()),
         )
 
-    def test_extract_features_after_randomisation(self):
+    def test_extract_feature_dynamics_after_randomisation(self):
         df = self.create_test_data_sample()
         df_random = df.copy().sample(frac=1)
 
@@ -274,7 +274,7 @@ class DynamicsExtractionTestCase(DataTestCase):
         self.assertTrue(os.path.isfile(PROFILING_FILENAME))
         os.remove(PROFILING_FILENAME)
 
-    def test_extract_features_without_settings(self):
+    def test_extract_feature_dynamics_without_settings(self):
         df = pd.DataFrame(
             data={
                 "id": np.repeat([1, 2], 10),
@@ -288,7 +288,7 @@ class DynamicsExtractionTestCase(DataTestCase):
         # TODO: Change to feature dynamics
         self.assertIn("value2__maximum", list(X.columns))
 
-    def test_extract_features_with_and_without_parallelization(self):
+    def test_extract_feature_dynamics_with_and_without_parallelization(self):
         df = self.create_test_data_sample()
 
         feature_dynamics_parallel = extract_feature_dynamics(
@@ -332,7 +332,7 @@ class DynamicsExtractionTestCase(DataTestCase):
         self.assertIsInstance(extracted_feature_dynamics, pd.DataFrame)
         self.assertEqual(set(df["id"]), set(extracted_feature_dynamics.index))
 
-    def test_extract_features_alphabetically_sorted(self):
+    def test_extract_feature_dynamics_alphabetically_sorted(self):
         df = self.create_test_data_sample()
 
         features = extract_feature_dynamics(
@@ -366,7 +366,7 @@ class ParallelExtractionTestCase(DataTestCase):
             "median": None,
         }
 
-    def test_extract_features(self):
+    def test_extract_feature_dynamics(self):
         # TODO: implement more methods and test more aspects
         df = self.create_test_data_sample()
         extracted_feature_dynamics = extract_feature_dynamics(
