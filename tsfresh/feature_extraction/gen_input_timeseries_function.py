@@ -7,7 +7,7 @@ import sys
 ########
 # Where I will put a function which generates input timeseries from timeseries.
 def engineer_input_timeseries(
-    ts,
+    timeseries,
     column_id=None,
     column_sort=None,
     compute_differences_within_series=True,
@@ -25,7 +25,7 @@ def engineer_input_timeseries(
          column_id (str):
          column_sort (str):
     """
-
+    ts = timeseries.copy()
     assert isinstance(ts, pd.DataFrame), "`ts` expected to be a pd.DataFrame"
 
     ts_meta = ts[[column for column in [column_id, column_sort] if column is not None]]
