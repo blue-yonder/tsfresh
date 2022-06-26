@@ -154,7 +154,6 @@ class DynamicsExtractionTestCase(DataTestCase):
         df = self.create_test_data_sample_with_time_index()
 
         settings = {
-            "linear_trend_timewise": [{"attr": "slope"}],
             "linear_trend": [{"attr": "slope"}],
         }
 
@@ -168,14 +167,6 @@ class DynamicsExtractionTestCase(DataTestCase):
         )
 
         self.assertIsInstance(extracted_features, pd.DataFrame)
-
-        slope_a = extracted_features['a__linear_trend_timewise__attr_"slope"'].values
-        slope_b = extracted_features['b__linear_trend_timewise__attr_"slope"'].values
-
-        self.assertAlmostEqual(slope_a[0], -0.001347117)
-        self.assertAlmostEqual(slope_a[1], 0.052036340)
-        self.assertAlmostEqual(slope_b[0], 0.021898496)
-        self.assertAlmostEqual(slope_b[1], -0.012312)
 
         # Test that the index of the returned df is the ID and not the timestamp
         self.assertTrue(extracted_features.index.dtype != df.index.dtype)
