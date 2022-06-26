@@ -32,9 +32,7 @@ def gen_pdf_for_feature_dynamics(
     output_path: str = "feature_dynamics_interpretation",
 ) -> None:
     """ """
-    print("In here now...")
-    print(feature_dynamics_names)
-    feature_dynamics_summary = "\n\n\n".join(
+    feature_dynamics_summary = "<br/><br/><br/>".join(
         [
             dictionary_to_string(
                 interpret_feature_dynamic(
@@ -45,7 +43,6 @@ def gen_pdf_for_feature_dynamics(
             for feature_dynamics_name in feature_dynamics_names
         ]
     )
-    print("Got summary")
 
     title = "# Feature Dynamics Summary"
     linebreak = "---"

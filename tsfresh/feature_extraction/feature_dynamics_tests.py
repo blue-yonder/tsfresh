@@ -83,12 +83,12 @@ if __name__ == "__main__":
     # Control variables here
     run_dask = False
     run_pandas = True
-    run_efficient = False
-    run_minimal = True
+    run_efficient = True
+    run_minimal = False
     run_select = True
-    run_extract_on_selected = False
-    engineer_more_ts = True
-    run_pdf = False
+    run_extract_on_selected = True
+    engineer_more_ts = False
+    run_pdf = True
     ###############################
     ###############################
 
