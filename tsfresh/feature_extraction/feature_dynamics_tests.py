@@ -14,7 +14,7 @@ from tsfresh.feature_extraction.gen_input_timeseries_function import (
     engineer_input_timeseries,
 )
 
-from tsfresh.feature_extraction.gen_timeseries_data import gen_timeseries_data
+from tsfresh.feature_extraction.gen_example_timeseries_data import gen_example_timeseries_data
 
 # NOTE: The intent of this file is NOT to be a test suite but more of a "debug playground"
 
@@ -82,8 +82,8 @@ if __name__ == "__main__":
     ###############################
     ###############################
     # Control variables here
-    run_dask = True
-    run_pandas = False
+    run_dask = False
+    run_pandas = True
     run_efficient = False
     run_minimal = True
     run_select = True
@@ -107,7 +107,7 @@ if __name__ == "__main__":
 
     # generate the data
     container_type = "dask" if run_dask else "pandas"
-    ts_data = gen_timeseries_data(container_type=container_type)
+    ts_data = gen_example_timeseries_data(container_type=container_type)
     ts = ts_data["ts"]
     response = ts_data["response"]
 
