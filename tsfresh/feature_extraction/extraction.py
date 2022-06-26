@@ -386,7 +386,7 @@ def _do_extraction_on_chunk(chunk, default_fc_parameters, kind_to_fc_parameters)
     return list(_f())
 
 
-def extract_features_on_sub_features(timeseries_container,
+def extract_feature_dynamics(timeseries_container,
                                      window_length,
                                      feature_timeseries_fc_parameters=None, feature_timeseries_kind_to_fc_parameters=None,
                                      feature_dynamics_fc_parameters=None, feature_dynamics_kind_to_fc_parameters=None,

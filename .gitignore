@@ -55,5 +55,5 @@ tsfresh/notebooks/data/
 *.DS_Store
 
 # Markdown & pdf interpretation output files
-*interpretation.pdf
-*.interpretation.md
+feature_dynamics_interpretation.pdf
+feature_dynamics_interpretation.md

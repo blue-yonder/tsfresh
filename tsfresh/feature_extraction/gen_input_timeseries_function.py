@@ -18,11 +18,15 @@ def engineer_input_timeseries(ts, compute_deriv, compute_phasediff):
          compute_phasediff (bool): True if
     """
 
+    # add column id and column kind column.
+
     assert isinstance(ts, pd.DataFrame), "`ts` expected to be a pd.DataFrame"
-    assert all(is_numeric_dtype(ts[col]) for col in ts.columns.tolist()), "All columns in `ts` must be numeric vectors (float or int type)"
+    assert all(
+        is_numeric_dtype(ts[col]) for col in ts.columns.tolist()
+    ), "All columns in `ts` must be numeric vectors (float or int type)"
 
     # first order differencing
-    def timediff(ts, ts_kinds):
+    def series_differencing(ts, ts_kinds):
         for ts_kind in ts_kinds:
             ts["dt_" + ts_kind] = ts[ts_kind].diff()
             ts.loc[
@@ -31,7 +35,8 @@ def engineer_input_timeseries(ts, compute_deriv, compute_phasediff):
         return ts
 
     # phase differences
-    def spatialdiff(ts, ts_kinds):
+    def diff_between_series(ts, ts_kinds):
+        assert ...
         combs = itertools.combinations(ts_kinds, r=2)
         for first_ts_kind, second_ts_kind in combs:
             ts["D_" + first_ts_kind + second_ts_kind] = (
@@ -42,8 +47,8 @@ def engineer_input_timeseries(ts, compute_deriv, compute_phasediff):
     # compute phase differences and derivatives
     ts_kinds = ts.columns
     if compute_deriv:
-        ts = timediff(ts, ts_kinds)
+        ts = series_differencing(ts, ts_kinds)
     if compute_phasediff:
-        ts = spatialdiff(ts, ts_kinds)
+        ts = diff_between_series(ts, ts_kinds)
 
     return ts

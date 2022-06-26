@@ -1,5 +1,5 @@
 import dask.dataframe as dd
-from extraction import extract_features_on_sub_features
+from extraction import extract_feature_dynamics
 from tsfresh.feature_extraction.settings import (
     MinimalFCParameters,
     EfficientFCParameters,
@@ -8,6 +8,9 @@ from tsfresh.feature_selection import select_features
 
 from tsfresh.feature_extraction.gen_features_dicts_function import (
     derive_features_dictionaries,
+)
+
+from tsfresh.feature_extraction.gen_pdf_for_feature_dynamics import (
     gen_pdf_for_feature_dynamics,
 )
 from tsfresh.feature_extraction.gen_input_timeseries_function import (
@@ -19,12 +22,6 @@ from tsfresh.feature_extraction.gen_example_timeseries_data import (
 )
 
 # NOTE: The intent of this file is NOT to be a test suite but more of a "debug playground"
-
-
-def remove_key(d, key):
-    r = dict(d)
-    del r[key]
-    return r
 
 
 def controller(
@@ -135,7 +132,7 @@ if __name__ == "__main__":
     print(f"\nTime series input:\n\n{ts}")
     print(f"\nTime series response vector:\n\n{response}")
     window_length = 3
-    X = extract_features_on_sub_features(
+    X = extract_feature_dynamics(
         timeseries_container=ts,
         window_length=window_length,
         n_jobs=0,
@@ -183,7 +180,7 @@ if __name__ == "__main__":
             )
 
         if config["Extract On Selected"]:
-            X = extract_features_on_sub_features(
+            X = extract_feature_dynamics(
                 timeseries_container=ts,
                 window_length=window_length,
                 n_jobs=0,
