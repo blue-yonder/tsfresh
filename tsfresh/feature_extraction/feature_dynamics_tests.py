@@ -106,24 +106,24 @@ if __name__ == "__main__":
 
     # generate the data
     container_type = "dask" if run_dask else "pandas"
-    ts_data = gen_example_timeseries_data(container_type=container_type)
-    ts = ts_data["ts"]
-    response = ts_data["response"]
+    ts, response = gen_example_timeseries_data(container_type=container_type)
 
     # Engineer some input timeseries
     if engineer_more_ts:
         if run_dask:
             ts = ts.compute()
 
-        ts_meta = ts[["measurement_id", "t"]]
-
-        all_ts_kinds = engineer_input_timeseries(
-            ts=ts.drop(["measurement_id", "t"], axis=1),
-            compute_deriv=True,
-            compute_phasediff=True,
+        ts = engineer_input_timeseries(
+            ts=ts,
+            column_sort="t",
+            column_id="measurement_id",
+            compute_differences_within_series=True,
+            compute_differences_between_series=True,
         )
 
-        ts = all_ts_kinds.join(ts_meta)
+        # To include second order differences, run the function again.
+        ts = ts.merge(engineer_input_timeseries(ts=ts[["dt_y1", "dt_y2", "dt_y3"]]))
+        print(ts)
 
         if run_dask:
             # turn pandas back to dask after engineering more input timeseries
