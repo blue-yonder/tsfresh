@@ -16,6 +16,10 @@ def derive_features_dictionaries(feature_names: List[str]) -> Tuple[dict, dict]:
             feature_dynamics_mapping (dict):
     """
 
+    assert bool(feature_names) and all(
+        isinstance(feature_name, str) for feature_name in feature_names
+    )
+
     replacement_token = "||"
     feature_dynamics_mapping = from_columns(feature_names)
     feature_timeseries_mapping = from_columns(
