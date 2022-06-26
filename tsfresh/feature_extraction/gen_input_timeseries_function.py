@@ -25,18 +25,6 @@ def engineer_input_timeseries(
          column_id (str):
          column_sort (str):
     """
-
-    assert isinstance(ts, pd.DataFrame), "`ts` expected to be a pd.DataFrame"
-
-    ts_meta = ts[[column for column in [column_id, column_sort] if column is not None]]
-    ts = ts.drop(
-        [column for column in [column_id, column_sort] if column is not None], axis=1
-    )
-
-    assert all(
-        is_numeric_dtype(ts[col]) for col in ts.columns.tolist()
-    ), "All columns except `column_id` and `column_sort` in `ts` must be float or int"
-
     # First order differencing
     def series_differencing(ts, ts_kinds):
         for ts_kind in ts_kinds:
@@ -58,6 +46,17 @@ def engineer_input_timeseries(
                 ts[first_ts_kind] - ts[second_ts_kind]
             )
         return ts
+
+    assert isinstance(ts, pd.DataFrame), "`ts` expected to be a pd.DataFrame"
+
+    ts_meta = ts[[column for column in [column_id, column_sort] if column is not None]]
+    ts = ts.drop(
+        [column for column in [column_id, column_sort] if column is not None], axis=1
+    )
+
+    assert all(
+        is_numeric_dtype(ts[col]) for col in ts.columns.tolist()
+    ), "All columns except `column_id` and `column_sort` in `ts` must be float or int"
 
     # compute phase differences and derivatives
     ts_kinds = ts.columns

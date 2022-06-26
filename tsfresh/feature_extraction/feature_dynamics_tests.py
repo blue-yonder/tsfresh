@@ -83,11 +83,11 @@ if __name__ == "__main__":
     # Control variables here
     run_dask = False
     run_pandas = True
-    run_efficient = False
-    run_minimal = True
+    run_efficient = True
+    run_minimal = False
     run_select = True
-    run_extract_on_selected = True
-    engineer_more_ts = True
+    run_extract_on_selected = False
+    engineer_more_ts = False
     run_pdf = True
     ###############################
     ###############################
@@ -150,12 +150,6 @@ if __name__ == "__main__":
     )
     print(f"\nFeature dynamics matrix:\n\n{X}")
 
-    if config["Explain Features with pdf"]:
-        gen_pdf_for_feature_dynamics(
-            feature_dynamics_names=X.columns, window_length=window_length
-        )
-        print("done")
-
     if config["Select"]:
         # select_features does not support dask dataframes
         if config["Container"] == "dask":
@@ -164,7 +158,7 @@ if __name__ == "__main__":
         X_filtered = select_features(X, response, fdr_level=0.95)
 
         # Now get names of the features
-        rel_feature_names = X_filtered.columns
+        rel_feature_names = list(X_filtered.columns)
         print(f"\nRelevant feature names:\n\n{rel_feature_names}")
 
         # Now generate a dictionary(s) to extract JUST these features
@@ -174,8 +168,12 @@ if __name__ == "__main__":
 
         # interpret feature dynamics
         if config["Explain Features with pdf"]:
+            print("What the fuck")
+            subset_of_rel_feature_names = rel_feature_names[0:5]
+            print(subset_of_rel_feature_names)
+            print(type(subset_of_rel_feature_names))
             gen_pdf_for_feature_dynamics(
-                feature_dynamics_names=rel_feature_names,
+                feature_dynamics_names=subset_of_rel_feature_names,
                 window_length=window_length,
             )
 
