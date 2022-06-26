@@ -8,3 +8,4 @@ scikit-learn>=0.19.2
 tqdm>=4.10.0
 dask[dataframe]>=2.9.0
 distributed>=2.11.0
+md2pdf>=0.5
