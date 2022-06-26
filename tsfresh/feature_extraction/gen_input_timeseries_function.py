@@ -6,7 +6,7 @@ import sys
 
 ########
 # Where I will put a function which generates input timeseries from timeseries.
-def engineer_input_timeseries(ts, compute_deriv, compute_phasediff):
+def engineer_input_timeseries(ts, compute_deriv=True, compute_phasediff=False):
     """
     time series differencing and phase difference operations to add new engineered time series to the input time series
     NOTE: For generalisation, the convention specified in [Scott] the honours project paper has been changed.
