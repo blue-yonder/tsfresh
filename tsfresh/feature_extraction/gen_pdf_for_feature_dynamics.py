@@ -47,7 +47,7 @@ def gen_pdf_for_feature_dynamics(
     title = "# Feature Dynamics Summary"
     linebreak = "---"
     context = "**Read more at:**"
-    link1 = "* [How to interpret feature dynamics](www.google.com)"
+    link1 = "* [How to interpret feature dynamics](https://github.com/blue-yonder/tsfresh/tree/main/notebooks/examples)"
     link2 = "* [List of feature calculators](https://tsfresh.readthedocs.io/en/latest/text/list_of_features.html)"
 
     with open("feature_dynamics_interpretation.md", "w") as f:
