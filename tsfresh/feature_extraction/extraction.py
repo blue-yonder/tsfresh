@@ -461,6 +461,9 @@ def extract_feature_dynamics(timeseries_container,
                                                                   column_sort="time"))
     
     """
+    
+    # TODO: Add assert that ensures window length conforms with the size of the data
+    # TODO: Add assert that timeseries is long enough for feature dynamics
 
     ts_data = to_tsdata(timeseries_container, column_id=column_id, column_sort=column_sort, column_kind=column_kind, column_value=column_value)
     if isinstance(ts_data, Iterable):

@@ -6,14 +6,14 @@ from tsfresh.feature_extraction.settings import (
 )
 from tsfresh.feature_selection import select_features
 
-from tsfresh.feature_extraction.gen_features_dicts_function import (
+from tsfresh.feature_extraction.derive_features_dictionaries import (
     derive_features_dictionaries,
 )
 
 from tsfresh.feature_extraction.gen_pdf_for_feature_dynamics import (
     gen_pdf_for_feature_dynamics,
 )
-from tsfresh.feature_extraction.gen_input_timeseries_function import (
+from tsfresh.feature_extraction.engineer_input_timeseries import (
     engineer_input_timeseries,
 )
 
@@ -83,8 +83,8 @@ if __name__ == "__main__":
     # Control variables here
     run_dask = False
     run_pandas = True
-    run_efficient = False
-    run_minimal = True
+    run_efficient = True
+    run_minimal = False
     run_select = True
     run_extract_on_selected = True
     engineer_more_ts = False

@@ -1,4 +1,4 @@
-from gen_features_dicts_function import derive_features_dictionaries
+from derive_features_dictionaries import derive_features_dictionaries
 from typing import List
 from md2pdf.core import md2pdf
 
