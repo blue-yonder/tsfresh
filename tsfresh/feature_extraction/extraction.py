@@ -9,7 +9,6 @@ import numpy as np
 import logging
 import warnings
 from collections import Iterable
-from numpy import dtype
 
 import pandas as pd
 from dask import dataframe as dd
@@ -17,43 +16,27 @@ from dask import dataframe as dd
 from tsfresh import defaults
 from tsfresh.feature_extraction import feature_calculators
 from tsfresh.feature_extraction.settings import ComprehensiveFCParameters
-from tsfresh.feature_extraction.data import (
-    to_tsdata,
-    IterableSplitTsData,
-    ApplyableSplitTsData,
-)
+from tsfresh.feature_extraction.data import to_tsdata, IterableSplitTsData, ApplyableSplitTsData
 
 from tsfresh.utilities import profiling
-from tsfresh.utilities.distribution import (
-    MapDistributor,
-    MultiprocessingDistributor,
-    DistributorBaseClass,
-    ApplyDistributor,
-)
+from tsfresh.utilities.distribution import MapDistributor, MultiprocessingDistributor, \
+    DistributorBaseClass, ApplyDistributor
 from tsfresh.utilities.string_manipulation import convert_to_output_format
 
 _logger = logging.getLogger(__name__)
 
 
-def extract_features(
-    timeseries_container,
-    default_fc_parameters=None,
-    kind_to_fc_parameters=None,
-    column_id=None,
-    column_sort=None,
-    column_kind=None,
-    column_value=None,
-    chunksize=defaults.CHUNKSIZE,
-    n_jobs=defaults.N_PROCESSES,
-    show_warnings=defaults.SHOW_WARNINGS,
-    disable_progressbar=defaults.DISABLE_PROGRESSBAR,
-    impute_function=defaults.IMPUTE_FUNCTION,
-    profile=defaults.PROFILING,
-    profiling_filename=defaults.PROFILING_FILENAME,
-    profiling_sorting=defaults.PROFILING_SORTING,
-    distributor=None,
-    pivot=True,
-):
+def extract_features(timeseries_container, default_fc_parameters=None,
+                     kind_to_fc_parameters=None,
+                     column_id=None, column_sort=None, column_kind=None, column_value=None,
+                     chunksize=defaults.CHUNKSIZE,
+                     n_jobs=defaults.N_PROCESSES, show_warnings=defaults.SHOW_WARNINGS,
+                     disable_progressbar=defaults.DISABLE_PROGRESSBAR,
+                     impute_function=defaults.IMPUTE_FUNCTION,
+                     profile=defaults.PROFILING,
+                     profiling_filename=defaults.PROFILING_FILENAME,
+                     profiling_sorting=defaults.PROFILING_SORTING,
+                     distributor=None, pivot=True):
     """
     Extract features from
 
@@ -167,21 +150,18 @@ def extract_features(
             warnings.simplefilter("ignore")
         else:
             warnings.simplefilter("default")
-        result = _do_extraction(
-            df=timeseries_container,
-            column_id=column_id,
-            column_value=column_value,
-            column_kind=column_kind,
-            column_sort=column_sort,
-            n_jobs=n_jobs,
-            chunk_size=chunksize,
-            disable_progressbar=disable_progressbar,
-            show_warnings=show_warnings,
-            default_fc_parameters=default_fc_parameters,
-            kind_to_fc_parameters=kind_to_fc_parameters,
-            distributor=distributor,
-            pivot=pivot,
-        )
+
+        result = _do_extraction(df=timeseries_container,
+                                column_id=column_id, column_value=column_value,
+                                column_kind=column_kind,
+                                column_sort=column_sort,
+                                n_jobs=n_jobs, chunk_size=chunksize,
+                                disable_progressbar=disable_progressbar,
+                                show_warnings=show_warnings,
+                                default_fc_parameters=default_fc_parameters,
+                                kind_to_fc_parameters=kind_to_fc_parameters,
+                                distributor=distributor,
+                                pivot=pivot)
 
         # Impute the result if requested
         if impute_function is not None:
@@ -189,28 +169,16 @@ def extract_features(
 
     # Turn off profiling if it was turned on
     if profile:
-        profiling.end_profiling(
-            profiler, filename=profiling_filename, sorting=profiling_sorting
-        )
+        profiling.end_profiling(profiler, filename=profiling_filename,
+                                sorting=profiling_sorting)
 
     return result
 
 
-def _do_extraction(
-    df,
-    column_id,
-    column_value,
-    column_kind,
-    column_sort,
-    default_fc_parameters,
-    kind_to_fc_parameters,
-    n_jobs,
-    chunk_size,
-    disable_progressbar,
-    show_warnings,
-    distributor,
-    pivot,
-):
+def _do_extraction(df, column_id, column_value, column_kind, column_sort,
+                   default_fc_parameters, kind_to_fc_parameters,
+                   n_jobs, chunk_size, disable_progressbar, show_warnings, distributor,
+                   pivot):
     """
     Wrapper around the _do_extraction_on_chunk, which calls it on all chunks in the data frame.
     A chunk is a subset of the data, with a given kind and id - so a single time series.
@@ -268,40 +236,26 @@ def _do_extraction(
     if distributor is None:
         if isinstance(data, Iterable):
             if n_jobs == 0:
-                distributor = MapDistributor(
-                    disable_progressbar=disable_progressbar,
-                    progressbar_title="Feature Extraction",
-                )
+                distributor = MapDistributor(disable_progressbar=disable_progressbar,
+                                             progressbar_title="Feature Extraction")
             else:
-                distributor = MultiprocessingDistributor(
-                    n_workers=n_jobs,
-                    disable_progressbar=disable_progressbar,
-                    progressbar_title="Feature Extraction",
-                    show_warnings=show_warnings,
-                )
+                distributor = MultiprocessingDistributor(n_workers=n_jobs,
+                                                         disable_progressbar=disable_progressbar,
+                                                         progressbar_title="Feature Extraction",
+                                                         show_warnings=show_warnings)
         else:
-            distributor = ApplyDistributor(
-                meta=[
-                    (data.column_id, data.df_id_type),
-                    ("variable", "object"),
-                    ("value", "float64"),
-                ]
-            )
+            distributor = ApplyDistributor(meta=[(data.column_id, data.df_id_type), ('variable', 'object'),
+                                                 ('value', 'float64')])
 
     if not isinstance(distributor, DistributorBaseClass):
         raise ValueError("the passed distributor is not an DistributorBaseClass object")
 
-    kwargs = dict(
-        default_fc_parameters=default_fc_parameters,
-        kind_to_fc_parameters=kind_to_fc_parameters,
-    )
+    kwargs = dict(default_fc_parameters=default_fc_parameters,
+                  kind_to_fc_parameters=kind_to_fc_parameters)
 
-    result = distributor.map_reduce(
-        _do_extraction_on_chunk,
-        data=data,
-        chunk_size=chunk_size,
-        function_kwargs=kwargs,
-    )
+    result = distributor.map_reduce(_do_extraction_on_chunk, data=data,
+                                    chunk_size=chunk_size,
+                                    function_kwargs=kwargs)
 
     if not pivot:
         return result
@@ -338,15 +292,14 @@ def _do_extraction_on_chunk(chunk, default_fc_parameters, kind_to_fc_parameters)
         fc_parameters = default_fc_parameters
 
     def _f():
-
         for function_name, parameter_list in fc_parameters.items():
             func = getattr(feature_calculators, function_name)
 
             # If the function uses the index, pass is at as a pandas Series.
             # Otherwise, convert to numpy array
-            if getattr(func, "input", False) == "pd.Series":
+            if getattr(func, 'input', False) == 'pd.Series':
                 # If it has a required index type, check that the data has the right index type.
-                index_type = getattr(func, "index_type", None)
+                index_type = getattr(func, 'index_type', None)
                 if index_type is not None:
                     try:
                         assert isinstance(data.index, index_type)
@@ -360,21 +313,16 @@ def _do_extraction_on_chunk(chunk, default_fc_parameters, kind_to_fc_parameters)
             else:
                 x = data.values
 
+            # Casting ndarray with dtype object to dtype float as dtype object is not compatible with some feature calculators
+            x = np.asarray(x, dtype=float)
+
             if func.fctype == "combiner":
-                # Casting ndarray with dtype object to dtype float as dtype object is not compatible with some feature calculators
-                x = np.asarray(x, dtype=float)
                 result = func(x, param=parameter_list)
             else:
                 if parameter_list:
-                    # Casting ndarray with dtype object to dtype float as dtype object is not compatible with some feature calculators
-                    x = np.asarray(x, dtype=float)
-                    result = (
-                        (convert_to_output_format(param), func(x, **param))
-                        for param in parameter_list
-                    )
+                    result = ((convert_to_output_format(param), func(x, **param)) for param in
+                              parameter_list)
                 else:
-                    # Casting ndarray with dtype object to dtype float as dtype object is not compatible with some feature calculators
-                    x = np.asarray(x, dtype=float)
                     result = [("", func(x))]
 
             for key, item in result:
@@ -387,27 +335,27 @@ def _do_extraction_on_chunk(chunk, default_fc_parameters, kind_to_fc_parameters)
 
 
 def extract_feature_dynamics(timeseries_container,
-                                     window_length,
-                                     feature_timeseries_fc_parameters=None, feature_timeseries_kind_to_fc_parameters=None,
-                                     feature_dynamics_fc_parameters=None, feature_dynamics_kind_to_fc_parameters=None,
-                                     column_id=None, column_sort=None, column_kind=None, column_value=None,
-                                     **kwargs):
+                             window_length,
+                             feature_timeseries_fc_parameters=None, feature_timeseries_kind_to_fc_parameters=None,
+                             feature_dynamics_fc_parameters=None, feature_dynamics_kind_to_fc_parameters=None,
+                             column_id=None, column_sort=None, column_kind=None, column_value=None,
+                             **kwargs):
     """
-    Extract feature dynamics from a time series. 
-    This process involves calling `extract_features` on the original time series which produces a new set of columns - feature time series. 
+    Extract feature dynamics from a time series.
+    This process involves calling `extract_features` on the original time series which produces a new set of columns - feature time series.
     Then for each of these features generated, they are again windowed and `extract_features` is called again producing a set
     of feature-dynamics or sub-features.
 
-    The details of this function are explained in the following paper "Data Mining on Extremely Long Time Series" 
+    The details of this function are explained in the following paper "Data Mining on Extremely Long Time Series"
     see at https://ieeexplore.ieee.org/document/9679945.
 
     :param timeseries_container: The pandas.DataFrame with the time series to compute the features for.
     :type timeseries_container: pandas.DataFrame or dask.DataFrame.
-    
+
     :param window_length: The size of the window from which the first set of features is extracted.
     :type sub_feature_split: int
 
-    :param feature_timeseries_fc_parameters: mapping from feature calculator names to parameters. 
+    :param feature_timeseries_fc_parameters: mapping from feature calculator names to parameters.
            These are applied to the first set of features generated.
     :type sub_default_fc_parameters: dict
 
@@ -438,7 +386,7 @@ def extract_feature_dynamics(timeseries_container,
 
     :param column_value: The name for the column keeping the value itself. Please see :ref:`data-formats-label`.
     :type column_value: str
-    
+
     :param kwargs: optional keyword arguments passed to `extract_features`.
     :type kwargs: dict
 
@@ -454,14 +402,14 @@ def extract_feature_dynamics(timeseries_container,
 
     >>> download_robot_execution_failures()
     >>> timeseries, y = load_robot_execution_failures()
-    
+
     >>> extracted_sub_features = extract_features_on_sub_features(timeseries_container=timeseries,
                                                                   sub_feature_split=11,
                                                                   column_id="id",
                                                                   column_sort="time"))
-    
+
     """
-    
+
     # TODO: Add assert that ensures window length conforms with the size of the data
     # TODO: Add assert that timeseries is long enough for feature dynamics
 
@@ -471,15 +419,9 @@ def extract_feature_dynamics(timeseries_container,
     else:
         split_ts_data = ApplyableSplitTsData(ts_data, window_length)
 
-    feature_timeseries = extract_features(
-        split_ts_data,
-        default_fc_parameters=feature_timeseries_fc_parameters,
-        kind_to_fc_parameters=feature_timeseries_kind_to_fc_parameters,
-        **kwargs,
-        pivot=False
-    )
+    feature_timeseries = extract_features(split_ts_data, default_fc_parameters=feature_timeseries_fc_parameters,
+                                          kind_to_fc_parameters=feature_timeseries_kind_to_fc_parameters, **kwargs, pivot=False)
 
-    # the some features can produce NaNs which need to be removed before the next round of feature extraction
     column_kind = column_kind or "variable"
     column_id = column_id or "id"
     column_sort = column_sort or "sort"
@@ -493,23 +435,13 @@ def extract_feature_dynamics(timeseries_container,
     if isinstance(feature_timeseries, dd.DataFrame):
         feature_timeseries = feature_timeseries.reset_index(drop=True)
 
-        feature_timeseries[column_kind] = feature_timeseries[column_kind].apply(
-            lambda col: col.replace("__", "||"), meta=(column_kind, object)
-        )
+        feature_timeseries[column_kind] = feature_timeseries[column_kind].apply(lambda col: col.replace("__", "||"), meta=(column_kind, object))
 
-        feature_timeseries[column_sort] = feature_timeseries[column_id].apply(
-            lambda x: x[1], meta=(column_id, "int64")
-        )
-        feature_timeseries[column_id] = feature_timeseries[column_id].apply(
-            lambda x: x[0], meta=(column_id, ts_data.df_id_type)
-        )
+        feature_timeseries[column_sort] = feature_timeseries[column_id].apply(lambda x: x[1], meta=(column_id, "int64"))
+        feature_timeseries[column_id] = feature_timeseries[column_id].apply(lambda x: x[0], meta=(column_id, ts_data.df_id_type))
 
         # Need to drop features for all windows which contain at least one NaN
-        target_list = (
-            feature_timeseries[feature_timeseries[column_value].isnull()][column_kind]
-            .unique()
-            .compute()
-        )
+        target_list = (feature_timeseries[feature_timeseries[column_value].isnull()][column_kind].unique().compute())
         feature_timeseries = feature_timeseries[~feature_timeseries[column_kind].isin(target_list)]
     else:
         feature_timeseries = pd.DataFrame(
@@ -517,29 +449,18 @@ def extract_feature_dynamics(timeseries_container,
         )
 
         # Need to drop features for all windows which contain at least one NaN
-        target_list = feature_timeseries[feature_timeseries[column_value].isnull()][
-            column_kind
-        ].unique()
-        
+        target_list = feature_timeseries[feature_timeseries[column_value].isnull()][column_kind].unique()
+
         feature_timeseries = feature_timeseries[~feature_timeseries[column_kind].isin(target_list)]
 
-        feature_timeseries[column_kind] = feature_timeseries[column_kind].apply(
-            lambda col: col.replace("__", "||")
-        )
+        feature_timeseries[column_kind] = feature_timeseries[column_kind].apply(lambda col: col.replace("__", "||"))
 
         feature_timeseries[column_sort] = feature_timeseries[column_id].apply(lambda x: x[1])
         feature_timeseries[column_id] = feature_timeseries[column_id].apply(lambda x: x[0])
 
-    X = extract_features(
-        feature_timeseries,
-        column_id=column_id,
-        column_sort=column_sort,
-        column_kind=column_kind,
-        column_value=column_value,
-        default_fc_parameters=feature_dynamics_fc_parameters,
-        kind_to_fc_parameters=feature_dynamics_kind_to_fc_parameters,
-        **kwargs
-    )
+    X = extract_features(feature_timeseries, column_id=column_id, column_sort=column_sort, column_kind=column_kind, column_value=column_value,
+                         default_fc_parameters=feature_dynamics_fc_parameters, kind_to_fc_parameters=feature_dynamics_kind_to_fc_parameters,
+                         **kwargs)
 
     # Drop all feature dynamics that are associated with at least one NaN.
     if isinstance(feature_timeseries, dd.DataFrame):
