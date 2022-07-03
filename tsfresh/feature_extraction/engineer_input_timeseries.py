@@ -13,15 +13,14 @@ def engineer_input_timeseries(
     compute_differences_between_series: bool = False,
 ) -> pd.DataFrame:
     """
-    time series differencing and phase difference operations to add new engineered time series to the input time series
-    NOTE: The naming convention specified in P4P has been changed.
+    Time series differencing with 1 order of differencing and phase difference operations to add new engineered time series to the input time series
 
     params:
-         ts (pd.DataFrame): time series input with n ts_kinds (n columns)
+         ts (pd.DataFrame): The pandas.DataFrame with the time series to compute the features for.
          compute_timeseries_differences (bool):
          compute_differences_between_series (bool):
-         column_id (str):
-         column_sort (str):
+         column_id (str): The name of the id column to group by. Please see :ref:`data-formats-label`.
+         column_sort (str): The name of the sort column. Please see :ref:`data-formats-label`.
     """
 
     def series_differencing(ts: pd.DataFrame, ts_kinds: List[str]) -> pd.DataFrame:
@@ -29,7 +28,7 @@ def engineer_input_timeseries(
             ts["dt_" + ts_kind] = ts[ts_kind].diff()
             ts.loc[
                 0, ["dt_" + ts_kind]
-            ] = 0  # adjust for the NaN value for temporal derivatives at first index...
+            ] = 0  # adjust for the NaN value at first index.
         return ts
 
     def diff_between_series(ts: pd.DataFrame, ts_kinds: str) -> pd.DataFrame:
