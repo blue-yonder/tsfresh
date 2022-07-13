@@ -10,7 +10,10 @@ from collections import UserDict
 from inspect import getfullargspec
 from itertools import product
 
-import cloudpickle
+try:
+    import cloudpickle as cp_module
+except ImportError:  # pragma: no cover
+    cp_module = None
 import pandas as pd
 
 from tsfresh.feature_extraction import feature_calculators
@@ -93,14 +96,24 @@ class PickableSettings(UserDict):
 
     def __getstate__(self):
         """Called on pickling. Encode the keys by cloudpickling them"""
-        state = {cloudpickle.dumps(key): value for key, value in self.items()}
+        state = {}
+        for key, value in self.items():
+            if not isinstance(key, str):
+                if cp_module is None:
+                    raise ValueError(f'cloudpickle must be installed.')
+                key = cp_module.dumps(key)
+            state[key] = value
         return state
 
     def __setstate__(self, state):
         """Called on un-pickling. cloudunpickle the keys again"""
-        state = {cloudpickle.loads(key): value for key, value in state.items()}
+        new_state = {}
+        for key, value in state.items():
+            if isinstance(key, bytes):
+                key = cp_module.loads(key)
+            new_state[key] = value
         # please note that the internal dictionary is stored as "data" in the UserDict
-        self.__dict__.update(data=state)
+        self.__dict__.update(data=new_state)
 
 
 # todo: this classes' docstrings are not completely up-to-date

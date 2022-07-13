@@ -15,7 +15,7 @@ from setuptools import find_packages, setup
 with open("README.md") as f:
     long_description = f.read()
 
-with open("requirements.txt") as f:
+with open("requirements_min.txt") as f:
     requirements = [line for line in f if not line.startswith("#")]
 
 needs_sphinx = {"build_sphinx", "upload_docs"}.intersection(sys.argv)
