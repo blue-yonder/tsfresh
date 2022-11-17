@@ -61,6 +61,12 @@ The FRESH algorithm is described in the following whitepaper:
     _Distributed and parallel time series feature extraction for industrial big data applications._
     ArXiv e-print 1610.07717,  [https://arxiv.org/abs/1610.07717](https://arxiv.org/abs/1610.07717).
 
+Systematic time-series feature extraction even works for unsupervised problems:
+
+* Teh, H.Y., Wang, K.I-K., Kempa-Liehr, A.W. (2021).
+    _Expect the Unexpected: Unsupervised feature selection for automated sensor anomaly detection._
+    IEEE Sensors Journal 15.16, p. 18033-18046, [doi: 10.1109/JSEN.2021.3084970](https://doi.org/10.1109/JSEN.2021.3084970).
+
 Due to the fact that tsfresh basically provides time-series feature extraction for free, you can now concentrate on engineering new time-series,
 like e.g. differences of signals from synchronous measurements, which provide even better time-series features:
 
@@ -69,12 +75,24 @@ like e.g. differences of signals from synchronous measurements, which provide ev
     In: Pattern Recognition. ACPR 2019. Ed. by M. Cree et al. Vol. 1180. Communications in Computer and Information Science (CCIS).
     Singapore: Springer, p. 223–231. [doi: 10.1007/978-981-15-3651-9_20](https://doi.org/10.1007/978-981-15-3651-9_20).
 
+* Simmons, S., Jarvis, L., Dempsey, D., Kempa-Liehr, A.W. (2021).
+    _Data Mining on Extremely Long Time-Series._
+    In: 2021 International Conference on Data Mining Workshops (ICDMW). Ed. by B. Xue et al.
+    Los Alamitos: IEEE, p. 1057-1066. [doi: 10.1109/ICDMW53433.2021.00137](https://doi.org/10.1109/ICDMW53433.2021.00137).
+
 Systematic time-series features engineering allows to work with time-series samples of different lengths, because every time-series is projected
 into a well-defined feature space. This approach allows the design of robust machine learning algorithms in applications with missing data.
 
 * Kennedy, A., Gemma, N., Rattenbury, N., Kempa-Liehr, A.W. (2021).
     _Modelling the projected separation of microlensing events using systematic time-series feature engineering._
     Astronomy and Computing 35.100460, p. 1–14, [doi: 10.1016/j.ascom.2021.100460](https://doi.org/10.1016/j.ascom.2021.100460)
+
+Is your time-series classification problem imbalanced? There is a good chance that undersampling of time-series feature matrices
+might solve your problem:
+
+* Dempsey, D.E., Cronin, S.J., Mei, S., Kempa-Liehr, A.W. (2020).
+    _Automatic precursor recognition and real-time forecasting of sudden explosive volcanic eruptions at Whakaari, New Zealand_.
+    Nature Communications 11.3562, p. 1-8, [doi: 10.1038/s41467-020-17375-2](https://doi.org/10.1038/s41467-020-17375-2).
 
 Natural language processing of written texts is an example of applying systematic time-series feature engineering to event sequences,
 which is described in the following open access paper:
