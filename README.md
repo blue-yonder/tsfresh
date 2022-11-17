@@ -53,7 +53,7 @@ The  *TSFRESH* package is described in the following open access paper:
 
 * Christ, M., Braun, N., Neuffer, J., and Kempa-Liehr A.W. (2018).
    _Time Series FeatuRe Extraction on basis of Scalable Hypothesis tests (tsfresh -- A Python package)._
-   Neurocomputing 307 (2018) 72-77, [doi: 10.1016/j.neucom.2018.03.067](https://doi.org/10.1016/j.neucom.2018.03.067).
+   Neurocomputing 307, p. 72-77, [doi: 10.1016/j.neucom.2018.03.067](https://doi.org/10.1016/j.neucom.2018.03.067).
 
 The FRESH algorithm is described in the following whitepaper:
 
@@ -67,21 +67,21 @@ like e.g. differences of signals from synchronous measurements, which provide ev
 * Kempa-Liehr, A.W., Oram, J., Wong, A., Finch, M., Besier, T. (2020).
     _Feature engineering workflow for activity recognition from synchronized inertial measurement units._
     In: Pattern Recognition. ACPR 2019. Ed. by M. Cree et al. Vol. 1180. Communications in Computer and Information Science (CCIS).
-    Singapore: Springer 2020, 223–231. [doi: 10.1007/978-981-15-3651-9_20](https://doi.org/10.1007/978-981-15-3651-9_20).
+    Singapore: Springer, p. 223–231. [doi: 10.1007/978-981-15-3651-9_20](https://doi.org/10.1007/978-981-15-3651-9_20).
 
 Systematic time-series features engineering allows to work with time-series samples of different lengths, because every time-series is projected
 into a well-defined feature space. This approach allows the design of robust machine learning algorithms in applications with missing data.
 
 * Kennedy, A., Gemma, N., Rattenbury, N., Kempa-Liehr, A.W. (2021).
     _Modelling the projected separation of microlensing events using systematic time-series feature engineering._
-    Astronomy and Computing 35.100460 (2021), 1–14, [doi: 10.1016/j.ascom.2021.100460](https://doi.org/10.1016/j.ascom.2021.100460)
+    Astronomy and Computing 35.100460, p. 1–14, [doi: 10.1016/j.ascom.2021.100460](https://doi.org/10.1016/j.ascom.2021.100460)
 
 Natural language processing of written texts is an example of applying systematic time-series feature engineering to event sequences,
 which is described in the following open access paper:
 
 * Tang, Y., Blincoe, K., Kempa-Liehr, A.W. (2020).
     _Enriching Feature Engineering for Short Text Samples by Language Time Series Analysis._
-    EPJ Data Science 9.26 (2020), 1–59. [doi: 10.1140/epjds/s13688-020-00244-9](https://doi.org/10.1140/epjds/s13688-020-00244-9)
+    EPJ Data Science 9.26, p. 1–59. [doi: 10.1140/epjds/s13688-020-00244-9](https://doi.org/10.1140/epjds/s13688-020-00244-9)
 
 
 
