@@ -260,7 +260,6 @@ class ComprehensiveFCParameters(PickableSettings):
         for name, func in feature_calculators.__dict__.items():
             if (
                 callable(func)
-                and hasattr(func, "fctype")
                 and hasattr(func, "dependency_available")
                 and getattr(func, "dependency_available") is False
             ):

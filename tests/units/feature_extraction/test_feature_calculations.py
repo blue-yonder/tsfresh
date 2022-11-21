@@ -3,11 +3,9 @@
 # Maximilian Christ (maximilianchrist.com), Blue Yonder Gmbh, 2016
 
 import math
-import warnings
+import unittest
 from random import shuffle
 from unittest import TestCase
-
-from matrixprofile.exceptions import NoSolutionPossible
 
 from tsfresh.examples.driftbif_simulation import velocity
 from tsfresh.feature_extraction.feature_calculators import *
@@ -2041,6 +2039,7 @@ class FeatureCalculationTestCase(TestCase):
         param = [{"query": query, "threshold": threshold, "normalize": False}]
         self.assertAlmostEqual(query_similarity_count(x, param=param)[0][1], 91.0)
 
+    @unittest.skipIf(not getattr(matrix_profile, "dependency_available", True), "Missing matrixprofile dependency")
     def test_matrix_profile_window(self):
         # Test matrix profile output with specified window
         np.random.seed(9999)
@@ -2060,6 +2059,7 @@ class FeatureCalculationTestCase(TestCase):
 
         self.assertAlmostEqual(matrix_profile(ts, param=param)[0][1], 2.825786727580335)
 
+    @unittest.skipIf(not getattr(matrix_profile, "dependency_available", True), "Missing matrixprofile dependency")
     def test_matrix_profile_no_window(self):
         # Test matrix profile output with no window specified
         np.random.seed(9999)
@@ -2081,6 +2081,7 @@ class FeatureCalculationTestCase(TestCase):
         # Test matrix profile output with no window specified
         self.assertAlmostEqual(matrix_profile(ts, param=param)[0][1], 2.825786727580335)
 
+    @unittest.skipIf(not getattr(matrix_profile, "dependency_available", True), "Missing matrixprofile dependency")
     def test_matrix_profile_nan(self):
         # Test matrix profile of NaNs (NaN output)
         ts = np.random.uniform(size=2 ** 6)
