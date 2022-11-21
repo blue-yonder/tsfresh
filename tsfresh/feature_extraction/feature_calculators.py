@@ -23,16 +23,21 @@ import warnings
 from builtins import range
 from collections import defaultdict
 
-import matrixprofile as mp
 import numpy as np
 import pandas as pd
 import stumpy
-from matrixprofile.exceptions import NoSolutionPossible
 from numpy.linalg import LinAlgError
 from scipy.signal import cwt, find_peaks_cwt, ricker, welch
 from scipy.stats import linregress
 from statsmodels.tools.sm_exceptions import MissingDataError
 from statsmodels.tsa.ar_model import AutoReg
+
+try:
+    import matrixprofile as mp
+    from matrixprofile.exceptions import NoSolutionPossible
+except ImportError:
+    mp = None
+
 
 from tsfresh.utilities.string_manipulation import convert_to_output_format
 
@@ -2363,9 +2368,13 @@ def benford_correlation(x):
 
 
 @set_property("fctype", "combiner")
+@set_property("dependency_available", mp is not None)
 def matrix_profile(x, param):
     """
     Calculates the 1-D Matrix Profile[1] and returns Tukey's Five Number Set plus the mean of that Matrix Profile.
+
+    This feature is not supported anymore, since matrixprofile does not up to date with latest Python releases. To use
+    it, you can install the extra with pip install tsfresh[matrixprofile].
 
     .. rubric:: References
 
@@ -2383,6 +2392,10 @@ def matrix_profile(x, param):
     :return: the different feature values
     :return type: pandas.Series
     """
+    if mp is None:
+        raise ImportError(
+            "Could not import matrixprofile but it was required. Please install the extra to use it."
+        )
 
     x = np.asarray(x)
 

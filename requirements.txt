@@ -8,6 +8,5 @@ scikit-learn>=0.22.0
 tqdm>=4.10.0
 dask[dataframe]>=2.9.0
 distributed>=2.11.0
-matrixprofile>=1.1.10,<2.0.0
 stumpy>=1.7.2
 cloudpickle

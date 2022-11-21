@@ -28,4 +28,7 @@ setup(
     setup_requires=["setuptools_scm"] + sphinx,
     packages=find_packages(exclude=["tests.*", "tests"]),
     install_requires=requirements,
+    extras_require={
+        'matrixprofile': ['matrixprofile>=1.1.10,<2.0.0']
+    }
 )
