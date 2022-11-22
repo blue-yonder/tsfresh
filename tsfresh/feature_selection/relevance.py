@@ -24,9 +24,12 @@ from tsfresh.feature_selection.significance_tests import (
     target_binary_feature_real_test,
     target_real_feature_binary_test,
     target_real_feature_real_test,
+    spark_target_real_feature_real_test,
+    spark_target_real_feature_binary_test,
 )
 from tsfresh.utilities.distribution import initialize_warnings_in_workers
 
+from pyspark.sql import functions as F
 
 def calculate_relevance_table(
     X,
@@ -320,6 +323,208 @@ def calculate_relevance_table(
     return relevance_table
 
 
+def spark_calculate_relevance_table(
+    column_kind,  # TODO Is there a way to make this optional again? = None,
+    column_id,
+    column_sort,
+    column_value,
+    X,
+    y,
+    ml_task="auto",
+    multiclass=False,
+    n_significant=1,
+    n_jobs=defaults.N_PROCESSES,  # TODO Is there a way to make this optional again? = None,
+    show_warnings=defaults.SHOW_WARNINGS,
+    chunksize=defaults.CHUNKSIZE,  # TODO Is there a way to make this optional again? = None,
+    test_for_binary_target_binary_feature=defaults.TEST_FOR_BINARY_TARGET_BINARY_FEATURE,
+    test_for_binary_target_real_feature=defaults.TEST_FOR_BINARY_TARGET_REAL_FEATURE,
+    test_for_real_target_binary_feature=defaults.TEST_FOR_REAL_TARGET_BINARY_FEATURE,
+    test_for_real_target_real_feature=defaults.TEST_FOR_REAL_TARGET_REAL_FEATURE,
+    fdr_level=defaults.FDR_LEVEL,
+    hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
+):
+
+    # TODO think of a good way to deal with y being an indexed series or not
+    y = y.sort_index().reset_index(drop=True)
+    # TODO Sorting is should be implemented in the wrapper function
+    X = X.sort(F.col("feature"), F.col(column_id), F.col(column_sort))
+
+    # Make sure X and y both have the exact same indices
+    # TODO This is just checking the length of the indices
+    assert (
+        len(list(y.index)) == X.select(column_id, column_sort).distinct().count()
+    ), "The index of X and y need to be the same"
+
+    if ml_task not in ["auto", "classification", "regression"]:
+        raise ValueError(
+            "ml_task must be one of: 'auto', 'classification', 'regression'"
+        )
+    elif ml_task == "auto":
+        # TODO "Implement the inference of the ml_task on spark
+        raise NotImplementedError("Implement the inference of the ml_task on spark")
+        ml_task = infer_ml_task(y)
+
+    if multiclass:
+        # TODO multiclass not yet implemented on spark
+        raise NotImplementedError("multiclass not yet implemented on spark")
+        assert (
+            ml_task == "classification"
+        ), "ml_task must be classification for multiclass problem"
+        assert (
+            len(y.unique()) >= n_significant
+        ), "n_significant must not exceed the total number of classes"
+
+        if len(y.unique()) <= 2:
+            warnings.warn(
+                "Two or fewer classes, binary feature selection will be used (multiclass = False)"
+            )
+            multiclass = False
+
+    with warnings.catch_warnings():
+        if not show_warnings:
+            warnings.simplefilter("ignore")
+        else:
+            warnings.simplefilter("default")
+
+        X_count = (
+            X.groupby("feature")
+            .agg(F.countDistinct(column_value))
+            .withColumnRenamed(f"count({column_value})", "count_values")
+        )
+
+        relevance_table = X_count.withColumn(
+            "type",
+            F.when(X_count.count_values == 1, "constant").otherwise(
+                F.when(X_count.count_values == 2, "binary").otherwise("real")
+            ),
+        ).drop(X_count.count_values)
+
+        del X_count
+
+        table_real = relevance_table.filter(relevance_table.type == "real")
+        table_binary = relevance_table.filter(relevance_table.type == "binary")
+
+        # Fill the column "p_value" with NaNs and the column "relevant" with False
+        table_const = (
+            relevance_table.filter(relevance_table.type == "constant")
+            .withColumn("p_value", F.lit("NaN"))
+            .withColumn("relevant", F.lit(False))
+        )
+
+        if not table_const.rdd.isEmpty():
+            warnings.warn(
+                "[test_feature_significance] Constant features: {}".format(
+                    table_const.agg(
+                        F.concat_ws(", ", F.collect_list(table_real.feature))
+                    ).first()[0]
+                ),
+                RuntimeWarning,
+            )
+
+        if table_const.count() == relevance_table.count():
+            # TODO Check if this output is in the correct format
+            # TODO I can only activat that once I put it in a function
+            print("return table_const")
+            # return table_const
+
+        if ml_task == "classification":
+            # TODO "Classification part not yet implemented"
+            raise NotImplementedError("Classification part not yet implemented")
+            tables = []
+            for label in y.unique():
+                _test_real_feature = partial(
+                    target_binary_feature_real_test,
+                    y=(y == label),
+                    test=test_for_binary_target_real_feature,
+                )
+                _test_binary_feature = partial(
+                    target_binary_feature_binary_test, y=(y == label)
+                )
+                tmp = _calculate_relevance_table_for_implicit_target(
+                    table_real,
+                    table_binary,
+                    X,
+                    _test_real_feature,
+                    _test_binary_feature,
+                    hypotheses_independent,
+                    fdr_level,
+                    map_function,
+                )
+                if multiclass:
+                    tmp = tmp.reset_index(drop=True)
+                    tmp.columns = tmp.columns.map(
+                        lambda x: x + "_" + str(label)
+                        if x != "feature" and x != "type"
+                        else x
+                    )
+                tables.append(tmp)
+
+            if multiclass:
+                relevance_table = reduce(
+                    lambda left, right: pd.merge(
+                        left, right, on=["feature", "type"], how="outer"
+                    ),
+                    tables,
+                )
+                relevance_table["n_significant"] = relevance_table.filter(
+                    regex="^relevant_", axis=1
+                ).sum(axis=1)
+                relevance_table["relevant"] = (
+                    relevance_table["n_significant"] >= n_significant
+                )
+                relevance_table.index = relevance_table["feature"]
+            else:
+                relevance_table = combine_relevance_tables(tables)
+
+        elif ml_task == "regression":
+            _spark_test_real_feature = partial(
+                spark_target_real_feature_real_test,
+                y=y,
+                column_id=column_id,
+                column_value=column_value,
+                column_sort=column_sort,
+            )
+            _spark_test_binary_feature = partial(
+                spark_target_real_feature_binary_test,
+                y=y,
+                column_id=column_id,
+                column_value=column_value,
+                column_sort=column_sort,
+            )
+
+            relevance_table = _spark_calculate_relevance_table_for_implicit_target(
+                table_real=table_real,
+                table_binary=table_binary,
+                X=X,
+                spark_test_real_feature=_spark_test_real_feature,
+                spark_test_binary_feature=_spark_test_binary_feature,
+                hypotheses_independent=hypotheses_independent,
+                fdr_level=fdr_level,
+            )
+
+        # set constant features to be irrelevant for all classes in multiclass case
+        if multiclass:
+            # TODO "Implement multiclasse on spark
+            raise NotImplementedError("Implement multiclasse on spark")
+            for column in relevance_table.filter(regex="^relevant_", axis=1).columns:
+                table_const[column] = False
+            table_const["n_significant"] = 0
+            table_const.drop(columns=["p_value"], inplace=True)
+
+        relevance_table = relevance_table.union(table_const)
+
+        if relevance_table.filter(F.col("relevant") == True).count() == 0:
+            warnings.warn(
+                "No feature was found relevant for {} for fdr level = {} (which corresponds to the maximal percentage "
+                "of irrelevant features, consider using an higher fdr level or add other features.".format(
+                    ml_task, fdr_level
+                ),
+                RuntimeWarning,
+            )
+
+    return relevance_table
+
+
 def _calculate_relevance_table_for_implicit_target(
     table_real,
     table_binary,
@@ -346,6 +551,77 @@ def _calculate_relevance_table_for_implicit_target(
         relevance_table.p_value, fdr_level, method
     )[0]
     return relevance_table.sort_values("p_value")
+
+def _spark_multipletests(feature_p_value, fdr_level, method):
+    def _spark_multipletests_helper(pdf, fdr_level, method):
+
+        pdf["relevant"] = multipletests(pdf["p_value"], alpha=fdr_level, method=method)[
+            0
+        ]
+        pdf.drop(columns="p_value", inplace=True)
+        return pdf
+
+    _spark_multipletests = partial(
+        _spark_multipletests_helper, fdr_level=fdr_level, method=method
+    )
+
+    schema = "feature string, relevant boolean"
+
+    return feature_p_value.groupby(["feature"]).applyInPandas(
+        _spark_multipletests, schema=schema
+    )
+
+def _spark_calculate_relevance_table_for_implicit_target(
+    table_real,
+    table_binary,
+    X,
+    spark_test_real_feature,
+    spark_test_binary_feature,
+    hypotheses_independent,
+    fdr_level,
+):
+    table_real = table_real.join(
+        spark_test_real_feature(
+            # spark_target_real_feature_real_test(
+            X=X.join(table_real, "feature", "left_semi"),
+            # y = y,
+            # column_id = column_id,
+            # column_value = column_value,
+            # column_sort = column_sort,
+        ),
+        "feature",
+        "left",
+    )
+
+    table_binary = table_binary.join(
+        spark_test_binary_feature(
+            # spark_target_real_feature_real_test(
+            X=X.join(table_binary, "feature", "left_semi"),
+            # y = y,
+            # column_id = column_id,
+            # column_value = column_value,
+            # column_sort = column_sort,
+        ),
+        "feature",
+        "left",
+    )
+
+    relevance_table = table_real.union(table_binary)
+    method = "fdr_bh" if hypotheses_independent else "fdr_by"
+
+    # TODO Implement multipletests
+    relevance_table = relevance_table.join(
+        _spark_multipletests(
+            feature_p_value=relevance_table.drop("type"),
+            fdr_level=fdr_level,
+            method=method,
+        ),
+        "feature",
+        "left",
+    )
+
+    relevance_table = relevance_table.sort(F.col("p_value").asc())
+    return relevance_table
 
 
 def infer_ml_task(y):

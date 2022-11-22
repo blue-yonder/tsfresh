@@ -38,6 +38,10 @@ from builtins import str
 import numpy as np
 import pandas as pd
 from scipy import stats
+from functools import partial
+
+from pyspark.sql import functions as F
+from pyspark.sql.types import DoubleType
 
 
 def target_binary_feature_binary_test(x, y):
@@ -167,6 +171,36 @@ def target_real_feature_binary_test(x, y):
     return p_value
 
 
+
+
+def spark_target_real_feature_binary_test(
+    X,
+    y,
+    column_id,  # TODO Is there a way to make this optional again? = None,
+    column_value,
+    column_sort,  # TODO Is there a way to make this optional again? = None,
+):
+
+    def _spark_target_real_feature_binary_test_helper(x, y):
+        y = y.reset_index(drop=True)
+        x = pd.Series(data=x)
+        return target_real_feature_binary_test(x, y).item()
+
+    spark_target_real_feature_binary_test = partial(
+        _spark_target_real_feature_binary_test_helper,
+        y=y,
+    )
+    spark_target_real_feature_binary_test_udf = F.udf(
+        spark_target_real_feature_binary_test, DoubleType()
+    )
+
+    return X.groupBy(["feature"]).agg(
+        spark_target_real_feature_binary_test_udf(F.collect_list(column_value)).alias(
+            "p_value"
+        )
+    )
+
+
 def target_real_feature_real_test(x, y):
     """
     Calculate the feature significance of a real-valued feature to a real-valued target as a p-value.
@@ -186,6 +220,36 @@ def target_real_feature_real_test(x, y):
 
     tau, p_value = stats.kendalltau(x, y, method="asymptotic")
     return p_value
+
+
+
+
+def spark_target_real_feature_real_test(
+    X,
+    y,
+    column_id, # TODO Is there a way to make this optional again? = None,
+    column_value,
+    column_sort,  # TODO Is there a way to make this optional again? = None,
+):
+
+    def _spark_target_real_feature_real_test_helper(x, y):
+        y = y.reset_index(drop=True)
+        x = pd.Series(data=x)
+        return target_real_feature_real_test(x, y).item()
+
+    spark_target_real_feature_real_test = partial(
+        _spark_target_real_feature_real_test_helper,
+        y=y,
+    )
+    spark_target_real_feature_real_test_udf = F.udf(
+        spark_target_real_feature_real_test, DoubleType()
+    )
+
+    return X.groupBy(["feature"]).agg(
+        spark_target_real_feature_real_test_udf(F.collect_list(column_value)).alias(
+            "p_value"
+        )
+    )
 
 
 def __check_if_pandas_series(x, y):

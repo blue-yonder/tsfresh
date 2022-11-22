@@ -16,6 +16,8 @@ import pandas as pd
 from tsfresh.feature_extraction import feature_calculators
 from tsfresh.utilities.string_manipulation import get_config_from_string
 
+from pyspark.sql.types import StringType
+
 
 def from_columns(columns, columns_to_ignore=None):
     """
@@ -79,6 +81,63 @@ def from_columns(columns, columns_to_ignore=None):
 
     return kind_to_fc_parameters
 
+def spark_from_columns(columns, columns_to_ignore=None):
+    """
+    columns: Spark dataframe
+    columns_to_ignore: list of str
+    """
+    columns = columns.select("feature").distinct()
+
+    if columns_to_ignore is None:
+        columns_to_ignore = []
+    columns = columns.filter(~columns.feature.isin(columns_to_ignore))
+
+    if not isinstance(columns.schema["feature"].dataType, StringType):
+        raise TypeError("Column 'feature' should be a string ")
+
+    columns_array = columns.withColumn("feature_array", F.split(F.col("feature"), "__"))
+    parts = columns_array.withColumn("n_parts", F.size("feature_array"))
+
+    # Test if some columns were not split correctly
+    parts_filtered = parts.filter(parts.n_parts.contains(1))
+    if bool(parts_filtered.collect()):
+        raise ValueError(
+            "Splitting of column names {} resulted in only one part.".format(
+                parts_filtered.rdd.map(lambda x: x.feature).collect()
+            )
+        )
+
+    features = columns_array.select(
+        columns_array.feature_array[1].alias("features")
+    ).distinct()
+    features_unknown = features.rdd.filter(
+        lambda x: not hasattr(feature_calculators, x.features)
+    )
+
+    if features_unknown.count() != 0:
+        raise ValueError(
+            "Unknown feature names {}".format(
+                features_unknown.map(lambda x: x.features).collect()
+            )
+        )
+
+    kinds = (
+        columns_array.select(columns_array.feature_array[0].alias("kind"))
+        .distinct()
+        .collect()
+    )
+    kind_to_fc_parameters = {
+        kind["kind"]: {
+            row["fc_parameters"][1]: get_config_from_string(row["fc_parameters"])
+            for row in columns_array.filter(
+                columns_array.feature_array[0].contains(kinds[0]["kind"])
+            )
+            .select(columns_array.feature_array.alias("fc_parameters"))
+            .collect()
+        }
+        for kind in kinds
+    }
+    return kind_to_fc_parameters
 
 class PickableSettings(UserDict):
     """Base object for all settings, which is a pickable dict.

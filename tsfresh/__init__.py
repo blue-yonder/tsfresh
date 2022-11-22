@@ -28,4 +28,4 @@ from tsfresh.convenience.relevant_extraction import (  # noqa: E402
     extract_relevant_features,
 )
 from tsfresh.feature_extraction import extract_features  # noqa: E402
-from tsfresh.feature_selection import select_features  # noqa: E402
+from tsfresh.feature_selection import select_features, spark_select_features  # noqa: E402
