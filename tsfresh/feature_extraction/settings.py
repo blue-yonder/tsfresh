@@ -17,6 +17,7 @@ from tsfresh.feature_extraction import feature_calculators
 from tsfresh.utilities.string_manipulation import get_config_from_string
 
 from pyspark.sql.types import StringType
+from pyspark.sql import functions as F
 
 
 def from_columns(columns, columns_to_ignore=None):
