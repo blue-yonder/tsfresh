@@ -9,15 +9,16 @@ from builtins import range
 from collections import UserDict
 from inspect import getfullargspec
 from itertools import product
+import findspark
+findspark.init()
+from pyspark.sql.types import StringType
+from pyspark.sql import functions as F
 
 import cloudpickle
 import pandas as pd
 
 from tsfresh.feature_extraction import feature_calculators
 from tsfresh.utilities.string_manipulation import get_config_from_string
-
-from pyspark.sql.types import StringType
-from pyspark.sql import functions as F
 
 
 def from_columns(columns, columns_to_ignore=None):
@@ -87,6 +88,8 @@ def spark_from_columns(columns, columns_to_ignore=None):
     columns: Spark dataframe
     columns_to_ignore: list of str
     """
+    
+
     columns = columns.select("feature").distinct()
 
     if columns_to_ignore is None:

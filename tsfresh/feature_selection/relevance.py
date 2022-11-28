@@ -13,6 +13,9 @@ which to cut off (solely based on the p-values).
 import warnings
 from functools import partial, reduce
 from multiprocessing import Pool
+import findspark
+findspark.init()
+from pyspark.sql import functions as F
 
 import numpy as np
 import pandas as pd
@@ -28,8 +31,6 @@ from tsfresh.feature_selection.significance_tests import (
     spark_target_real_feature_binary_test,
 )
 from tsfresh.utilities.distribution import initialize_warnings_in_workers
-
-from pyspark.sql import functions as F
 
 def calculate_relevance_table(
     X,
@@ -343,6 +344,8 @@ def spark_calculate_relevance_table(
     fdr_level=defaults.FDR_LEVEL,
     hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
 ):
+
+    
 
     # TODO think of a good way to deal with y being an indexed series or not
     y = y.sort_index().reset_index(drop=True)

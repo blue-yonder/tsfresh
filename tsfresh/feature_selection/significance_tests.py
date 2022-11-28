@@ -39,7 +39,8 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 from functools import partial
-
+import findspark
+findspark.init()
 from pyspark.sql import functions as F
 from pyspark.sql.types import DoubleType
 
