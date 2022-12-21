@@ -142,7 +142,7 @@ Further, you can even perform the extraction, imputing and filtering at the same
 You can now use the features in the DataFrame `features_filtered` (which is equal to
 `features_filtered_direct`) in conjunction with `y` to train your classification model.
 You can find an example in the Jupyter notebook
-`01 Feature Extraction and Selection.ipynb <https://github.com/blue-yonder/tsfresh/blob/main/notebooks/examples/01%20Feature%20Extraction%20and%20Selection.ipynb>`_
+`01 Feature Extraction and Selection.ipynb <https://github.com/blue-yonder/tsfresh/blob/main/notebooks/01%20Feature%20Extraction%20and%20Selection.ipynb>`_
 were we train a RandomForestClassifier using the extracted features.
 
 References
