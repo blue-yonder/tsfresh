@@ -101,7 +101,11 @@ class FeatureAugmenter(BaseEstimator, TransformerMixin):
         :param column_value: The column with the values. See :mod:`~tsfresh.feature_extraction.extraction`.
         :type column_value: basestring
 
-        :param n_jobs: The number of processes to use for parallelization. If zero, no parallelization is used.
+        :param n_jobs: The number of processes to use for parallelization.
+                    If zero, no parallelization is used.
+                    ``-1`` means using all processors. See scikit-learns'
+                    `Glossary <https://scikit-learn.org/stable/glossary.html#term-n-jobs>`__
+                    for more details.
         :type n_jobs: int
 
         :param chunksize: The size of one chunk that is submitted to the worker

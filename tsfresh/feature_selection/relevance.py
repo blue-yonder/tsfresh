@@ -131,7 +131,11 @@ def calculate_relevance_table(
                                    independent (e.g. mean and median)
     :type hypotheses_independent: bool
 
-    :param n_jobs: Number of processes to use during the p-value calculation
+    :param n_jobs: Number of processes to use during the p-value calculation.
+                If zero, no parallelization is used.
+                ``-1`` means using all processors. See scikit-learns'
+                `Glossary <https://scikit-learn.org/stable/glossary.html#term-n-jobs>`__
+                for more details.
     :type n_jobs: int
 
     :param show_warnings: Show warnings during the p-value calculation (needed for debugging of calculators).

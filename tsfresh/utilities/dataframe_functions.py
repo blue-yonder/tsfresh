@@ -421,7 +421,11 @@ def roll_time_series(
          than or equal 0.
     :type min_timeshift: int
 
-    :param n_jobs: The number of processes to use for parallelization. If zero, no parallelization is used.
+    :param n_jobs: The number of processes to use for parallelization.
+                If zero, no parallelization is used.
+                ``-1`` means using all processors. See scikit-learns'
+                `Glossary <https://scikit-learn.org/stable/glossary.html#term-n-jobs>`__
+                for more details.
     :type n_jobs: int
 
     :param chunksize: How many shifts per job should be calculated.
