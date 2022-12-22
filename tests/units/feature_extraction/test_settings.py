@@ -19,6 +19,7 @@ from tsfresh.feature_extraction.settings import (
     PickableSettings,
     TimeBasedFCParameters,
     from_columns,
+    include_function,
 )
 
 
@@ -143,7 +144,7 @@ class TestSettingsObject(TestCase):
         all_feature_calculators = [
             name
             for name, func in feature_calculators.__dict__.items()
-            if hasattr(func, "fctype") and not hasattr(func, "input_type")
+            if include_function(func, exclusion_attr="input_type")
         ]
 
         for calculator in all_feature_calculators:
@@ -222,7 +223,7 @@ class TestEfficientFCParameters(TestCase):
         all_feature_calculators = [
             name
             for name, func in feature_calculators.__dict__.items()
-            if hasattr(func, "fctype") and not hasattr(func, "high_comp_cost")
+            if include_function(func, exclusion_attr="high_comp_cost")
         ]
 
         for calculator in all_feature_calculators:
@@ -273,8 +274,7 @@ class TestEfficientFCParameters(TestCase):
             self.assertIn(
                 calculator,
                 rfs,
-                msg="Default IndexBasedFCParameters object does not setup calculation "
-                "of {}".format(calculator),
+                msg=f"Default IndexBasedFCParameters object does not setup calculation of {calculator}.",
             )
 
 
@@ -349,3 +349,76 @@ class TestSettingPickability(TestCase):
                 or (key(3) == 4 and settings[key] is None)
                 or (key(3) == 1 and settings[key] == {"this": "is a test"})
             )
+
+
+class TestIncludeFunction(TestCase):
+    def test_no_fctype(self):
+        class NoFCType:
+            pass
+
+        assert not include_function(NoFCType())
+
+    def test_fctype(self):
+        class FCType:
+            fctype = "testclass"
+
+        class FCTypeWithInstalledDependency:
+            fctype = "testclass"
+            dependency_available = True
+
+        class FCTypeWithoutInstalledDependency:
+            fctype = "testclass"
+            dependency_available = False
+
+        assert include_function(FCType())
+        assert include_function(FCType(), exclusion_attr="exclude_this")
+        assert include_function(FCTypeWithInstalledDependency())
+        assert include_function(
+            FCTypeWithInstalledDependency(), exclusion_attr="exclude_this"
+        )
+        assert not include_function(FCTypeWithoutInstalledDependency())
+        assert not include_function(
+            FCTypeWithoutInstalledDependency(), exclusion_attr="exclude_this"
+        )
+
+    def test_fctype_default_exclusion(self):
+        class FCType:
+            fctype = "testclass"
+            input_type = True
+
+        class FCTypeWithInstalledDependency:
+            fctype = "testclass"
+            input_type = True
+            dependency_available = True
+
+        class FCTypeWithoutInstalledDependency:
+            fctype = "testclass"
+            input_type = True
+            dependency_available = False
+
+        assert not include_function(FCType())
+        assert not include_function(FCTypeWithInstalledDependency())
+        assert not include_function(FCTypeWithoutInstalledDependency())
+
+    def test_fctype_exclude(self):
+        class FCType:
+            fctype = "testclass"
+            exclude_this = "Arbitrary value"
+
+        class FCTypeWithInstalledDependency:
+            fctype = "testclass"
+            exclude_this = "Arbitrary value"
+            dependency_available = True
+
+        class FCTypeWithoutInstalledDependency:
+            fctype = "testclass"
+            exclude_this = "Arbitrary value"
+            dependency_available = False
+
+        assert not include_function(FCType(), exclusion_attr="exclude_this")
+        assert not include_function(
+            FCTypeWithInstalledDependency(), exclusion_attr="exclude_this"
+        )
+        assert not include_function(
+            FCTypeWithoutInstalledDependency(), exclusion_attr="exclude_this"
+        )

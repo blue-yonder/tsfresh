@@ -5,6 +5,7 @@
 This file contains methods/objects for controlling which features will be extracted when calling extract_features.
 For the naming of the features, see :ref:`feature-naming-label`.
 """
+import logging
 from builtins import range
 from collections import UserDict
 from inspect import getfullargspec
@@ -15,6 +16,8 @@ import pandas as pd
 
 from tsfresh.feature_extraction import feature_calculators
 from tsfresh.utilities.string_manipulation import get_config_from_string
+
+_logger = logging.getLogger(__name__)
 
 
 def from_columns(columns, columns_to_ignore=None):
@@ -78,6 +81,29 @@ def from_columns(columns, columns_to_ignore=None):
             kind_to_fc_parameters[kind][feature_name] = None
 
     return kind_to_fc_parameters
+
+
+def include_function(func, exclusion_attr="input_type"):
+    """Helper function for selecting specific subset of functions subject to an exclusion attribute
+    and the availability of optional dependencies.
+
+    :param func: function to be tested for inclusion
+    :type func: object
+    :param exclusion_attr: function attribute qualifying as exclusion criterion
+    :type exclusion_attr: str
+
+    :return: Boolean indicating if the specific function matches the inclusion criteria.
+    :rtype: bool
+    """
+    decision = (
+        hasattr(func, "fctype")
+        and not hasattr(func, exclusion_attr)
+        and not (
+            hasattr(func, "dependency_available")
+            and getattr(func, "dependency_available") is False
+        )
+    )
+    return decision
 
 
 class PickableSettings(UserDict):
@@ -252,6 +278,18 @@ class ComprehensiveFCParameters(PickableSettings):
                 ],
             }
         )
+
+        # remove missing dependencies
+        for name, func in feature_calculators.__dict__.items():
+            if (
+                callable(func)
+                and hasattr(func, "dependency_available")
+                and getattr(func, "dependency_available") is False
+            ):
+                name_to_param.pop(name)
+                _logger.warning(
+                    f"Dependency not available for {name}, this feature will be disabled!"
+                )
 
         super().__init__(name_to_param)
 

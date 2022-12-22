@@ -70,32 +70,32 @@ def _notebook_run(path, timeout=default_timeout):
 class NotebooksTestCase(TestCase):
     def test_basic_example(self):
         nb, errors = _notebook_run(
-            "notebooks/examples/01 Feature Extraction and Selection.ipynb",
+            "notebooks/01 Feature Extraction and Selection.ipynb",
             default_timeout,
         )
         self.assertEqual(errors, [])
 
     def test_pipeline_example(self):
         nb, errors = _notebook_run(
-            "notebooks/examples/02 sklearn Pipeline.ipynb", default_timeout
+            "notebooks/02 sklearn Pipeline.ipynb", default_timeout
         )
         self.assertEqual(errors, [])
 
     def test_extraction_settings(self):
         nb, errors = _notebook_run(
-            "notebooks/examples/03 Feature Extraction Settings.ipynb", default_timeout
+            "notebooks/03 Feature Extraction Settings.ipynb", default_timeout
         )
         self.assertEqual(errors, [])
 
     def test_multiclass_selection_example(self):
         nb, errors = _notebook_run(
-            "notebooks/examples/04 Multiclass Selection Example.ipynb", default_timeout
+            "notebooks/04 Multiclass Selection Example.ipynb", default_timeout
         )
         self.assertEqual(errors, [])
 
     def test_timeseries_forecasting(self):
         nb, errors = _notebook_run(
-            "notebooks/examples/05 Timeseries Forecasting.ipynb", default_timeout
+            "notebooks/05 Timeseries Forecasting.ipynb", default_timeout
         )
         self.assertEqual(errors, [])
 
