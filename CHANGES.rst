@@ -4,6 +4,16 @@ Changelog
 
 tsfresh uses `Semantic Versioning <http://semver.org/>`_
 
+Version 0.20.0
+==============
+
+- Breaking Change
+    - The matrixprofile package becomes an optional dependency
+
+- Bugfixes/Typos/Documentation:
+    - Fix feature extraction of Friedrich coefficients for pandas>1.3.5
+    - Fix file paths after example notebooks were moved
+
 Version 0.19.0
 ==============
 

@@ -51,3 +51,5 @@ Contributions
 - Dimitris Spathis
 - Filip Malkowski
 - George Wambold
+- Brunno Vanelli
+- Maximilian Lohmann

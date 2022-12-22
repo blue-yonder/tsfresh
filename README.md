@@ -121,13 +121,20 @@ If you are interested in the technical workings, go to see our comprehensive Rea
 
 The algorithm, especially the filtering part are also described in the paper mentioned above.
 
-If you have some questions or feedback you can find the developers in the [gitter chatroom.](https://gitter.im/tsfresh/Lobby?utm_source=share-link&utm_medium=link&utm_campaign=share-link)
-
 We appreciate any contributions, if you are interested in helping us to make *TSFRESH* the biggest archive of feature extraction methods in python, just head over to our [How-To-Contribute](http://tsfresh.readthedocs.io/en/latest/text/how_to_contribute.html) instructions.
 
 If you want to try out `tsfresh` quickly or if you want to integrate it into your workflow, we also have a docker image available:
 
     docker pull nbraun/tsfresh
+
+
+## Backwards compatibility
+
+If you need to reproduce or update time-series features, which were computed with the `matrixprofile` feature calculators, you need to create a Python 3.8 environment:
+
+    conda create --name tsfresh__py_3.8 python=3.8
+    conda activate tsfresh__py_3.8
+    pip install tsfresh[matrixprofile]
 
 ## Acknowledgements
 
