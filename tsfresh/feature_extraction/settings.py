@@ -83,6 +83,29 @@ def from_columns(columns, columns_to_ignore=None):
     return kind_to_fc_parameters
 
 
+def include_function(func, exclusion_attr="input_type"):
+    """Helper function for selecting specific subset of functions subject to an exclusion attribute
+    and the availability of optional dependencies.
+
+    :param func: function to be tested for inclusion
+    :type func: object
+    :param exclusion_attr: function attribute qualifying as exclusion criterion
+    :type exclusion_attr: str
+
+    :return: Boolean indicating if the specific function matches the inclusion criteria.
+    :rtype: bool
+    """
+    decision = (
+        hasattr(func, "fctype")
+        and not hasattr(func, exclusion_attr)
+        and not (
+            hasattr(func, "dependency_available")
+            and getattr(func, "dependency_available") is False
+        )
+    )
+    return decision
+
+
 class PickableSettings(UserDict):
     """Base object for all settings, which is a pickable dict.
     For user-specified functions, the settings dictionary might include functions as a key.
