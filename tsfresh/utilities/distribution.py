@@ -14,7 +14,7 @@ import warnings
 from collections.abc import Generator, Iterable
 from functools import partial
 from itertools import islice, repeat, takewhile
-from multiprocessing import Pool
+from multiprocessing import Pool, cpu_count
 
 from tqdm import tqdm
 
@@ -59,6 +59,13 @@ def initialize_warnings_in_workers(show_warnings):
         warnings.simplefilter("ignore")
     else:
         warnings.simplefilter("default")
+
+
+def effective_n_jobs(n_jobs):
+    if n_jobs < 0:
+        n_jobs = max(cpu_count() + 1 + n_jobs, 1)
+
+    return n_jobs
 
 
 class DistributorBaseClass:

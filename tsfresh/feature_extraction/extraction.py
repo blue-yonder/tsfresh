@@ -21,6 +21,7 @@ from tsfresh.utilities.distribution import (
     DistributorBaseClass,
     MapDistributor,
     MultiprocessingDistributor,
+    effective_n_jobs,
 )
 from tsfresh.utilities.string_manipulation import convert_to_output_format
 
@@ -258,6 +259,7 @@ def _do_extraction(
     """
 
     data = to_tsdata(df, column_id, column_kind, column_value, column_sort)
+    n_jobs = effective_n_jobs(n_jobs)
 
     if distributor is None:
         if isinstance(data, Iterable):

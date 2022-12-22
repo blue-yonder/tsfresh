@@ -25,7 +25,10 @@ from tsfresh.feature_selection.significance_tests import (
     target_real_feature_binary_test,
     target_real_feature_real_test,
 )
-from tsfresh.utilities.distribution import initialize_warnings_in_workers
+from tsfresh.utilities.distribution import (
+    initialize_warnings_in_workers,
+    effective_n_jobs
+)
 
 
 def calculate_relevance_table(
@@ -191,6 +194,8 @@ def calculate_relevance_table(
             warnings.simplefilter("ignore")
         else:
             warnings.simplefilter("default")
+
+        n_jobs = effective_n_jobs(n_jobs)
 
         if n_jobs == 0 or n_jobs == 1:
             map_function = map
