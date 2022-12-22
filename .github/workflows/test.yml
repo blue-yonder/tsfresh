@@ -32,7 +32,7 @@ jobs:
 
             # only starting from these version, there is a wheel
             NUMPY: "1.17.3"
-            PANDAS: "1.0.0"
+            PANDAS: "1.0.5"
             SCIKITLEARN: "0.22.0"
             DASK: "2.9.0"
             DISTRIBUTED: "2.11.0"
