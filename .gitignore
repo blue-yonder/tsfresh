@@ -61,3 +61,9 @@ tsfresh/notebooks/data/
 # dask
 dask-worker-space
 dask-worker-space/
+
+# python version files
+.python_version
+
+# tox log files
+.tox
