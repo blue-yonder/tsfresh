@@ -2041,7 +2041,7 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqual(query_similarity_count(x, param=param)[0][1], 91.0)
 
     @unittest.skipIf(
-        not getattr(matrix_profile, "dependency_available", True), 
+        not getattr(matrix_profile, "dependency_available", True),
         "Missing matrixprofile dependency",
     )
     def test_matrix_profile_window(self):
