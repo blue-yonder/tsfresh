@@ -177,7 +177,7 @@ class ExtractionTestCase(DataTestCase):
 
         settings = PickableSettings(
             {
-                "mean": None, 
+                "mean": None,
                 custom_function: [{"p": 1}, {"p": -1}],
             }
         )
