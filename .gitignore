@@ -64,3 +64,6 @@ dask-worker-space/
 
 # python version files
 .python_version
+
+# tox log files
+.tox
