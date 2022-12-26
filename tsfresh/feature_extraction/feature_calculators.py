@@ -421,7 +421,7 @@ def agg_autocorrelation(x, param):
     n = len(x)
     max_maxlag = max([config["maxlag"] for config in param])
 
-    if np.abs(var) < 10 ** -10 or n == 1:
+    if np.abs(var) < 10**-10 or n == 1:
         a = [0] * len(x)
     else:
         a = acf(x, adjusted=True, fft=n > THRESHOLD_TO_USE_FFT, nlags=max_maxlag)[1:]
@@ -1152,7 +1152,7 @@ def fft_aggregated(x, param):
         :return: the moment requested
         :return type: float
         """
-        return y.dot(np.arange(len(y), dtype=float) ** moment) / y.sum()
+        return y.dot(np.arange(len(y), dtype=float)**moment) / y.sum()
 
     def get_centroid(y):
         """
@@ -1170,7 +1170,7 @@ def fft_aggregated(x, param):
         :return: the variance of distribution y
         :return type: float
         """
-        return get_moment(y, 2) - get_centroid(y) ** 2
+        return get_moment(y, 2) - get_centroid(y)**2
 
     def get_skew(y):
         """
@@ -1190,8 +1190,8 @@ def fft_aggregated(x, param):
             return np.nan
         else:
             return (
-                get_moment(y, 3) - 3 * get_centroid(y) * variance - get_centroid(y) ** 3
-            ) / get_variance(y) ** (1.5)
+                get_moment(y, 3) - 3 * get_centroid(y) * variance - get_centroid(y)**3
+            ) / get_variance(y)**(1.5)
 
     def get_kurtosis(y):
         """
@@ -1213,9 +1213,9 @@ def fft_aggregated(x, param):
             return (
                 get_moment(y, 4)
                 - 4 * get_centroid(y) * get_moment(y, 3)
-                + 6 * get_moment(y, 2) * get_centroid(y) ** 2
+                + 6 * get_moment(y, 2) * get_centroid(y)**2
                 - 3 * get_centroid(y)
-            ) / get_variance(y) ** 2
+            ) / get_variance(y)**2
 
     calculation = dict(
         centroid=get_centroid,
@@ -2232,7 +2232,7 @@ def energy_ratio_by_chunks(x, param):
     """
     res_data = []
     res_index = []
-    full_series_energy = np.sum(x ** 2)
+    full_series_energy = np.sum(x**2)
 
     for parameter_combination in param:
         num_segments = parameter_combination["num_segments"]
@@ -2244,7 +2244,7 @@ def energy_ratio_by_chunks(x, param):
             res_data.append(np.NaN)
         else:
             res_data.append(
-                np.sum(np.array_split(x, num_segments)[segment_focus] ** 2.0)
+                np.sum(np.array_split(x, num_segments)[segment_focus]**2.0)
                 / full_series_energy
             )
 

@@ -62,8 +62,5 @@ tsfresh/notebooks/data/
 dask-worker-space
 dask-worker-space/
 
-# PDFs
-*.pdf
-
 # python version files
 .python_version

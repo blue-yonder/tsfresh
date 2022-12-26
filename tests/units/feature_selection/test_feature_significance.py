@@ -32,7 +32,7 @@ class FeatureSignificanceTestCase(TestCase):
             0, 1, 1000
         )
         X["rel3"] = y + np.random.normal(0, 0.3, 1000)
-        X["rel4"] = y ** 2 + np.random.normal(0, 1, 1000)
+        X["rel4"] = y**2 + np.random.normal(0, 1, 1000)
         X["rel5"] = np.sqrt(y) + np.random.binomial(2, 0.1, 1000)
 
         X["irr_constant"] = 1.113344
@@ -153,7 +153,7 @@ class FeatureSignificanceTestCase(TestCase):
 
         X["rel1"] = y * np.random.normal(0, 1, 5000) + np.random.normal(0, 1, 5000)
         X["rel2"] = y + np.random.normal(0, 1, 5000)
-        X["rel3"] = y ** 2 + np.random.normal(0, 1, 5000)
+        X["rel3"] = y**2 + np.random.normal(0, 1, 5000)
         X["rel4"] = np.sqrt(y) + np.random.binomial(2, 0.1, 5000)
 
         df_bh = calculate_relevance_table(X, y)
@@ -189,7 +189,7 @@ class FeatureSignificanceTestCase(TestCase):
 
         X["rel1"] = z
         X["rel2"] = y
-        X["rel3"] = y ** 2
+        X["rel3"] = y**2
         X["rel4"] = np.sqrt(abs(y))
 
         X["irr1"] = np.random.normal(0, 1, 5000)
