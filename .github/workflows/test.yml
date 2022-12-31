@@ -13,44 +13,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.7, 3.8, 3.9]
+        python-version: [3.8, 3.9]
         installation: ["lowest", "highest"]
         include:
-          - python-version: 3.7
-            installation: "lowest"
-
-            NUMPY: "1.15.1"
-            PANDAS: "1.0.5" # see https://github.com/numpy/numpy/issues/18355
-            SCIKITLEARN: "0.22.0"
-            DASK: "2.9.0"
-            DISTRIBUTED: "2.11.0"
-            SCIPY: "1.2.0"
-            STATSMODELS: "0.13.0"
-
           - python-version: 3.8
             installation: "lowest"
-
-            # only starting from these version, there is a wheel
-            NUMPY: "1.17.3"
-            PANDAS: "1.0.5"
-            SCIKITLEARN: "0.22.0"
-            DASK: "2.9.0"
-            DISTRIBUTED: "2.11.0"
-            # 1.2.0 is not installable with python 3.8...
-            SCIPY: "1.4.0"
-            STATSMODELS: "0.13.0"
-
           - python-version: 3.9
             installation: "lowest"
-
-            # only starting from these version, there is a wheel
-            NUMPY: "1.20.3"
-            PANDAS: "1.3.5"
-            SCIKITLEARN: "1.0.1"
-            DASK: "2021.12.0"
-            DISTRIBUTED: "2021.12.0"
-            SCIPY: "1.7.3"
-            STATSMODELS: "0.13.0"
 
     steps:
       - uses: actions/checkout@v3
@@ -71,27 +40,12 @@ jobs:
       - name: Install dependencies
         run: |
           # Do all the installations
-          python -m pip install --upgrade pip wheel setuptools
-
-          # Now downgrade packages if required by environment variables
-          [ -z "${{matrix.NUMPY}}" ] || pip install numpy==${{matrix.NUMPY}}
-          [ -z "${{matrix.PANDAS}}" ] || pip install pandas==${{matrix.PANDAS}}
-          [ -z "${{matrix.SCIKITLEARN}}" ] || pip install scikit-learn==${{matrix.SCIKITLEARN}}
-          [ -z "${{matrix.STATSMODELS}}" ] || pip install statsmodels==${{matrix.STATSMODELS}}
-          [ -z "${{matrix.DASK}}" ] || pip install dask==${{matrix.DASK}}
-          [ -z "${{matrix.DISTRIBUTED}}" ] || pip install distributed==${{matrix.DISTRIBUTED}}
-          # need to downgrade tornado manually
-          [ -z "${{matrix.SCIPY}}" ] || pip install scipy==${{matrix.SCIPY}}
-
-          pip install -r requirements.txt -r test-requirements.txt
-          pip install .
-
-          # Print out the pip versions for debugging
-          pip list
+          python -m pip install --upgrade pip wheel setuptools pdm
+          pdm install -G:all
 
       - name: Test with pytest
         run: |
-          pytest --junitxml=junit/test-results-${{ matrix.python-version }}-${{ matrix.installation }}.xml --cov-report=xml tests
+          pdm run pytest --junitxml=junit/test-results-${{ matrix.python-version }}-${{ matrix.installation }}.xml --cov-report=xml tests
 
       - name: Upload pytest test results
         uses: actions/upload-artifact@v1

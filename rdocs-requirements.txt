@@ -1,5 +1,0 @@
-Sphinx==1.6.4
-sphinx_rtd_theme>=0.2.4
-b2luigi
-docutils<0.18  # Workaround for https://github.com/sphinx-doc/sphinx/issues/9727
--r requirements.txt
