@@ -354,9 +354,11 @@ def spark_calculate_relevance_table(
 
     # Make sure X and y both have the exact same indices
     # TODO This is just checking the length of the indices
+    len_y_index = len(list(y.index))
+    len_X_index = X.select(column_id, column_sort).distinct().count()
     assert (
-        len(list(y.index)) == X.select(column_id, column_sort).distinct().count()
-    ), "The index of X and y need to be the same"
+        len_y_index == len_X_index
+    ), f"The index of X and y need to be the same. Length of y index is {len_y_index}, length of X index is {len_X_index}"
 
     if ml_task not in ["auto", "classification", "regression"]:
         raise ValueError(
