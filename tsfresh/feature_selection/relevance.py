@@ -345,20 +345,19 @@ def spark_calculate_relevance_table(
     hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
 ):
 
-    
+    # Make sure X and y both have the exact same indices
+    y_sorted_index = y.sort_index().index
+    X_sorted_index = X.select(column_id, column_sort).distinct().toPandas().set_index([column_id,column_sort]).sort_index().index
+    assert (
+        list(y_sorted_index) == list(X_sorted_index)
+    ), f"The index of X and y need to be the same."
 
     # TODO think of a good way to deal with y being an indexed series or not
     y = y.sort_index().reset_index(drop=True)
-    # TODO Sorting is should be implemented in the wrapper function
+    # TODO Sorting should be implemented in the wrapper function
     X = X.sort(F.col("feature"), F.col(column_id), F.col(column_sort))
 
-    # Make sure X and y both have the exact same indices
-    # TODO This is just checking the length of the indices
-    len_y_index = len(list(y.index))
-    len_X_index = X.select(column_id, column_sort).distinct().count()
-    assert (
-        len_y_index == len_X_index
-    ), f"The index of X and y need to be the same. Length of y index is {len_y_index}, length of X index is {len_X_index}"
+    
 
     if ml_task not in ["auto", "classification", "regression"]:
         raise ValueError(
