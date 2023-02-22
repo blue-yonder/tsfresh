@@ -37,7 +37,7 @@ if on_rtd:
     module_dir = os.path.join(__location__, "../tsfresh")
     cmd_line_template = "sphinx-apidoc -f -o {outputdir} {moduledir}"
     cmd_line = cmd_line_template.format(outputdir=output_dir, moduledir=module_dir)
-    main(cmd_line.split(" "))
+    main(cmd_line.split(" ")[1:])
 
 # -- General configuration -----------------------------------------------------
 

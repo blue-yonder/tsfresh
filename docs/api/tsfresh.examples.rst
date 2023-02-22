@@ -1,25 +1,37 @@
-examples
-========
+tsfresh.examples package
+========================
 
-.. automodule:: tsfresh.examples
-    :members:
-    :undoc-members:
-    :show-inheritance:
+Submodules
+----------
 
+tsfresh.examples.driftbif\_simulation module
+--------------------------------------------
 
-robot_execution_failures
-------------------------
+.. automodule:: tsfresh.examples.driftbif_simulation
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
-.. automodule:: tsfresh.examples.robot_execution_failures
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-har_dataset
------------
+tsfresh.examples.har\_dataset module
+------------------------------------
 
 .. automodule:: tsfresh.examples.har_dataset
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+tsfresh.examples.robot\_execution\_failures module
+--------------------------------------------------
+
+.. automodule:: tsfresh.examples.robot_execution_failures
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: tsfresh.examples
+   :members:
+   :undoc-members:
+   :show-inheritance:

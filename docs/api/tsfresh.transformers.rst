@@ -1,39 +1,45 @@
-transformers
-============
+tsfresh.transformers package
+============================
 
-.. automodule:: tsfresh.transformers
-    :members:
-    :undoc-members:
-    :show-inheritance:
+Submodules
+----------
 
-feature_augmenter
------------------
+tsfresh.transformers.feature\_augmenter module
+----------------------------------------------
 
 .. automodule:: tsfresh.transformers.feature_augmenter
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
-feature_selector
-----------------
+tsfresh.transformers.feature\_selector module
+---------------------------------------------
 
 .. automodule:: tsfresh.transformers.feature_selector
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
-relevant_feature_augmenter
---------------------------
-
-.. automodule:: tsfresh.transformers.relevant_feature_augmenter
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-per_column_imputer
---------------------------
+tsfresh.transformers.per\_column\_imputer module
+------------------------------------------------
 
 .. automodule:: tsfresh.transformers.per_column_imputer
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+tsfresh.transformers.relevant\_feature\_augmenter module
+--------------------------------------------------------
+
+.. automodule:: tsfresh.transformers.relevant_feature_augmenter
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: tsfresh.transformers
+   :members:
+   :undoc-members:
+   :show-inheritance:

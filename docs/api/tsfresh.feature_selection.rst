@@ -1,31 +1,37 @@
-feature_selection
-=================
+tsfresh.feature\_selection package
+==================================
 
-.. automodule:: tsfresh.feature_selection
-    :members:
-    :undoc-members:
-    :show-inheritance:
+Submodules
+----------
 
-relevance
----------
+tsfresh.feature\_selection.relevance module
+-------------------------------------------
 
 .. automodule:: tsfresh.feature_selection.relevance
-    :members:
-    :undoc-members: _calculate_relevance_table_for_implicit_target
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
-selection
----------
+tsfresh.feature\_selection.selection module
+-------------------------------------------
 
 .. automodule:: tsfresh.feature_selection.selection
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
-significance_tests
-------------------
+tsfresh.feature\_selection.significance\_tests module
+-----------------------------------------------------
 
 .. automodule:: tsfresh.feature_selection.significance_tests
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: tsfresh.feature_selection
+   :members:
+   :undoc-members:
+   :show-inheritance:
