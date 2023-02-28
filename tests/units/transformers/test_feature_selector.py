@@ -37,7 +37,7 @@ class FeatureSelectorTestCase(TestCase):
             0, 0.1, 1000
         )
         X["rel3"] = y + np.random.normal(0, 1, 1000)
-        X["rel4"] = y ** 2 + np.random.normal(0, 1, 1000)
+        X["rel4"] = y**2 + np.random.normal(0, 1, 1000)
         X["rel5"] = np.sqrt(y) + np.random.binomial(2, 0.1, 1000)
 
         X["irr_constant"] = 1.113344

@@ -421,7 +421,7 @@ def agg_autocorrelation(x, param):
     n = len(x)
     max_maxlag = max([config["maxlag"] for config in param])
 
-    if np.abs(var) < 10 ** -10 or n == 1:
+    if np.abs(var) < 10**-10 or n == 1:
         a = [0] * len(x)
     else:
         a = acf(x, adjusted=True, fft=n > THRESHOLD_TO_USE_FFT, nlags=max_maxlag)[1:]
@@ -2232,7 +2232,7 @@ def energy_ratio_by_chunks(x, param):
     """
     res_data = []
     res_index = []
-    full_series_energy = np.sum(x ** 2)
+    full_series_energy = np.sum(x**2)
 
     for parameter_combination in param:
         num_segments = parameter_combination["num_segments"]
