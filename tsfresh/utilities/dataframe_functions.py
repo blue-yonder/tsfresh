@@ -17,6 +17,14 @@ from tsfresh.utilities.distribution import (
     MultiprocessingDistributor,
 )
 
+import findspark
+findspark.init()
+import pyspark
+import warnings
+from pyspark.sql import functions  as F
+from pyspark.sql.window import Window
+from pyspark.sql.types import *
+
 
 def check_for_nans_in_columns(df, columns=None):
     """
@@ -577,6 +585,140 @@ def roll_time_series(
     df_shift = pd.concat(shifted_chunks, ignore_index=True)
 
     return df_shift.sort_values(by=["id", column_sort or "sort"])
+
+def spark_roll_time_series(
+    spark:pyspark.sql.session.SparkSession,
+    sdf:pyspark.sql.dataframe.DataFrame,
+    column_id:str,
+    column_sort:str=None,
+    column_kind:str=None,
+    rolling_direction:int=1,
+    max_timeshift:int=None,
+    min_timeshift:int=0,
+):
+    """
+    This method creates sub windows of the time series. It rolls the (sorted) data frames for each kind and each id
+    separately in the "time" domain (which is represented by the sort order of the sort column given by `column_sort`).
+    For each rolling step, a new id is created by the scheme ({id}, {shift}), here id is the former id of
+    the column and shift is the amount of "time" shifts.
+    You can think of it as having a window of fixed length (the max_timeshift) moving one step at a time over
+    your time series.
+    Each cut-out seen by the window is a new time series with a new identifier.
+    A few remarks:
+     * This method will create new IDs!
+     * The sign of rolling defines the direction of time rolling, a positive value means we are shifting
+       the cut-out window foreward in time. The name of each new sub time series is given by the last time point.
+       This means, the time series named `([id=]4,[timeshift=]5)` with a `max_timeshift` of 3 includes the data
+       of the times 3, 4 and 5.
+       A negative rolling direction means, you go in negative time direction over your data.
+       The time series named `([id=]4,[timeshift=]5)` with `max_timeshift` of 3 would then include the data
+       of the times 5, 6 and 7.
+       The absolute value defines how much time to shift at each step.
+     * It is possible to shift time series of different lengths, but:
+     * We assume that the time series are uniformly sampled
+     * For more information, please see :ref:`forecasting-label`.
+    :param sdf: a spark DataFrame. The required shape/form of the object depends on the rest of
+        the passed arguments.
+    :type pyspark.sql.dataframe.DataFrame: spark Dataframe
+    :param column_id: it must be present in the pandas DataFrame or in all DataFrames in the dictionary.
+        It is not allowed to have NaN values in this column.
+    :type column_id: basestring
+    :param column_sort: if not None, sort the rows by this column. It is not allowed to
+        have NaN values in this column. If not given, will be filled by an increasing number,
+        meaning that the order of the passed dataframes are used as "time" for the time series.
+    :type column_sort: basestring or None
+    :param column_kind: It can only be used when passing a pandas DataFrame (the dictionary is already assumed to be
+        grouped by the kind). Is must be present in the DataFrame and no NaN values are allowed.
+        If the kind column is not passed, it is assumed that each column in the pandas DataFrame (except the id or
+        sort column) is a possible kind.
+    :type column_kind: basestring or None
+    :param rolling_direction: The sign decides, if to shift our cut-out window backwards or forwards in "time".
+        The absolute value decides, how much to shift at each step.
+    :type rolling_direction: int
+    :param max_timeshift: If not None, the cut-out window is at maximum `max_timeshift` large. If none, it grows
+         infinitely.
+    :type max_timeshift: int
+    :param min_timeshift: Throw away all extracted forecast windows smaller or equal than this. Must be larger
+         than or equal 0.
+    :type min_timeshift: int
+    :return: The rolled spark data frame
+    :rtype: spark Dataframe
+    """
+
+    if rolling_direction == 0: raise ValueError("Rolling direction of 0 is not possible")
+
+    if max_timeshift is not None and max_timeshift <= 0: raise ValueError("max_timeshift needs to be positive!")
+
+    if min_timeshift < 0: raise ValueError("min_timeshift needs to be positive or zero!")
+    
+
+    if sdf.count() <= 1: raise ValueError("Your time series container has zero or one rows!. Can not perform rolling.")
+
+
+    if column_id is not None:
+        if column_id not in sdf.columns: raise AttributeError("The given column for the id is not present in the data.")
+    else:
+        raise ValueError("You have to set the column_id which contains the ids of the different time series")
+    
+    if column_kind is not None:
+        grouper = [column_id, column_kind,]
+        sdf = sdf.withColumn("grouper", F.concat(F.lit('('), F.col(column_id),F.lit(','), F.col(column_kind), F.lit(')')))
+    else:
+        sdf = sdf.withColumn("grouper", F.col(column_id))
+        grouper = [column_id,]
+
+    if column_sort is not None:
+        # Require no Nans in column
+        if sdf.where(F.isnull(col = column_sort)).limit(1).first() is not None:
+            raise ValueError("You have Null values in your sort column.")
+        orderBy = F.col(col = column_sort)
+    else:
+        orderBy = F.lit(col = '')
+
+    # Roll the data frames if requested
+    rolling_amount = np.abs(rolling_direction)
+    rolling_direction = np.sign(rolling_direction)
+
+    grouped_data_sdf = sdf.groupBy(grouper).count()
+    prediction_steps = grouped_data_sdf.select(F.max("count")).first()[0]
+
+    max_timeshift = max_timeshift or prediction_steps
+
+    range_of_shifts=range(0, prediction_steps, rolling_amount)
+
+    # Add the row numbers per partition
+    w = Window().partitionBy(grouper).orderBy(orderBy)
+    sdf = sdf.withColumn("row_num", F.row_number().over(w)-1)
+
+    # Create an empty dataframe to concatenate the rolling data
+    emptyRDD = spark.sparkContext.emptyRDD()
+    schema = sdf.schema
+    if "rolling_id" not in [field.name for field in schema.fields]:
+        schema.add(StructField(name = "rolling_id", dataType=StringType(), nullable=True))
+    unioned_sdf = spark.createDataFrame(data=emptyRDD,schema=schema)
+
+    for groupbyvalue in sdf.agg(F.collect_set(col="grouper")).first()[0]:
+        groupbyvalue = groupbyvalue.lstrip('(').rstrip(')').split(',')
+        column_id_val = groupbyvalue[0]
+        column_kind_val = groupbyvalue[1] if len(groupbyvalue)>1 else None
+
+        for timeshift in range_of_shifts:
+            if rolling_direction>0:
+                # For positive rolling, the right side of the window moves with `timeshift`
+                shift_until = timeshift
+                shift_from = max(shift_until - max_timeshift, 0)
+            else:
+                # For negative rolling, the left side of the window moves with `timeshift`
+                shift_from = timeshift
+                shift_until = min(shift_from + max_timeshift-1,prediction_steps-1)
+
+            tmp_sdf = sdf.filter(F.col(column_id)==column_id_val)
+            if column_kind_val is not None: tmp_sdf = tmp_sdf.filter(F.col(column_kind)==column_kind_val)
+            if max_timeshift is not None: tmp_sdf = tmp_sdf.filter(F.col("row_num")>=shift_from)
+            tmp_sdf = tmp_sdf.filter(F.col("row_num")<=shift_until)
+            unioned_sdf = unioned_sdf.union(tmp_sdf.withColumn("rolling_id", F.lit(f"({column_id_val},{timeshift+1})")))
+    unioned_sdf = unioned_sdf.drop(F.col("row_num")).drop(F.col("grouper"))
+    return unioned_sdf
 
 
 def make_forecasting_frame(x, kind, max_timeshift, rolling_direction):
