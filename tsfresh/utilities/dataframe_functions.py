@@ -684,7 +684,7 @@ def spark_roll_time_series(
 
     max_timeshift = max_timeshift or prediction_steps
 
-    range_of_shifts=range(0, prediction_steps, rolling_amount)
+    range_of_shifts=range(min_timeshift, prediction_steps, rolling_amount)
 
     # Add the row numbers per partition
     w = Window().partitionBy(grouper).orderBy(orderBy)
@@ -697,19 +697,32 @@ def spark_roll_time_series(
         schema.add(StructField(name = "rolling_id", dataType=StringType(), nullable=True))
     unioned_sdf = spark.createDataFrame(data=emptyRDD,schema=schema)
 
-    for groupbyvalue in sdf.agg(F.collect_set(col="grouper")).first()[0]:
-        groupbyvalue = groupbyvalue.lstrip('(').rstrip(')').split(',')
-        column_id_val = groupbyvalue[0]
-        column_kind_val = groupbyvalue[1] if len(groupbyvalue)>1 else None
+    
 
+    for groupbyvalue in sdf.agg(F.collect_set(col="grouper")).first()[0]:
+        groupbyvalue_split = groupbyvalue.lstrip('(').rstrip(')').split(',')
+        column_id_val = groupbyvalue_split[0]
+        column_kind_val = groupbyvalue_split[1] if len(groupbyvalue)>1 else None
+
+        # Find the maximum number of rows per "grouper"
+        tmp_grouped_sdf = grouped_data_sdf.filter(F.col(column_id)==column_id_val)
+        if column_kind_val is not None:
+            tmp_grouped_sdf =  tmp_grouped_sdf.filter(F.col(column_kind)==column_kind_val)
+        max_row = tmp_grouped_sdf.select(F.col("count")).first()[0]
+        
         for timeshift in range_of_shifts:
+            # # Stop that iteration if the min_time_shift is not reached
+            if timeshift >= max_row:
+                    continue
+
             if rolling_direction>0:
                 # For positive rolling, the right side of the window moves with `timeshift`
-                shift_until = timeshift
+                shift_until = min(timeshift,max_row)
                 shift_from = max(shift_until - max_timeshift, 0)
+
             else:
                 # For negative rolling, the left side of the window moves with `timeshift`
-                shift_from = timeshift
+                shift_from = min(timeshift,max_row)
                 shift_until = min(shift_from + max_timeshift-1,prediction_steps-1)
 
             tmp_sdf = sdf.filter(F.col(column_id)==column_id_val)
