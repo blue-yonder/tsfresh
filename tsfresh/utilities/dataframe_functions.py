@@ -586,18 +586,21 @@ def roll_time_series(
     return df_shift.sort_values(by=["id", column_sort or "sort"])
 
 def roll_time_series_applyInPandas_wrapper(column_id:str,
-                    column_sort:str, 
-                    rolling_direction:int, 
-                    max_timeshift:int,
-                    min_timeshift:int,
-                    chunksize:int,
-                    n_jobs:int,
-                    show_warnings:bool,
-                    disable_progressbar:bool,
-                    distributor):
+                                            column_sort:str, 
+                                            rolling_direction:int, 
+                                            max_timeshift:int,
+                                            min_timeshift:int,
+                                            chunksize:int,
+                                            n_jobs:int,
+                                            show_warnings:bool,
+                                            disable_progressbar:bool,
+                                            distributor):
     def roll_time_series_applyInPandas(key:tuple, pdf:pd.DataFrame)->pd.DataFrame:
         # key is a tuple of one numpy.int64, which is the value
         # of 'id' for the current group
+        if max_timeshift is not None: 
+            if max_timeshift < min_timeshift: raise ValueError(f"max_timeshift ({max_timeshift}) needs to be greater or equal than min_timeshift ({min_timeshift})")
+
         res_df = roll_time_series(df_or_dict=pdf, 
                                     column_id=column_id,
                                     column_sort=column_sort,
@@ -609,6 +612,7 @@ def roll_time_series_applyInPandas_wrapper(column_id:str,
                                     show_warnings=show_warnings,
                                     disable_progressbar=disable_progressbar,
                                     distributor=distributor)
+
         res_df[[column_id, "new_column_id"]] = pd.DataFrame(res_df["id"].tolist(), index=res_df.index)
         res_df = res_df.drop(columns=["id",])
         return res_df
@@ -711,8 +715,7 @@ def spark_roll_time_series(
     rolling_schema = StructType.fromJson(sdf.schema.jsonValue())
     rolling_schema.add(StructField(name = "new_column_id", dataType=IntegerType(), nullable=True))
     
-
-    rolling_sdf = sdf.groupby(column_ids)\
+    rolling_sdf = sdf.groupby("grouper")\
                     .applyInPandas(
                     roll_time_series_applyInPandas_wrapper(column_id="grouper",
                                                             column_sort=column_sort,
@@ -723,9 +726,8 @@ def spark_roll_time_series(
                                                             n_jobs=n_jobs,
                                                             show_warnings=show_warnings,
                                                             disable_progressbar=disable_progressbar,
-                                                            distributor=distributor,
-                                                            ),
-                                                            schema=rolling_schema)
+                                                            distributor=distributor),
+                    schema=rolling_schema)
 
     # Remove the sort_col which was only introduced for Spark date conversion issues with the applyInPandas function
     if column_sort == "sort_col":
@@ -736,6 +738,7 @@ def spark_roll_time_series(
             rolling_sdf = rolling_sdf.withColumn(colName = "new_column_id", col = F.to_timestamp(col = F.col("new_column_id"), format ="yyyyMMddHHmmss"))
 
     rolling_sdf = rolling_sdf.withColumn(colName="id", col=F.concat(F.lit("("), F.col("grouper"), F.lit(","), F.col("new_column_id"), F.lit(")")))
+
     rolling_sdf = rolling_sdf.drop("new_column_id","grouper")
 
     return rolling_sdf
