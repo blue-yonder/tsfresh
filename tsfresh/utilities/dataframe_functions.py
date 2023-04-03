@@ -614,6 +614,7 @@ def roll_time_series_applyInPandas_wrapper(column_id:str,
                                     distributor=distributor)
 
         res_df[[column_id, "new_column_id"]] = pd.DataFrame(res_df["id"].tolist(), index=res_df.index)
+        res_df["new_column_id"] = res_df["new_column_id"].astype(str)
         res_df = res_df.drop(columns=["id",])
         return res_df
     return roll_time_series_applyInPandas
@@ -713,7 +714,7 @@ def spark_roll_time_series(
 
     # Define the schema of the output
     rolling_schema = StructType.fromJson(sdf.schema.jsonValue())
-    rolling_schema.add(StructField(name = "new_column_id", dataType=IntegerType(), nullable=True))
+    rolling_schema.add(StructField(name = "new_column_id", dataType=StringType(), nullable=True))
     
     rolling_sdf = sdf.groupby("grouper")\
                     .applyInPandas(
