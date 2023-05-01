@@ -192,7 +192,7 @@ class WideTsFrameAdapter(PartitionedTsData):
             _check_nan(df, column_sort)
 
         self.column_sort = column_sort
-        self.df_grouped = df.groupby([column_id])
+        self.df_grouped = df.groupby(column_id)
 
         super().__init__(df, column_id)
 
