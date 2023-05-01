@@ -93,8 +93,8 @@ def load_har_classes(folder_name=data_file_name):
     )
     try:
         return pd.read_csv(
-            data_file_name_classes, delim_whitespace=True, header=None, squeeze=True
-        )
+            data_file_name_classes, delim_whitespace=True, header=None
+        ).squeeze()
     except OSError:
         raise OSError(
             "File {} was not found. Have you downloaded the dataset with download_har_dataset() "
