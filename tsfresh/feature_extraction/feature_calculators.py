@@ -25,8 +25,7 @@ from collections import defaultdict
 
 import numpy as np
 import pandas as pd
-
-# import stumpy
+import stumpy
 from numpy.linalg import LinAlgError
 from scipy.signal import cwt, find_peaks_cwt, ricker, welch
 from scipy.stats import linregress
