@@ -506,7 +506,7 @@ def roll_time_series(
 
         df = df.sort_values(column_sort)
 
-        if df[column_sort].dtype != np.object:
+        if df[column_sort].dtype != object:
             # if rolling is enabled, the data should be uniformly sampled in this column
             # Build the differences between consecutive time sort values
 
