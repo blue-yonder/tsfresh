@@ -60,7 +60,7 @@ class velocity:
         self.kappa_3 = kappa_3
         self.Q = Q
         self.tau = tau
-        self.a = self.delta_t * kappa_3 ** 2 * (tau - 1.0 / kappa_3)
+        self.a = self.delta_t * kappa_3**2 * (tau - 1.0 / kappa_3)
         self.b = self.delta_t * Q / kappa_3
         self.label = int(tau > 1.0 / kappa_3)
         self.c = np.sqrt(self.delta_t) * R
@@ -72,7 +72,7 @@ class velocity:
         if tau <= 1.0 / kappa_3:
             self.deterministic = 0.0
         else:
-            self.deterministic = kappa_3 ** 1.5 * np.sqrt((tau - 1.0 / kappa_3) / Q)
+            self.deterministic = kappa_3**1.5 * np.sqrt((tau - 1.0 / kappa_3) / Q)
 
     def __call__(self, v):
         """

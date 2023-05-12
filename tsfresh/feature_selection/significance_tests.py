@@ -207,7 +207,7 @@ def __check_if_pandas_series(x, y):
         raise TypeError("x should be a pandas Series")
     if not isinstance(y, pd.Series):
         raise TypeError("y should be a pandas Series")
-    if not list(y.index) == list(x.index):
+    if not y.index.equals(x.index):
         raise ValueError("X and y need to have the same index!")
 
 

@@ -35,7 +35,7 @@ class DriftBifSimlationTestCase(unittest.TestCase):
         v = ds.simulate(Nt, v0=np.array([v0, 0.0]))
 
         k3t = ds.kappa_3 * ds.tau
-        k3st = ds.kappa_3 ** 2 * ds.tau
+        k3st = ds.kappa_3**2 * ds.tau
         a0 = v0 / ds.kappa_3
 
         def acceleration(t):
@@ -44,8 +44,8 @@ class DriftBifSimlationTestCase(unittest.TestCase):
                 * np.sqrt(k3t - 1)
                 * np.exp(k3st * t)
                 / np.sqrt(
-                    np.exp(2.0 * k3st * t) * ds.Q * a0 ** 2
-                    + np.exp(2.0 * ds.kappa_3 * t) * (k3t - 1 - ds.Q * a0 ** 2)
+                    np.exp(2.0 * k3st * t) * ds.Q * a0**2
+                    + np.exp(2.0 * ds.kappa_3 * t) * (k3t - 1 - ds.Q * a0**2)
                 )
             )
 

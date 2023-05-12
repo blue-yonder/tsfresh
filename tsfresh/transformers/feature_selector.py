@@ -197,8 +197,8 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
             if self.multiclass_p_values == "all":
                 self.p_values = p_values_table
                 self.feature_importances_ = 1.0 - p_values_table
-                self.feature_importances_.columns = self.feature_importances_.columns.str.lstrip(
-                    "p_value"
+                self.feature_importances_.columns = (
+                    self.feature_importances_.columns.str.lstrip("p_value")
                 )
                 self.feature_importances_ = self.feature_importances_.add_prefix(
                     "importance_"
@@ -214,7 +214,7 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
                 # raise p_values to the power of n_significant to increase importance
                 # of features which are significant for more classes
                 self.feature_importances_ = (
-                    1.0 - self.p_values ** relevance_table.n_significant.values
+                    1.0 - self.p_values**relevance_table.n_significant.values
                 )
         else:
             self.feature_importances_ = 1.0 - relevance_table.p_value.values

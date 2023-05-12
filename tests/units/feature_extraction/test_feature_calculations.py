@@ -587,7 +587,8 @@ class FeatureCalculationTestCase(TestCase):
 
     def test_variation_coefficient(self):
         self.assertIsNanOnAllArrayTypes(
-            variation_coefficient, [1, 1, -1, -1],
+            variation_coefficient,
+            [1, 1, -1, -1],
         )
         self.assertAlmostEqualOnAllArrayTypes(
             variation_coefficient, [1, 2, -3, -1], -7.681145747868608
@@ -935,8 +936,8 @@ class FeatureCalculationTestCase(TestCase):
         def normal(y, mean_, sigma_):
             return (
                 1
-                / (2 * np.pi * sigma_ ** 2)
-                * np.exp(-((y - mean_) ** 2) / (2 * sigma_ ** 2))
+                / (2 * np.pi * sigma_**2)
+                * np.exp(-((y - mean_) ** 2) / (2 * sigma_**2))
             )
 
         mean_ = 500.0
@@ -2039,12 +2040,15 @@ class FeatureCalculationTestCase(TestCase):
         param = [{"query": query, "threshold": threshold, "normalize": False}]
         self.assertAlmostEqual(query_similarity_count(x, param=param)[0][1], 91.0)
 
-    @unittest.skipIf(not getattr(matrix_profile, "dependency_available", True), "Missing matrixprofile dependency")
+    @unittest.skipIf(
+        not getattr(matrix_profile, "dependency_available", True),
+        "Missing matrixprofile dependency",
+    )
     def test_matrix_profile_window(self):
         # Test matrix profile output with specified window
         np.random.seed(9999)
-        ts = np.random.uniform(size=2 ** 10)
-        w = 2 ** 5
+        ts = np.random.uniform(size=2**10)
+        w = 2**5
         subq = ts[0:w]
         ts[0:w] = subq
         ts[w + 100 : w + 100 + w] = subq
@@ -2059,12 +2063,15 @@ class FeatureCalculationTestCase(TestCase):
 
         self.assertAlmostEqual(matrix_profile(ts, param=param)[0][1], 2.825786727580335)
 
-    @unittest.skipIf(not getattr(matrix_profile, "dependency_available", True), "Missing matrixprofile dependency")
+    @unittest.skipIf(
+        not getattr(matrix_profile, "dependency_available", True),
+        "Missing matrixprofile dependency",
+    )
     def test_matrix_profile_no_window(self):
         # Test matrix profile output with no window specified
         np.random.seed(9999)
-        ts = np.random.uniform(size=2 ** 10)
-        w = 2 ** 5
+        ts = np.random.uniform(size=2**10)
+        w = 2**5
         subq = ts[0:w]
         ts[0:w] = subq
         ts[w + 100 : w + 100 + w] = subq
@@ -2081,10 +2088,13 @@ class FeatureCalculationTestCase(TestCase):
         # Test matrix profile output with no window specified
         self.assertAlmostEqual(matrix_profile(ts, param=param)[0][1], 2.825786727580335)
 
-    @unittest.skipIf(not getattr(matrix_profile, "dependency_available", True), "Missing matrixprofile dependency")
+    @unittest.skipIf(
+        not getattr(matrix_profile, "dependency_available", True),
+        "Missing matrixprofile dependency",
+    )
     def test_matrix_profile_nan(self):
         # Test matrix profile of NaNs (NaN output)
-        ts = np.random.uniform(size=2 ** 6)
+        ts = np.random.uniform(size=2**6)
         ts[:] = np.nan
 
         param = [
