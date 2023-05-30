@@ -1231,6 +1231,63 @@ def fft_aggregated(x, param):
     return zip(index, res)
 
 
+@set_property("fctype", "combiner")
+@set_property("input", "pd.Series")
+@set_property("index_type", pd.DatetimeIndex)
+def energy_content_frequency_brackets(
+    signal: pd.Series, params: dict = {"number_of_bins": 10, "with_normalization": True}
+) -> list[tuple[str, float]]:
+    """_summary_
+
+    Args:
+        signal (pd.Series): _description_
+        params (_type_, optional): _description_.\
+            Defaults to {"number_of_bins": 10, "with_normalization": True}.
+
+    Returns:
+        list[tuple[str, float]]: _description_
+    """
+    # pylint:disable=dangerous-default-value
+
+    time_vec: np.ndarray = signal.index.to_numpy()
+    number_of_bins: int = 10
+    if "number_of_bins" in params.keys():
+        number_of_bins: int = (
+            params["number_of_bins"]
+            if (
+                params["number_of_bins"] <= len(time_vec)
+                and params["number_of_bins"] >= 0
+            )
+            else len(time_vec) - 1
+        )
+    with_normalization: bool = True
+    if "with_normalization" in params.keys():
+        with_normalization = params["with_normalization"]
+
+    freq_vec: np.ndarray = np.fft.rfftfreq(n=len(signal), d=(time_vec[1] - time_vec[0]))
+    fft_vec: np.ndarray = np.abs(np.fft.rfft(signal.to_numpy()))
+    split_freq_vec: list[np.ndarray] = np.array_split(freq_vec, number_of_bins)
+    frequency_energy_vec: list[float] = []
+    frequency_range_vec: list[tuple[float, float]] = []
+    for _, freq_entry in enumerate(split_freq_vec):
+        lower_frequency_index: int = np.where(freq_vec == freq_entry[0])[0][0]
+        upper_frequency_index: int = np.where(freq_vec == freq_entry[-1])[0][0]
+        frequency_energy_vec.append(
+            np.sum(fft_vec[lower_frequency_index:upper_frequency_index])
+            / (len(freq_entry) if with_normalization else 1.0)
+        )
+        frequency_range_vec.append((freq_entry[0], freq_entry[-1]))
+
+    return_val: list[tuple[str, float]] = [
+        (
+            f"bin_{entry_num}_max_{number_of_bins}_low_{int(frequency_range_vec[entry_num][0])}_high_{int(frequency_range_vec[entry_num][1])}",
+            entry,
+        )
+        for entry_num, entry in enumerate(frequency_energy_vec)
+    ]
+    return return_val
+
+
 @set_property("fctype", "simple")
 def number_peaks(x, n):
     """
@@ -1423,7 +1480,6 @@ def spkt_welch_density(x, param):
     if len(pxx) <= np.max(
         coeff
     ):  # There are fewer data points in the time series than requested coefficients
-
         # filter coefficients that are not contained in pxx
         reduced_coeff = [coefficient for coefficient in coeff if len(pxx) > coefficient]
         not_calculated_coefficients = [
@@ -1525,7 +1581,9 @@ def change_quantiles(x, ql, qh, isabs, f_agg):
     try:
         bin_cat = pd.qcut(x, [ql, qh], labels=False)
         bin_cat_0 = bin_cat == 0
-    except ValueError:  # Occurs when ql are qh effectively equal, e.g. x is not long enough or is too categorical
+    except (
+        ValueError
+    ):  # Occurs when ql are qh effectively equal, e.g. x is not long enough or is too categorical
         return 0
     # We only count changes that start and end inside the corridor
     ind = (bin_cat_0 & _roll(bin_cat_0, 1))[1:]
@@ -2180,7 +2238,6 @@ def agg_linear_trend(x, param):
     res_index = []
 
     for parameter_combination in param:
-
         chunk_len = parameter_combination["chunk_len"]
         f_agg = parameter_combination["f_agg"]
 
@@ -2438,7 +2495,6 @@ def matrix_profile(x, param):
 
         # Handle all other Matrix Profile instances
         else:
-
             finite_indices = np.isfinite(m_p)
 
             if feature == "min":
