@@ -236,7 +236,6 @@ class FeatureCalculationTestCase(TestCase):
         self.assertEqualOnAllArrayTypes(sum_values, [], 0)
 
     def test_agg_autocorrelation_returns_correct_values(self):
-
         param = [{"f_agg": "mean", "maxlag": 10}]
         x = [1, 1, 1, 1, 1, 1, 1]
         expected_res = 0
@@ -266,7 +265,6 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqual(res, expected_res, places=4)
 
     def test_agg_autocorrelation_returns_max_lag_does_not_affect_other_results(self):
-
         param = [{"f_agg": "mean", "maxlag": 1}, {"f_agg": "mean", "maxlag": 10}]
         x = range(10)
         res1 = dict(agg_autocorrelation(x, param=param))['f_agg_"mean"__maxlag_1']
@@ -280,7 +278,6 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqual(res1, 0.77777777, places=4)
 
     def test_partial_autocorrelation(self):
-
         # Test for altering time series
         # len(x) < max_lag
         param = [{"lag": lag} for lag in range(10)]
@@ -532,7 +529,6 @@ class FeatureCalculationTestCase(TestCase):
         )
 
     def test_ratio_beyond_r_sigma(self):
-
         x = [0, 1] * 10 + [10, 20, -30]  # std of x is 7.21, mean 3.04
         self.assertEqualOnAllArrayTypes(ratio_beyond_r_sigma, x, 3.0 / len(x), r=1)
         self.assertEqualOnAllArrayTypes(ratio_beyond_r_sigma, x, 2.0 / len(x), r=2)
@@ -968,6 +964,143 @@ class FeatureCalculationTestCase(TestCase):
             delta=rel_diff_allowed * expected_fft_var,
         )
 
+    def test_energy_content_frequency_brackets(self) -> None:
+        """_summary_
+
+        Returns:
+            _type_: _description_
+        """
+        param: dict = {"number_of_bins": 10, "with_normalization": True}
+
+        signal_duration: float = 1.0
+        sampling_frequency: float = 44100
+        target_frequency: float = 440
+        second_target_frequency: float = 4400
+        third_target_frequency: float = 17600
+        sample_vec: np.ndarray = (
+            np.arange(signal_duration * sampling_frequency) / sampling_frequency
+        )
+        first_signal_vec: np.ndarray = np.sin(2 * np.pi * target_frequency * sample_vec)
+        second_signal_vec: np.ndarray = np.sin(
+            2 * np.pi * second_target_frequency * sample_vec
+        )
+        third_signal_vec: np.ndarray = np.sin(
+            2 * np.pi * third_target_frequency * sample_vec
+        )
+
+        def single_frequency_in_bucket_range(
+            calculated_series: pd.Series,
+            target_frequency: float,
+            upper_threshold: float = 1e-9,
+            involved_buckets: float = 1,
+        ) -> bool:
+            """_summary_
+
+            Args:
+                calculated_series (pd.Series): pd.Series containing the results from \
+                    energy_content_frequency_brackets()
+                target_frequency (float): Target frequency which was used for generating \
+                    the sample signal
+                upper_threshold (float, optional): Treshold, below which the typical content \
+                    of a frequency bucket without the target frequency should stay. Defaults \
+                        to 1e-9.
+                involved_buckets (float, optional): How many target frequencies are involved \
+                    when generating the test series. Defaults to 1.
+
+            Returns:
+                bool: True, if only the relevant buckets are containing sufficient energy, \
+                    false else.
+            """
+            for entry in calculated_series.items():
+                lower_frequency: float = float(entry[0].split("_")[5])
+                upper_frequency: float = float(entry[0].split("_")[7])
+                if (
+                    target_frequency < lower_frequency
+                    or target_frequency >= upper_frequency
+                ):
+                    if float(entry[1]) > upper_threshold:
+                        return False
+                else:
+                    if float(entry[1]) < (
+                        (param["number_of_bins"] - 1e-2) / involved_buckets
+                    ):
+                        return False
+            return True
+
+        # def multi_frequencies_in_bucket_range(
+        #     calculated_series: pd.Series,
+        #     target_frequencies: list[float],
+        #     threshold: float = 1e-9,
+        # ) -> bool:
+        #     return_value: list[bool] = []
+        #     for frequency_entry in target_frequencies:
+        #         return_value.append(
+        #             single_frequency_in_bucket_range(
+        #                 calculated_series=calculated_series,
+        #                 target_frequency=frequency_entry,
+        #                 upper_threshold=threshold,
+        #                 involved_buckets=len(target_frequencies),
+        #             )
+        #         )
+        #     print(return_value)
+        #     return (np.sum(return_value) / len(return_value)) >= (1 - 1e-3)
+
+        res_first_signal: pd.Series = pd.Series(
+            dict(
+                energy_content_frequency_brackets(
+                    pd.Series(data=first_signal_vec, index=sample_vec), param
+                )
+            )
+        )
+        np.testing.assert_array_equal(
+            x=single_frequency_in_bucket_range(
+                calculated_series=res_first_signal, target_frequency=target_frequency
+            ),
+            y=True,
+        )
+        res_second_signal: pd.Series = pd.Series(
+            dict(
+                energy_content_frequency_brackets(
+                    pd.Series(data=second_signal_vec, index=sample_vec), param
+                )
+            )
+        )
+        np.testing.assert_array_equal(
+            x=single_frequency_in_bucket_range(
+                calculated_series=res_second_signal,
+                target_frequency=second_target_frequency,
+            ),
+            y=True,
+        )
+        res_third_signal: pd.Series = pd.Series(
+            dict(
+                energy_content_frequency_brackets(
+                    pd.Series(data=third_signal_vec, index=sample_vec), param
+                )
+            )
+        )
+        np.testing.assert_array_equal(
+            x=single_frequency_in_bucket_range(
+                calculated_series=res_third_signal,
+                target_frequency=third_target_frequency,
+            ),
+            y=True,
+        )
+        # res_multi_one_three = pd.Series(
+        #     dict(
+        #         energy_content_frequency_brackets(
+        #             pd.Series(
+        #                 data=0.5 * (first_signal_vec + third_signal_vec),
+        #                 index=sample_vec,
+        #             ),
+        #             param,
+        #         )
+        #     )
+        # )
+        # print(
+        #     f"Mixed signals: {multi_frequencies_in_bucket_range(calculated_series=res_multi_one_three, target_frequencies=[target_frequency, third_target_frequency])}"
+        # )
+
     def test_number_peaks(self):
         x = np.array([0, 1, 2, 1, 0, 1, 2, 3, 4, 5, 4, 3, 2, 1])
         self.assertEqualOnAllArrayTypes(number_peaks, x, 2, 1)
@@ -978,7 +1111,6 @@ class FeatureCalculationTestCase(TestCase):
         self.assertEqualOnAllArrayTypes(number_peaks, x, 0, 6)
 
     def test_mass_quantile(self):
-
         x = [1] * 101
         param = [{"q": 0.5}]
         expected_index = ["q_0.5"]
@@ -1043,7 +1175,6 @@ class FeatureCalculationTestCase(TestCase):
         self.assertEqualOnAllArrayTypes(number_cwt_peaks, x, 2, 2)
 
     def test_spkt_welch_density(self):
-
         # todo: improve tests
         x = range(10)
         param = [{"coeff": 1}, {"coeff": 10}]
@@ -1075,7 +1206,6 @@ class FeatureCalculationTestCase(TestCase):
         self.assertTrue(math.isnan(res["coeff_5__w_3__widths_(1, 3)"]))
 
     def test_ar_coefficient(self):
-
         # Test for X_i = 2.5 * X_{i-1} + 1
         param = [{"k": 1, "coeff": 0}, {"k": 1, "coeff": 1}]
         shuffle(param)
@@ -1359,7 +1489,6 @@ class FeatureCalculationTestCase(TestCase):
         self.assertIsNanOnAllArrayTypes(quantile, [], 0.5)
 
     def test_mean_abs_change_quantiles(self):
-
         self.assertAlmostEqualOnAllArrayTypes(
             change_quantiles,
             list(range(10)),
@@ -2201,3 +2330,8 @@ class FriedrichTestCase(TestCase):
         self.assertAlmostEqual(res["coeff_0__m_2__r_30"], -0.24536975738843042)
         self.assertAlmostEqual(res["coeff_1__m_2__r_30"], -0.533309548662685)
         self.assertAlmostEqual(res["coeff_2__m_2__r_30"], 0.2759399238199404)
+
+
+if __name__ == "__main__":
+    local_test_case = FeatureCalculationTestCase()
+    local_test_case.test_energy_content_frequency_brackets()
