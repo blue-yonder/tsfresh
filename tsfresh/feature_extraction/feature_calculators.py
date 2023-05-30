@@ -1237,11 +1237,18 @@ def fft_aggregated(x, param):
 def energy_content_frequency_brackets(
     signal: pd.Series, params: dict = {"number_of_bins": 10, "with_normalization": True}
 ) -> list[tuple[str, float]]:
-    """_summary_
+    """
+
+    Calculates the FFT of the signal and groups the content of the FFT into n bins, \
+        to get an estimate of energy content per frequency bucket
 
     Args:
-        signal (pd.Series): _description_
-        params (_type_, optional): _description_.\
+        signal (pd.Series): The distribution for which the frequency energy buckets \
+            should be calculated
+        params (_type_, optional): Parameters used for calculation of the frequency \
+            energy buckets. Parameters to be set are number_of_bins for the amount \
+                of bins, and if the values should be normalized (divided by the size \
+                    of the frequency bucket) or not.\
             Defaults to {"number_of_bins": 10, "with_normalization": True}.
 
     Returns:
