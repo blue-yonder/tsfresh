@@ -2330,8 +2330,3 @@ class FriedrichTestCase(TestCase):
         self.assertAlmostEqual(res["coeff_0__m_2__r_30"], -0.24536975738843042)
         self.assertAlmostEqual(res["coeff_1__m_2__r_30"], -0.533309548662685)
         self.assertAlmostEqual(res["coeff_2__m_2__r_30"], 0.2759399238199404)
-
-
-if __name__ == "__main__":
-    local_test_case = FeatureCalculationTestCase()
-    local_test_case.test_energy_content_frequency_brackets()
