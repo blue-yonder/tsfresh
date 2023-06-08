@@ -54,4 +54,4 @@ class RobotExecutionFailuresTestCase(TestCase):
         )
 
         assert len(y.unique()) > 2
-        assert y.dtype == np.object
+        assert y.dtype == object
