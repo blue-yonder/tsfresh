@@ -47,11 +47,8 @@ Install all the relevant python packages with
 .. code::
 
     cd /path/to/tsfresh
-    pip install -r requirements.txt
-    pip install -r rdocs-requirements.txt
-    pip install -r test-requirements.txt
+    pip install -e ".[testing]"
     pre-commit install
-    pip install -e .
 
 
 The last command will dynamically link the tsfresh package which means that changes to the code will directly show up
@@ -67,7 +64,7 @@ you have to:
 
 .. code::
 
-    pytest tests/
+    pytest
 
 
 Documentation
@@ -78,8 +75,9 @@ Build the documentation after installing as described above with
 
 .. code::
 
-    python setup.py docs
-
+    pip install -e ".[docs]"
+    cd docs
+    make html
 
 The finished documentation can be found in the docs/_build/html folder.
 
