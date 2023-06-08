@@ -20,4 +20,5 @@ python:
   install:
    - method: pip
      path: .
-   - requirements: rdocs-requirements.txt
+     extra_requirements:
+        - docs

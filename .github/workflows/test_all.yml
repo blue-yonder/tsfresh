@@ -12,26 +12,17 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Set up Python 3.7
+    - name: Set up Python 3.9
       uses: actions/setup-python@v2
       with:
-        python-version: 3.7
-
-    - name: Cache pip
-      uses: actions/cache@v2
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}-${{ hashFiles('test-requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}-${{ hashFiles('test-requirements.txt') }}
+        python-version: 3.9
+        cache: 'pip' # caching pip dependencies
 
     - name: Install dependencies
       run: |
         # Do all the installations
         python -m pip install --upgrade pip wheel setuptools
-        pip uninstall tsfresh
-        pip install -r requirements.txt -r test-requirements.txt
-        pip install .
+        pip install .[testing]
 
         # Print out the pip versions for debugging
         pip list
