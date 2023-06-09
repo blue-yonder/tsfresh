@@ -18,7 +18,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt -r test-requirements.txt
+          pip install ".[testing]"
       - name: Run benchmark
         run: |
           cd tests
