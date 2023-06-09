@@ -975,15 +975,11 @@ class FeatureCalculationTestCase(TestCase):
         signal_duration: float = 1.0
         sampling_frequency: float = 44100
         target_frequency: float = 440
-        second_target_frequency: float = 4400
         third_target_frequency: float = 17600
         sample_vec: np.ndarray = (
             np.arange(signal_duration * sampling_frequency) / sampling_frequency
         )
         first_signal_vec: np.ndarray = np.sin(2 * np.pi * target_frequency * sample_vec)
-        second_signal_vec: np.ndarray = np.sin(
-            2 * np.pi * second_target_frequency * sample_vec
-        )
         third_signal_vec: np.ndarray = np.sin(
             2 * np.pi * third_target_frequency * sample_vec
         )
@@ -997,23 +993,27 @@ class FeatureCalculationTestCase(TestCase):
             """_summary_
 
             Args:
-                calculated_series (pd.Series): pd.Series containing the results from \
-                    energy_content_frequency_brackets()
-                target_frequency (float): Target frequency which was used for generating \
-                    the sample signal
-                upper_threshold (float, optional): Treshold, below which the typical content \
-                    of a frequency bucket without the target frequency should stay. Defaults \
-                        to 1e-9.
-                involved_buckets (float, optional): How many target frequencies are involved \
-                    when generating the test series. Defaults to 1.
+                calculated_series (pd.Series): pd.Series containing the results
+                from energy_content_frequency_brackets()
+                target_frequency (float): Target frequency which was used for
+                generating the sample signal
+                upper_threshold (float, optional): Treshold, below which the
+                typical content of a frequency bucket without the target
+                frequency should stay. Defaults to 1e-9.
+                involved_buckets (float, optional): How many bins were involved
+                when generating the test series. Defaults to 1.
 
             Returns:
-                bool: True, if only the relevant buckets are containing sufficient energy, \
-                    false else.
+                bool: True, if only the relevant buckets are containing suffi-
+                cient energy, false else.
             """
             for entry in calculated_series.items():
-                lower_frequency: float = float(entry[0].split("_")[5])
-                upper_frequency: float = float(entry[0].split("_")[7])
+                lower_frequency: float = float(
+                    entry[0].split("_")[entry[0].split("_").index("low") + 1]
+                )
+                upper_frequency: float = float(
+                    entry[0].split("_")[entry[0].split("_").index("high") + 1]
+                )
                 if (
                     target_frequency < lower_frequency
                     or target_frequency >= upper_frequency
@@ -1027,23 +1027,51 @@ class FeatureCalculationTestCase(TestCase):
                         return False
             return True
 
-        # def multi_frequencies_in_bucket_range(
-        #     calculated_series: pd.Series,
-        #     target_frequencies: list[float],
-        #     threshold: float = 1e-9,
-        # ) -> bool:
-        #     return_value: list[bool] = []
-        #     for frequency_entry in target_frequencies:
-        #         return_value.append(
-        #             single_frequency_in_bucket_range(
-        #                 calculated_series=calculated_series,
-        #                 target_frequency=frequency_entry,
-        #                 upper_threshold=threshold,
-        #                 involved_buckets=len(target_frequencies),
-        #             )
-        #         )
-        #     print(return_value)
-        #     return (np.sum(return_value) / len(return_value)) >= (1 - 1e-3)
+        def multi_frequencies_in_bucket_range(
+            calculated_series: pd.Series,
+            target_frequencies: list[float],
+            threshold: float = 1e-9,
+            involved_buckets: float = 1,
+        ) -> bool:
+            # Get indices of values where the calculated series exceeds the
+            # threshold
+            target_frequency_locations = np.where(
+                calculated_series.to_numpy() > threshold
+            )[0].tolist()
+            if len(target_frequency_locations) != len(target_frequencies):
+                return False
+
+            # Get frequency limits of bins where the target frequencies should
+            # be located
+            bin_indices: list[int] = []
+
+            # Iterate over entries and frequencies to match entry position and
+            # frequency bin position
+            for entry_pos, entry in enumerate(calculated_series.keys()):
+                lower_frequency: float = float(
+                    entry.split("_")[entry.split("_").index("low") + 1]
+                )
+                upper_frequency: float = float(
+                    entry.split("_")[entry.split("_").index("high") + 1]
+                )
+                for target_frequency in target_frequencies:
+                    if (
+                        lower_frequency <= target_frequency
+                        and target_frequency < upper_frequency
+                    ):
+                        bin_indices.append(entry_pos)
+
+            for bin_index in bin_indices:
+                if (
+                    np.abs(
+                        calculated_series.to_numpy().tolist()[bin_index]
+                        - (1.0 / len(target_frequencies))
+                    )
+                    > 1e-2
+                ):
+                    return False
+
+            return np.allclose(a=bin_indices, b=target_frequency_locations)
 
         res_first_signal: pd.Series = pd.Series(
             dict(
@@ -1054,24 +1082,34 @@ class FeatureCalculationTestCase(TestCase):
         )
         np.testing.assert_array_equal(
             x=single_frequency_in_bucket_range(
-                calculated_series=res_first_signal, target_frequency=target_frequency
+                calculated_series=res_first_signal,
+                target_frequency=target_frequency,
+                involved_buckets=param["number_of_bins"],
             ),
             y=True,
         )
-        res_second_signal: pd.Series = pd.Series(
+
+        param_prepared_bins: dict[str, Any] = param
+        param_prepared_bins["bins_to_use"] = [(0, 400), (400, 500), (500, 22500)]
+        param_prepared_bins["number_of_bins"] = len(param_prepared_bins["bins_to_use"])
+        res_first_signal: pd.Series = pd.Series(
             dict(
                 energy_content_frequency_brackets(
-                    pd.Series(data=second_signal_vec, index=sample_vec), param
+                    pd.Series(data=first_signal_vec, index=sample_vec),
+                    params=param_prepared_bins,
                 )
             )
         )
+
         np.testing.assert_array_equal(
             x=single_frequency_in_bucket_range(
-                calculated_series=res_second_signal,
-                target_frequency=second_target_frequency,
+                calculated_series=res_first_signal,
+                target_frequency=target_frequency,
+                involved_buckets=param_prepared_bins["number_of_bins"],
             ),
             y=True,
         )
+
         res_third_signal: pd.Series = pd.Series(
             dict(
                 energy_content_frequency_brackets(
@@ -1083,23 +1121,61 @@ class FeatureCalculationTestCase(TestCase):
             x=single_frequency_in_bucket_range(
                 calculated_series=res_third_signal,
                 target_frequency=third_target_frequency,
+                involved_buckets=param["number_of_bins"],
             ),
             y=True,
         )
-        # res_multi_one_three = pd.Series(
-        #     dict(
-        #         energy_content_frequency_brackets(
-        #             pd.Series(
-        #                 data=0.5 * (first_signal_vec + third_signal_vec),
-        #                 index=sample_vec,
-        #             ),
-        #             param,
-        #         )
-        #     )
-        # )
-        # print(
-        #     f"Mixed signals: {multi_frequencies_in_bucket_range(calculated_series=res_multi_one_three, target_frequencies=[target_frequency, third_target_frequency])}"
-        # )
+
+        res_multi_one_three = pd.Series(
+            dict(
+                energy_content_frequency_brackets(
+                    pd.Series(
+                        data=0.5 * (first_signal_vec + third_signal_vec),
+                        index=sample_vec,
+                    ),
+                    param,
+                )
+            )
+        )
+        np.testing.assert_array_equal(
+            x=multi_frequencies_in_bucket_range(
+                calculated_series=res_multi_one_three,
+                target_frequencies=[target_frequency, third_target_frequency],
+                involved_buckets=param["number_of_bins"],
+            ),
+            y=True,
+        )
+
+        param_prepared_bins: dict[str, Any] = param
+        param_prepared_bins["bins_to_use"] = [
+            (0, 400),
+            (400, 500),
+            (500, 17000),
+            (17000, 18000),
+            (18000, 22500),
+        ]
+        param_prepared_bins["number_of_bins"] = len(param_prepared_bins["bins_to_use"])
+
+        res_multi_one_three_block = pd.Series(
+            dict(
+                energy_content_frequency_brackets(
+                    pd.Series(
+                        data=0.5 * (first_signal_vec + third_signal_vec),
+                        index=sample_vec,
+                    ),
+                    param,
+                )
+            )
+        )
+
+        np.testing.assert_array_equal(
+            x=multi_frequencies_in_bucket_range(
+                calculated_series=res_multi_one_three_block,
+                target_frequencies=[target_frequency, third_target_frequency],
+                involved_buckets=param["number_of_bins"],
+            ),
+            y=True,
+        )
 
     def test_number_peaks(self):
         x = np.array([0, 1, 2, 1, 0, 1, 2, 3, 4, 5, 4, 3, 2, 1])
