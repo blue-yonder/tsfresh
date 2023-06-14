@@ -362,6 +362,10 @@ class DaskTsAdapter(TsData):
                 value_vars = possible_value_columns
                 column_value = "value"
 
+            # Make sure we are not reusing a column that already exists
+            while column_value in df.columns:
+                column_value += "_"
+
             _check_colname(*value_vars)
 
             id_vars = [column_id, column_sort] if column_sort else [column_id]
