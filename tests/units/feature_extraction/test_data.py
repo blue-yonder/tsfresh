@@ -282,7 +282,7 @@ class DataAdapterTestCase(DataTestCase):
         self.assert_tsdata(data, WIDE_TEST_DATA_EXPECTED_TUPLES)
 
     def test_dict_tsframe(self):
-        df = {key: df for key, df in self.create_test_data_sample().groupby(["kind"])}
+        df = {key: df for key, df in self.create_test_data_sample().groupby("kind")}
         data = TsDictAdapter(df, "id", "val", "sort")
 
         self.assert_tsdata(data, TEST_DATA_EXPECTED_TUPLES)
@@ -394,7 +394,7 @@ class DataAdapterTestCase(DataTestCase):
             test_f, meta=(("id", "int"), ("variable", "int"), ("value", "int"))
         ).compute()
         pd.testing.assert_frame_equal(
-            return_f,
+            return_f.reset_index(drop=True),
             pd.DataFrame({"id": [1, 2], "variable": ["a", "a"], "value": [1.0, 2.0]}),
         )
 
@@ -416,7 +416,7 @@ class DataAdapterTestCase(DataTestCase):
             test_f, meta=(("id", "int"), ("variable", "int"), ("value", "int"))
         ).compute()
         pd.testing.assert_frame_equal(
-            return_f.reset_index(drop=True),
+            return_f.sort_values("value").reset_index(drop=True),
             pd.DataFrame(
                 {
                     "id": [1, 2, 1, 2],
