@@ -4,6 +4,17 @@ Changelog
 
 tsfresh uses `Semantic Versioning <http://semver.org/>`_
 
+Version 0.20.1
+==============
+
+- Added Features
+    - Make tsfresh compatible with numpy 1.24 (#1018) and pandas 2.0 (#1028)
+
+- Bugfixes/Typos/Documentation:
+    - Use pandas Index.equals in check_if_pandas_series (#963)
+    - Updates to package layout, CI/CD and developer setup
+
+
 Version 0.20.0
 ==============
 
