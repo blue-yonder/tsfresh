@@ -13,6 +13,7 @@
 __pycache__/*
 .cache/*
 .*.swp
+*.pyc.*
 
 # Project files
 .ropeproject
@@ -48,7 +49,6 @@ docs/text/_generated/
 # Virtual environment
 venv*
 activate
-tsfresh-env
 
 # IPython notebooks
 .ipynb_checkpoints
@@ -62,4 +62,3 @@ tsfresh/notebooks/data/
 # dask
 dask-worker-space
 dask-worker-space/
-*.pyc.*
