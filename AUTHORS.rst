@@ -53,3 +53,4 @@ Contributions
 - George Wambold
 - Brunno Vanelli
 - Maximilian Lohmann
+- Paul Voigt

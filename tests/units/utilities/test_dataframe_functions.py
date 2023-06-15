@@ -1524,7 +1524,7 @@ class AddSubIdTestCase(TestCase):
 
         extended_dataframe = dataframe_functions.add_sub_time_series_index(
             dataframe, 2, column_id="id", column_kind="kind"
-        )
+        ).sort_index()
 
         self.assertEqual(
             list(extended_dataframe["id"]),

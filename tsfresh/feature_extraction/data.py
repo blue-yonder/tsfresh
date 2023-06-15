@@ -192,7 +192,7 @@ class WideTsFrameAdapter(PartitionedTsData):
             _check_nan(df, column_sort)
 
         self.column_sort = column_sort
-        self.df_grouped = df.groupby([column_id])
+        self.df_grouped = df.groupby(column_id)
 
         super().__init__(df, column_id)
 
@@ -361,6 +361,10 @@ class DaskTsAdapter(TsData):
             else:
                 value_vars = possible_value_columns
                 column_value = "value"
+
+            # Make sure we are not reusing a column that already exists
+            while column_value in df.columns:
+                column_value += "_"
 
             _check_colname(*value_vars)
 
