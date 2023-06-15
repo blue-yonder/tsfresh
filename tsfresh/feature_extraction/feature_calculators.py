@@ -1284,9 +1284,10 @@ def energy_content_frequency_brackets(
     time_vec: np.ndarray = signal.index.to_numpy()
 
     if not np.all(np.isclose(a=np.diff(time_vec), b=np.diff(time_vec)[0])):
-        print(np.diff(time_vec))
-        print(np.diff(time_vec)[0])
-        raise NotImplementedError()
+        warnings_message: str = "Uneven time steps detected. This feature can "
+        warnings_message += "only be used for an even distribution of time stamps."
+        warnings.warn(warnings_message, RuntimeWarning)
+        return [("NaN", np.nan)]
 
     number_of_bins: int = 10
     with_preset_number_of_bins: bool = False
