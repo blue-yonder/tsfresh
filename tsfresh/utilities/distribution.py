@@ -494,6 +494,84 @@ class MultiprocessingDistributor(IterableDistributorBaseClass):
         self.pool.join()
 
 
+class RayDistributor(IterableDistributorBaseClass):
+    def __init__(
+        self,
+        address=None,
+        rayinit_config={},
+        n_workers=1,
+        disable_progressbar=False,
+        progressbar_title="Feature Extraction",
+    ):
+        """
+        Creates a new RayDistributor instance
+
+        :param address: the ip address and port number of the Ray Cluster
+        :type address: str
+        :param rayinit_config: external config for the ray.init calling
+        :type rayinit_config: dict
+        :param n_workers: How many workers should the multiprocessing pool have?
+        :type n_workers: int
+        :param disable_progressbar: whether to show a progressbar or not.
+        :type disable_progressbar: bool
+        :param progressbar_title: the title of the progressbar
+        :type progressbar_title: basestring
+        """
+        import ray
+
+        ray.init(address=address, **rayinit_config)
+        self.n_workers = n_workers
+        self.cpu_per_worker = max(
+            1, int(ray.available_resources()["CPU"]) // self.n_workers
+        )
+        self.disable_progressbar = disable_progressbar
+        self.progressbar_title = progressbar_title
+
+    def calculate_best_chunk_size(self, data_length):
+        """
+        Uses the number of ray workers in the cluster (during execution time, meaning when you start the extraction)
+        to find the optimal chunk_size.
+
+        :param data_length: A length which defines how many calculations there need to be.
+        :type data_length: int
+        """
+        chunk_size, extra = divmod(data_length, self.n_workers * 5)
+        if extra:
+            chunk_size += 1
+        return chunk_size
+
+    def distribute(self, func, partitioned_chunks, kwargs):
+        """
+        Create a remote function in ray and calculate the features in a parallel fashion
+        by distributing the data chunck to the remote function.
+
+        :param func: the function to send to each worker.
+        :type func: callable
+        :param partitioned_chunks: The list of data chunks - each element is again
+            a list of chunks - and should be processed by one worker.
+        :type partitioned_chunks: iterable
+        :param kwargs: parameters for the map function
+        :type kwargs: dict of string to parameter
+
+        :return: The result of the calculation as a generator -
+            each item should be the result of the application of func to a single element.
+        """
+        import ray
+
+        remote_func = ray.remote(func).options(num_cpus=self.cpu_per_worker)
+        results = [remote_func.remote(chunk, **kwargs) for chunk in partitioned_chunks]
+        for result in results:
+            yield ray.get(result)
+
+    def close(self):
+        """
+        Disconnect the worker, and terminate processes.
+        """
+        import ray
+
+        ray.shutdown()
+
+
 class ApplyDistributor(DistributorBaseClass):
     def __init__(self, meta):
         self.meta = meta

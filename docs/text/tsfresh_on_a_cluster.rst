@@ -200,6 +200,56 @@ of 3 workers:
                          column_sort='time',
                          distributor=Distributor)
 
+Using Ray to distribute the calculations
+'''''''''''''''''''''''''''''''''''''''''
+We provide a Distributor for the `Ray framework <https://docs.ray.io/en/latest/index.html>`_, where
+*"Ray is an open-source unified compute framework that makes it easy to scale AI and Python workloads."*
+
+.. NOTE::
+    Ray is an optional dependency and users who needs to use Ray to distribute the calculations should install
+    it first by `pip install ray`.
+
+Ray is a easy-to-use developing framework for distributed computing workload. Users could use it on single node or scale
+to a cluster. Users only need to have an address of the Ray cluster to connect to (e.g., "ray://123.45.67.89:10001").
+
+.. code:: python
+
+    from tsfresh.examples.robot_execution_failures import \
+        download_robot_execution_failures, \
+        load_robot_execution_failures
+    from tsfresh.feature_extraction import extract_features
+    from tsfresh.utilities.distribution import RayDistributor
+
+    download_robot_execution_failures()
+    df, y = load_robot_execution_failures()
+
+    Distributor = RayDistributor(address="ray://123.45.67.89:10001")
+
+    X = extract_features(timeseries_container=df,
+                         column_id='id',
+                         column_sort='time',
+                         distributor=Distributor)
+
+If users would like to have a local cluster with multiple workers. They could simply leave `address`` unset.
+
+.. code:: python
+
+    from tsfresh.examples.robot_execution_failures import \
+        download_robot_execution_failures, \
+        load_robot_execution_failures
+    from tsfresh.feature_extraction import extract_features
+    from tsfresh.utilities.distribution import RayDistributor
+
+    download_robot_execution_failures()
+    df, y = load_robot_execution_failures()
+
+    Distributor = RayDistributor(n_workers=3)
+
+    X = extract_features(timeseries_container=df,
+                         column_id='id',
+                         column_sort='time',
+                         distributor=Distributor)
+
 Writing your own distributor
 ''''''''''''''''''''''''''''
 
