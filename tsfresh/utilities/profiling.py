@@ -10,6 +10,8 @@ import io
 import logging
 import pstats
 
+import tsfresh.defaults as defaults
+
 _logger = logging.getLogger(__name__)
 
 
@@ -66,3 +68,26 @@ def end_profiling(profiler, filename, sorting=None):
             "[calculate_ts_features] Finished profiling of time series feature extraction"
         )
         f.write(s.getvalue())
+
+
+def get_n_jobs():
+    """
+    Get the number of jobs to use for parallel processing.
+
+    :return: The number of jobs to use for parallel processing.
+    :rtype: int
+    """
+    return defaults.N_PROCESSES
+
+
+def set_n_jobs(n_jobs):
+    """
+    Set the number of jobs to use for parallel processing.
+
+    :param n_jobs: The number of jobs to use for parallel processing.
+    :type n_jobs: int
+
+    :return: None
+    :rtype: None
+    """
+    defaults.N_PROCESSES = n_jobs
