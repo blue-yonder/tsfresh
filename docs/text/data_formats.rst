@@ -38,7 +38,7 @@ Need only to be specified on some data formats (see below):
 
 Important: None of these columns is allowed to contain ``NaN``, ``Inf`` or ``-Inf`` values.
 
-In the following paragrpahs, we describe the different input formats that are build based off those columns:
+In the following paragraphs, we describe the different input formats that are build based off those columns:
 
 * A flat DataFrame
 * A stacked DataFrame
