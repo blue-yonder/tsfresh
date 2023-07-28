@@ -19,7 +19,7 @@ make up those DataFrames. Each will be described with an example from the robot 
 
 :`column_id`: This column indicates which entities the time series belong to. Features will be extracted individually
     for each entity (id). The resulting feature matrix will contain one row per id.
-    Each robot is a different entity, so each of set of features has a different id.
+    Each robot is a different entity, so each of the set of features has a different id.
 
 :`column_sort`: This column contains values which allows sorting of the time series (e.g. sorting by time stamps).
     In general, having equidistant time steps, or the same time scale for the different ids and/or kinds, is not a requirement.
