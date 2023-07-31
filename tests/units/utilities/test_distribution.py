@@ -30,6 +30,9 @@ class MultiprocessingDistributorTestCase(TestCase):
         set_n_jobs(4)
         self.assertEqual(4, get_n_jobs())
 
+        set_n_jobs(curr)
+        self.assertEqual(curr, get_n_jobs())
+
     def test_partition(self):
 
         distributor = MultiprocessingDistributor(n_workers=1)
