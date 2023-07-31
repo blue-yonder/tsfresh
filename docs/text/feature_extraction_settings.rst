@@ -33,7 +33,7 @@ The ``default_fc_parameters`` is expected to be a dictionary which maps feature 
 (the function names you can find in the :mod:`tsfresh.feature_extraction.feature_calculators` file) to a list
 of dictionaries, which are the parameters with which the function will be called (as key value pairs). Each
 function-parameter combination that is in this dict will be called during the extraction and will produce a feature.
-If the function does not take any parameters, the value should be set to `None`.
+If the function does not take any parameters, the value should be set to ``None``.
 
 For example:
 
@@ -46,7 +46,7 @@ For example:
 
 will produce three features: one by calling the
 :func:`tsfresh.feature_extraction.feature_calculators.length` function without any parameters and two by calling
-:func:`tsfresh.feature_extraction.feature_calculators.large_standard_deviation` with `r = 0.05` and `r = 0.1`.
+:func:`tsfresh.feature_extraction.feature_calculators.large_standard_deviation` with ``r = 0.05`` and ``r = 0.1``.
 
 So you can control which features will be extracted, by adding or removing either keys or parameters from this dict.
 It is as easy as that.
@@ -61,8 +61,8 @@ And now, only the two other features are calculated.
 For convenience, three dictionaries are predefined and can be used right away:
 
 * :class:`tsfresh.feature_extraction.settings.ComprehensiveFCParameters`: includes all features without parameters and
-  all features with parameters, each with different parameter combinations. This is the default for `extract_features`
-  if you do not hand in a `default_fc_parameters` at all.
+  all features with parameters, each with different parameter combinations. This is the default for :func:`tsfresh.extract_features`
+  if you do not hand in a ``default_fc_parameters`` at all.
 * :class:`tsfresh.feature_extraction.settings.MinimalFCParameters`: includes only a handful of features
   and can be used for quick tests. The features which have the "minimal" attribute are used here.
 * :class:`tsfresh.feature_extraction.settings.EfficientFCParameters`: Mostly the same features as in the
@@ -77,12 +77,9 @@ For the ambitious: How do I set the parameters for different type of time series
 ---------------------------------------------------------------------------------
 
 It is also possible to control the features to be extracted for the different kinds of time series individually.
-You can do so by passing another dictionary to the extract function as a
-
-  kind_to_fc_parameters = {"kind" : fc_parameters}
-
-parameter. This dict must be a mapping from kind names (as string) to `fc_parameters` objects,
-which you would normally pass as an argument to the `default_fc_parameters` parameter.
+You can do so by passing a ``kind_to_fc_parameters`` parameter to the :func:`tsfresh.extract_features` function.
+It should be a dict mapping from kind names (as string) to ``fc_parameters`` objects,
+which you would normally pass as an argument to the ``default_fc_parameters`` parameter.
 
 So, for example the following code snippet:
 
@@ -93,12 +90,12 @@ So, for example the following code snippet:
         "pressure": {"maximum": None, "minimum": None}
     }
 
-will extract the `"mean"` feature of the `"temperature"` time series and the `"minimum"` and `"maximum"` of the
-`"pressure"` time series.
+will extract the ``"mean"`` feature of the ``"temperature"`` time series and the ``"minimum"`` and ``"maximum"`` of the
+``"pressure"`` time series.
 
-The `kind_to_fc_parameters` argument will partly override the `default_fc_parameters`. So, if you include a kind
-name in the `kind_to_fc_parameters` parameter, its value will be used for that kind.
-Other kinds will still use the `default_fc_parameters`.
+The ``kind_to_fc_parameters`` argument will partly override the ``default_fc_parameters``. So, if you include a kind
+name in the ``kind_to_fc_parameters`` parameter, its value will be used for that kind.
+Other kinds will still use the ``default_fc_parameters``.
 
 
 A handy trick: Do I really have to create the dictionary by hand?
@@ -108,7 +105,7 @@ Not necessarily. Let's assume you have a DataFrame of tsfresh features.
 By using feature selection algorithms you find out that only a subgroup of features is relevant.
 
 
-Then, we provide the :func:`tsfresh.feature_extraction.settings.from_columns` method that constructs the `kind_to_fc_parameters`
+Then, we provide the :func:`tsfresh.feature_extraction.settings.from_columns` method that constructs the ``kind_to_fc_parameters``
 dictionary from the column names of this filtered feature matrix to make sure that only relevant features are extracted.
 
 This can save a huge amount of time because you prevent the calculation of unnecessary features.
@@ -125,5 +122,5 @@ Let's illustrate this with an example:
     # we can easily construct the corresponding settings object
     kind_to_fc_parameters = tsfresh.feature_extraction.settings.from_columns(X_tsfresh_filtered)
 
-The above code will construct for you the `kind_to_fc_parameters` dictionary that corresponds to the features and parameters (!) from
-the tsfresh features that were filtered by the `some_feature_selection` feature selection algorithm.
+The above code will construct for you the ``kind_to_fc_parameters`` dictionary that corresponds to the features and parameters (!) from
+the tsfresh features that were filtered by the ``some_feature_selection`` feature selection algorithm.
