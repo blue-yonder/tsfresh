@@ -10,7 +10,7 @@ import io
 import logging
 import pstats
 
-import tsfresh.defaults as defaults
+from tsfresh import defaults
 
 _logger = logging.getLogger(__name__)
 
