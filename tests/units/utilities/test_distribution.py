@@ -16,9 +16,23 @@ from tsfresh.utilities.distribution import (
     LocalDaskDistributor,
     MultiprocessingDistributor,
 )
+from tsfresh.utilities.profiling import get_n_jobs, set_n_jobs
 
 
 class MultiprocessingDistributorTestCase(TestCase):
+    def test_n_jobs(self):
+        curr = get_n_jobs()
+        self.assertEqual(curr, get_n_jobs())
+
+        set_n_jobs(2)
+        self.assertEqual(2, get_n_jobs())
+
+        set_n_jobs(4)
+        self.assertEqual(4, get_n_jobs())
+
+        set_n_jobs(curr)
+        self.assertEqual(curr, get_n_jobs())
+
     def test_partition(self):
 
         distributor = MultiprocessingDistributor(n_workers=1)
