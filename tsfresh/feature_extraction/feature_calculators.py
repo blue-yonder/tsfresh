@@ -23,7 +23,7 @@ import math
 import warnings
 from builtins import range
 from collections import defaultdict
-from typing import Any
+from typing import Any, Union
 
 import numpy as np
 import pandas as pd
@@ -1237,26 +1237,25 @@ def fft_aggregated(x, param):
 @set_property("input", "pd.Series")
 @set_property("index_type", pd.DatetimeIndex)
 def energy_content_frequency_brackets(
-    signal: pd.Series, params: dict[str, Any]
-) -> list[tuple[str, float]]:
-    """
-
-    Calculates the FFT of the signal and groups the content of the FFT into n
-    bins, to get an estimate of energy content per frequency bucket
+    signal: pd.Series,
+    with_normalization: bool = False,
+    bin_index: int = 0,
+    number_of_bins: int = 100,
+    bin_ranges: tuple[int, int] = (-1, -1),
+    return_mode: str = "value",
+) -> float:
+    """_summary_
 
     Args:
-        signal (pd.Series): The distribution for which the frequency energy
-        buckets should be calculated
-        params (dict[str, Any], optional): Parameters used for calculation
-        of the frequency energy buckets. Parameters to be set are
-        - "number_of_bins": Number of bins
-        - "with_normalization": If the values should be normalized (divided
-        by the size of the frequency bucket) or not.
-        - "bins_to_use": To use preset bins, instead of using a defined number
-        of equally spaced bins
+        signal (pd.Series): _description_
+        with_normalization (bool, optional): _description_. Defaults to False.
+        bin_index (int, optional): _description_. Defaults to 0.
+        number_of_bins (int, optional): _description_. Defaults to 100.
+        bin_ranges (tuple[int, int], optional): _description_. Defaults to (-1, -1).
+        return_mode (str, optional): _description_. Defaults to "value".
 
     Returns:
-        list[tuple[str, float]]: Calculated features
+        float: _description_
     """
 
     def find_nearest(array: np.ndarray, value: float) -> tuple[int, float]:
@@ -1287,68 +1286,46 @@ def energy_content_frequency_brackets(
         warnings_message: str = "Uneven time steps detected. This feature can "
         warnings_message += "only be used for an even distribution of time stamps."
         warnings.warn(warnings_message, RuntimeWarning)
-        return [("NaN", np.nan)]
+        return np.NaN
 
     number_of_bins: int = 10
-    with_preset_number_of_bins: bool = False
-    bins_to_use: list[tuple[float, float]] = []
 
-    if "bins_to_use" in params.keys():
-        if len(params["bins_to_use"]) > 0:
-            number_of_bins = len(params["bins_to_use"])
-            bins_to_use = params["bins_to_use"]
-            with_preset_number_of_bins = True
-    else:
-        if "number_of_bins" in params.keys():
-            if params["number_of_bins"] <= 0:
-                warnings_message: str = "Number of bins was set by user to "
-                warnings_message += str(params["number_of_bins"])
-                warnings_message += (
-                    "equal or smaller than zero. Default value of one is used."
-                )
-                warnings.warn(warnings_message, RuntimeWarning)
-                number_of_bins = 1
-            else:
-                number_of_bins = min(params["number_of_bins"], len(time_vec) - 1)
-    with_normalization: bool = True
-    if "with_normalization" in params.keys():
-        with_normalization = params["with_normalization"]
+    if bin_index >= number_of_bins:
+        bin_index = number_of_bins - 1
 
     freq_vec: np.ndarray = np.fft.rfftfreq(n=len(signal), d=(time_vec[1] - time_vec[0]))
     fft_vec: np.ndarray = np.abs(np.fft.rfft(signal.to_numpy()))
 
-    if not with_preset_number_of_bins:
-        split_freq_vec: list[np.ndarray] = np.array_split(freq_vec, number_of_bins)
+    if (bin_ranges[0] < 0 and bin_ranges[1]) < 0 or (bin_ranges[0] >= bin_ranges[1]):
+        split_freq_vec: list[np.ndarray] = np.split(freq_vec, number_of_bins)
+        local_fft_range: tuple[int, int] = (
+            split_freq_vec[bin_index[0]],
+            split_freq_vec[bin_index[-1]],
+        )
+        local_fft_range_index: tuple[int, int] = (
+            find_nearest(array=freq_vec, value=local_fft_range[0]),
+            find_nearest(array=freq_vec, value=local_fft_range[-1]),
+        )
     else:
-        split_freq_vec: list[np.ndarray] = [
-            np.asarray([cur_bin[0], cur_bin[1]]) for cur_bin in bins_to_use
-        ]
-    frequency_energy_vec: list[float] = []
-    frequency_range_vec: list[tuple[float, float]] = []
-    for freq_entry in split_freq_vec:
-        lower_frequency_index: int = find_nearest(array=freq_vec, value=freq_entry[0])[
-            0
-        ]
-        upper_frequency_index: int = find_nearest(array=freq_vec, value=freq_entry[-1])[
-            0
-        ]
-        fft_sum: float = np.sum(fft_vec[lower_frequency_index:upper_frequency_index])
+        local_fft_range: tuple[int, int] = bin_ranges
+        local_fft_range_index: tuple[int, int] = (
+            find_nearest(array=freq_vec, value=bin_ranges[0]),
+            find_nearest(array=freq_vec, value=bin_ranges[1]),
+        )
+
+    if return_mode == "value":
+        fft_sum: float = np.sum(
+            fft_vec[local_fft_range_index[0] : local_fft_range_index[-1]]
+        )
         if with_normalization:
-            fft_sum /= len(fft_vec)
-
-        frequency_energy_vec.append(fft_sum)
-        frequency_range_vec.append((freq_entry[0], freq_entry[-1]))
-
-    return_val: list[tuple[str, float]] = [
-        (
-            f"bin_{entry_num}_max_{number_of_bins}_low_{int(entry[1][0])}_high_{int(entry[1][1])}",
-            entry[0],
-        )
-        for entry_num, entry in enumerate(
-            zip(frequency_energy_vec, frequency_range_vec)
-        )
-    ]
-    return return_val
+            return fft_sum / len(fft_vec)
+        return fft_sum
+    elif return_mode == "high":
+        return local_fft_range[-1]
+    elif return_mode == "low":
+        return local_fft_range[0]
+    else:
+        raise np.NaN
 
 
 @set_property("fctype", "simple")
