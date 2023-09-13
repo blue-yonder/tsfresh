@@ -13,9 +13,9 @@ which to cut off (solely based on the p-values).
 import warnings
 from functools import partial, reduce
 from multiprocessing import Pool
-import findspark
-findspark.init()
-from pyspark.sql import functions as F
+
+from pyspark.sql import DataFrame, functions as F
+from pyspark.sql.types import StructType, StructField, StringType, BooleanType
 
 import numpy as np
 import pandas as pd
@@ -31,6 +31,7 @@ from tsfresh.feature_selection.significance_tests import (
     spark_target_real_feature_binary_test,
 )
 from tsfresh.utilities.distribution import initialize_warnings_in_workers
+
 
 def calculate_relevance_table(
     X,
@@ -222,7 +223,6 @@ def calculate_relevance_table(
         table_const["relevant"] = False
 
         if not table_const.empty:
-
             warnings.warn(
                 "[test_feature_significance] Constant features: {}".format(
                     ", ".join(map(str, table_const.feature))
@@ -325,12 +325,12 @@ def calculate_relevance_table(
 
 
 def spark_calculate_relevance_table(
-    column_kind,  # TODO Is there a way to make this optional again? = None,
-    column_id,
-    column_sort,
-    column_value,
-    X,
-    y,
+    column_kind: str,  # TODO Is there a way to make this optional again? = None,
+    column_id: str,
+    column_sort: str,
+    column_value: str,
+    X: DataFrame,
+    y: DataFrame,
     ml_task="auto",
     multiclass=False,
     n_significant=1,
@@ -344,20 +344,27 @@ def spark_calculate_relevance_table(
     fdr_level=defaults.FDR_LEVEL,
     hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
 ):
+    def check_index_equality(y: pd.Series, X: DataFrame):
+        y_index_df = y.select([column_id, column_sort]).distinct()
+        X_index_df = X.select([column_id, column_sort]).distinct()
+        assert (
+            y_index_df.schema == X_index_df.schema
+        ), f"Schemas are not matching. The schema of y is {y_index_df}, the schema of X is {X_index_df}."
 
-    # Make sure X and y both have the exact same indices
-    y_sorted_index = y.sort_index().index
-    X_sorted_index = X.select(column_id, column_sort).distinct().toPandas().set_index([column_id,column_sort]).sort_index().index
-    assert (
-        list(y_sorted_index) == list(X_sorted_index)
-    ), f"The index of X and y need to be the same."
+        y_index_count = y_index_df.count()
+        X_index_count = X_index_df.count()
+        assert (
+            y_index_count == X_index_count
+        ), f"The dataframes indices have a different number of rows. The index of y has a length of {y_index_count}, while the index of X has a length of {X_index_count}."
 
-    # TODO think of a good way to deal with y being an indexed series or not
-    y = y.sort_index().reset_index(drop=True)
-    # TODO Sorting should be implemented in the wrapper function
+        index_intersec_count = y_index_df.intersect(other=X_index_df).count()
+        assert (
+            index_intersec_count == y_index_count
+        ), "The indices of y and X are not the same."
+    check_index_equality(y=y, X=X)
+
+    y = y.sort(F.col(column_id), F.col(column_sort))
     X = X.sort(F.col("feature"), F.col(column_id), F.col(column_sort))
-
-    
 
     if ml_task not in ["auto", "classification", "regression"]:
         raise ValueError(
@@ -393,12 +400,12 @@ def spark_calculate_relevance_table(
         X_count = (
             X.groupby("feature")
             .agg(F.countDistinct(column_value))
-            .withColumnRenamed(f"count({column_value})", "count_values")
+            .withColumnRenamed(existing=f"count({column_value})", new="count_values")
         )
 
         relevance_table = X_count.withColumn(
-            "type",
-            F.when(X_count.count_values == 1, "constant").otherwise(
+            colName="type",
+            col=F.when(X_count.count_values == 1, "constant").otherwise(
                 F.when(X_count.count_values == 2, "binary").otherwise("real")
             ),
         ).drop(X_count.count_values)
@@ -411,8 +418,8 @@ def spark_calculate_relevance_table(
         # Fill the column "p_value" with NaNs and the column "relevant" with False
         table_const = (
             relevance_table.filter(relevance_table.type == "constant")
-            .withColumn("p_value", F.lit("NaN"))
-            .withColumn("relevant", F.lit(False))
+            .withColumn(colName="p_value", col=F.lit("NaN"))
+            .withColumn(colName="relevant", col=F.lit(False))
         )
 
         if not table_const.rdd.isEmpty():
@@ -425,11 +432,12 @@ def spark_calculate_relevance_table(
                 RuntimeWarning,
             )
 
-        if table_const.count() == relevance_table.count():
-            # TODO Check if this output is in the correct format
-            # TODO I can only activat that once I put it in a function
-            print("return table_const")
-            # return table_const
+        # Dropped this check for efficiency reasons with Spark
+        # if table_const.count() == relevance_table.count():
+        #     # TODO Check if this output is in the correct format
+        #     # TODO I can only activate that once I put it in a function
+        #     print("return table_const")
+        #     # return table_const
 
         if ml_task == "classification":
             # TODO "Classification part not yet implemented"
@@ -481,16 +489,18 @@ def spark_calculate_relevance_table(
                 relevance_table = combine_relevance_tables(tables)
 
         elif ml_task == "regression":
+            y_series = y.select(F.col("y")).toPandas()["y"]
+
             _spark_test_real_feature = partial(
                 spark_target_real_feature_real_test,
-                y=y,
+                y_series=y_series,
                 column_id=column_id,
                 column_value=column_value,
                 column_sort=column_sort,
             )
             _spark_test_binary_feature = partial(
                 spark_target_real_feature_binary_test,
-                y=y,
+                y_series=y_series,
                 column_id=column_id,
                 column_value=column_value,
                 column_sort=column_sort,
@@ -517,7 +527,8 @@ def spark_calculate_relevance_table(
 
         relevance_table = relevance_table.union(table_const)
 
-        if relevance_table.filter(F.col("relevant") == True).count() == 0:
+        # Disable for performance reasons
+        if relevance_table.filter(F.col("relevant") == True).first() == None:
             warnings.warn(
                 "No feature was found relevant for {} for fdr level = {} (which corresponds to the maximal percentage "
                 "of irrelevant features, consider using an higher fdr level or add other features.".format(
@@ -556,9 +567,11 @@ def _calculate_relevance_table_for_implicit_target(
     )[0]
     return relevance_table.sort_values("p_value")
 
-def _spark_multipletests(feature_p_value, fdr_level, method):
-    def _spark_multipletests_helper(pdf, fdr_level, method):
 
+def _spark_multipletests(feature_p_value, fdr_level, method):
+    def _spark_multipletests_helper(
+        pdf: pd.DataFrame, fdr_level, method
+    ) -> pd.DataFrame:
         pdf["relevant"] = multipletests(pdf["p_value"], alpha=fdr_level, method=method)[
             0
         ]
@@ -569,11 +582,17 @@ def _spark_multipletests(feature_p_value, fdr_level, method):
         _spark_multipletests_helper, fdr_level=fdr_level, method=method
     )
 
-    schema = "feature string, relevant boolean"
+    schema = StructType(
+        [
+            StructField("feature", StringType(), nullable=False),
+            StructField("relevant", BooleanType(), nullable=False),
+        ]
+    )
 
     return feature_p_value.groupby(["feature"]).applyInPandas(
-        _spark_multipletests, schema=schema
+        func=_spark_multipletests, schema=schema
     )
+
 
 def _spark_calculate_relevance_table_for_implicit_target(
     table_real,
@@ -585,43 +604,32 @@ def _spark_calculate_relevance_table_for_implicit_target(
     fdr_level,
 ):
     table_real = table_real.join(
-        spark_test_real_feature(
-            # spark_target_real_feature_real_test(
-            X=X.join(table_real, "feature", "left_semi"),
-            # y = y,
-            # column_id = column_id,
-            # column_value = column_value,
-            # column_sort = column_sort,
+        other=spark_test_real_feature(
+            X=X.join(other=table_real, on="feature", how="left_semi"),
         ),
-        "feature",
-        "left",
+        on="feature",
+        how="left",
     )
 
     table_binary = table_binary.join(
-        spark_test_binary_feature(
-            # spark_target_real_feature_real_test(
-            X=X.join(table_binary, "feature", "left_semi"),
-            # y = y,
-            # column_id = column_id,
-            # column_value = column_value,
-            # column_sort = column_sort,
+        other=spark_test_binary_feature(
+            X=X.join(other=table_binary, on="feature", how="left_semi"),
         ),
-        "feature",
-        "left",
+        on="feature",
+        how="left",
     )
 
     relevance_table = table_real.union(table_binary)
     method = "fdr_bh" if hypotheses_independent else "fdr_by"
 
-    # TODO Implement multipletests
     relevance_table = relevance_table.join(
-        _spark_multipletests(
+        other=_spark_multipletests(
             feature_p_value=relevance_table.drop("type"),
             fdr_level=fdr_level,
             method=method,
         ),
-        "feature",
-        "left",
+        on="feature",
+        how="left",
     )
 
     relevance_table = relevance_table.sort(F.col("p_value").asc())

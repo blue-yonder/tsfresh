@@ -39,10 +39,10 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 from functools import partial
-import findspark
-findspark.init()
-from pyspark.sql import functions as F
-from pyspark.sql.types import DoubleType
+
+from pyspark.sql import DataFrame, functions as F
+from pyspark.sql.types import StructType, StructField, StringType, DoubleType
+from pyspark.sql import DataFrame
 
 
 def target_binary_feature_binary_test(x, y):
@@ -172,33 +172,36 @@ def target_real_feature_binary_test(x, y):
     return p_value
 
 
-
-
 def spark_target_real_feature_binary_test(
-    X,
-    y,
-    column_id,  # TODO Is there a way to make this optional again? = None,
-    column_value,
-    column_sort,  # TODO Is there a way to make this optional again? = None,
-):
+    X: DataFrame,
+    y_series: DataFrame,
+    column_id: str,  # TODO Is there a way to make this optional again? = None,
+    column_value: str,
+    column_sort: str,  # TODO Is there a way to make this optional again? = None,
+) -> DataFrame:
+    def _spark_target_real_feature_binary_test_helper(
+        key: tuple, pdf: pd.DataFrame, y_series: pd.Series
+    ) -> pd.DataFrame:
+        x = pdf["value"]
+        p_value = target_real_feature_binary_test(x=x, y=y_series).item()
 
-    def _spark_target_real_feature_binary_test_helper(x, y):
-        y = y.reset_index(drop=True)
-        x = pd.Series(data=x)
-        return target_real_feature_binary_test(x, y).item()
+        return pd.DataFrame(data={"feature": key[0], "p_value": [p_value]})
 
     spark_target_real_feature_binary_test = partial(
         _spark_target_real_feature_binary_test_helper,
-        y=y,
-    )
-    spark_target_real_feature_binary_test_udf = F.udf(
-        spark_target_real_feature_binary_test, DoubleType()
+        y_series=y_series,
     )
 
-    return X.groupBy(["feature"]).agg(
-        spark_target_real_feature_binary_test_udf(F.collect_list(column_value)).alias(
-            "p_value"
-        )
+    schema = StructType(
+        [
+            StructField("feature", StringType(), nullable=False),
+            StructField("p_value", DoubleType(), nullable=False),
+        ]
+    )
+    return (
+        X.select("feature", column_value)
+        .groupBy(["feature"])
+        .applyInPandas(func=spark_target_real_feature_binary_test, schema=schema)
     )
 
 
@@ -223,33 +226,36 @@ def target_real_feature_real_test(x, y):
     return p_value
 
 
-
-
 def spark_target_real_feature_real_test(
-    X,
-    y,
-    column_id, # TODO Is there a way to make this optional again? = None,
-    column_value,
-    column_sort,  # TODO Is there a way to make this optional again? = None,
-):
+    X: DataFrame,
+    y_series: DataFrame,
+    column_id: str,  # TODO Is there a way to make this optional again? = None,
+    column_value: str,
+    column_sort: str,  # TODO Is there a way to make this optional again? = None,
+) -> DataFrame:
+    def _spark_target_real_feature_real_test_helper(
+        key: tuple, pdf: pd.DataFrame, y_series: pd.Series
+    ) -> pd.DataFrame:
+        x = pdf["value"]
+        p_value = target_real_feature_real_test(x=x, y=y_series).item()
 
-    def _spark_target_real_feature_real_test_helper(x, y):
-        y = y.reset_index(drop=True)
-        x = pd.Series(data=x)
-        return target_real_feature_real_test(x, y).item()
+        return pd.DataFrame(data={"feature": key[0], "p_value": [p_value]})
 
     spark_target_real_feature_real_test = partial(
         _spark_target_real_feature_real_test_helper,
-        y=y,
-    )
-    spark_target_real_feature_real_test_udf = F.udf(
-        spark_target_real_feature_real_test, DoubleType()
+        y_series=y_series,
     )
 
-    return X.groupBy(["feature"]).agg(
-        spark_target_real_feature_real_test_udf(F.collect_list(column_value)).alias(
-            "p_value"
-        )
+    schema = StructType(
+        [
+            StructField("feature", StringType(), nullable=False),
+            StructField("p_value", DoubleType(), nullable=False),
+        ]
+    )
+    return (
+        X.select("feature", column_value)
+        .groupBy(["feature"])
+        .applyInPandas(func=spark_target_real_feature_real_test, schema=schema)
     )
 
 

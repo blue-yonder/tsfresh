@@ -10,8 +10,13 @@ import numpy as np
 import pandas as pd
 
 from tsfresh import defaults
-from tsfresh.feature_selection.relevance import calculate_relevance_table, spark_calculate_relevance_table
+from tsfresh.feature_selection.relevance import (
+    calculate_relevance_table,
+    spark_calculate_relevance_table,
+)
 from tsfresh.utilities.dataframe_functions import check_for_nans_in_columns
+
+from pyspark.sql import DataFrame
 
 
 def select_features(
@@ -180,27 +185,27 @@ def select_features(
 
     return X.loc[:, relevant_features]
 
+
 def spark_select_features(
-    column_kind,
-    column_id,
-    column_sort,
-    column_value,
-    X,
-    y,
+    column_kind: str,
+    column_id: str,
+    column_sort: str,
+    column_value: str,
+    y: DataFrame,
+    X: DataFrame,
     test_for_binary_target_binary_feature=defaults.TEST_FOR_BINARY_TARGET_BINARY_FEATURE,
     test_for_binary_target_real_feature=defaults.TEST_FOR_BINARY_TARGET_REAL_FEATURE,
     test_for_real_target_binary_feature=defaults.TEST_FOR_REAL_TARGET_BINARY_FEATURE,
     test_for_real_target_real_feature=defaults.TEST_FOR_REAL_TARGET_REAL_FEATURE,
     fdr_level=defaults.FDR_LEVEL,
     hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
-    n_jobs=defaults.N_PROCESSES, # TODO Is there a way to make this optional again? = None,
+    n_jobs=defaults.N_PROCESSES,  # TODO Is there a way to make this optional again? = None,
     show_warnings=defaults.SHOW_WARNINGS,
-    chunksize=defaults.CHUNKSIZE, # TODO Is there a way to make this optional again? = None,
+    chunksize=defaults.CHUNKSIZE,  # TODO Is there a way to make this optional again? = None,
     ml_task="auto",
     multiclass=False,
     n_significant=1,
 ):
-
     # TODO All those checks need to be implemented
     # assert isinstance(X, pd.DataFrame), "Please pass features in X as pandas.DataFrame."
     # check_for_nans_in_columns(X)
@@ -218,7 +223,8 @@ def spark_select_features(
 
     # if isinstance(y, np.ndarray):
     #     y = pd.Series(y, index=X.index)
-    X = X.withColumnRenamed(f"{column_kind}", "feature")
+
+    X = X.withColumnRenamed(existing=f"{column_kind}", new="feature")
 
     relevance_table = spark_calculate_relevance_table(
         column_kind=column_kind,
@@ -236,4 +242,4 @@ def spark_select_features(
     )
 
     relevant_features = relevance_table.filter(relevance_table.relevant == True)
-    return X.join(relevant_features, "feature", "left_semi")
+    return X.join(other=relevant_features, on="feature", how="left_semi")
