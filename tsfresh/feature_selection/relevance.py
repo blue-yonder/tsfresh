@@ -344,6 +344,7 @@ def spark_calculate_relevance_table(
     fdr_level=defaults.FDR_LEVEL,
     hypotheses_independent=defaults.HYPOTHESES_INDEPENDENT,
 ):
+    # Can be disabled for performance reasons
     def check_index_equality(y: pd.Series, X: DataFrame):
         y_index_df = y.select([column_id, column_sort]).distinct()
         X_index_df = X.select([column_id, column_sort]).distinct()
@@ -361,6 +362,7 @@ def spark_calculate_relevance_table(
         assert (
             index_intersec_count == y_index_count
         ), "The indices of y and X are not the same."
+
     check_index_equality(y=y, X=X)
 
     y = y.sort(F.col(column_id), F.col(column_sort))
@@ -527,8 +529,8 @@ def spark_calculate_relevance_table(
 
         relevance_table = relevance_table.union(table_const)
 
-        # Disable for performance reasons
-        if relevance_table.filter(F.col("relevant") == True).first() == None:
+        # Can get disabled for performance reasons
+        if relevance_table.filter(F.col("relevant") == True).rdd.isEmpty():
             warnings.warn(
                 "No feature was found relevant for {} for fdr level = {} (which corresponds to the maximal percentage "
                 "of irrelevant features, consider using an higher fdr level or add other features.".format(
