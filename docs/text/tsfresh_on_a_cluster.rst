@@ -207,3 +207,31 @@ If you want to use other framework instead of Dask, you will have to write your 
 To construct your custom Distributor, you need to define an object that inherits from the abstract base class
 :class:`tsfresh.utilities.distribution.DistributorBaseClass`.
 The :mod:`tsfresh.utilities.distribution` module contains more information about what you need to implement.
+
+Notes for efficient parallelization
+'''''''''''''''''''''''''''''''''''
+
+By default tsfresh uses parallelization to distribute the single threaded python code out to make use of the multiple threads/cores available on the host machine.
+
+However, this can create an issue known as over-provisioning, due to the fact that many of the underlying python libraries this project is built upon drop back into C code implementations for their low-level processing, and `also` try and spread their workload between as many threads/cores available.
+
+Over-provisioning is inefficient because of the overheads of repeated context switching. 
+
+It is far better to give control over this load distribution to the larger tasks, hence using parallelization in tsfresh, but to make best use of this and stop the over-provisioning of cpu cores it is required to prevent the low-level libraries attempting to distribute their workload over multiple threads/cores.
+
+This can be achieved by setting some environment variables early on in the kernel before these underlying python modules get loaded in.
+
+The environment variables in question are, `OMP_NUM_THREADS`, `MKL_NUM_THREADS` and `OPENBLAS_NUM_THREADS`. All of these should be set to `1`. For example, if using a Jupyterlab environment, having the first element of the notebook as the following will achieve this:
+
+.. code:: python
+
+    import os
+    os.environ['OMP_NUM_THREADS']="1"
+    os.environ['MKL_NUM_THREADS']="1"
+    os.environ['OPENBLAS_NUM_THREADS']="1"
+
+To run the notebook successfully it is then required to use the 'Restart the kernel' option.
+
+The more cores your host computer has, the more improvement in processing speed will be gained by implementing these environment changes. Speed increases of between 6x and 26x have been observed depending on the class of the host machine.
+
+
