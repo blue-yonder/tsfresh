@@ -10,12 +10,15 @@ from collections import UserDict
 from inspect import getfullargspec
 from itertools import product
 import findspark
+
 findspark.init()
 from pyspark.sql.types import StringType
 from pyspark.sql import functions as F
 
 import cloudpickle
 import pandas as pd
+from pyspark.sql import DataFrame
+from typing import List
 
 from tsfresh.feature_extraction import feature_calculators
 from tsfresh.utilities.string_manipulation import get_config_from_string
@@ -83,12 +86,12 @@ def from_columns(columns, columns_to_ignore=None):
 
     return kind_to_fc_parameters
 
-def spark_from_columns(columns, columns_to_ignore=None):
+
+def spark_from_columns(columns: DataFrame, columns_to_ignore: List[str] = None):
     """
     columns: Spark dataframe
     columns_to_ignore: list of str
     """
-    
 
     columns = columns.select("feature").distinct()
 
@@ -142,6 +145,7 @@ def spark_from_columns(columns, columns_to_ignore=None):
         for kind in kinds
     }
     return kind_to_fc_parameters
+
 
 class PickableSettings(UserDict):
     """Base object for all settings, which is a pickable dict.

@@ -19,11 +19,13 @@ from tsfresh.utilities.distribution import (
 )
 
 import findspark
+
 findspark.init()
 import pyspark
 import warnings
-from pyspark.sql import functions  as F
+from pyspark.sql import functions as F
 from pyspark.sql.types import *
+
 
 def check_for_nans_in_columns(df, columns=None):
     """
@@ -517,7 +519,7 @@ def roll_time_series(
             # if rolling is enabled, the data should be uniformly sampled in this column
             # Build the differences between consecutive time sort values
 
-            differences = df.groupby(grouper)[column_sort].apply(
+            differences = df.groupby(grouper, group_keys=False)[column_sort].apply(
                 lambda x: x.values[:-1] - x.values[1:]
             )
             # Write all of them into one big list
@@ -533,7 +535,7 @@ def roll_time_series(
     rolling_amount = np.abs(rolling_direction)
     rolling_direction = np.sign(rolling_direction)
 
-    grouped_data = df.groupby(grouper)
+    grouped_data = df.groupby(grouper, group_keys=False)
     prediction_steps = grouped_data.count().max().max()
 
     max_timeshift = max_timeshift or prediction_steps
@@ -585,53 +587,69 @@ def roll_time_series(
 
     return df_shift.sort_values(by=["id", column_sort or "sort"])
 
-def roll_time_series_applyInPandas_wrapper(column_id:str,
-                                            column_sort:str, 
-                                            rolling_direction:int, 
-                                            max_timeshift:int,
-                                            min_timeshift:int,
-                                            chunksize:int,
-                                            n_jobs:int,
-                                            show_warnings:bool,
-                                            disable_progressbar:bool,
-                                            distributor):
-    def roll_time_series_applyInPandas(key:tuple, pdf:pd.DataFrame)->pd.DataFrame:
+
+def roll_time_series_applyInPandas_wrapper(
+    column_id: str,
+    column_sort: str,
+    rolling_direction: int,
+    max_timeshift: int,
+    min_timeshift: int,
+    chunksize: int,
+    n_jobs: int,
+    show_warnings: bool,
+    disable_progressbar: bool,
+    distributor,
+):
+    def roll_time_series_applyInPandas(key: tuple, pdf: pd.DataFrame) -> pd.DataFrame:
         # key is a tuple of one numpy.int64, which is the value
         # of 'id' for the current group
-        if max_timeshift is not None: 
-            if max_timeshift < min_timeshift: raise ValueError(f"max_timeshift ({max_timeshift}) needs to be greater or equal than min_timeshift ({min_timeshift})")
+        if max_timeshift is not None:
+            if max_timeshift < min_timeshift:
+                raise ValueError(
+                    f"max_timeshift ({max_timeshift}) needs to be greater or equal than min_timeshift ({min_timeshift})"
+                )
 
-        res_df = roll_time_series(df_or_dict=pdf, 
-                                    column_id=column_id,
-                                    column_sort=column_sort,
-                                    rolling_direction=rolling_direction, 
-                                    min_timeshift=min_timeshift, 
-                                    max_timeshift=max_timeshift,
-                                    chunksize=chunksize,
-                                    n_jobs=n_jobs,
-                                    show_warnings=show_warnings,
-                                    disable_progressbar=disable_progressbar,
-                                    distributor=distributor)
+        res_df = roll_time_series(
+            df_or_dict=pdf,
+            column_id=column_id,
+            column_sort=column_sort,
+            rolling_direction=rolling_direction,
+            min_timeshift=min_timeshift,
+            max_timeshift=max_timeshift,
+            chunksize=chunksize,
+            n_jobs=n_jobs,
+            show_warnings=show_warnings,
+            disable_progressbar=disable_progressbar,
+            distributor=distributor,
+        )
 
-        res_df[[column_id, "new_column_id"]] = pd.DataFrame(res_df["id"].tolist(), index=res_df.index)
+        res_df[[column_id, "new_column_id"]] = pd.DataFrame(
+            res_df["id"].tolist(), index=res_df.index
+        )
         res_df["new_column_id"] = res_df["new_column_id"].astype(str)
-        res_df = res_df.drop(columns=["id",])
+        res_df = res_df.drop(
+            columns=[
+                "id",
+            ]
+        )
         return res_df
+
     return roll_time_series_applyInPandas
 
+
 def spark_roll_time_series(
-    spark:pyspark.sql.session.SparkSession,
-    sdf:pyspark.sql.dataframe.DataFrame,
-    column_ids:List[str]="id",
-    column_sort:str=None,
-    column_kind:str=None,
-    rolling_direction:int=1, 
-    max_timeshift:int=None,
-    min_timeshift:int=0,
-    chunksize:int=defaults.CHUNKSIZE,
-    n_jobs:int=defaults.N_PROCESSES,
-    show_warnings:bool=defaults.SHOW_WARNINGS,
-    disable_progressbar:bool=defaults.DISABLE_PROGRESSBAR,
+    spark: pyspark.sql.session.SparkSession,
+    sdf: pyspark.sql.dataframe.DataFrame,
+    column_ids: List[str] = "id",
+    column_sort: str = None,
+    column_kind: str = None,
+    rolling_direction: int = 1,
+    max_timeshift: int = None,
+    min_timeshift: int = 0,
+    chunksize: int = defaults.CHUNKSIZE,
+    n_jobs: int = defaults.N_PROCESSES,
+    show_warnings: bool = defaults.SHOW_WARNINGS,
+    disable_progressbar: bool = defaults.DISABLE_PROGRESSBAR,
     distributor=None,
 ):
     """
@@ -688,61 +706,85 @@ def spark_roll_time_series(
         column_ids = [column_ids]
 
     # Create the column for grouping, which allows multiple values
-    if len(column_ids)==1:
-        sdf = sdf.withColumn("grouper",F.col(column_ids[0]).cast(StringType()))
+    if len(column_ids) == 1:
+        sdf = sdf.withColumn("grouper", F.col(column_ids[0]).cast(StringType()))
     else:
-        sdf = sdf.withColumn("grouper",
-                                F.concat(F.lit('('), 
-                                            F.concat_ws(",", *column_ids),
-                                            F.lit(')'))\
-                                            .cast(StringType()))
+        sdf = sdf.withColumn(
+            "grouper",
+            F.concat(F.lit("("), F.concat_ws(",", *column_ids), F.lit(")")).cast(
+                StringType()
+            ),
+        )
     if column_kind is not None:
-        sdf = sdf.withColumn("grouper",
-                            F.concat(F.col("grouper"),
-                                        F.lit(","),
-                                        F.col(column_kind))\
-                            .cast(StringType()))
+        sdf = sdf.withColumn(
+            "grouper",
+            F.concat(F.col("grouper"), F.lit(","), F.col(column_kind)).cast(
+                StringType()
+            ),
+        )
 
     # Introduce the sort_col colum because of Spark date conversion issues with the applyInPandas function
     orig_column_sort_format = dict(sdf.dtypes)[column_sort]
-    if orig_column_sort_format=="date":
-        sdf = sdf.withColumn(colName = "sort_col", col = F.date_format(F.col(column_sort),"yyyyMMdd").cast(IntegerType()))
+    if orig_column_sort_format == "date":
+        sdf = sdf.withColumn(
+            colName="sort_col",
+            col=F.date_format(F.col(column_sort), "yyyyMMdd").cast(IntegerType()),
+        )
         column_sort = "sort_col"
-    elif orig_column_sort_format=="timestamp":
-        sdf = sdf.withColumn(colName = "sort_col", col = F.date_format(F.col(column_sort),"yyyyMMddHHmmss").cast(IntegerType()))
+    elif orig_column_sort_format == "timestamp":
+        sdf = sdf.withColumn(
+            colName="sort_col",
+            col=F.date_format(F.col(column_sort), "yyyyMMddHHmmss").cast(IntegerType()),
+        )
         column_sort = "sort_col"
 
     # Define the schema of the output
     rolling_schema = StructType.fromJson(sdf.schema.jsonValue())
-    rolling_schema.add(StructField(name = "new_column_id", dataType=StringType(), nullable=True))
-    
-    rolling_sdf = sdf.groupby("grouper")\
-                    .applyInPandas(
-                    roll_time_series_applyInPandas_wrapper(column_id="grouper",
-                                                            column_sort=column_sort,
-                                                            rolling_direction=rolling_direction, 
-                                                            max_timeshift=max_timeshift,
-                                                            min_timeshift=min_timeshift,
-                                                            chunksize=chunksize,
-                                                            n_jobs=n_jobs,
-                                                            show_warnings=show_warnings,
-                                                            disable_progressbar=disable_progressbar,
-                                                            distributor=distributor),
-                    schema=rolling_schema)
+    rolling_schema.add(
+        StructField(name="new_column_id", dataType=StringType(), nullable=True)
+    )
+
+    rolling_sdf = sdf.groupby("grouper").applyInPandas(
+        roll_time_series_applyInPandas_wrapper(
+            column_id="grouper",
+            column_sort=column_sort,
+            rolling_direction=rolling_direction,
+            max_timeshift=max_timeshift,
+            min_timeshift=min_timeshift,
+            chunksize=chunksize,
+            n_jobs=n_jobs,
+            show_warnings=show_warnings,
+            disable_progressbar=disable_progressbar,
+            distributor=distributor,
+        ),
+        schema=rolling_schema,
+    )
 
     # Remove the sort_col which was only introduced for Spark date conversion issues with the applyInPandas function
     if column_sort == "sort_col":
         rolling_sdf = rolling_sdf.drop(F.col("sort_col"))
-        if orig_column_sort_format=="date":
-            rolling_sdf = rolling_sdf.withColumn(colName = "new_column_id", col = F.to_date(col = F.col("new_column_id"), format ="yyyyMMdd"))
-        elif orig_column_sort_format=="timestamp":
-            rolling_sdf = rolling_sdf.withColumn(colName = "new_column_id", col = F.to_timestamp(col = F.col("new_column_id"), format ="yyyyMMddHHmmss"))
+        if orig_column_sort_format == "date":
+            rolling_sdf = rolling_sdf.withColumn(
+                colName="new_column_id",
+                col=F.to_date(col=F.col("new_column_id"), format="yyyyMMdd"),
+            )
+        elif orig_column_sort_format == "timestamp":
+            rolling_sdf = rolling_sdf.withColumn(
+                colName="new_column_id",
+                col=F.to_timestamp(col=F.col("new_column_id"), format="yyyyMMddHHmmss"),
+            )
 
-    rolling_sdf = rolling_sdf.withColumn(colName="id", col=F.concat(F.lit("("), F.col("grouper"), F.lit(","), F.col("new_column_id"), F.lit(")")))
+    rolling_sdf = rolling_sdf.withColumn(
+        colName="id",
+        col=F.concat(
+            F.lit("("), F.col("grouper"), F.lit(","), F.col("new_column_id"), F.lit(")")
+        ),
+    )
 
-    rolling_sdf = rolling_sdf.drop("new_column_id","grouper")
+    rolling_sdf = rolling_sdf.drop("new_column_id", "grouper")
 
     return rolling_sdf
+
 
 def make_forecasting_frame(x, kind, max_timeshift, rolling_direction):
     """
@@ -799,7 +841,11 @@ def make_forecasting_frame(x, kind, max_timeshift, rolling_direction):
         result[-1] = 0
         return result
 
-    mask = df_shift.groupby(["id"])["id"].transform(mask_first).astype(bool)
+    mask = (
+        df_shift.groupby(["id"], group_keys=False)["id"]
+        .transform(mask_first)
+        .astype(bool)
+    )
     df_shift = df_shift[mask]
 
     # Now create the target vector out of the values
@@ -897,7 +943,7 @@ def add_sub_time_series_index(
         return df_chunk
 
     if grouper:
-        df = df.groupby(grouper).apply(_add_id_column)
+        df = df.groupby(grouper, group_keys=False).apply(_add_id_column)
     else:
         df = _add_id_column(df)
 
