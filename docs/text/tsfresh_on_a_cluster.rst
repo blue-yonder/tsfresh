@@ -226,9 +226,9 @@ The environment variables in question are, `OMP_NUM_THREADS`, `MKL_NUM_THREADS` 
 .. code:: python
 
     import os
-    os.environ['OMP_NUM_THREADS']="1"
-    os.environ['MKL_NUM_THREADS']="1"
-    os.environ['OPENBLAS_NUM_THREADS']="1"
+    os.environ['OMP_NUM_THREADS'] = "1"
+    os.environ['MKL_NUM_THREADS'] = "1"
+    os.environ['OPENBLAS_NUM_THREADS'] = "1"
 
 To run the notebook successfully it is then required to use the 'Restart the kernel' option.
 
