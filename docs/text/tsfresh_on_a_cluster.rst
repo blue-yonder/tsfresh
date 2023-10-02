@@ -213,7 +213,7 @@ Notes for efficient parallelization
 
 By default tsfresh uses parallelization to distribute the single-threaded python code to the multiple cores available on the host machine.
 
-However, this can create an issue known as over-provisioning, due to the fact that many of the underlying python libraries this project is built upon drop back into C code implementations for their low-level processing, and `also` try and spread their workload between as many threads/cores available.
+However, this can create an issue known as over-provisioning. Many of the underlying python libraries (e.g. numpy) used in the feature calculators have C code implementations for their low-level processing. Those `also` try to spread their workload between as many cores available - which is in conflict with the parallelization done by tsfresh.
 
 Over-provisioning is inefficient because of the overheads of repeated context switching. 
 
