@@ -211,7 +211,7 @@ The :mod:`tsfresh.utilities.distribution` module contains more information about
 Notes for efficient parallelization
 '''''''''''''''''''''''''''''''''''
 
-By default tsfresh uses parallelization to distribute the single threaded python code out to make use of the multiple threads/cores available on the host machine.
+By default tsfresh uses parallelization to distribute the single-threaded python code to the multiple cores available on the host machine.
 
 However, this can create an issue known as over-provisioning, due to the fact that many of the underlying python libraries this project is built upon drop back into C code implementations for their low-level processing, and `also` try and spread their workload between as many threads/cores available.
 
