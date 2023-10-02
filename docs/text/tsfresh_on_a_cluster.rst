@@ -217,11 +217,7 @@ However, this can create an issue known as over-provisioning. Many of the underl
 
 Over-provisioning is inefficient because of the overheads of repeated context switching. 
 
-It is far better to give control over this load distribution to the larger tasks, hence using parallelization in tsfresh, but to make best use of this and stop the over-provisioning of cpu cores it is required to prevent the low-level libraries attempting to distribute their workload over multiple threads/cores.
-
 This issue can be solved by constraining the C libraries to single threads, using the following environment variables:
-
-The environment variables in question are, `OMP_NUM_THREADS`, `MKL_NUM_THREADS` and `OPENBLAS_NUM_THREADS`. All of these should be set to `1`. For example, if using a Jupyterlab environment, having the first element of the notebook as the following will achieve this:
 
 .. code:: python
 
