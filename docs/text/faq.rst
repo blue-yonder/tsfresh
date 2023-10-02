@@ -46,3 +46,7 @@ FAQ
 	Beyond sorting, tsfresh does not use the timestamp in calculations.
 	While many features do not need a timestamp (or only need it for ordering), others will assume that observations are evenly spaced in time (e.g., one second between each observation).
 	Since tsfresh ignores spacing, care should be taken when selecting features to use with a highly irregular series.
+
+    6. **Even when just extracing the :class:`tsfresh.feature_extraction.settings.EfficientFCParameters`, tsfresh is taking a long time to run. Is there anything further I can do to speed up the processing?**
+
+	If you are using Parallelization (the default option), you may need to check you are not over-provisioning your avaiable cpu cores. Take a look at :ref:`notes-for-efficient-parallelization-label` for steps to eliminate this, which can speed up processing significantly.
