@@ -232,6 +232,6 @@ The environment variables in question are, `OMP_NUM_THREADS`, `MKL_NUM_THREADS` 
 
 To run the notebook successfully it is then required to use the 'Restart the kernel' option.
 
-The more cores your host computer has, the more improvement in processing speed will be gained by implementing these environment changes. Speed increases of between 6x and 26x have been observed depending on the class of the host machine.
+The more cores your host computer has, the more improvement in processing speed will be gained by implementing these environment changes. Speed increases of between 6x and 26x have been observed depending on the type of the host machine.
 
 
