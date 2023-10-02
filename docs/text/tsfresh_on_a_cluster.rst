@@ -230,7 +230,7 @@ The environment variables in question are, `OMP_NUM_THREADS`, `MKL_NUM_THREADS` 
     os.environ['MKL_NUM_THREADS'] = "1"
     os.environ['OPENBLAS_NUM_THREADS'] = "1"
 
-To run the notebook successfully it is then required to use the 'Restart the kernel' option.
+Put these lines at the beginning of your notebook/python script - before you call any tsfresh code or import any other module.
 
 The more cores your host computer has, the more improvement in processing speed will be gained by implementing these environment changes. Speed increases of between 6x and 26x have been observed depending on the type of the host machine.
 
