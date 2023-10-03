@@ -9,7 +9,7 @@ These data have in common that they are ordered by an independent variable.
 The most common independent variable is time (time series).
 Other examples for sequential data are reflectance and absorption spectra,
 which have wavelength as their ordering dimension.
-In order keeps things simple, we are simplify referring to all different types of sequential data as time-series.
+In order to keep things simple, we are simply referring to all different types of sequential data as time-series.
 
 .. image:: ../images/introduction_ts_exa.png
    :scale: 70 %
