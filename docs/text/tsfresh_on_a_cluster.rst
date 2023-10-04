@@ -215,7 +215,7 @@ By default tsfresh uses parallelization to distribute the single-threaded python
 
 However, this can create an issue known as over-provisioning. Many of the underlying python libraries (e.g. numpy) used in the feature calculators have C code implementations for their low-level processing. Those `also` try to spread their workload between as many cores available - which is in conflict with the parallelization done by tsfresh.
 
-Over-provisioning is inefficient because of the overheads of repeated context switching. 
+Over-provisioning is inefficient because of the overheads of repeated context switching.
 
 This issue can be solved by constraining the C libraries to single threads, using the following environment variables:
 
@@ -229,5 +229,3 @@ This issue can be solved by constraining the C libraries to single threads, usin
 Put these lines at the beginning of your notebook/python script - before you call any tsfresh code or import any other module.
 
 The more cores your host computer has, the more improvement in processing speed will be gained by implementing these environment changes. Speed increases of between 6x and 26x have been observed depending on the type of the host machine.
-
-
