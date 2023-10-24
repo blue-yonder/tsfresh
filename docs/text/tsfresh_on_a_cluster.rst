@@ -207,3 +207,25 @@ If you want to use other framework instead of Dask, you will have to write your 
 To construct your custom Distributor, you need to define an object that inherits from the abstract base class
 :class:`tsfresh.utilities.distribution.DistributorBaseClass`.
 The :mod:`tsfresh.utilities.distribution` module contains more information about what you need to implement.
+
+Notes for efficient parallelization
+'''''''''''''''''''''''''''''''''''
+
+By default tsfresh uses parallelization to distribute the single-threaded python code to the multiple cores available on the host machine.
+
+However, this can create an issue known as over-provisioning. Many of the underlying python libraries (e.g. numpy) used in the feature calculators have C code implementations for their low-level processing. Those `also` try to spread their workload between as many cores available - which is in conflict with the parallelization done by tsfresh.
+
+Over-provisioning is inefficient because of the overheads of repeated context switching.
+
+This issue can be solved by constraining the C libraries to single threads, using the following environment variables:
+
+.. code:: python
+
+    import os
+    os.environ['OMP_NUM_THREADS'] = "1"
+    os.environ['MKL_NUM_THREADS'] = "1"
+    os.environ['OPENBLAS_NUM_THREADS'] = "1"
+
+Put these lines at the beginning of your notebook/python script - before you call any tsfresh code or import any other module.
+
+The more cores your host computer has, the more improvement in processing speed will be gained by implementing these environment changes. Speed increases of between 6x and 26x have been observed depending on the type of the host machine.
