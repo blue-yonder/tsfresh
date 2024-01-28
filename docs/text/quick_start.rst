@@ -13,6 +13,15 @@ As the compiled tsfresh package is hosted on the Python Package Index (PyPI) you
 
    pip install tsfresh
 
+If you need to work with large time series data that may not fit in memory, install tsfresh with
+`Dask <https://www.dask.org>`_:
+
+.. code:: shell
+
+   pip install tsfresh[dask]
+
+See also :ref:`large-data-label`.
+
 
 Dive in
 -------
