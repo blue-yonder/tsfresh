@@ -25,7 +25,10 @@ from tsfresh.feature_selection.significance_tests import (
     target_real_feature_binary_test,
     target_real_feature_real_test,
 )
-from tsfresh.utilities.distribution import initialize_warnings_in_workers
+from tsfresh.utilities.distribution import (
+    initialize_warnings_in_workers,
+    effective_n_jobs
+)
 
 
 def calculate_relevance_table(
@@ -128,7 +131,11 @@ def calculate_relevance_table(
                                    independent (e.g. mean and median)
     :type hypotheses_independent: bool
 
-    :param n_jobs: Number of processes to use during the p-value calculation
+    :param n_jobs: Number of processes to use during the p-value calculation.
+                If zero, no parallelization is used.
+                ``-1`` means using all processors. See scikit-learns'
+                `Glossary <https://scikit-learn.org/stable/glossary.html#term-n-jobs>`__
+                for more details.
     :type n_jobs: int
 
     :param show_warnings: Show warnings during the p-value calculation (needed for debugging of calculators).
@@ -191,6 +198,8 @@ def calculate_relevance_table(
             warnings.simplefilter("ignore")
         else:
             warnings.simplefilter("default")
+
+        n_jobs = effective_n_jobs(n_jobs)
 
         if n_jobs == 0 or n_jobs == 1:
             map_function = map
