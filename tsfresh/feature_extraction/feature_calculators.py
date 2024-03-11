@@ -757,7 +757,8 @@ def skewness(x):
     """
     if not isinstance(x, pd.Series):
         x = pd.Series(x)
-    return pd.Series.skew(x, skipna = False)
+    return pd.Series.skew(x, skipna=False)
+
 
 @set_property("fctype", "simple")
 @set_property("input", "pd.Series")
