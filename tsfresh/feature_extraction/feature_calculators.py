@@ -19,9 +19,11 @@ alphabetically ascending.
 
 import functools
 import itertools
+import math
 import warnings
 from builtins import range
 from collections import defaultdict
+from typing import Any, Union
 
 import numpy as np
 import pandas as pd
@@ -1232,6 +1234,101 @@ def fft_aggregated(x, param):
 
 
 @set_property("fctype", "simple")
+@set_property("input", "pd.Series")
+@set_property("index_type", pd.DatetimeIndex)
+def energy_content_frequency_brackets(
+    signal: pd.Series,
+    with_normalization: bool = False,
+    bin_index: int = 0,
+    number_of_bins: int = 100,
+    bin_ranges: tuple[int, int] = (-1, -1),
+    return_mode: str = "value",
+) -> float:
+    """_summary_
+
+    Args:
+        signal (pd.Series): _description_
+        with_normalization (bool, optional): _description_. Defaults to False.
+        bin_index (int, optional): _description_. Defaults to 0.
+        number_of_bins (int, optional): _description_. Defaults to 100.
+        bin_ranges (tuple[int, int], optional): _description_. Defaults to (-1, -1).
+        return_mode (str, optional): _description_. Defaults to "value".
+
+    Returns:
+        float: _description_
+    """
+
+    def find_nearest(array: np.ndarray, value: float) -> tuple[int, float]:
+        """Finds the index and value of the value closest to #value in a given
+        #array, and returns both
+
+        Args:
+            array (np.ndarray): Array to be searched in
+            value (float): Target value which the array will be searched for
+
+        Returns:
+            tuple[int, float]: Tuple consisting of index of value and value
+            itself
+        """
+        flt_val: float = float(value)
+        idx: int = int(np.searchsorted(array, flt_val, side="left"))
+        if idx > 0 and (
+            idx == len(array)
+            or math.fabs(flt_val - array[idx - 1]) < math.fabs(flt_val - array[idx])
+        ):
+            return (idx - 1, array[idx - 1])
+        else:
+            return (idx, array[idx])
+
+    time_vec: np.ndarray = signal.index.to_numpy()
+
+    if not np.all(np.isclose(a=np.diff(time_vec), b=np.diff(time_vec)[0])):
+        warnings_message: str = "Uneven time steps detected. This feature can "
+        warnings_message += "only be used for an even distribution of time stamps."
+        warnings.warn(warnings_message, RuntimeWarning)
+        return np.NaN
+
+    number_of_bins: int = 10
+
+    if bin_index >= number_of_bins:
+        bin_index = number_of_bins - 1
+
+    freq_vec: np.ndarray = np.fft.rfftfreq(n=len(signal), d=(time_vec[1] - time_vec[0]))
+    fft_vec: np.ndarray = np.abs(np.fft.rfft(signal.to_numpy()))
+
+    if (bin_ranges[0] < 0 and bin_ranges[1]) < 0 or (bin_ranges[0] >= bin_ranges[1]):
+        split_freq_vec: list[np.ndarray] = np.split(freq_vec, number_of_bins)
+        local_fft_range: tuple[int, int] = (
+            split_freq_vec[bin_index[0]],
+            split_freq_vec[bin_index[-1]],
+        )
+        local_fft_range_index: tuple[int, int] = (
+            find_nearest(array=freq_vec, value=local_fft_range[0]),
+            find_nearest(array=freq_vec, value=local_fft_range[-1]),
+        )
+    else:
+        local_fft_range: tuple[int, int] = bin_ranges
+        local_fft_range_index: tuple[int, int] = (
+            find_nearest(array=freq_vec, value=bin_ranges[0]),
+            find_nearest(array=freq_vec, value=bin_ranges[1]),
+        )
+
+    if return_mode == "value":
+        fft_sum: float = np.sum(
+            fft_vec[local_fft_range_index[0] : local_fft_range_index[-1]]
+        )
+        if with_normalization:
+            return fft_sum / len(fft_vec)
+        return fft_sum
+    elif return_mode == "high":
+        return local_fft_range[-1]
+    elif return_mode == "low":
+        return local_fft_range[0]
+    else:
+        raise np.NaN
+
+
+@set_property("fctype", "simple")
 def number_peaks(x, n):
     """
     Calculates the number of peaks of at least support n in the time series x. A peak of support n is defined as a
@@ -1423,7 +1520,6 @@ def spkt_welch_density(x, param):
     if len(pxx) <= np.max(
         coeff
     ):  # There are fewer data points in the time series than requested coefficients
-
         # filter coefficients that are not contained in pxx
         reduced_coeff = [coefficient for coefficient in coeff if len(pxx) > coefficient]
         not_calculated_coefficients = [
@@ -1525,7 +1621,9 @@ def change_quantiles(x, ql, qh, isabs, f_agg):
     try:
         bin_cat = pd.qcut(x, [ql, qh], labels=False)
         bin_cat_0 = bin_cat == 0
-    except ValueError:  # Occurs when ql are qh effectively equal, e.g. x is not long enough or is too categorical
+    except (
+        ValueError
+    ):  # Occurs when ql are qh effectively equal, e.g. x is not long enough or is too categorical
         return 0
     # We only count changes that start and end inside the corridor
     ind = (bin_cat_0 & _roll(bin_cat_0, 1))[1:]
@@ -2180,7 +2278,6 @@ def agg_linear_trend(x, param):
     res_index = []
 
     for parameter_combination in param:
-
         chunk_len = parameter_combination["chunk_len"]
         f_agg = parameter_combination["f_agg"]
 
@@ -2438,7 +2535,6 @@ def matrix_profile(x, param):
 
         # Handle all other Matrix Profile instances
         else:
-
             finite_indices = np.isfinite(m_p)
 
             if feature == "min":
