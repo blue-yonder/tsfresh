@@ -4,6 +4,17 @@ Changelog
 
 tsfresh uses `Semantic Versioning <http://semver.org/>`_
 
+Version 0.20.2
+==============
+- Added Features
+    -  Make Dask and Distributed optional dependencies (#1061)
+    - View and Set N Jobs (#1029)
+
+- Bugfixes/Typos/Documentation:
+    - Extra notes on parallelization efficiencies (#1046)
+    - Update doc extraction settings for clarity and formatting (#1033)
+    - Typos (#1031, #1034, #1049, #1048)
+
 Version 0.20.1
 ==============
 

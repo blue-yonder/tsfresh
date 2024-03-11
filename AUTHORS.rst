@@ -14,43 +14,91 @@ Core Development Team
 
 Contributions
 -------------
-- Markus Frey
-- Niklas Haas
-- earthgecko
-- Moritz Gelb
-- Thibault de Boissiere
-- Brian Sang
-- Stephan Müller
-- Vin Tang
-- Chris Chow
-- Ezekiel Kruglick
-- Timo Klerx
-- Gregor Koehler
-- Matúš Tomlein
-- Florian Aspart
-- Sergey Shepelev
-- Justin White
-- J. Kleint
-- Marx
-- Delyan
-- Justin
-- Ricardo Emanuel Vaz Vargas
-- Roman Yurchak
-- Sergey Shepelev
-- Will Koehrsen
-- Wojciech Indyk
-- cnzero
-- meer1992
-- supergitacc
+
+- Alan Larson
+- Alex Broekhof
+- Alex F
+- Alex Kennedy
 - Alex Loosley
-- CYHSM
+- Andrew Van Benschoten
+- Ben Auffarth
+- Brian Sang
+- Brunno Vanelli
+- Chris Chow
 - Chris Holdgraf
+- Christoph Hösler
+- cnzero
+- CYHSM
 - Dan Mazur
+- Daniel Azevedo
 - Daniel Gomez
 - Daniel Naftalovich
+- Delyan
+- Denis Barbier
+- Derrick
+- Dhruv Srikanth
 - Dimitris Spathis
+- Dominic White
+- earthgecko
+- Emanuele Fumagalli
+- Erlend Aune
+- Evans Doe Ocansey
+- Ezekiel Kruglick
 - Filip Malkowski
+- filipj8
+- Florian Aspart
+- flyingdutchman23
+- Fujimoto Seiji
 - George Wambold
-- Brunno Vanelli
+- Greg Bodeker
+- Gregor Koehler
+- Gustavo Bertoli
+- Haris Sahovic
+- HaveF
+- He Kaisheng
+- Henry Swaffield
+- J. Kleint
+- James Myatt
+- Jean-Francois Zinque
+- Jeroen Van Der Donckt
+- Justin White
+- kartikey-vyas
+- koho
+- Lifepillar
+- lupupu
+- Mal Curtis
+- Mario Kahlhofer
+- Markus Frey
+- Marx
+- Matúš Tomlein
 - Maximilian Lohmann
+- meer1992
+- mendel5
+- Michele Tonutti
+- Moritz Gelb
+- Nigel Bosch
+- Niklas Haas
+- Oli
+- Omar Gutiérre
+- patrjon
+- Paul Fornia
 - Paul Voigt
+- Quan Gu
+- rhysimu
+- Ricardo Emanuel Vaz Vargas
+- Roman Yurchak
+- Roy Wedge
+- Sean M. Law
+- Sergey Shepelev
+- Soledad Galli
+- Stephan Müller
+- supergitacc
+- Tan Tao-Lin
+- Teo Bucci
+- Thibault Blanc
+- Thibault de Boissiere
+- Timo Klerx
+- Vincent Tang
+- Will Koehrsen
+- Wojciech Indyk
+- yairst
