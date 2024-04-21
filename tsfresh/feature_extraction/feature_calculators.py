@@ -307,7 +307,7 @@ def symmetry_looking(x, param):
     :param param: contains dictionaries {"r": x} with x (float) is the percentage of the range to compare with
     :type param: list
     :return: the value of this feature
-    :return type: bool
+    :return type: list of tuples of type (str, bool)
     """
     if not isinstance(x, (np.ndarray, pd.Series)):
         x = np.asarray(x)
@@ -413,7 +413,7 @@ def agg_autocorrelation(x, param):
                   autocorrelations. Further, n is an int and the maximal number of lags to consider.
     :type param: list
     :return: the value of this feature
-    :return type: float
+    :return type: list of tuples of type (str, float)
     """
     # if the time series is longer than the following threshold, we use fft to calculate the acf
     THRESHOLD_TO_USE_FFT = 1250
@@ -468,7 +468,7 @@ def partial_autocorrelation(x, param):
     :param param: contains dictionaries {"lag": val} with int val indicating the lag to be returned
     :type param: list
     :return: the value of this feature
-    :return type: float
+    :return type: list of tuples of type (str, float)
     """
     # Check the difference between demanded lags by param and possible lags to calculate (depends on len(x))
     max_demanded_lag = max([lag["lag"] for lag in param])
@@ -510,7 +510,7 @@ def augmented_dickey_fuller(x, param):
                   statsmodels).
     :type param: list
     :return: the value of this feature
-    :return type: float
+    :return type: list of tuples of type (str, float)
     """
 
     @functools.lru_cache()
@@ -1081,7 +1081,7 @@ def fft_coefficient(x, param):
         "abs", "angle"]
     :type param: list
     :return: the different feature values
-    :return type: pandas.Series
+    :return type: zip iterable yielding tuples of type (str, float)
     """
 
     assert (
@@ -1130,7 +1130,7 @@ def fft_aggregated(x, param):
         "skew", "kurtosis"]
     :type param: list
     :return: the different feature values
-    :return type: pandas.Series
+    :return type: zip iterable yielding tuples of type (str, float)
     """
 
     assert {config["aggtype"] for config in param} <= {
@@ -1282,7 +1282,7 @@ def index_mass_quantile(x, param):
     :param param: contains dictionaries {"q": x} with x float
     :type param: list
     :return: the different feature values
-    :return type: pandas.Series
+    :return type: list of tuples of type (str, float)
     """
 
     x = np.asarray(x)
@@ -1341,7 +1341,7 @@ def linear_trend(x, param):
     :param param: contains dictionaries {"attr": x} with x an string, the attribute name of the regression model
     :type param: list
     :return: the different feature values
-    :return type: pandas.Series
+    :return type: list of tuples of type (str, float)
     """
     # todo: we could use the index of the DataFrame here
     linReg = linregress(range(len(x)), x)
@@ -1372,7 +1372,7 @@ def cwt_coefficients(x, param):
     :param param: contains dictionaries {"widths":x, "coeff": y, "w": z} with x array of int and y,z int
     :type param: list
     :return: the different feature values
-    :return type: pandas.Series
+    :return type: zip iterable yielding tuples of type (str, float)
     """
 
     calculated_cwt = {}
@@ -1413,7 +1413,7 @@ def spkt_welch_density(x, param):
     :param param: contains dictionaries {"coeff": x} with x int
     :type param: list
     :return: the different feature values
-    :return type: pandas.Series
+    :return type: zip iterable yielding tuples of type (str, float)
     """
 
     freq, pxx = welch(x, nperseg=min(len(x), 256))
@@ -1458,7 +1458,7 @@ def ar_coefficient(x, param):
     :param param: contains dictionaries {"coeff": x, "k": y} with x,y int
     :type param: list
     :return x: the different feature values
-    :return type: pandas.Series
+    :return type: list of tuples of type (str, float)
     """
     calculated_ar_params = {}
 
@@ -2087,7 +2087,7 @@ def friedrich_coefficients(x, param):
                   a positive integer corresponding to the returned coefficient
     :type param: list
     :return: the different feature values
-    :return type: pandas.Series
+    :return type: list of tuples of type (str, float)
     """
     # calculated is dictionary storing the calculated coefficients {m: {r: friedrich_coefficients}}
     calculated = defaultdict(dict)
@@ -2171,7 +2171,7 @@ def agg_linear_trend(x, param):
     :param param: contains dictionaries {"attr": x, "chunk_len": l, "f_agg": f} with x, f an string and l an int
     :type param: list
     :return: the different feature values
-    :return type: pandas.Series
+    :return type: zip iterable yielding tuples of type (str, float)
     """
     # todo: we could use the index of the DataFrame here
 
@@ -2390,7 +2390,7 @@ def matrix_profile(x, param):
                   and decides which feature of the matrix profile to extract
     :type param: list
     :return: the different feature values
-    :return type: pandas.Series
+    :return type: list of tuples of type (str, float)
     """
     if mp is None:
         raise ImportError(
@@ -2485,7 +2485,7 @@ def query_similarity_count(x, param):
                   `norm` (bool) to `False.
     :type param: list
     :return x: the different feature values
-    :return type: int
+    :return type: list of tuples of type (str, int or np.nan)
     """
     res = {}
     T = np.asarray(x).astype(float)
