@@ -230,10 +230,9 @@ Put these lines at the beginning of your notebook/python script - before you cal
 
 The more cores your host computer has, the more improvement in processing speed will be gained by implementing these environment changes. Speed increases of between 6x and 26x have been observed depending on the type of the host machine.
 
-.. NOTE:: 
-    If you intend to run machine learning pipelines after feature extraction, it is highly recommended to revert these changes. 
+.. NOTE::
+    If you intend to run machine learning pipelines after feature extraction, it is highly recommended to revert these changes.
     Settings have been tested on GPU-accelerated XGBoost classifier training task with 9x speed reduction.
-    Many popular machine learning libraries like scikit-learn and Tensorflow/PyTorch rely on parallelization of your CPU cores to speed up CPU-dependent low-level computations. 
+    Many popular machine learning libraries like scikit-learn and Tensorflow/PyTorch rely on parallelization of your CPU cores to speed up CPU-dependent low-level computations.
     By forcing those libraries to only use a single thread, it creates a bottleneck for other downstream tasks even if you are accelerating them with GPUs.
     e.g. CPU-computation of loss function after every PyTorch neural network forward pass will only run on one thread, while the GPU idles and waits for its completion before starting on its backpropogation tasks.
-    
