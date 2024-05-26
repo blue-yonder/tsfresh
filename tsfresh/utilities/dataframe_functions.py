@@ -343,7 +343,7 @@ def _roll_out_time_series(
         else:
             timeshift_value = timeshift - 1
         # and now create new ones ids out of the old ones
-        df_temp["id"] = df_temp[column_id].apply(lambda row: (row, timeshift_value))
+        df_temp[column_id] = df_temp[column_id].apply(lambda row: (row, timeshift_value))
 
         return df_temp
 
