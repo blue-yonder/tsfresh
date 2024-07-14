@@ -156,7 +156,7 @@ def _estimate_friedrich_coefficients(x, m, r):
     try:
         df["quantiles"] = pd.qcut(df.signal, r)
     except (ValueError, IndexError):
-        return [np.NaN] * (m + 1)
+        return [np.nan] * (m + 1)
 
     quantiles = df.groupby("quantiles")
 
@@ -168,7 +168,7 @@ def _estimate_friedrich_coefficients(x, m, r):
     try:
         return np.polyfit(result.x_mean, result.y_mean, deg=m)
     except (np.linalg.LinAlgError, ValueError):
-        return [np.NaN] * (m + 1)
+        return [np.nan] * (m + 1)
 
 
 def _aggregate_on_chunks(x, f_agg, chunk_len):
@@ -518,11 +518,11 @@ def augmented_dickey_fuller(x, param):
         try:
             return adfuller(x, autolag=autolag)
         except LinAlgError:
-            return np.NaN, np.NaN, np.NaN
+            return np.nan, np.nan, np.nan
         except ValueError:  # occurs if sample size is too small
-            return np.NaN, np.NaN, np.NaN
+            return np.nan, np.nan, np.nan
         except MissingDataError:  # is thrown for e.g. inf or nan in the data
-            return np.NaN, np.NaN, np.NaN
+            return np.nan, np.nan, np.nan
 
     res = []
     for config in param:
@@ -538,7 +538,7 @@ def augmented_dickey_fuller(x, param):
         elif config["attr"] == "usedlag":
             res.append((index, adf[2]))
         else:
-            res.append((index, np.NaN))
+            res.append((index, np.nan))
     return res
 
 
@@ -635,7 +635,7 @@ def mean_change(x):
     :return type: float
     """
     x = np.asarray(x)
-    return (x[-1] - x[0]) / (len(x) - 1) if len(x) > 1 else np.NaN
+    return (x[-1] - x[0]) / (len(x) - 1) if len(x) > 1 else np.nan
 
 
 @set_property("fctype", "simple")
@@ -653,7 +653,7 @@ def mean_second_derivative_central(x):
     :return type: float
     """
     x = np.asarray(x)
-    return (x[-1] - x[-2] - x[1] + x[0]) / (2 * (len(x) - 2)) if len(x) > 2 else np.NaN
+    return (x[-1] - x[-2] - x[1] + x[0]) / (2 * (len(x) - 2)) if len(x) > 2 else np.nan
 
 
 @set_property("fctype", "simple")
@@ -788,7 +788,7 @@ def root_mean_square(x):
     :return: the value of this feature
     :return type: float
     """
-    return np.sqrt(np.mean(np.square(x))) if len(x) > 0 else np.NaN
+    return np.sqrt(np.mean(np.square(x))) if len(x) > 0 else np.nan
 
 
 @set_property("fctype", "simple")
@@ -878,7 +878,7 @@ def last_location_of_maximum(x):
     :return type: float
     """
     x = np.asarray(x)
-    return 1.0 - np.argmax(x[::-1]) / len(x) if len(x) > 0 else np.NaN
+    return 1.0 - np.argmax(x[::-1]) / len(x) if len(x) > 0 else np.nan
 
 
 @set_property("fctype", "simple")
@@ -894,7 +894,7 @@ def first_location_of_maximum(x):
     """
     if not isinstance(x, (np.ndarray, pd.Series)):
         x = np.asarray(x)
-    return np.argmax(x) / len(x) if len(x) > 0 else np.NaN
+    return np.argmax(x) / len(x) if len(x) > 0 else np.nan
 
 
 @set_property("fctype", "simple")
@@ -909,7 +909,7 @@ def last_location_of_minimum(x):
     :return type: float
     """
     x = np.asarray(x)
-    return 1.0 - np.argmin(x[::-1]) / len(x) if len(x) > 0 else np.NaN
+    return 1.0 - np.argmin(x[::-1]) / len(x) if len(x) > 0 else np.nan
 
 
 @set_property("fctype", "simple")
@@ -925,7 +925,7 @@ def first_location_of_minimum(x):
     """
     if not isinstance(x, (np.ndarray, pd.Series)):
         x = np.asarray(x)
-    return np.argmin(x) / len(x) if len(x) > 0 else np.NaN
+    return np.argmin(x) / len(x) if len(x) > 0 else np.nan
 
 
 @set_property("fctype", "simple")
@@ -1109,7 +1109,7 @@ def fft_coefficient(x, param):
     res = [
         complex_agg(fft[config["coeff"]], config["attr"])
         if config["coeff"] < len(fft)
-        else np.NaN
+        else np.nan
         for config in param
     ]
     index = [
@@ -1291,7 +1291,7 @@ def index_mass_quantile(x, param):
 
     if s == 0:
         # all values in x are zero or it has length 0
-        return [("q_{}".format(config["q"]), np.NaN) for config in param]
+        return [("q_{}".format(config["q"]), np.nan) for config in param]
     else:
         # at least one value is not zero
         mass_centralized = np.cumsum(abs_x) / s
@@ -1393,7 +1393,7 @@ def cwt_coefficients(x, param):
 
         i = widths.index(w)
         if calculated_cwt_for_widths.shape[1] <= coeff:
-            res += [np.NaN]
+            res += [np.nan]
         else:
             res += [calculated_cwt_for_widths[i, coeff]]
 
@@ -1433,7 +1433,7 @@ def spkt_welch_density(x, param):
         # Fill up the rest of the requested coefficients with np.NaNs
         return zip(
             indices,
-            list(pxx[reduced_coeff]) + [np.NaN] * len(not_calculated_coefficients),
+            list(pxx[reduced_coeff]) + [np.nan] * len(not_calculated_coefficients),
         )
     else:
         return zip(indices, pxx[coeff])
@@ -1477,7 +1477,7 @@ def ar_coefficient(x, param):
                 calculated_AR = AutoReg(x_as_list, lags=k, trend="c")
                 calculated_ar_params[k] = calculated_AR.fit().params
             except (ZeroDivisionError, LinAlgError, ValueError):
-                calculated_ar_params[k] = [np.NaN] * k
+                calculated_ar_params[k] = [np.nan] * k
 
         mod = calculated_ar_params[k]
         if p <= k:
@@ -1486,7 +1486,7 @@ def ar_coefficient(x, param):
             except IndexError:
                 res[column_name] = 0
         else:
-            res[column_name] = np.NaN
+            res[column_name] = np.nan
 
     return [(key, value) for key, value in res.items()]
 
@@ -1521,7 +1521,7 @@ def change_quantiles(x, ql, qh, isabs, f_agg):
     if isabs:
         div = np.abs(div)
     # All values that originate from the corridor between the quantiles ql and qh will have the category 0,
-    # other will be np.NaN
+    # other will be np.nan
     try:
         bin_cat = pd.qcut(x, [ql, qh], labels=False)
         bin_cat_0 = bin_cat == 0
@@ -1644,7 +1644,7 @@ def mean_n_absolute_max(x, number_of_maxima):
 
     n_absolute_maximum_values = np.sort(np.absolute(x))[-number_of_maxima:]
 
-    return np.mean(n_absolute_maximum_values) if len(x) > number_of_maxima else np.NaN
+    return np.mean(n_absolute_maximum_values) if len(x) > number_of_maxima else np.nan
 
 
 @set_property("fctype", "simple")
@@ -1937,7 +1937,7 @@ def autocorrelation(x, lag):
     # Return the normalized unbiased covariance
     v = np.var(x)
     if np.isclose(v, 0):
-        return np.NaN
+        return np.nan
     else:
         return sum_product / ((len(x) - lag) * v)
 
@@ -1955,7 +1955,7 @@ def quantile(x, q):
     :return type: float
     """
     if len(x) == 0:
-        return np.NaN
+        return np.nan
     return np.quantile(x, q)
 
 
@@ -2006,7 +2006,7 @@ def absolute_maximum(x):
     :return: the value of this feature
     :return type: float
     """
-    return np.max(np.absolute(x)) if len(x) > 0 else np.NaN
+    return np.max(np.absolute(x)) if len(x) > 0 else np.nan
 
 
 @set_property("fctype", "simple")
@@ -2110,7 +2110,7 @@ def friedrich_coefficients(x, param):
         try:
             res["coeff_{}__m_{}__r_{}".format(coeff, m, r)] = calculated[m][r][coeff]
         except IndexError:
-            res["coeff_{}__m_{}__r_{}".format(coeff, m, r)] = np.NaN
+            res["coeff_{}__m_{}__r_{}".format(coeff, m, r)] = np.nan
     return [(key, value) for key, value in res.items()]
 
 
@@ -2186,7 +2186,7 @@ def agg_linear_trend(x, param):
 
         if f_agg not in calculated_agg or chunk_len not in calculated_agg[f_agg]:
             if chunk_len >= len(x):
-                calculated_agg[f_agg][chunk_len] = np.NaN
+                calculated_agg[f_agg][chunk_len] = np.nan
             else:
                 aggregate_result = _aggregate_on_chunks(x, f_agg, chunk_len)
                 lin_reg_result = linregress(
@@ -2197,7 +2197,7 @@ def agg_linear_trend(x, param):
         attr = parameter_combination["attr"]
 
         if chunk_len >= len(x):
-            res_data.append(np.NaN)
+            res_data.append(np.nan)
         else:
             res_data.append(getattr(calculated_agg[f_agg][chunk_len], attr))
 
@@ -2241,7 +2241,7 @@ def energy_ratio_by_chunks(x, param):
         assert num_segments > 0
 
         if full_series_energy == 0:
-            res_data.append(np.NaN)
+            res_data.append(np.nan)
         else:
             res_data.append(
                 np.sum(np.array_split(x, num_segments)[segment_focus] ** 2.0)

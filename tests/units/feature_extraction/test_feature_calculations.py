@@ -28,7 +28,7 @@ class FeatureCalculationTestCase(TestCase):
         warnings.resetwarnings()
 
     def assertIsNaN(self, result):
-        self.assertTrue(np.isnan(result), msg="{} is not np.NaN")
+        self.assertTrue(np.isnan(result), msg="{} is not np.nan")
 
     def assertEqualOnAllArrayTypes(self, f, input_to_f, result, *args, **kwargs):
         expected_result = f(input_to_f, *args, **kwargs)
@@ -575,7 +575,7 @@ class FeatureCalculationTestCase(TestCase):
         self.assertEqualOnAllArrayTypes(length, [1, 2, 3, 4], 4)
         self.assertEqualOnAllArrayTypes(length, [1, 2, 3], 3)
         self.assertEqualOnAllArrayTypes(length, [1, 2], 2)
-        self.assertEqualOnAllArrayTypes(length, [1, 2, 3, np.NaN], 4)
+        self.assertEqualOnAllArrayTypes(length, [1, 2, 3, np.nan], 4)
         self.assertEqualOnAllArrayTypes(length, [], 0)
 
     def test_standard_deviation(self):
@@ -1180,26 +1180,26 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqualOnAllArrayTypes(
             binned_entropy,
             [10] * 10 + [1],
-            -(10 / 11 * np.math.log(10 / 11) + 1 / 11 * np.math.log(1 / 11)),
+            -(10 / 11 * math.log(10 / 11) + 1 / 11 * math.log(1 / 11)),
             10,
         )
         self.assertAlmostEqualOnAllArrayTypes(
             binned_entropy,
             [10] * 10 + [1],
-            -(10 / 11 * np.math.log(10 / 11) + 1 / 11 * np.math.log(1 / 11)),
+            -(10 / 11 * math.log(10 / 11) + 1 / 11 * math.log(1 / 11)),
             10,
         )
         self.assertAlmostEqualOnAllArrayTypes(
             binned_entropy,
             [10] * 10 + [1],
-            -(10 / 11 * np.math.log(10 / 11) + 1 / 11 * np.math.log(1 / 11)),
+            -(10 / 11 * math.log(10 / 11) + 1 / 11 * math.log(1 / 11)),
             100,
         )
         self.assertAlmostEqualOnAllArrayTypes(
-            binned_entropy, list(range(10)), -np.math.log(1 / 10), 100
+            binned_entropy, list(range(10)), -math.log(1 / 10), 100
         )
         self.assertAlmostEqualOnAllArrayTypes(
-            binned_entropy, list(range(100)), -np.math.log(1 / 2), 2
+            binned_entropy, list(range(100)), -math.log(1 / 2), 2
         )
 
     def test_sample_entropy(self):
@@ -1512,24 +1512,24 @@ class FeatureCalculationTestCase(TestCase):
         self.assertEqualPandasSeriesWrapper(value_count, [1] * 10, 10, value=1)
         self.assertEqualPandasSeriesWrapper(value_count, list(range(10)), 1, value=0)
         self.assertEqualPandasSeriesWrapper(value_count, [1] * 10, 0, value=0)
-        self.assertEqualPandasSeriesWrapper(value_count, [np.NaN, 0, 1] * 3, 3, value=0)
+        self.assertEqualPandasSeriesWrapper(value_count, [np.nan, 0, 1] * 3, 3, value=0)
         self.assertEqualPandasSeriesWrapper(
-            value_count, [np.NINF, 0, 1] * 3, 3, value=0
+            value_count, [-np.inf, 0, 1] * 3, 3, value=0
         )
         self.assertEqualPandasSeriesWrapper(
-            value_count, [np.PINF, 0, 1] * 3, 3, value=0
+            value_count, [np.inf, 0, 1] * 3, 3, value=0
         )
         self.assertEqualPandasSeriesWrapper(
             value_count, [0.1, 0.2, 0.3] * 3, 3, value=0.2
         )
         self.assertEqualPandasSeriesWrapper(
-            value_count, [np.NaN, 0, 1] * 3, 3, value=np.NaN
+            value_count, [np.nan, 0, 1] * 3, 3, value=np.nan
         )
         self.assertEqualPandasSeriesWrapper(
-            value_count, [np.NINF, 0, 1] * 3, 3, value=np.NINF
+            value_count, [-np.inf, 0, 1] * 3, 3, value=-np.inf
         )
         self.assertEqualPandasSeriesWrapper(
-            value_count, [np.PINF, 0, 1] * 3, 3, value=np.PINF
+            value_count, [np.inf, 0, 1] * 3, 3, value=np.inf
         )
 
     def test_range_count(self):
@@ -1546,7 +1546,7 @@ class FeatureCalculationTestCase(TestCase):
             range_count, list(range(0, -10, -1)), 9, min=-10, max=0
         )
         self.assertEqualPandasSeriesWrapper(
-            range_count, [np.NaN, np.PINF, np.NINF] + list(range(10)), 10, min=0, max=10
+            range_count, [np.nan, np.inf, -np.inf] + list(range(10)), 10, min=0, max=10
         )
 
     def test_approximate_entropy(self):
@@ -1685,7 +1685,7 @@ class FeatureCalculationTestCase(TestCase):
         )
         self.assertListEqual(
             _aggregate_on_chunks(
-                x=pd.Series([0, 1, 2, np.NaN, 5]), f_agg="median", chunk_len=2
+                x=pd.Series([0, 1, 2, np.nan, 5]), f_agg="median", chunk_len=2
             ),
             [0.5, 2, 5],
         )
@@ -1728,7 +1728,7 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqual(res['attr_"intercept"__chunk_len_3__f_agg_"median"'], 1)
         self.assertAlmostEqual(res['attr_"slope"__chunk_len_3__f_agg_"median"'], 3)
 
-        x = pd.Series([np.NaN, np.NaN, np.NaN, -3, -3, -3])
+        x = pd.Series([np.nan, np.nan, np.nan, -3, -3, -3])
         res = agg_linear_trend(x=x, param=param)
 
         res = pd.Series(dict(res))
@@ -1742,7 +1742,7 @@ class FeatureCalculationTestCase(TestCase):
         self.assertIsNaN(res['attr_"intercept"__chunk_len_3__f_agg_"median"'])
         self.assertIsNaN(res['attr_"slope"__chunk_len_3__f_agg_"median"'])
 
-        x = pd.Series([np.NaN, np.NaN, -3, -3, -3, -3])
+        x = pd.Series([np.nan, np.nan, -3, -3, -3, -3])
         res = agg_linear_trend(x=x, param=param)
 
         res = pd.Series(dict(res))
@@ -1946,19 +1946,19 @@ class FeatureCalculationTestCase(TestCase):
         self.assertEqualPandasSeriesWrapper(
             count_above, [0.1, 0.2, 0.3] * 3, 2 / 3, t=0.2
         )
-        self.assertEqualPandasSeriesWrapper(count_above, [np.NaN, 0, 1] * 3, 2 / 3, t=0)
+        self.assertEqualPandasSeriesWrapper(count_above, [np.nan, 0, 1] * 3, 2 / 3, t=0)
         self.assertEqualPandasSeriesWrapper(
-            count_above, [np.NINF, 0, 1] * 3, 2 / 3, t=0
+            count_above, [-np.inf, 0, 1] * 3, 2 / 3, t=0
         )
-        self.assertEqualPandasSeriesWrapper(count_above, [np.PINF, 0, 1] * 3, 1, t=0)
+        self.assertEqualPandasSeriesWrapper(count_above, [np.inf, 0, 1] * 3, 1, t=0)
         self.assertEqualPandasSeriesWrapper(
-            count_above, [np.NaN, 0, 1] * 3, 0, t=np.NaN
-        )
-        self.assertEqualPandasSeriesWrapper(
-            count_above, [np.NINF, 0, np.PINF] * 3, 1, t=np.NINF
+            count_above, [np.nan, 0, 1] * 3, 0, t=np.nan
         )
         self.assertEqualPandasSeriesWrapper(
-            count_above, [np.PINF, 0, 1] * 3, 1 / 3, t=np.PINF
+            count_above, [-np.inf, 0, np.inf] * 3, 1, t=-np.inf
+        )
+        self.assertEqualPandasSeriesWrapper(
+            count_above, [np.inf, 0, 1] * 3, 1 / 3, t=np.inf
         )
 
     def test_count_below(self):
@@ -1968,21 +1968,21 @@ class FeatureCalculationTestCase(TestCase):
         self.assertEqualPandasSeriesWrapper(
             count_below, [0.1, 0.2, 0.3] * 3, 2 / 3, t=0.2
         )
-        self.assertEqualPandasSeriesWrapper(count_below, [np.NaN, 0, 1] * 3, 1 / 3, t=0)
+        self.assertEqualPandasSeriesWrapper(count_below, [np.nan, 0, 1] * 3, 1 / 3, t=0)
         self.assertEqualPandasSeriesWrapper(
-            count_below, [np.NINF, 0, 1] * 3, 2 / 3, t=0
+            count_below, [-np.inf, 0, 1] * 3, 2 / 3, t=0
         )
         self.assertEqualPandasSeriesWrapper(
-            count_below, [np.PINF, 0, 1] * 3, 1 / 3, t=0
+            count_below, [np.inf, 0, 1] * 3, 1 / 3, t=0
         )
         self.assertEqualPandasSeriesWrapper(
-            count_below, [np.NaN, 0, 1] * 3, 0, t=np.NaN
+            count_below, [np.nan, 0, 1] * 3, 0, t=np.nan
         )
         self.assertEqualPandasSeriesWrapper(
-            count_below, [np.NINF, 0, np.PINF] * 3, 1 / 3, t=np.NINF
+            count_below, [-np.inf, 0, np.inf] * 3, 1 / 3, t=-np.inf
         )
         self.assertEqualPandasSeriesWrapper(
-            count_below, [np.PINF, 0, 1] * 3, 1, t=np.PINF
+            count_below, [np.inf, 0, 1] * 3, 1, t=np.inf
         )
 
     def test_benford_correlation(self):

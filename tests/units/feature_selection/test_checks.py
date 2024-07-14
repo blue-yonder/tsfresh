@@ -18,12 +18,12 @@ from tsfresh.feature_selection.significance_tests import (
 
 @pytest.fixture()
 def binary_series_with_nan():
-    return pd.Series([np.NaN, 1, 1])
+    return pd.Series([np.nan, 1, 1])
 
 
 @pytest.fixture()
 def real_series_with_nan():
-    return pd.Series([np.NaN, 1, 2])
+    return pd.Series([np.nan, 1, 2])
 
 
 @pytest.fixture()

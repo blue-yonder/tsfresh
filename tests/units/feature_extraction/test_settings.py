@@ -92,7 +92,7 @@ class TestSettingsObject(TestCase):
 
         self.assertEqual(
             kind_to_fc_parameters[tsn]["value_count"],
-            [{"value": np.PINF}, {"value": np.NINF}, {"value": np.NaN}],
+            [{"value": np.inf}, {"value": -np.inf}, {"value": np.nan}],
         )
 
     def test_from_column_correct_for_comprehensive_fc_parameters(self):
