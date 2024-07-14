@@ -32,8 +32,8 @@ class PerColumnImputerTestCase(TestCase):
         X = pd.DataFrame(index=list(range(100)))
 
         X["NaNs"] = np.nan * np.ones(100)
-        X["PINF"] = np.PINF * np.ones(100)
-        X["NINF"] = np.NINF * np.ones(100)
+        X["PINF"] = np.inf * np.ones(100)
+        X["NINF"] = -np.inf * np.ones(100)
 
         with warnings.catch_warnings(record=True) as w:
             imputer.fit(X)
@@ -53,8 +53,8 @@ class PerColumnImputerTestCase(TestCase):
         X = pd.DataFrame(index=list(range(100)))
 
         X["NaNs"] = np.nan * np.ones(100)
-        X["PINF"] = np.PINF * np.ones(100)
-        X["NINF"] = np.NINF * np.ones(100)
+        X["PINF"] = np.inf * np.ones(100)
+        X["NINF"] = -np.inf * np.ones(100)
 
         X_numpy = X.values.copy()
 
@@ -87,7 +87,7 @@ class PerColumnImputerTestCase(TestCase):
     def test_standard_replacement_behavior(self):
         imputer = PerColumnImputer()
 
-        data = [np.NINF, np.PINF, np.nan, 100.0, -100.0, 1.0, 1.0]
+        data = [-np.inf, np.inf, np.nan, 100.0, -100.0, 1.0, 1.0]
         truth = [-100.0, 100.0, 1.0, 100.0, -100.0, 1.0, 1.0]
         X = pd.DataFrame({"a": data})
         true_X = pd.DataFrame({"a": truth})
@@ -98,7 +98,7 @@ class PerColumnImputerTestCase(TestCase):
         pdt.assert_frame_equal(selected_X, true_X)
 
     def test_partial_preset_col_to_NINF_given(self):
-        data = [np.NINF, np.PINF, np.nan, 100.0, -100.0, 1.0, 1.0]
+        data = [-np.inf, np.inf, np.nan, 100.0, -100.0, 1.0, 1.0]
         truth = [-100.0, 100.0, 1.0, 100.0, -100.0, 1.0, 1.0]
         X = pd.DataFrame({"a": data})
         true_X = pd.DataFrame({"a": truth})
@@ -112,7 +112,7 @@ class PerColumnImputerTestCase(TestCase):
         pdt.assert_frame_equal(selected_X, true_X)
 
     def test_partial_preset_col_to_PINF_given(self):
-        data = [np.NINF, np.PINF, np.nan, 100.0, -100.0, 1.0, 1.0]
+        data = [-np.inf, np.inf, np.nan, 100.0, -100.0, 1.0, 1.0]
         truth = [-100.0, 100.0, 1.0, 100.0, -100.0, 1.0, 1.0]
         X = pd.DataFrame({"a": data})
         true_X = pd.DataFrame({"a": truth})
@@ -126,7 +126,7 @@ class PerColumnImputerTestCase(TestCase):
         pdt.assert_frame_equal(selected_X, true_X)
 
     def test_partial_preset_col_to_NAN_given(self):
-        data = [np.NINF, np.PINF, np.nan, 100.0, -100.0, 1.0, 1.0]
+        data = [-np.inf, np.inf, np.nan, 100.0, -100.0, 1.0, 1.0]
         truth = [-100.0, 100.0, 1.0, 100.0, -100.0, 1.0, 1.0]
         X = pd.DataFrame({"a": data})
         true_X = pd.DataFrame({"a": truth})
@@ -151,7 +151,7 @@ class PerColumnImputerTestCase(TestCase):
         self.assertRaises(ValueError, imputer.transform, X)
 
     def test_preset_has_higher_priority_than_fit(self):
-        data = [np.NINF, np.PINF, np.nan, 100.0, -100.0, 1.0, 1.0]
+        data = [-np.inf, np.inf, np.nan, 100.0, -100.0, 1.0, 1.0]
         truth = [-100.0, 100.0, 0.0, 100.0, -100.0, 1.0, 1.0]
 
         X = pd.DataFrame({"a": data})
@@ -166,8 +166,8 @@ class PerColumnImputerTestCase(TestCase):
         pdt.assert_frame_equal(selected_X, true_X)
 
     def test_only_parameters_of_last_fit_count(self):
-        data = [np.NINF, np.PINF, np.nan, 100.0, -100.0, 1.0, 1.0]
-        data_2 = [np.NINF, np.PINF, np.nan, 10.0, -10.0, 3.0, 3.0]
+        data = [-np.inf, np.inf, np.nan, 100.0, -100.0, 1.0, 1.0]
+        data_2 = [-np.inf, np.inf, np.nan, 10.0, -10.0, 3.0, 3.0]
         truth_a = [-10.0, 10.0, 3.0, 10.0, -10.0, 3.0, 3.0]
         truth_b = [-10.0, 10.0, 3.0, 10.0, -10.0, 3.0, 3.0]
 
@@ -185,7 +185,7 @@ class PerColumnImputerTestCase(TestCase):
         pdt.assert_frame_equal(selected_X, true_X)
 
     def test_only_subset_of_columns_given(self):
-        data = [np.NINF, np.PINF, np.nan, 100.0, -100.0, 1.0, 1.0]
+        data = [-np.inf, np.inf, np.nan, 100.0, -100.0, 1.0, 1.0]
         truth_a = [-100.0, 100.0, 0.0, 100.0, -100.0, 1.0, 1.0]
         truth_b = [-100.0, 100.0, 1.0, 100.0, -100.0, 1.0, 1.0]
         X = pd.DataFrame({"a": data, "b": data})

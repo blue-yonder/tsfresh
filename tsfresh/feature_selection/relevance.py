@@ -214,7 +214,7 @@ def calculate_relevance_table(
         table_binary = relevance_table[relevance_table.type == "binary"].copy()
 
         table_const = relevance_table[relevance_table.type == "constant"].copy()
-        table_const["p_value"] = np.NaN
+        table_const["p_value"] = np.nan
         table_const["relevant"] = False
 
         if not table_const.empty:

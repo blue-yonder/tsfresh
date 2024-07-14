@@ -457,7 +457,7 @@ class DataAdapterTestCase(DataTestCase):
         )
 
     def test_with_wrong_input(self):
-        test_df = pd.DataFrame([{"id": 0, "kind": "a", "value": 3, "sort": np.NaN}])
+        test_df = pd.DataFrame([{"id": 0, "kind": "a", "value": 3, "sort": np.nan}])
         self.assertRaises(ValueError, to_tsdata, test_df, "id", "kind", "value", "sort")
 
         test_df = pd.DataFrame([{"id": 0, "kind": "a", "value": 3, "sort": 1}])
@@ -489,10 +489,10 @@ class DataAdapterTestCase(DataTestCase):
             ValueError, to_tsdata, test_df, "id", "strange_kind", "value", "sort"
         )
 
-        test_df = pd.DataFrame([{"id": np.NaN, "kind": "a", "value": 3, "sort": 1}])
+        test_df = pd.DataFrame([{"id": np.nan, "kind": "a", "value": 3, "sort": 1}])
         self.assertRaises(ValueError, to_tsdata, test_df, "id", "kind", "value", "sort")
 
-        test_df = pd.DataFrame([{"id": 0, "kind": np.NaN, "value": 3, "sort": 1}])
+        test_df = pd.DataFrame([{"id": 0, "kind": np.nan, "value": 3, "sort": 1}])
         self.assertRaises(ValueError, to_tsdata, test_df, "id", "kind", "value", "sort")
 
         test_df = pd.DataFrame([{"id": 2}, {"id": 1}])
@@ -518,10 +518,10 @@ class DataAdapterTestCase(DataTestCase):
         # If there are more than one column, the algorithm can not choose the correct column
         self.assertRaises(ValueError, to_tsdata, test_dict, "id", None, None, None)
 
-        test_df = pd.DataFrame([{"id": 0, "value": np.NaN}])
+        test_df = pd.DataFrame([{"id": 0, "value": np.nan}])
         self.assertRaises(ValueError, to_tsdata, test_df, "id", None, "value", None)
 
-        test_df = pd.DataFrame([{"id": 0, "value": np.NaN}])
+        test_df = pd.DataFrame([{"id": 0, "value": np.nan}])
         self.assertRaises(ValueError, to_tsdata, test_df, None, None, "value", None)
 
         test_df = pd.DataFrame([{"id": 0, "a_": 3, "b": 5, "sort": 1}])
