@@ -21,7 +21,7 @@ class RollingTestCase(TestCase):
                 "id": [0, 0],
                 "kind": ["a", "b"],
                 "value": [3, 3],
-                "sort": [np.NaN, np.NaN],
+                "sort": [np.nan, np.nan],
             }
         )
         self.assertRaises(
@@ -133,7 +133,7 @@ class RollingTestCase(TestCase):
         )
 
     def test_assert_single_row(self):
-        test_df = pd.DataFrame([{"id": np.NaN, "kind": "a", "value": 3, "sort": 1}])
+        test_df = pd.DataFrame([{"id": np.nan, "kind": "a", "value": 3, "sort": 1}])
         self.assertRaises(
             ValueError,
             dataframe_functions.roll_time_series,
@@ -1044,7 +1044,7 @@ class CheckForNanTestCase(TestCase):
         # should not raise an exception
         dataframe_functions.check_for_nans_in_columns(test_df)
 
-        test_df = pd.DataFrame([[1, 2, 3], [4, np.NaN, 6]], index=[0, 1])
+        test_df = pd.DataFrame([[1, 2, 3], [4, np.nan, 6]], index=[0, 1])
 
         self.assertRaises(
             ValueError, dataframe_functions.check_for_nans_in_columns, test_df
@@ -1052,7 +1052,7 @@ class CheckForNanTestCase(TestCase):
 
     def test_not_all_columns(self):
         test_df = pd.DataFrame(
-            [[1, 2, 3], [4, np.NaN, 6]], index=[0, 1], columns=["a", "b", "c"]
+            [[1, 2, 3], [4, np.nan, 6]], index=[0, 1], columns=["a", "b", "c"]
         )
 
         self.assertRaises(
@@ -1083,33 +1083,33 @@ class CheckForNanTestCase(TestCase):
 
 class ImputeTestCase(TestCase):
     def test_impute_zero(self):
-        df = pd.DataFrame([{"value": np.NaN}])
+        df = pd.DataFrame([{"value": np.nan}])
         dataframe_functions.impute_dataframe_zero(df)
         self.assertEqual(list(df.value), [0])
 
-        df = pd.DataFrame([{"value": np.PINF}])
+        df = pd.DataFrame([{"value": np.inf}])
         dataframe_functions.impute_dataframe_zero(df)
         self.assertEqual(list(df.value), [0])
 
-        df = pd.DataFrame([{"value": np.NINF}])
+        df = pd.DataFrame([{"value": -np.inf}])
         dataframe_functions.impute_dataframe_zero(df)
         self.assertEqual(list(df.value), [0])
 
         df = pd.DataFrame(
-            [{"value": np.NINF}, {"value": np.NaN}, {"value": np.PINF}, {"value": 1}]
+            [{"value": -np.inf}, {"value": np.nan}, {"value": np.inf}, {"value": 1}]
         )
         dataframe_functions.impute_dataframe_zero(df)
         self.assertEqual(list(df.value), [0, 0, 0, 1])
 
         df = pd.DataFrame(
-            [{"value": np.NINF}, {"value": np.NaN}, {"value": np.PINF}, {"value": 1}]
+            [{"value": -np.inf}, {"value": np.nan}, {"value": np.inf}, {"value": 1}]
         )
         df = df.astype(np.float64)
         df = dataframe_functions.impute_dataframe_zero(df)
         self.assertEqual(list(df.value), [0, 0, 0, 1])
 
         df = pd.DataFrame(
-            [{"value": np.NINF}, {"value": np.NaN}, {"value": np.PINF}, {"value": 1}]
+            [{"value": -np.inf}, {"value": np.nan}, {"value": np.inf}, {"value": 1}]
         )
         df = df.astype(np.float32)
         df = dataframe_functions.impute_dataframe_zero(df)
@@ -1122,7 +1122,7 @@ class ImputeTestCase(TestCase):
 
     def test_toplevel_impute(self):
         df = pd.DataFrame(
-            np.transpose([[0, 1, 2, np.NaN], [1, np.PINF, 2, 3], [1, -3, np.NINF, 3]]),
+            np.transpose([[0, 1, 2, np.nan], [1, np.inf, 2, 3], [1, -3, -np.inf, 3]]),
             columns=["value_a", "value_b", "value_c"],
         )
 
@@ -1134,7 +1134,7 @@ class ImputeTestCase(TestCase):
 
         df = pd.DataFrame(
             np.transpose(
-                [[0, 1, 2, np.NaN], [1, np.PINF, 2, np.NaN], [np.NaN, -3, np.NINF, 3]]
+                [[0, 1, 2, np.nan], [1, np.inf, 2, np.nan], [np.nan, -3, -np.inf, 3]]
             ),
             columns=["value_a", "value_b", "value_c"],
         )
@@ -1147,7 +1147,7 @@ class ImputeTestCase(TestCase):
 
         df = pd.DataFrame(
             np.transpose(
-                [[0, 1, 2, np.NaN], [1, np.PINF, 2, 3], [np.PINF, -3, np.NINF, 3]]
+                [[0, 1, 2, np.nan], [1, np.inf, 2, 3], [np.inf, -3, -np.inf, 3]]
             ),
             columns=["value_a", "value_b", "value_c"],
         )
@@ -1167,7 +1167,7 @@ class ImputeTestCase(TestCase):
         def get_df():
             return pd.DataFrame(
                 np.transpose(
-                    [[0, 1, 2, np.NaN], [1, np.PINF, 2, 3], [1, -3, np.NINF, 3]]
+                    [[0, 1, 2, np.nan], [1, np.inf, 2, 3], [1, -3, -np.inf, 3]]
                 ),
                 columns=["value_a", "value_b", "value_c"],
             )
@@ -1208,7 +1208,7 @@ class ImputeTestCase(TestCase):
 
         # check for error if replacement value is not finite
         df = get_df()
-        col_to_max = {"value_a": 200, "value_b": np.NaN, "value_c": 200}
+        col_to_max = {"value_a": 200, "value_b": np.nan, "value_c": 200}
         col_to_min = {"value_a": -134, "value_b": -134, "value_c": -134}
         col_to_median = {"value_a": 55, "value_b": 55, "value_c": 55}
         self.assertRaises(
@@ -1221,7 +1221,7 @@ class ImputeTestCase(TestCase):
         )
         df = get_df()
         col_to_max = {"value_a": 200, "value_b": 200, "value_c": 200}
-        col_to_min = {"value_a": -134, "value_b": np.NINF, "value_c": -134}
+        col_to_min = {"value_a": -134, "value_b": -np.inf, "value_c": -134}
         col_to_median = {"value_a": 55, "value_b": 55, "value_c": 55}
         self.assertRaises(
             ValueError,
@@ -1235,7 +1235,7 @@ class ImputeTestCase(TestCase):
         df = get_df()
         col_to_max = {"value_a": 200, "value_b": 200, "value_c": 200}
         col_to_min = {"value_a": -134, "value_b": -134, "value_c": -134}
-        col_to_median = {"value_a": 55, "value_b": 55, "value_c": np.PINF}
+        col_to_median = {"value_a": 55, "value_b": 55, "value_c": np.inf}
         self.assertRaises(
             ValueError,
             dataframe_functions.impute_dataframe_range,
@@ -1302,7 +1302,7 @@ class RestrictTestCase(TestCase):
 
 class GetRangeValuesPerColumnTestCase(TestCase):
     def test_ignores_non_finite_values(self):
-        df = pd.DataFrame([0, 1, 2, 3, np.NaN, np.PINF, np.NINF], columns=["value"])
+        df = pd.DataFrame([0, 1, 2, 3, np.nan, np.inf, -np.inf], columns=["value"])
 
         (
             col_to_max,
@@ -1341,7 +1341,7 @@ class GetRangeValuesPerColumnTestCase(TestCase):
         self.assertEqual(col_to_median, {"value": 1})
 
     def test_no_finite_values_yields_0(self):
-        df = pd.DataFrame([np.NaN, np.PINF, np.NINF], columns=["value"])
+        df = pd.DataFrame([np.nan, np.inf, -np.inf], columns=["value"])
 
         with warnings.catch_warnings(record=True) as w:
             (
