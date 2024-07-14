@@ -189,6 +189,7 @@ def extract_relevant_features(
         profiling_filename=profiling_filename,
         profiling_sorting=profiling_sorting,
         n_jobs=n_jobs,
+        chunksize=chunksize,
         column_id=column_id,
         column_sort=column_sort,
         column_kind=column_kind,
