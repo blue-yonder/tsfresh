@@ -1516,9 +1516,7 @@ class FeatureCalculationTestCase(TestCase):
         self.assertEqualPandasSeriesWrapper(
             value_count, [-np.inf, 0, 1] * 3, 3, value=0
         )
-        self.assertEqualPandasSeriesWrapper(
-            value_count, [np.inf, 0, 1] * 3, 3, value=0
-        )
+        self.assertEqualPandasSeriesWrapper(value_count, [np.inf, 0, 1] * 3, 3, value=0)
         self.assertEqualPandasSeriesWrapper(
             value_count, [0.1, 0.2, 0.3] * 3, 3, value=0.2
         )
@@ -1972,9 +1970,7 @@ class FeatureCalculationTestCase(TestCase):
         self.assertEqualPandasSeriesWrapper(
             count_below, [-np.inf, 0, 1] * 3, 2 / 3, t=0
         )
-        self.assertEqualPandasSeriesWrapper(
-            count_below, [np.inf, 0, 1] * 3, 1 / 3, t=0
-        )
+        self.assertEqualPandasSeriesWrapper(count_below, [np.inf, 0, 1] * 3, 1 / 3, t=0)
         self.assertEqualPandasSeriesWrapper(
             count_below, [np.nan, 0, 1] * 3, 0, t=np.nan
         )
