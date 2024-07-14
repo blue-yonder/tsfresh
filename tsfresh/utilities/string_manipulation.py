@@ -33,11 +33,11 @@ def get_config_from_string(parts):
 
     for key, value in zip(config_kwargs, config_values):
         if value.lower() == "nan":
-            dict_if_configs[key] = np.NaN
+            dict_if_configs[key] = np.nan
         elif value.lower() == "-inf":
-            dict_if_configs[key] = np.NINF
+            dict_if_configs[key] = -np.inf
         elif value.lower() == "inf":
-            dict_if_configs[key] = np.PINF
+            dict_if_configs[key] = np.inf
         else:
             dict_if_configs[key] = ast.literal_eval(value)
 
