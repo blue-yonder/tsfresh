@@ -579,7 +579,7 @@ def roll_time_series(
     return df_shift.sort_values(by=["id", column_sort or "sort"])
 
 
-def make_forecasting_frame(x, kind, max_timeshift, rolling_direction):
+def make_forecasting_frame(x, id, kind, max_timeshift, rolling_direction):
     """
     Takes a singular time series x and constructs a DataFrame df and target vector y that can be used for a time series
     forecasting task.
@@ -597,6 +597,8 @@ def make_forecasting_frame(x, kind, max_timeshift, rolling_direction):
 
     :param x: the singular time series
     :type x: np.array or pd.Series
+    :param id: the id for the time series
+    :type id: str
     :param kind: the kind of the time series
     :type kind: str
     :param rolling_direction: The sign decides, if to roll backwards (if sign is positive) or forwards in "time"
@@ -614,7 +616,7 @@ def make_forecasting_frame(x, kind, max_timeshift, rolling_direction):
     else:
         t = range(n)
 
-    df = pd.DataFrame({"id": ["id"] * n, "time": t, "value": x, "kind": kind})
+    df = pd.DataFrame({"id": id, "time": t, "value": x, "kind": kind})
 
     df_shift = roll_time_series(
         df,
@@ -644,7 +646,7 @@ def make_forecasting_frame(x, kind, max_timeshift, rolling_direction):
 
     # make sure that the format is the same as the
     # df_shift index
-    y.index = map(lambda x: ("id", x), y.index)
+    y.index = map(lambda x: (id, x), y.index)
 
     return df_shift, y
 
