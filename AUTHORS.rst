@@ -37,6 +37,7 @@ Contributions
 - Denis Barbier
 - Derrick
 - Dhruv Srikanth
+- Dillon Wong
 - Dimitris Spathis
 - Dominic White
 - earthgecko
@@ -61,6 +62,7 @@ Contributions
 - James Myatt
 - Jean-Francois Zinque
 - Jeroen Van Der Donckt
+- Justin Hong
 - Justin White
 - kartikey-vyas
 - koho
@@ -88,6 +90,7 @@ Contributions
 - Ricardo Emanuel Vaz Vargas
 - Roman Yurchak
 - Roy Wedge
+- Sarius2009
 - Sean M. Law
 - Sergey Shepelev
 - Soledad Galli
@@ -102,4 +105,5 @@ Contributions
 - Will Koehrsen
 - Wojciech Indyk
 - yairst
+- YamaByte
 - yitao-yu

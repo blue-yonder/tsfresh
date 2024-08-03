@@ -4,6 +4,18 @@ Changelog
 
 tsfresh uses `Semantic Versioning <http://semver.org/>`_
 
+Version 0.20.3
+==============
+- Bugfixes/Typos/Documentation:
+    * Fixes issue #1073: Updated setup.cfg to require newer scipy version (#1081)
+    * extract_relevant_features now passes chunksize to extract_features (#1083)
+    * Fix code and tests for numpy >= 2.0 (#1085)
+    * Update tsfresh.feature_extraction.feature_calculators.skewness to make it consistent with the design principle of not ignoring nan (#1066)
+    * Fix spelling/grammar in pipeline notebook (#1082)
+    * Added recommendation to revert thread limitations (#1069)
+    * Fix the 01 example notebook to not leak information between train and test set
+    * Feature calculator return type documentation (#1070)
+
 Version 0.20.2
 ==============
 - Added Features
