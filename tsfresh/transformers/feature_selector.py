@@ -99,7 +99,11 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
                                        independent (e.g. mean and median)
         :type hypotheses_independent: bool
 
-        :param n_jobs: Number of processes to use during the p-value calculation
+        :param n_jobs: Number of processes to use during the p-value calculation.
+                    If zero, no parallelization is used.
+                    ``-1`` means using all processors. See scikit-learns'
+                    `Glossary <https://scikit-learn.org/stable/glossary.html#term-n-jobs>`__
+                    for more details.
         :type n_jobs: int
 
         :param chunksize: Size of the chunks submitted to the worker processes
