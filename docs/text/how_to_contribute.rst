@@ -90,3 +90,9 @@ We use black and isort for styling. They are automatically triggered on every co
 
 
 We are looking forward to hear from you! =)
+
+
+PR Descriptions
+'''''''''''''''
+
+The PR should have a clear and descriptive title, along with a detailed description of the changes made, the problem being addressed, and any relevant tips for reviewers. An example of what this might look like is `here. <https://github.com/blue-yonder/tsfresh/pull/994#issue-1509962136>`_
