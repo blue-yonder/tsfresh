@@ -35,7 +35,7 @@ jobs:
         pytest --junitxml=junit/test-results.xml --cov-report=xml tests
 
     - name: Upload pytest test results
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v4
       with:
         name: pytest-results
         path: junit/test-results.xml
