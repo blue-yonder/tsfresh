@@ -24,7 +24,7 @@ jobs:
           cd tests
           pytest benchmark.py --benchmark-min-rounds=4 --benchmark-only -n 0 --no-cov --benchmark-json output.json
       - name: Upload the file
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: benchmark_results
           path: tests/output.json
