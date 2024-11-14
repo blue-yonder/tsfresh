@@ -64,7 +64,7 @@ you have to:
 
 .. code::
 
-    pytest
+    make test-local
 
 
 To test changes across multiple versions of Python, run:
@@ -72,12 +72,23 @@ To test changes across multiple versions of Python, run:
 
 .. code::
 
-    tox -r
+    make test-all-local
 
 
-`tox -r` will execute tests for the Python versions specified in `setup.cfg <https://github.com/blue-yonder/tsfresh/blob/1297c8ca5bd6f8f23b4de50e3f052fb4ec1307f8/setup.cfg>`_ using the `envlist` variable. For example, if `envlist` is set to `py37, py38`, the test suite will run for Python 3.7 and 3.8 on the local development platform, assuming the binaries for those versions are available locally. The exact Python microversions (e.g. `3.7.1` vs `3.7.2`) depend on what is installed on the local development machine.
+This will execute tests for the Python versions specified in `setup.cfg <https://github.com/blue-yonder/tsfresh/blob/1297c8ca5bd6f8f23b4de50e3f052fb4ec1307f8/setup.cfg>`_ using the `envlist` variable. For example, if `envlist` is set to `py37, py38`, the test suite will run for Python 3.7 and 3.8 on the local development platform, assuming the binaries for those versions are available locally. The exact Python microversions (e.g. `3.7.1` vs `3.7.2`) depend on what is installed on the local development machine.
 
 A recommended way to manage multiple Python versions when testing locally is with `pyenv`, which enables organized installation and switching between versions.
+
+In addition to running tests locally, you can also run them in a Dockerized testing environment:
+
+
+.. code::
+
+   make test-all-testenv
+
+
+This command will initially take some time. However subsequent invokations will be faster, and testing this way ensures a clean, consistent test environment, regardless of your local setup.
+
 
 Documentation
 '''''''''''''
