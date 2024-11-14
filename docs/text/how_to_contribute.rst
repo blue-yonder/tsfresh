@@ -67,6 +67,18 @@ you have to:
     pytest
 
 
+To test changes across multiple versions of Python, run:
+
+
+.. code::
+
+    tox -r
+
+
+`tox -r` will execute tests for the Python versions specified in `setup.cfg <https://github.com/blue-yonder/tsfresh/blob/1297c8ca5bd6f8f23b4de50e3f052fb4ec1307f8/setup.cfg>`_ using the `envlist` variable. For example, if `envlist` is set to `py37, py38`, the test suite will run for Python 3.7 and 3.8 on the local development platform, assuming the binaries for those versions are available locally. The exact Python microversions (e.g. `3.7.1` vs `3.7.2`) depend on what is installed on the local development machine.
+
+A recommended way to manage multiple Python versions when testing locally is with `pyenv`, which enables organized installation and switching between versions.
+
 Documentation
 '''''''''''''
 
@@ -90,3 +102,9 @@ We use black and isort for styling. They are automatically triggered on every co
 
 
 We are looking forward to hear from you! =)
+
+
+PR Descriptions
+'''''''''''''''
+
+The PR should have a clear and descriptive title, along with a detailed description of the changes made, the problem being addressed, and any relevant tips for reviewers. An example of what this might look like is `here. <https://github.com/blue-yonder/tsfresh/pull/994#issue-1509962136>`_
