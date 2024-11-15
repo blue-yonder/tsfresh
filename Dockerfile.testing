@@ -1,0 +1,62 @@
+# Bakes the python versions which tsfresh targets into a testing env
+FROM ubuntu:22.04
+
+SHELL ["/bin/bash", "-c"]
+
+# These are required to build python from source
+RUN apt-get update && apt-get install -y \
+    python3-pip \
+    curl \
+    clang \
+    git \
+    build-essential \
+    libssl-dev \
+    libreadline-dev \
+    zlib1g-dev \
+    libbz2-dev \
+    libsqlite3-dev \
+    llvm \
+    libncurses5-dev \
+    libgdbm-dev \
+    libnss3-dev \
+    libffi-dev \
+    liblzma-dev \
+    libgmp-dev \
+    libmpfr-dev \
+    && apt-get clean
+
+
+RUN curl https://pyenv.run | bash
+
+# For interactive use (if any), this is an edge case.
+RUN echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc && \
+    echo '[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc && \
+    echo 'eval "$(pyenv init -)"' >> ~/.bashrc
+
+ENV PYENV_ROOT="/root/.pyenv"
+ENV PATH="$PYENV_ROOT/bin:$PATH"
+ENV PATH="$PYENV_ROOT/shims:$PATH"
+
+ARG PYTHON_VERSIONS
+RUN for version in $PYTHON_VERSIONS; do \
+    echo Installing $version; \
+    # Band aid for https://github.com/pyenv/pyenv/issues/1738
+    # since this also appears to apply to 3.7.X
+    if [[ $version =~ ^3\.7\..*$ ]]; then \
+      echo Using clang to compile $version; \
+      CC=clang pyenv install $version || exit 1; \
+    else \
+      pyenv install $version || exit 1; \
+    fi; \
+    done
+
+RUN pyenv global $PYTHON_VERSIONS
+
+RUN pip install tox
+
+WORKDIR /tsfresh
+
+# Requires adding safe.directory so that tsfresh can build when the
+# repo is mounted.
+# Note cannot do this at build time as no git directory exists
+CMD ["/bin/bash", "-c", "git config --global --add safe.directory /tsfresh && tox -r -p auto"]
