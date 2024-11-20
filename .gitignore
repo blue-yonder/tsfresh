@@ -13,6 +13,7 @@
 __pycache__/*
 .cache/*
 .*.swp
+*.pyc.*
 
 # Project files
 .ropeproject

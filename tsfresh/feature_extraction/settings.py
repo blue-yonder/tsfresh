@@ -210,6 +210,9 @@ class ComprehensiveFCParameters(PickableSettings):
                 "fft_aggregated": [
                     {"aggtype": s} for s in ["centroid", "variance", "skew", "kurtosis"]
                 ],
+                "energy_content_frequency_brackets": [
+                    {"number_of_bins": 10, "with_normalization": False}
+                ],
                 "value_count": [{"value": value} for value in [0, 1, -1]],
                 "range_count": [
                     {"min": -1, "max": 1},
