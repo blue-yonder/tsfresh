@@ -27,7 +27,8 @@ import numpy as np
 import pandas as pd
 import stumpy
 from numpy.linalg import LinAlgError
-from scipy.signal import cwt, find_peaks_cwt, ricker, welch
+import pywt
+from scipy.signal import find_peaks_cwt, ricker, welch
 from scipy.stats import linregress
 from statsmodels.tools.sm_exceptions import MissingDataError
 from statsmodels.tsa.ar_model import AutoReg
@@ -1385,7 +1386,7 @@ def cwt_coefficients(x, param):
         coeff = parameter_combination["coeff"]
 
         if widths not in calculated_cwt:
-            calculated_cwt[widths] = cwt(x, ricker, widths)
+            calculated_cwt[widths], _ = pywt.cwt(x, scales=widths, wavelet='mexh')
 
         calculated_cwt_for_widths = calculated_cwt[widths]
 
