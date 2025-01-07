@@ -1411,7 +1411,8 @@ def spkt_welch_density(x, param):
     :return type: Iterator[Tuple[str, float]]
     """
 
-    freq, pxx = welch(x, nperseg=min(len(x), 256))
+    max_length_per_segment = 256
+    _, pxx = welch(x, nperseg=min(len(x), max_length_per_segment))
     coeff = [config["coeff"] for config in param]
     indices = [f"coeff_{i}" for i in coeff]
 
