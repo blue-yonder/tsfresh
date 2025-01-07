@@ -2281,13 +2281,14 @@ def linear_trend_timewise(x, param):
 
     # Get differences between each timestamp and the first timestamp in seconds.
     # Then convert to hours and reshape for linear regression
+    seconds_per_hr = 3600
     times_seconds = (ix - ix[0]).total_seconds()
-    times_hours = np.asarray(times_seconds / float(3600))
+    times_hours = np.asarray(times_seconds / float(seconds_per_hr))
 
-    linReg = linregress(times_hours, x.values)
+    lin_reg = linregress(times_hours, x.values)
 
     return [
-        ('attr_"{}"'.format(config["attr"]), getattr(linReg, config["attr"]))
+        ('attr_"{}"'.format(config["attr"]), getattr(lin_reg, config["attr"]))
         for config in param
     ]
 
