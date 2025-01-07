@@ -946,10 +946,10 @@ def percentage_of_reoccurring_values_to_all_values(x):
     if len(x) == 0:
         return np.nan
 
-    unique, counts = np.unique(x, return_counts=True)
+    _, counts = np.unique(x, return_counts=True)
 
     if counts.shape[0] == 0:
-        return 0
+        return 0.0
 
     return np.sum(counts > 1) / float(counts.shape[0])
 
@@ -981,7 +981,7 @@ def percentage_of_reoccurring_datapoints_to_all_datapoints(x):
     reoccuring_values = value_counts[value_counts > 1].sum()
 
     if np.isnan(reoccuring_values):
-        return 0
+        return 0.0
 
     return reoccuring_values / x.size
 
@@ -1513,7 +1513,7 @@ def change_quantiles(x, ql, qh, isabs, f_agg):
     :return type: float
     """
     if ql >= qh:
-        return 0
+        return 0.0
 
     div = np.diff(x)
     if isabs:
@@ -1524,7 +1524,7 @@ def change_quantiles(x, ql, qh, isabs, f_agg):
         bin_cat = pd.qcut(x, [ql, qh], labels=False)
         bin_cat_0 = bin_cat == 0
     except ValueError:  # Occurs when ql are qh effectively equal, e.g. x is not long enough or is too categorical
-        return 0
+        return 0.0
     # We only count changes that start and end inside the corridor
     ind = (bin_cat_0 & _roll(bin_cat_0, 1))[1:]
     if np.sum(ind) == 0:
