@@ -121,9 +121,9 @@ def _get_length_sequences_where(x):
     """
     if len(x) == 0:
         return [0]
-    else:
-        res = [len(list(group)) for value, group in itertools.groupby(x) if value == 1]
-        return res if len(res) > 0 else [0]
+
+    res = [len(list(group)) for value, group in itertools.groupby(x) if value == 1]
+    return res if len(res) > 0 else [0]
 
 
 def _estimate_friedrich_coefficients(x, m, r):
@@ -722,11 +722,10 @@ def variation_coefficient(x):
     :return: the value of this feature
     :return type: float
     """
-    mean = np.mean(x)
-    if mean != 0:
-        return np.std(x) / mean
-    else:
-        return np.nan
+    avg = np.mean(x)
+    if avg != 0:
+        return np.std(x) / avg
+    return np.nan
 
 
 @set_property("fctype", "simple")
@@ -1184,15 +1183,14 @@ def fft_aggregated(x, param):
         :return type: float
         """
 
-        variance = get_variance(y)
+        var = get_variance(y)
         # In the limit of a dirac delta, skew should be 0 and variance 0.  However, in the discrete limit,
         # the skew blows up as variance --> 0, hence return nan when variance is smaller than a resolution of 0.5:
-        if variance < 0.5:
+        if var < 0.5:
             return np.nan
-        else:
-            return (
-                get_moment(y, 3) - 3 * get_centroid(y) * variance - get_centroid(y) ** 3
-            ) / get_variance(y) ** (1.5)
+        return (
+            get_moment(y, 3) - 3 * get_centroid(y) * var - get_centroid(y) ** 3
+        ) / get_variance(y) ** (1.5)
 
     def get_kurtosis(y):
         """
@@ -1205,25 +1203,24 @@ def fft_aggregated(x, param):
         :return type: float
         """
 
-        variance = get_variance(y)
+        var = get_variance(y)
         # In the limit of a dirac delta, kurtosis should be 3 and variance 0.  However, in the discrete limit,
         # the kurtosis blows up as variance --> 0, hence return nan when variance is smaller than a resolution of 0.5:
-        if variance < 0.5:
+        if var < 0.5:
             return np.nan
-        else:
-            return (
-                get_moment(y, 4)
-                - 4 * get_centroid(y) * get_moment(y, 3)
-                + 6 * get_moment(y, 2) * get_centroid(y) ** 2
-                - 3 * get_centroid(y)
-            ) / get_variance(y) ** 2
+        return (
+            get_moment(y, 4)
+            - 4 * get_centroid(y) * get_moment(y, 3)
+            + 6 * get_moment(y, 2) * get_centroid(y) ** 2
+            - 3 * get_centroid(y)
+        ) / get_variance(y) ** 2
 
-    calculation = dict(
-        centroid=get_centroid,
-        variance=get_variance,
-        skew=get_skew,
-        kurtosis=get_kurtosis,
-    )
+    calculation = {
+        "centroid": get_centroid,
+        "variance": get_variance,
+        "skew": get_skew,
+        "kurtosis": get_kurtosis,
+    }
 
     fft_abs = np.abs(np.fft.rfft(x))
 
@@ -1292,17 +1289,17 @@ def index_mass_quantile(x, param):
 
     if s == 0:
         # all values in x are zero or it has length 0
-        return [("q_{}".format(config["q"]), np.nan) for config in param]
-    else:
-        # at least one value is not zero
-        mass_centralized = np.cumsum(abs_x) / s
-        return [
-            (
-                "q_{}".format(config["q"]),
-                (np.argmax(mass_centralized >= config["q"]) + 1) / len(x),
-            )
-            for config in param
-        ]
+        return [(f"q_{config['q']}", np.nan) for config in param]
+
+    # at least one value is not zero
+    mass_centralized = np.cumsum(abs_x) / s
+    return [
+        (
+            f"q_{config['q']}",
+            (np.argmax(mass_centralized >= config["q"]) + 1) / len(x),
+        )
+        for config in param
+    ]
 
 
 @set_property("fctype", "simple")
@@ -1431,13 +1428,13 @@ def spkt_welch_density(x, param):
             coefficient for coefficient in coeff if coefficient not in reduced_coeff
         ]
 
-        # Fill up the rest of the requested coefficients with np.NaNs
+        # Fill up the rest of the requested coefficients with np.nans
         return zip(
             indices,
             list(pxx[reduced_coeff]) + [np.nan] * len(not_calculated_coefficients),
         )
-    else:
-        return zip(indices, pxx[coeff])
+
+    return zip(indices, pxx[coeff])
 
 
 @set_property("fctype", "combiner")
@@ -1475,8 +1472,8 @@ def ar_coefficient(x, param):
 
         if k not in calculated_ar_params:
             try:
-                calculated_AR = AutoReg(x_as_list, lags=k, trend="c")
-                calculated_ar_params[k] = calculated_AR.fit().params
+                calculated_ar = AutoReg(x_as_list, lags=k, trend="c")
+                calculated_ar_params[k] = calculated_ar.fit().params
             except (ZeroDivisionError, LinAlgError, ValueError):
                 calculated_ar_params[k] = [np.nan] * k
 
@@ -1531,11 +1528,11 @@ def change_quantiles(x, ql, qh, isabs, f_agg):
     # We only count changes that start and end inside the corridor
     ind = (bin_cat_0 & _roll(bin_cat_0, 1))[1:]
     if np.sum(ind) == 0:
-        return 0
-    else:
-        ind_inside_corridor = np.where(ind == 1)
-        aggregator = getattr(np, f_agg)
-        return aggregator(div[ind_inside_corridor])
+        return 0.0
+
+    ind_inside_corridor = np.where(ind == 1)
+    aggregator = getattr(np, f_agg)
+    return aggregator(div[ind_inside_corridor])
 
 
 @set_property("fctype", "simple")
@@ -1574,13 +1571,11 @@ def time_reversal_asymmetry_statistic(x, lag):
     n = len(x)
     x = np.asarray(x)
     if 2 * lag >= n:
-        return 0
-    else:
-        one_lag = _roll(x, -lag)
-        two_lag = _roll(x, 2 * -lag)
-        return np.mean(
-            (two_lag * two_lag * one_lag - one_lag * x * x)[0 : (n - 2 * lag)]
-        )
+        return 0.0
+
+    one_lag = _roll(x, -lag)
+    two_lag = _roll(x, 2 * -lag)
+    return np.mean((two_lag * two_lag * one_lag - one_lag * x * x)[0 : (n - 2 * lag)])
 
 
 @set_property("fctype", "simple")
@@ -1619,10 +1614,11 @@ def c3(x, lag):
     if not isinstance(x, (np.ndarray, pd.Series)):
         x = np.asarray(x)
     n = x.size
+
     if 2 * lag >= n:
-        return 0
-    else:
-        return np.mean((_roll(x, 2 * -lag) * _roll(x, -lag) * x)[0 : (n - 2 * lag)])
+        return 0.0
+
+    return np.mean((_roll(x, 2 * -lag) * _roll(x, -lag) * x)[0 : (n - 2 * lag)])
 
 
 @set_property("fctype", "simple")
@@ -1801,7 +1797,8 @@ def fourier_entropy(x, bins):
     Ref: https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.signal.welch.html
 
     """
-    _, pxx = welch(x, nperseg=min(len(x), 256))
+    max_length_per_segment = 256
+    _, pxx = welch(x, nperseg=min(len(x), max_length_per_segment))
     return binned_entropy(pxx / np.max(pxx), bins)
 
 
@@ -1939,8 +1936,8 @@ def autocorrelation(x, lag):
     v = np.var(x)
     if np.isclose(v, 0):
         return np.nan
-    else:
-        return sum_product / ((len(x) - lag) * v)
+
+    return sum_product / ((len(x) - lag) * v)
 
 
 @set_property("fctype", "simple")
@@ -2041,8 +2038,8 @@ def value_count(x, value):
 
     if np.isnan(value):
         return np.isnan(x).sum()
-    else:
-        return x[x == value].size
+
+    return x[x == value].size
 
 
 @set_property("fctype", "simple")
