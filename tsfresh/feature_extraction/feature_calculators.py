@@ -150,7 +150,7 @@ def _estimate_friedrich_coefficients(x, m, r):
     :return: coefficients of polynomial of deterministic dynamics
     :return type: ndarray
     """
-    assert m > 0, "Order of polynomial need to be positive integer, found {}".format(m)
+    assert m > 0, f"Order of polynomial need to be positive integer, found {m}"
 
     df = pd.DataFrame({"signal": x[:-1], "delta": np.diff(x)})
     try:
@@ -314,7 +314,7 @@ def symmetry_looking(x, param):
     mean_median_difference = np.abs(np.mean(x) - np.median(x))
     max_min_difference = np.max(x) - np.min(x)
     return [
-        ("r_{}".format(r["r"]), mean_median_difference < (r["r"] * max_min_difference))
+        (f"r_{r['r']}", mean_median_difference < (r["r"] * max_min_difference))
         for r in param
     ]
 
@@ -1084,7 +1084,7 @@ def fft_coefficient(x, param):
     """
 
     assert (
-        min([config["coeff"] for config in param]) >= 0
+        min((config["coeff"] for config in param)) >= 0
     ), "Coefficients must be positive or zero."
     assert {config["attr"] for config in param} <= {
         "imag",
@@ -1112,10 +1112,7 @@ def fft_coefficient(x, param):
         else np.nan
         for config in param
     ]
-    index = [
-        'attr_"{}"__coeff_{}'.format(config["attr"], config["coeff"])
-        for config in param
-    ]
+    index = [f'attr_"{config["attr"]}"__coeff_{config["coeff"]}' for config in param]
     return zip(index, res)
 
 
@@ -1225,7 +1222,7 @@ def fft_aggregated(x, param):
     fft_abs = np.abs(np.fft.rfft(x))
 
     res = [calculation[config["aggtype"]](fft_abs) for config in param]
-    index = ['aggtype_"{}"'.format(config["aggtype"]) for config in param]
+    index = [f'aggtype_"{config["aggtype"]}"' for config in param]
     return zip(index, res)
 
 
@@ -1342,10 +1339,10 @@ def linear_trend(x, param):
     :return type: List[Tuple[str, float]]
     """
     # todo: we could use the index of the DataFrame here
-    linReg = linregress(range(len(x)), x)
+    lin_reg = linregress(range(len(x)), x)
 
     return [
-        ('attr_"{}"'.format(config["attr"]), getattr(linReg, config["attr"]))
+        (f'attr_"{config["attr"]}"', getattr(lin_reg, config["attr"]))
         for config in param
     ]
 
@@ -1387,7 +1384,7 @@ def cwt_coefficients(x, param):
 
         calculated_cwt_for_widths = calculated_cwt[widths]
 
-        indices += ["coeff_{}__w_{}__widths_{}".format(coeff, w, widths)]
+        indices += [f"coeff_{coeff}__w_{w}__widths_{widths}"]
 
         i = widths.index(w)
         if calculated_cwt_for_widths.shape[1] <= coeff:
@@ -1416,7 +1413,7 @@ def spkt_welch_density(x, param):
 
     freq, pxx = welch(x, nperseg=min(len(x), 256))
     coeff = [config["coeff"] for config in param]
-    indices = ["coeff_{}".format(i) for i in coeff]
+    indices = [f"coeff_{i}" for i in coeff]
 
     if len(pxx) <= np.max(
         coeff
@@ -1468,7 +1465,7 @@ def ar_coefficient(x, param):
         k = parameter_combination["k"]
         p = parameter_combination["coeff"]
 
-        column_name = "coeff_{}__k_{}".format(p, k)
+        column_name = f"coeff_{p}__k_{k}"
 
         if k not in calculated_ar_params:
             try:
@@ -2097,19 +2094,18 @@ def friedrich_coefficients(x, param):
         r = parameter_combination["r"]
         coeff = parameter_combination["coeff"]
 
-        assert coeff >= 0, "Coefficients must be positive or zero. Found {}".format(
-            coeff
-        )
+        assert coeff >= 0, f"Coefficients must be positive or zero. Found {coeff}"
 
         # calculate the current friedrich coefficients if they do not exist yet
         if m not in calculated or r not in calculated[m]:
             calculated[m][r] = _estimate_friedrich_coefficients(x, m, r)
 
         try:
-            res["coeff_{}__m_{}__r_{}".format(coeff, m, r)] = calculated[m][r][coeff]
+            res[f"coeff_{coeff}__m_{m}__r_{r}"] = calculated[m][r][coeff]
         except IndexError:
-            res["coeff_{}__m_{}__r_{}".format(coeff, m, r)] = np.nan
-    return [(key, value) for key, value in res.items()]
+            res[f"coeff_{coeff}__m_{m}__r_{r}"] = np.nan
+
+    return list(res.items())
 
 
 @set_property("fctype", "simple")
@@ -2199,9 +2195,7 @@ def agg_linear_trend(x, param):
         else:
             res_data.append(getattr(calculated_agg[f_agg][chunk_len], attr))
 
-        res_index.append(
-            'attr_"{}"__chunk_len_{}__f_agg_"{}"'.format(attr, chunk_len, f_agg)
-        )
+        res_index.append(f'attr_"{attr}"__chunk_len_{chunk_len}__f_agg_"{f_agg}"')
 
     return zip(res_index, res_data)
 
@@ -2246,9 +2240,7 @@ def energy_ratio_by_chunks(x, param):
                 / full_series_energy
             )
 
-        res_index.append(
-            "num_segments_{}__segment_focus_{}".format(num_segments, segment_focus)
-        )
+        res_index.append(f"num_segments_{num_segments}__segment_focus_{segment_focus}")
 
     # Materialize as list for Python 3 compatibility with name handling
     return list(zip(res_index, res_data))
@@ -2286,7 +2278,7 @@ def linear_trend_timewise(x, param):
     lin_reg = linregress(times_hours, x.values)
 
     return [
-        ('attr_"{}"'.format(config["attr"]), getattr(lin_reg, config["attr"]))
+        (f'attr_"{config["attr"]}"', getattr(lin_reg, config["attr"]))
         for config in param
     ]
 
