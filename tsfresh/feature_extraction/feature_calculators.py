@@ -1099,12 +1099,13 @@ def fft_coefficient(x, param):
     def complex_agg(x, agg):
         if agg == "real":
             return x.real
-        elif agg == "imag":
+        if agg == "imag":
             return x.imag
-        elif agg == "abs":
+        if agg == "abs":
             return np.abs(x)
-        elif agg == "angle":
+        if agg == "angle":
             return np.angle(x, deg=True)
+        return None
 
     res = [
         complex_agg(fft[config["coeff"]], config["attr"])
@@ -2442,22 +2443,21 @@ def matrix_profile(x, param):
 
             finite_indices = np.isfinite(m_p)
 
-            if feature == "min":
-                res[key] = np.min(m_p[finite_indices])
-            elif feature == "max":
-                res[key] = np.max(m_p[finite_indices])
-            elif feature == "mean":
-                res[key] = np.mean(m_p[finite_indices])
-            elif feature == "median":
-                res[key] = np.median(m_p[finite_indices])
-            elif feature == "25":
-                res[key] = np.percentile(m_p[finite_indices], 25)
-            elif feature == "75":
-                res[key] = np.percentile(m_p[finite_indices], 75)
+            feature_map = {
+                "min": np.min,
+                "max": np.max,
+                "mean": np.mean,
+                "median": np.median,
+                "25": lambda data: np.percentile(data, 25),
+                "75": lambda data: np.percentile(data, 75),
+            }
+
+            if feature in feature_map:
+                res[key] = feature_map[feature](m_p[finite_indices])
             else:
                 raise ValueError(f"Unknown feature {feature} for the matrix profile")
 
-    return [(key, value) for key, value in res.items()]
+    return list(res.items())
 
 
 @set_property("fctype", "combiner")
