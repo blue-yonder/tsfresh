@@ -1531,20 +1531,30 @@ class FeatureCalculationTestCase(TestCase):
         )
 
     def test_range_count(self):
-        self.assertEqualPandasSeriesWrapper(range_count, [1] * 10, 0, min=1, max=1)
-        self.assertEqualPandasSeriesWrapper(range_count, [1] * 10, 0, min=0.9, max=1)
-        self.assertEqualPandasSeriesWrapper(range_count, [1] * 10, 10, min=1, max=1.1)
         self.assertEqualPandasSeriesWrapper(
-            range_count, list(range(10)), 9, min=0, max=9
+            range_count, [1] * 10, 0, min_val=1, max_val=1
         )
         self.assertEqualPandasSeriesWrapper(
-            range_count, list(range(10)), 10, min=0, max=10
+            range_count, [1] * 10, 0, min_val=0.9, max_val=1
         )
         self.assertEqualPandasSeriesWrapper(
-            range_count, list(range(0, -10, -1)), 9, min=-10, max=0
+            range_count, [1] * 10, 10, min_val=1, max_val=1.1
         )
         self.assertEqualPandasSeriesWrapper(
-            range_count, [np.nan, np.inf, -np.inf] + list(range(10)), 10, min=0, max=10
+            range_count, list(range(10)), 9, min_val=0, max_val=9
+        )
+        self.assertEqualPandasSeriesWrapper(
+            range_count, list(range(10)), 10, min_val=0, max_val=10
+        )
+        self.assertEqualPandasSeriesWrapper(
+            range_count, list(range(0, -10, -1)), 9, min_val=-10, max_val=0
+        )
+        self.assertEqualPandasSeriesWrapper(
+            range_count,
+            [np.nan, np.inf, -np.inf] + list(range(10)),
+            10,
+            min_val=0,
+            max_val=10,
         )
 
     def test_approximate_entropy(self):

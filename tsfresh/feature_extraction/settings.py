@@ -212,9 +212,9 @@ class ComprehensiveFCParameters(PickableSettings):
                 ],
                 "value_count": [{"value": value} for value in [0, 1, -1]],
                 "range_count": [
-                    {"min": -1, "max": 1},
-                    {"min": -1e12, "max": 0},
-                    {"min": 0, "max": 1e12},
+                    {"min_val": -1, "max_val": 1},
+                    {"min_val": -1e12, "max_val": 0},
+                    {"min_val": 0, "max_val": 1e12},
                 ],
                 "approximate_entropy": [
                     {"m": 2, "r": r} for r in [0.1, 0.3, 0.5, 0.7, 0.9]
