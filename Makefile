@@ -27,5 +27,11 @@ run-docker-tests:
 clean:
 	rm -rf .tox build/ dist/ *.egg-info
 
+bisect:
+	git bisect start
+	git bisect bad
+	git bisect good $(GOOD_COMMIT)
+	git bisect run pytest
+	git bisect reset
 
-.PHONY: build-docker-testenv clean run-docker-tests test-all-testenv
+.PHONY: build-docker-testenv clean run-docker-tests test-all-testenv bisect
