@@ -1488,7 +1488,7 @@ def ar_coefficient(x, param):
         else:
             res[column_name] = np.nan
 
-    return [(key, value) for key, value in res.items()]
+    return list(res.items())
 
 
 @set_property("fctype", "simple")
@@ -2507,4 +2507,4 @@ def query_similarity_count(x, param):
 
         res[key] = count
 
-    return [(key, value) for key, value in res.items()]
+    return list(res.items())
