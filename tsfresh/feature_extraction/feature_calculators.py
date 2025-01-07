@@ -2483,14 +2483,14 @@ def query_similarity_count(x, param):
                   corresponds to finding exact matches to `Q`. Finally, for
                   non-normalized (i.e., without z-normalization) Euclidean set
                   `norm` (bool) to `False.
-    :type param: list
+    :type param: list[dict]
     :return x: the different feature values
     :return type: List[Tuple[str, int | np.nan]]
     """
     res = {}
     T = np.asarray(x).astype(float)
 
-    for i, kwargs in enumerate(param):
+    for kwargs in param:
         key = convert_to_output_format(kwargs)
         normalize = kwargs.get("normalize", True)
         threshold = kwargs.get("threshold", 0.0)
