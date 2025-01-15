@@ -27,5 +27,16 @@ run-docker-tests:
 clean:
 	rm -rf .tox build/ dist/ *.egg-info
 
+bisect:
+	@if [ -z "$(GOOD_COMMIT)" ]; then \
+		echo "Error: GOOD_COMMIT is required. Usage: make bisect GOOD_COMMIT=<commit_hash>."; \
+		echo "Assumes that the current checked-out commit is a known bad commit, and bisects from there."; \
+		exit 1; \
+	fi
+	git bisect start
+	git bisect bad
+	git bisect good $(GOOD_COMMIT)
+	git bisect run pytest
+	git bisect reset
 
-.PHONY: build-docker-testenv clean run-docker-tests test-all-testenv
+.PHONY: build-docker-testenv clean run-docker-tests test-all-testenv bisect
