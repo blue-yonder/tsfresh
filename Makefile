@@ -2,7 +2,7 @@ WORKDIR := /tsfresh
 TEST_IMAGE := tsfresh-test-image
 TEST_DOCKERFILE := Dockerfile.testing
 TEST_CONTAINER := tsfresh-test-container
-PYTHON_VERSIONS := "3.7 3.8 3.9 3.10 3.11"
+PYTHON_VERSIONS := "3.9 3.10 3.11 3.12"
 
 # Tests `PYTHON_VERSIONS`, provided they are also
 # specified in setup.cfg `envlist`
