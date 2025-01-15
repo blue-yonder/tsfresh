@@ -28,6 +28,7 @@ import pandas as pd
 import stumpy
 from numpy.linalg import LinAlgError
 from scipy.signal import cwt, find_peaks_cwt, ricker, welch
+from scipy.spatial.distance import cdist
 from scipy.stats import linregress
 from statsmodels.tools.sm_exceptions import MissingDataError
 from statsmodels.tsa.ar_model import AutoReg
@@ -1782,7 +1783,7 @@ def approximate_entropy(x, m, r):
     def _phi(m):
         x_re = np.array([x[i : i + m] for i in range(N - m + 1)])
         C = np.sum(
-            np.max(np.abs(x_re[:, np.newaxis] - x_re[np.newaxis, :]), axis=2) <= r,
+            cdist(x_re, x_re, metric="chebyshev") <= r,
             axis=0,
         ) / (N - m + 1)
         return np.sum(np.log(C)) / (N - m + 1.0)
