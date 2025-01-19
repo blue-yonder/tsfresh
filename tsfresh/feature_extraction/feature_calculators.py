@@ -2041,7 +2041,7 @@ def value_count(x, value):
 
 
 @set_property("fctype", "simple")
-def range_count(x, min_val, max_val):
+def range_count(x, min, max):
     """
     Count observed values within the interval [min, max).
 
@@ -2054,7 +2054,7 @@ def range_count(x, min_val, max_val):
     :return: the count of values within the range
     :rtype: int
     """
-    return np.sum((x >= min_val) & (x < max_val))
+    return np.sum((x >= min) & (x < max))
 
 
 @set_property("fctype", "combiner")

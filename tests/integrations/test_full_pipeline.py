@@ -62,7 +62,7 @@ class FullPipelineTestCase_robot_failures(TestCase):
             "F_x__mean_abs_change",
             "F_x__minimum",
             "F_x__quantile__q_0.1",
-            "F_x__range_count__max_val_1__min_val_-1",
+            "F_x__range_count__max_1__min_-1",
             "F_x__spkt_welch_density__coeff_2",
             "F_x__standard_deviation",
             "F_x__value_count__value_0",
