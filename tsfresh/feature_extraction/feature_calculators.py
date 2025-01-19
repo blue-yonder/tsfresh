@@ -428,7 +428,7 @@ def agg_autocorrelation(x, param):
         a = acf(x, adjusted=True, fft=n > THRESHOLD_TO_USE_FFT, nlags=max_maxlag)[1:]
     return [
         (
-            'f_agg_"{}"__maxlag_{}'.format(config["f_agg"], config["maxlag"]),
+            f'f_agg_"{config["f_agg"]}"__maxlag_{config["maxlag"]}',
             getattr(np, config["f_agg"])(a[: int(config["maxlag"])]),
         )
         for config in param
@@ -491,7 +491,7 @@ def partial_autocorrelation(x, param):
         else:
             pacf_coeffs = [np.nan] * (max_demanded_lag + 1)
 
-    return [("lag_{}".format(lag["lag"]), pacf_coeffs[lag["lag"]]) for lag in param]
+    return [(f"lag_{lag['lag']}", pacf_coeffs[lag["lag"]]) for lag in param]
 
 
 @set_property("fctype", "combiner")
@@ -530,7 +530,7 @@ def augmented_dickey_fuller(x, param):
         autolag = config.get("autolag", "AIC")
 
         adf = compute_adf(autolag)
-        index = 'attr_"{}"__autolag_"{}"'.format(config["attr"], autolag)
+        index = f'attr_"{config["attr"]}"__autolag_"{autolag}"'
 
         if config["attr"] == "teststat":
             res.append((index, adf[0]))
