@@ -22,6 +22,7 @@ import itertools
 import warnings
 from builtins import range
 from collections import defaultdict
+from typing import Literal
 
 import numpy as np
 import pandas as pd
@@ -723,9 +724,9 @@ def variation_coefficient(x):
     :return type: float
     """
     avg = np.mean(x)
-    if avg != 0:
-        return np.std(x) / avg
-    return np.nan
+    if avg == 0:
+        return np.nan
+    return np.std(x) / avg
 
 
 @set_property("fctype", "simple")
@@ -1095,16 +1096,17 @@ def fft_coefficient(x, param):
 
     fft = np.fft.rfft(x)
 
-    def complex_agg(x, agg):
+    def complex_agg(x, agg: Literal["real", "imag", "angle", "abs"]):
         if agg == "real":
             return x.real
-        if agg == "imag":
+        elif agg == "imag":
             return x.imag
-        if agg == "abs":
+        elif agg == "abs":
             return np.abs(x)
-        if agg == "angle":
+        elif agg == "angle":
             return np.angle(x, deg=True)
-        return None
+        else:
+            raise ValueError('`agg` must be "real", "imag", "angle" or "abs"')
 
     res = [
         complex_agg(fft[config["coeff"]], config["attr"])
@@ -1185,9 +1187,10 @@ def fft_aggregated(x, param):
         # the skew blows up as variance --> 0, hence return nan when variance is smaller than a resolution of 0.5:
         if var < 0.5:
             return np.nan
-        return (
-            get_moment(y, 3) - 3 * get_centroid(y) * var - get_centroid(y) ** 3
-        ) / get_variance(y) ** (1.5)
+        centroid = get_centroid(y)
+        return (get_moment(y, 3) - 3 * centroid * var - centroid**3) / get_variance(
+            y
+        ) ** (1.5)
 
     def get_kurtosis(y):
         """
@@ -1205,11 +1208,12 @@ def fft_aggregated(x, param):
         # the kurtosis blows up as variance --> 0, hence return nan when variance is smaller than a resolution of 0.5:
         if var < 0.5:
             return np.nan
+        centroid = get_centroid(y)
         return (
             get_moment(y, 4)
-            - 4 * get_centroid(y) * get_moment(y, 3)
-            + 6 * get_moment(y, 2) * get_centroid(y) ** 2
-            - 3 * get_centroid(y)
+            - 4 * centroid * get_moment(y, 3)
+            + 6 * get_moment(y, 2) * centroid**2
+            - 3 * centroid
         ) / get_variance(y) ** 2
 
     calculation = {
