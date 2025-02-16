@@ -29,7 +29,7 @@ import pandas as pd
 import pywt
 import stumpy
 from numpy.linalg import LinAlgError
-from scipy.signal import find_peaks_cwt, ricker, welch
+from scipy.signal import find_peaks_cwt, welch
 from scipy.stats import linregress
 from statsmodels.tools.sm_exceptions import MissingDataError
 from statsmodels.tsa.ar_model import AutoReg
@@ -1304,6 +1304,18 @@ def index_mass_quantile(x, param):
     ]
 
 
+def _ricker(points, a):
+    """Custom implementation of the ricker wavelet, copied from scipy as scipy dropped it."""
+    A = 2 / (np.sqrt(3 * a) * (np.pi**0.25))
+    wsq = a**2
+    vec = np.arange(0, points) - (points - 1.0) / 2
+    xsq = vec**2
+    mod = 1 - xsq / wsq
+    gauss = np.exp(-xsq / (2 * wsq))
+    total = A * mod * gauss
+    return total
+
+
 @set_property("fctype", "simple")
 def number_cwt_peaks(x, n):
     """
@@ -1321,7 +1333,9 @@ def number_cwt_peaks(x, n):
     :return type: int
     """
     return len(
-        find_peaks_cwt(vector=x, widths=np.array(list(range(1, n + 1))), wavelet=ricker)
+        find_peaks_cwt(
+            vector=x, widths=np.array(list(range(1, n + 1))), wavelet=_ricker
+        )
     )
 
 
