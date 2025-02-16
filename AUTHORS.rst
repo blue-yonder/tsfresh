@@ -58,6 +58,7 @@ Contributions
 - HaveF
 - He Kaisheng
 - Henry Swaffield
+- Igor Pechersky
 - J. Kleint
 - James Myatt
 - Jean-Francois Zinque
@@ -91,6 +92,7 @@ Contributions
 - Roman Yurchak
 - Roy Wedge
 - Sarius2009
+- Scott Simmons
 - Sean M. Law
 - Sergey Shepelev
 - Soledad Galli

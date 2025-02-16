@@ -4,6 +4,16 @@ Changelog
 
 tsfresh uses `Semantic Versioning <http://semver.org/>`_
 
+Version 0.21.0
+==============
+- Breaking Change
+    - Drop support for python 3.7 and 3.8 (#1100)
+- Bugfixes/Typos/Documentation:
+    - Fix incompatibility with scipy versions 1.15 and higher by relying on the
+      ``pywavelets`` package for cwt (#1097)
+    - Improve code quality of feature extractors (#1103)
+    - Improve developer experience with tox, bisect and docker (#1093, #994, #1102)
+
 Version 0.20.3
 ==============
 - Bugfixes/Typos/Documentation:
