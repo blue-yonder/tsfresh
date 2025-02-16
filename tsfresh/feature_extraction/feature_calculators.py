@@ -26,9 +26,9 @@ from typing import Literal
 
 import numpy as np
 import pandas as pd
+import pywt
 import stumpy
 from numpy.linalg import LinAlgError
-import pywt
 from scipy.signal import find_peaks_cwt, ricker, welch
 from scipy.stats import linregress
 from statsmodels.tools.sm_exceptions import MissingDataError
@@ -1385,7 +1385,7 @@ def cwt_coefficients(x, param):
         coeff = parameter_combination["coeff"]
 
         if widths not in calculated_cwt:
-            calculated_cwt[widths], _ = pywt.cwt(x, scales=widths, wavelet='mexh')
+            calculated_cwt[widths], _ = pywt.cwt(x, scales=widths, wavelet="mexh")
 
         calculated_cwt_for_widths = calculated_cwt[widths]
 
