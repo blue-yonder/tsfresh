@@ -22,7 +22,7 @@ jobs:
       run: |
         # Do all the installations
         python -m pip install --upgrade pip wheel setuptools
-        pip install .[testing]
+        SETUPTOOLS_SCM_PRETEND_VERSION=0.0.0 pip install ".[testing]"
 
         # Print out the pip versions for debugging
         pip list
