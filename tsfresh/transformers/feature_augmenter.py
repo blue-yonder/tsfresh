@@ -232,3 +232,12 @@ class FeatureAugmenter(BaseEstimator, TransformerMixin):
         )
 
         return X
+    
+    def set_output(self, *, transform = None):
+        """
+        Set the output container format of the transform method.
+        Since it is assumed that the transformer output goes to the pd.DataFrame,
+        nothing is done (the method was created for compatibility with sklearn)
+        For example when calling sklearn.pipeline.FeatureUnion.set_output(transform="pandas")
+        """
+        return self
