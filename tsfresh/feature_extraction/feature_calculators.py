@@ -1431,6 +1431,7 @@ def spkt_welch_density(x, param):
     """
 
     max_length_per_segment = 256
+    x = np.asarray(x)
     _, pxx = welch(x, nperseg=min(len(x), max_length_per_segment))
     coeff = [config["coeff"] for config in param]
     indices = [f"coeff_{i}" for i in coeff]
@@ -1815,6 +1816,7 @@ def fourier_entropy(x, bins):
 
     """
     max_length_per_segment = 256
+    x = np.asarray(x)
     _, pxx = welch(x, nperseg=min(len(x), max_length_per_segment))
     return binned_entropy(pxx / np.max(pxx), bins)
 
