@@ -9,10 +9,10 @@ At the top level we export the three most important submodules of tsfresh, which
 """
 
 
-import pkg_resources
+from importlib.metadata import version
 
 try:
-    __version__ = pkg_resources.get_distribution(__name__).version
+    __version__ = version("tsfresh")
 except Exception:
     __version__ = "unknown"
 
