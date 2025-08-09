@@ -8,6 +8,7 @@ Essentially, a Distributor organizes the application of feature calculators to d
 Design of this module by Nils Braun
 """
 
+from numba import jit
 import itertools
 import math
 import warnings
@@ -170,6 +171,7 @@ class IterableDistributorBaseClass(DistributorBaseClass):
             chunk_size += 1
         return chunk_size
 
+    @jit
     def map_reduce(
         self,
         map_function,
