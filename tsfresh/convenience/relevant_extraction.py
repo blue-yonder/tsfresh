@@ -98,7 +98,11 @@ def extract_relevant_features(
         smaller chunksize.
     :type chunksize: None or int
 
-    :param n_jobs: The number of processes to use for parallelization. If zero, no parallelization is used.
+    :param n_jobs: The number of processes to use for parallelization.
+                If zero, no parallelization is used.
+                ``-1`` means using all processors. See scikit-learns'
+                `Glossary <https://scikit-learn.org/stable/glossary.html#term-n-jobs>`__
+                for more details.
     :type n_jobs: int
 
     :param distributor: Advanced parameter: set this to a class name that you want to use as a
