@@ -21,6 +21,7 @@ from tsfresh.utilities.distribution import (
     DistributorBaseClass,
     MapDistributor,
     MultiprocessingDistributor,
+    effective_n_jobs,
 )
 from tsfresh.utilities.string_manipulation import convert_to_output_format
 
@@ -100,7 +101,11 @@ def extract_features(
     :param column_value: The name for the column keeping the value itself. Please see :ref:`data-formats-label`.
     :type column_value: str
 
-    :param n_jobs: The number of processes to use for parallelization. If zero, no parallelization is used.
+    :param n_jobs: The number of processes to use for parallelization.
+                If zero, no parallelization is used.
+                ``-1`` means using all processors. See scikit-learns'
+                `Glossary <https://scikit-learn.org/stable/glossary.html#term-n-jobs>`__
+                for more details.
     :type n_jobs: int
 
     :param chunksize: The size of one chunk that is submitted to the worker
@@ -240,7 +245,11 @@ def _do_extraction(
     :param chunk_size: The size of one chunk for the parallelization
     :type chunk_size: None or int
 
-    :param n_jobs: The number of processes to use for parallelization. If zero, no parallelization is used.
+    :param n_jobs: The number of processes to use for parallelization.
+                If zero, no parallelization is used.
+                ``-1`` means using all processors. See scikit-learns'
+                `Glossary <https://scikit-learn.org/stable/glossary.html#term-n-jobs>`__
+                for more details.
     :type n_jobs: int
 
     :param disable_progressbar: Do not show a progressbar while doing the calculation.
@@ -258,6 +267,7 @@ def _do_extraction(
     """
 
     data = to_tsdata(df, column_id, column_kind, column_value, column_sort)
+    n_jobs = effective_n_jobs(n_jobs)
 
     if distributor is None:
         if isinstance(data, Iterable):

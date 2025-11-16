@@ -154,7 +154,11 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
             smaller chunksize.
         :type chunksize: None or int
 
-        :param n_jobs: The number of processes to use for parallelization. If zero, no parallelization is used.
+        :param n_jobs: The number of processes to use for parallelization.
+                    If zero, no parallelization is used.
+                    ``-1`` means using all processors. See scikit-learns'
+                    `Glossary <https://scikit-learn.org/stable/glossary.html#term-n-jobs>`__
+                    for more details.
         :type n_jobs: int
 
         :param show_warnings: Show warnings during the feature extraction (needed for debugging of calculators).
