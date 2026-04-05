@@ -1405,7 +1405,7 @@ class MakeForecastingFrameTestCase(TestCase):
 
     def test_make_forecasting_frame_pdSeries(self):
 
-        t_index = pd.date_range("1/1/2011", periods=4, freq="H")
+        t_index = pd.date_range("1/1/2011", periods=4, freq="h")
         df, y = dataframe_functions.make_forecasting_frame(
             x=pd.Series(data=range(4), index=t_index),
             kind="test",
@@ -1415,7 +1415,7 @@ class MakeForecastingFrameTestCase(TestCase):
 
         time_shifts = pd.DatetimeIndex(
             ["2011-01-01 01:00:00", "2011-01-01 02:00:00", "2011-01-01 03:00:00"],
-            freq="H",
+            freq="h",
         )
         expected_y = pd.Series(
             data=[1, 2, 3], index=zip(["id"] * 3, time_shifts), name="value"
@@ -1451,7 +1451,7 @@ class MakeForecastingFrameTestCase(TestCase):
         assert_series_equal(y, expected_y)
 
     def test_make_forecasting_frame_feature_extraction(self):
-        t_index = pd.date_range("1/1/2011", periods=4, freq="H")
+        t_index = pd.date_range("1/1/2011", periods=4, freq="h")
         df, y = dataframe_functions.make_forecasting_frame(
             x=pd.Series(data=range(4), index=t_index),
             kind="test",

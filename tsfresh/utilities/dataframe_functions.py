@@ -279,6 +279,7 @@ def _roll_out_time_series(
     min_timeshift,
     column_sort,
     column_id,
+    grouper=None,
 ):
     """
     Internal helper function for roll_time_series.
@@ -334,6 +335,14 @@ def _roll_out_time_series(
             return
 
         df_temp = df_temp.copy()
+        
+        if grouper is not None:
+            for col in grouper:
+                if col not in df_temp.columns:
+                    if len(grouper) > 1:
+                        df_temp[col] = x.name[grouper.index(col)]
+                    else:
+                        df_temp[col] = x.name
 
         # and set the shift correctly
         if column_sort and rolling_direction > 0:
@@ -563,6 +572,7 @@ def roll_time_series(
         "min_timeshift": min_timeshift,
         "column_sort": column_sort,
         "column_id": column_id,
+        "grouper": grouper,
     }
 
     shifted_chunks = distributor.map_reduce(
@@ -720,6 +730,13 @@ def add_sub_time_series_index(
             ]
         )
         assert len(indices) == chunk_length
+
+        for col in grouper:
+            if col not in df_chunk.columns:
+                if len(grouper) > 1:
+                    df_chunk[col] = df_chunk.name[grouper.index(col)]
+                else:
+                    df_chunk[col] = df_chunk.name
 
         if column_id:
             indices = list(zip(indices, df_chunk[column_id]))
