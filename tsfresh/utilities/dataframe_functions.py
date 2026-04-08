@@ -335,7 +335,6 @@ def _roll_out_time_series(
             return
 
         df_temp = df_temp.copy()
-        
         if grouper is not None:
             for col in grouper:
                 if col not in df_temp.columns:
