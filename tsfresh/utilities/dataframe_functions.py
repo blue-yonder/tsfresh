@@ -271,6 +271,24 @@ def get_ids(df_or_dict, column_id):
         raise TypeError("df_or_dict should be of type dict or pandas.DataFrame")
 
 
+def _restore_grouping_keys(df_chunk, grouper):
+    """
+    Restore grouping-key columns that Pandas 3.0+ no longer includes in
+    ``groupby().apply()`` chunks.  When there is more than one grouping key,
+    ``df_chunk.name`` is a tuple whose i-th element corresponds to
+    ``grouper[i]``; for a single key it is a scalar.
+
+    :param df_chunk: the DataFrame chunk passed by ``groupby().apply()``
+    :type df_chunk: pandas.DataFrame
+    :param grouper: ordered list of column names used as grouping keys
+    :type grouper: list
+    """
+    multi_key = len(grouper) > 1
+    for i, col in enumerate(grouper):
+        if col not in df_chunk.columns:
+            df_chunk[col] = df_chunk.name[i] if multi_key else df_chunk.name
+
+
 def _roll_out_time_series(
     timeshift,
     grouped_data,
@@ -336,12 +354,7 @@ def _roll_out_time_series(
 
         df_temp = df_temp.copy()
         if grouper is not None:
-            for col in grouper:
-                if col not in df_temp.columns:
-                    if len(grouper) > 1:
-                        df_temp[col] = x.name[grouper.index(col)]
-                    else:
-                        df_temp[col] = x.name
+            _restore_grouping_keys(df_temp, grouper)
 
         # and set the shift correctly
         if column_sort and rolling_direction > 0:
@@ -730,12 +743,7 @@ def add_sub_time_series_index(
         )
         assert len(indices) == chunk_length
 
-        for col in grouper:
-            if col not in df_chunk.columns:
-                if len(grouper) > 1:
-                    df_chunk[col] = df_chunk.name[grouper.index(col)]
-                else:
-                    df_chunk[col] = df_chunk.name
+        _restore_grouping_keys(df_chunk, grouper)
 
         if column_id:
             indices = list(zip(indices, df_chunk[column_id]))

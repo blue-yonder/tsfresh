@@ -1,3 +1,6 @@
 [build-system]
+# setuptools is capped below 70 because PyScaffold <4 (used by this project)
+# has known compatibility issues with setuptools>=70.  Once the project
+# migrates to PyScaffold 4+, this upper bound can be removed.
 requires = ["setuptools<70", "wheel", "pyscaffold>=3.3a0,<4"]
 build-backend = "setuptools.build_meta"
