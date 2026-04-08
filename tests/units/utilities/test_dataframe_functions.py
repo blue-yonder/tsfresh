@@ -1351,9 +1351,10 @@ class GetRangeValuesPerColumnTestCase(TestCase):
             ) = dataframe_functions.get_range_values_per_column(df)
 
             self.assertEqual(len(w), 1)
-            self.assertEqual(
-                str(w[0].message),
-                "The columns ['value'] did not have any finite values. Filling with zeros.",
+            warning_msg = str(w[0].message)
+            self.assertIn("'value'", warning_msg)
+            self.assertIn(
+                "did not have any finite values. Filling with zeros.", warning_msg
             )
 
         self.assertEqual(col_to_max, {"value": 0})

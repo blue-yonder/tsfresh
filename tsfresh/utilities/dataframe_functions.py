@@ -271,22 +271,24 @@ def get_ids(df_or_dict, column_id):
         raise TypeError("df_or_dict should be of type dict or pandas.DataFrame")
 
 
-def _restore_grouping_keys(df_chunk, grouper):
+def _restore_grouping_keys(df_chunk, grouper, group_name):
     """
     Restore grouping-key columns that Pandas 3.0+ no longer includes in
     ``groupby().apply()`` chunks.  When there is more than one grouping key,
-    ``df_chunk.name`` is a tuple whose i-th element corresponds to
+    ``group_name`` is a tuple whose i-th element corresponds to
     ``grouper[i]``; for a single key it is a scalar.
 
-    :param df_chunk: the DataFrame chunk passed by ``groupby().apply()``
+    :param df_chunk: the DataFrame chunk to restore columns into
     :type df_chunk: pandas.DataFrame
     :param grouper: ordered list of column names used as grouping keys
     :type grouper: list
+    :param group_name: the ``.name`` of the group object produced by
+        ``groupby().apply()``; a tuple for multi-key groups, scalar otherwise
     """
     multi_key = len(grouper) > 1
     for i, col in enumerate(grouper):
         if col not in df_chunk.columns:
-            df_chunk[col] = df_chunk.name[i] if multi_key else df_chunk.name
+            df_chunk[col] = group_name[i] if multi_key else group_name
 
 
 def _roll_out_time_series(
@@ -354,7 +356,7 @@ def _roll_out_time_series(
 
         df_temp = df_temp.copy()
         if grouper is not None:
-            _restore_grouping_keys(df_temp, grouper)
+            _restore_grouping_keys(df_temp, grouper, x.name)
 
         # and set the shift correctly
         if column_sort and rolling_direction > 0:
@@ -547,14 +549,14 @@ def roll_time_series(
     rolling_amount = np.abs(rolling_direction)
     rolling_direction = np.sign(rolling_direction)
 
+    # Todo: not default for columns_sort to be None
+    if column_sort is None:
+        df["sort"] = range(df.shape[0])
+
     grouped_data = df.groupby(grouper)
     prediction_steps = grouped_data.count().max().max()
 
     max_timeshift = max_timeshift or prediction_steps
-
-    # Todo: not default for columns_sort to be None
-    if column_sort is None:
-        df["sort"] = range(df.shape[0])
 
     if rolling_direction > 0:
         range_of_shifts = list(reversed(range(prediction_steps, 0, -rolling_amount)))
@@ -743,7 +745,8 @@ def add_sub_time_series_index(
         )
         assert len(indices) == chunk_length
 
-        _restore_grouping_keys(df_chunk, grouper)
+        if grouper:
+            _restore_grouping_keys(df_chunk, grouper, df_chunk.name)
 
         if column_id:
             indices = list(zip(indices, df_chunk[column_id]))
