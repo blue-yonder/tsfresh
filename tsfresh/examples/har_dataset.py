@@ -79,7 +79,7 @@ def load_har_dataset(folder_name=data_file_name):
         "body_acc_x_train.txt",
     )
     try:
-        return pd.read_csv(data_file_name_dataset, delim_whitespace=True, header=None)
+        return pd.read_csv(data_file_name_dataset, sep=r'\s+', header=None)
     except OSError:
         raise OSError(
             "File {} was not found. Have you downloaded the dataset with download_har_dataset() "
@@ -93,7 +93,7 @@ def load_har_classes(folder_name=data_file_name):
     )
     try:
         return pd.read_csv(
-            data_file_name_classes, delim_whitespace=True, header=None
+            data_file_name_classes, sep=r'\s+', header=None
         ).squeeze()
     except OSError:
         raise OSError(

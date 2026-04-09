@@ -144,7 +144,7 @@ class FeatureSelectorTestCase(TestCase):
         X_multi = pd.DataFrame()
         X_multi["irrelevant"] = np.concatenate([np.zeros(298), np.array([0.01, -0.01])])
         X_multi["relevant"] = X_multi["irrelevant"].copy()
-        X_multi["relevant"][y_multi == 0] = np.random.uniform(2, 3, 100)
+        X_multi.loc[y_multi == 0, "relevant"] = np.random.uniform(2, 3, 100)
 
         selector = FeatureSelector(
             multiclass=True, n_significant=3, ml_task="classification"

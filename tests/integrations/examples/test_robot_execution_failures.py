@@ -54,4 +54,4 @@ class RobotExecutionFailuresTestCase(TestCase):
         )
 
         assert len(y.unique()) > 2
-        assert y.dtype == object
+        assert y.dtype == object or isinstance(y.dtype, pd.StringDtype)

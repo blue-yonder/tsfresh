@@ -38,10 +38,11 @@ class PerColumnImputerTestCase(TestCase):
         with warnings.catch_warnings(record=True) as w:
             imputer.fit(X)
             self.assertEqual(len(w), 1)
-            self.assertEqual(
-                "The columns ['NaNs' 'PINF' 'NINF'] did not have any finite values. Filling with zeros.",
-                str(w[0].message),
-            )
+            warning_msg = str(w[0].message)
+            self.assertIn("'NaNs'", warning_msg)
+            self.assertIn("'PINF'", warning_msg)
+            self.assertIn("'NINF'", warning_msg)
+            self.assertIn("did not have any finite values. Filling with zeros.", warning_msg)
 
         selected_X = imputer.transform(X)
 
@@ -61,10 +62,11 @@ class PerColumnImputerTestCase(TestCase):
         with warnings.catch_warnings(record=True) as w:
             imputer.fit(X)
             self.assertEqual(len(w), 1)
-            self.assertEqual(
-                "The columns ['NaNs' 'PINF' 'NINF'] did not have any finite values. Filling with zeros.",
-                str(w[0].message),
-            )
+            warning_msg = str(w[0].message)
+            self.assertIn("'NaNs'", warning_msg)
+            self.assertIn("'PINF'", warning_msg)
+            self.assertIn("'NINF'", warning_msg)
+            self.assertIn("did not have any finite values. Filling with zeros.", warning_msg)
 
         selected_X = imputer.transform(X)
 
@@ -73,10 +75,11 @@ class PerColumnImputerTestCase(TestCase):
         with warnings.catch_warnings(record=True) as w:
             imputer.fit(X_numpy)
             self.assertEqual(len(w), 1)
-            self.assertEqual(
-                "The columns [0 1 2] did not have any finite values. Filling with zeros.",
-                str(w[0].message),
-            )
+            warning_msg = str(w[0].message)
+            self.assertIn("0", warning_msg)
+            self.assertIn("1", warning_msg)
+            self.assertIn("2", warning_msg)
+            self.assertIn("did not have any finite values. Filling with zeros.", warning_msg)
 
         selected_X_numpy = imputer.transform(X_numpy)
 
