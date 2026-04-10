@@ -8,6 +8,7 @@ import tempfile
 from unittest import TestCase
 
 import numpy as np
+import pandas as pd
 from pandas import DataFrame, Series
 
 from tsfresh import extract_features
