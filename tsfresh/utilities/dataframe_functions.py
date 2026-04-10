@@ -759,13 +759,19 @@ def add_sub_time_series_index(
         return df_chunk
 
     if grouper:
-        df = df.groupby(grouper).apply(_add_id_column)
+        # include_groups=False (Pandas 2.2+): grouping columns are dropped from
+        # each chunk; _restore_grouping_keys() re-adds them via df_chunk.name.
+        # Pandas < 2.2 does not accept include_groups, so fall back gracefully.
+        try:
+            df = df.groupby(grouper).apply(_add_id_column, include_groups=False)
+        except TypeError:
+            df = df.groupby(grouper, group_keys=False).apply(_add_id_column)
     else:
         df = _add_id_column(df)
 
     if column_sort:
         df = df.sort_values(column_sort)
 
-    df = df.set_index(df.index.get_level_values(-1))
+    df = df.reset_index(drop=True)
 
     return df
