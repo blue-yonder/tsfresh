@@ -772,6 +772,6 @@ def add_sub_time_series_index(
     if column_sort:
         df = df.sort_values(column_sort)
 
-    df = df.reset_index(drop=True)
+    df.index = df.index.get_level_values(-1)
 
     return df

@@ -42,7 +42,9 @@ class PerColumnImputerTestCase(TestCase):
             self.assertIn("'NaNs'", warning_msg)
             self.assertIn("'PINF'", warning_msg)
             self.assertIn("'NINF'", warning_msg)
-            self.assertIn("did not have any finite values. Filling with zeros.", warning_msg)
+            self.assertIn(
+                "did not have any finite values. Filling with zeros.", warning_msg
+            )
 
         selected_X = imputer.transform(X)
 
@@ -66,7 +68,9 @@ class PerColumnImputerTestCase(TestCase):
             self.assertIn("'NaNs'", warning_msg)
             self.assertIn("'PINF'", warning_msg)
             self.assertIn("'NINF'", warning_msg)
-            self.assertIn("did not have any finite values. Filling with zeros.", warning_msg)
+            self.assertIn(
+                "did not have any finite values. Filling with zeros.", warning_msg
+            )
 
         selected_X = imputer.transform(X)
 
@@ -79,7 +83,9 @@ class PerColumnImputerTestCase(TestCase):
             self.assertIn("0", warning_msg)
             self.assertIn("1", warning_msg)
             self.assertIn("2", warning_msg)
-            self.assertIn("did not have any finite values. Filling with zeros.", warning_msg)
+            self.assertIn(
+                "did not have any finite values. Filling with zeros.", warning_msg
+            )
 
         selected_X_numpy = imputer.transform(X_numpy)
 
