@@ -1468,6 +1468,30 @@ class MakeForecastingFrameTestCase(TestCase):
             default_fc_parameters=MinimalFCParameters(),
         )
 
+    def test_make_forecasting_frame_min_timeshift(self):
+        x = pd.Series([1, 2, 3, 4, 5])
+        # Default behavior
+        df_default, y_default = dataframe_functions.make_forecasting_frame(
+            x=x,
+            kind="test",
+            max_timeshift=3,
+            rolling_direction=1,
+        )
+        # With min_timeshift
+        df_filtered, y_filtered = dataframe_functions.make_forecasting_frame(
+            x=x,
+            kind="test",
+            max_timeshift=3,
+            rolling_direction=1,
+            min_timeshift=2,
+        )
+        # Check fewer rows (core behavior)
+        assert len(df_filtered) < len(df_default)
+        # Check target is aligned
+        assert len(y_filtered) == len(df_filtered.groupby("id").size())
+        # assert in filtered_df each "time" >= 2
+        assert all(df_filtered["time"] >= 2)
+
 
 class GetIDsTestCase(TestCase):
     def test_get_id__correct_DataFrame(self):
