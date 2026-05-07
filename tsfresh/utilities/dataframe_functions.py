@@ -650,7 +650,6 @@ def make_forecasting_frame(x, kind, max_timeshift, rolling_direction, min_timesh
     y.index = map(lambda x: ("id", x), y.index)
 
     # align y with df_shift ids
-    # align y with df_shift ids
     valid_ids = set(df_shift["id"].unique())
     y = y[y.index.isin(valid_ids)]
 
