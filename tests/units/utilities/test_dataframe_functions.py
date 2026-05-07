@@ -1485,12 +1485,25 @@ class MakeForecastingFrameTestCase(TestCase):
             rolling_direction=1,
             min_timeshift=2,
         )
-        # Check fewer rows (core behavior)
-        assert len(df_filtered) < len(df_default)
-        # Check target is aligned
-        assert len(y_filtered) == len(df_filtered.groupby("id").size())
-        # assert in filtered_df each "time" >= 2
-        assert all(df_filtered["time"] >= 2)
+        # check actual filtered df length
+        assert len(df_filtered) == len(df_default) - 1
+        # Check target alignment
+        assert len(y_filtered) == df_filtered["id"].nunique()
+        # check df index matching
+        df_common_ids = set(df_filtered["id"])
+        df_default_intersection = (
+            df_default[df_default["id"].isin(df_common_ids)]
+            .sort_values(["id", "time"])
+            .reset_index(drop=True)
+        )
+        df_filtered = df_filtered.sort_values(["id", "time"]).reset_index(drop=True)
+        pd.testing.assert_frame_equal(df_default_intersection, df_filtered)
+        # check target index matching
+        y_common_index = y_filtered.index
+        y_default_intersection = y_default.loc[y_common_index]
+        pd.testing.assert_series_equal(
+            y_default_intersection.sort_index(), y_filtered.sort_index()
+        )
 
 
 class GetIDsTestCase(TestCase):
