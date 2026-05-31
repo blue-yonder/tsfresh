@@ -603,7 +603,7 @@ def roll_time_series(
     return df_shift.sort_values(by=["id", column_sort or "sort"])
 
 
-def make_forecasting_frame(x, kind, max_timeshift, rolling_direction):
+def make_forecasting_frame(x, kind, max_timeshift, rolling_direction, min_timeshift=0):
     """
     Takes a singular time series x and constructs a DataFrame df and target vector y that can be used for a time series
     forecasting task.
@@ -627,6 +627,8 @@ def make_forecasting_frame(x, kind, max_timeshift, rolling_direction):
     :type rolling_direction: int
     :param max_timeshift: If not None, shift only up to max_timeshift. If None, shift as often as possible.
     :type max_timeshift: int
+    :param min_timeshift: Minimum shift size to begin creating windows. Smaller windows are discarded. Default is 0.
+    :type min_timeshift: int
 
     :return: time series container df, target vector y
     :rtype: (pd.DataFrame, pd.Series)
@@ -647,6 +649,7 @@ def make_forecasting_frame(x, kind, max_timeshift, rolling_direction):
         column_kind="kind",
         rolling_direction=rolling_direction,
         max_timeshift=max_timeshift,
+        min_timeshift=min_timeshift,
     )
 
     # drop the rows which should actually be predicted
@@ -669,6 +672,10 @@ def make_forecasting_frame(x, kind, max_timeshift, rolling_direction):
     # make sure that the format is the same as the
     # df_shift index
     y.index = map(lambda x: ("id", x), y.index)
+
+    # align y with df_shift ids
+    valid_ids = set(df_shift["id"].unique())
+    y = y[y.index.isin(valid_ids)]
 
     return df_shift, y
 

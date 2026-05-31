@@ -1469,6 +1469,43 @@ class MakeForecastingFrameTestCase(TestCase):
             default_fc_parameters=MinimalFCParameters(),
         )
 
+    def test_make_forecasting_frame_min_timeshift(self):
+        x = pd.Series([1, 2, 3, 4, 5])
+        # Default behavior
+        df_default, y_default = dataframe_functions.make_forecasting_frame(
+            x=x,
+            kind="test",
+            max_timeshift=3,
+            rolling_direction=1,
+        )
+        # With min_timeshift
+        df_filtered, y_filtered = dataframe_functions.make_forecasting_frame(
+            x=x,
+            kind="test",
+            max_timeshift=3,
+            rolling_direction=1,
+            min_timeshift=2,
+        )
+        # check actual filtered df length
+        assert len(df_filtered) == len(df_default) - 1
+        # Check target alignment
+        assert len(y_filtered) == df_filtered["id"].nunique()
+        # check df index matching
+        df_common_ids = set(df_filtered["id"])
+        df_default_intersection = (
+            df_default[df_default["id"].isin(df_common_ids)]
+            .sort_values(["id", "time"])
+            .reset_index(drop=True)
+        )
+        df_filtered = df_filtered.sort_values(["id", "time"]).reset_index(drop=True)
+        pd.testing.assert_frame_equal(df_default_intersection, df_filtered)
+        # check target index matching
+        y_common_index = y_filtered.index
+        y_default_intersection = y_default.loc[y_common_index]
+        pd.testing.assert_series_equal(
+            y_default_intersection.sort_index(), y_filtered.sort_index()
+        )
+
 
 class GetIDsTestCase(TestCase):
     def test_get_id__correct_DataFrame(self):
