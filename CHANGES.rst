@@ -4,6 +4,13 @@ Changelog
 
 tsfresh uses `Semantic Versioning <http://semver.org/>`_
 
+Version 0.21.2
+==============
+- Bugfixes/Typos/Documentation:
+    - Make tsfresh ready for newest pandas (>= 3) (#1120)
+    - Update stumpy to >=1.11.1 (#1120)
+    - Add min_timeshift support to make_forecasting_frame (#1121)
+
 Version 0.21.1
 ==============
 - Bugfixes/Typos/Documentation:
