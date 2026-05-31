@@ -259,10 +259,7 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
         in ``feature_extractor`` / ``feature_selector`` (no trailing underscore,
         for backwards compatibility) we implement this method explicitly.
         """
-        return (
-            self.feature_extractor is not None
-            and self.feature_selector is not None
-        )
+        return self.feature_extractor is not None and self.feature_selector is not None
 
     def set_timeseries_container(self, timeseries_container):
         """
