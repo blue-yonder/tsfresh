@@ -246,9 +246,20 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
         self.n_significant = n_significant
         self.multiclass_p_values = multiclass_p_values
 
-        # attributes
+        # fitted-state attributes (set in _fit_and_augment)
         self.feature_extractor = None
         self.feature_selector = None
+
+    def __sklearn_is_fitted__(self):
+        """Return True once fit() has completed successfully.
+
+        Newer versions of scikit-learn call ``check_is_fitted`` inside
+        ``Pipeline.transform``.  That helper looks for attributes ending with
+        ``_`` *or* for this dunder method.  Because our fitted state is stored
+        in ``feature_extractor`` / ``feature_selector`` (no trailing underscore,
+        for backwards compatibility) we implement this method explicitly.
+        """
+        return self.feature_extractor is not None and self.feature_selector is not None
 
     def set_timeseries_container(self, timeseries_container):
         """

@@ -67,9 +67,9 @@ class TestCalculateRelevanceTable:
 
         relevance_table = calculate_relevance_table(X, y_binary)
         assert "feature_binary" == relevance_table.index[0]
-        assert "constant" == relevance_table.type[0]
-        assert np.isnan(relevance_table.p_value[0])
-        assert not relevance_table.relevant[0]
+        assert "constant" == relevance_table.type.iloc[0]
+        assert np.isnan(relevance_table.p_value.iloc[0])
+        assert not relevance_table.relevant.iloc[0]
 
     @mock.patch("tsfresh.feature_selection.relevance.target_binary_feature_real_test")
     @mock.patch("tsfresh.feature_selection.relevance.target_binary_feature_binary_test")
@@ -166,9 +166,9 @@ class TestCalculateRelevanceTable:
         X_multi = pd.DataFrame()
         X_multi["relevant_0"] = np.concatenate([np.zeros(298), np.array([0.01, -0.01])])
         X_multi["relevant_3"] = X_multi["relevant_0"].copy()
-        X_multi["relevant_3"][y_multi == 0] = np.random.uniform(2, 3, 100)
+        X_multi.loc[y_multi == 0, "relevant_3"] = np.random.uniform(2, 3, 100)
         X_multi["relevant_2"] = X_multi["relevant_3"].copy()
-        X_multi["relevant_2"][y_multi == 1] = np.random.uniform(-2, -1, 100)
+        X_multi.loc[y_multi == 1, "relevant_2"] = np.random.uniform(-2, -1, 100)
 
         relevance_table = calculate_relevance_table(
             X_multi, y_multi, multiclass=True, ml_task="classification", n_significant=3

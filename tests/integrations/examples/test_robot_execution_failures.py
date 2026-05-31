@@ -8,6 +8,7 @@ import tempfile
 from unittest import TestCase
 
 import numpy as np
+import pandas as pd
 from pandas import DataFrame, Series
 
 from tsfresh import extract_features
@@ -54,4 +55,4 @@ class RobotExecutionFailuresTestCase(TestCase):
         )
 
         assert len(y.unique()) > 2
-        assert y.dtype == object
+        assert y.dtype == object or isinstance(y.dtype, pd.StringDtype)
