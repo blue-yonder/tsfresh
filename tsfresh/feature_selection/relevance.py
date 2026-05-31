@@ -257,9 +257,11 @@ def calculate_relevance_table(
                 if multiclass:
                     tmp = tmp.reset_index(drop=True)
                     tmp.columns = tmp.columns.map(
-                        lambda x: x + "_" + str(label)
-                        if x != "feature" and x != "type"
-                        else x
+                        lambda x: (
+                            x + "_" + str(label)
+                            if x != "feature" and x != "type"
+                            else x
+                        )
                     )
                 tables.append(tmp)
 
@@ -360,7 +362,11 @@ def infer_ml_task(y):
     :return: 'classification' or 'regression'
     :rtype: str
     """
-    if y.dtype.kind in np.typecodes["AllInteger"] or y.dtype == object:
+    if (
+        y.dtype.kind in np.typecodes["AllInteger"]
+        or y.dtype == object
+        or isinstance(y.dtype, pd.StringDtype)
+    ):
         ml_task = "classification"
     else:
         ml_task = "regression"

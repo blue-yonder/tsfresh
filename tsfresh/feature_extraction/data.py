@@ -12,12 +12,34 @@ except ImportError:  # pragma: no cover
 
 def _binding_helper(f, kwargs, column_sort, column_id, column_kind, column_value):
     def wrapped_feature_extraction(x):
+        # Capture group identity BEFORE sort_values(), because sort_values()
+        # returns a new DataFrame that loses the .name attribute set by groupby.apply().
+        # In Pandas 3.0+, grouping keys are no longer included in the chunk columns,
+        # so we rely on x.name (a tuple like (id_val, kind_val)) to recover them.
+        group_name = x.name  # may be None for ungrouped DataFrames
+
         if column_sort is not None:
             x = x.sort_values(column_sort)
 
-        chunk = Timeseries(
-            x[column_id].iloc[0], x[column_kind].iloc[0], x[column_value]
-        )
+        if column_id in x.columns:
+            id_val = x[column_id].iloc[0]
+        elif group_name is not None:
+            id_val = group_name[0] if isinstance(group_name, tuple) else group_name
+        else:
+            raise KeyError(
+                f"Column '{column_id}' not found in DataFrame chunk and group name unavailable."
+            )
+
+        if column_kind in x.columns:
+            kind_val = x[column_kind].iloc[0]
+        elif group_name is not None:
+            kind_val = group_name[1] if isinstance(group_name, tuple) else group_name
+        else:
+            raise KeyError(
+                f"Column '{column_kind}' not found in DataFrame chunk and group name unavailable."
+            )
+
+        chunk = Timeseries(id_val, kind_val, x[column_value])
         result = f(chunk, **kwargs)
 
         result = pd.DataFrame(result, columns=[column_id, "variable", "value"])

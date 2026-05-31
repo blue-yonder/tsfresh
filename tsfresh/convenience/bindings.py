@@ -30,7 +30,23 @@ def _feature_extraction_on_chunk_helper(
     if column_sort is not None:
         df = df.sort_values(column_sort)
 
-    chunk = df[column_id].iloc[0], df[column_kind].iloc[0], df[column_value]
+    # Dask (and Pandas 3.0) groupby().apply() no longer includes the groupby
+    # columns inside the chunk.  Recover them from the group key (df.name),
+    # which Dask sets to a tuple (id_val, kind_val) when grouped by two
+    # columns, or to a scalar when grouped by one column.
+    if column_id not in df.columns or column_kind not in df.columns:
+        group_key = df.name  # tuple (id_val, kind_val) or scalar
+        if isinstance(group_key, tuple):
+            id_value = group_key[0]
+            kind_value = group_key[1]
+        else:
+            id_value = group_key
+            kind_value = group_key
+    else:
+        id_value = df[column_id].iloc[0]
+        kind_value = df[column_kind].iloc[0]
+
+    chunk = id_value, kind_value, df[column_value]
     features = _do_extraction_on_chunk(
         chunk,
         default_fc_parameters=default_fc_parameters,

@@ -118,7 +118,7 @@ def main(console_args=None):
 
     # Read in CSV file
     input_file_name = args.input_file_name
-    df = pd.read_csv(input_file_name, delim_whitespace=True, header=header)
+    df = pd.read_csv(input_file_name, sep=r"\s+", header=header)
 
     if not args.csv_with_headers:
         df = _preprocess(df)
