@@ -60,7 +60,7 @@ The FRESH algorithm is described in the following whitepaper:
     _Distributed and parallel time series feature extraction for industrial big data applications._
     ArXiv e-print 1610.07717,  [https://arxiv.org/abs/1610.07717](https://arxiv.org/abs/1610.07717).
 
-Systematic time-series feature extraction even works for unsupervised problems:
+Normality models simulate how humans detect time-series anomalies:
 
 * Teh, H.Y., Wang, K.I-K., Kempa-Liehr, A.W. (2021).
     _Expect the Unexpected: Unsupervised feature selection for automated sensor anomaly detection._
@@ -69,6 +69,12 @@ Systematic time-series feature extraction even works for unsupervised problems:
 * Teh, H.Y., Wang, K.I-K., Kempa-Liehr, A.W. (2025).
     _Feature-based normality models for anomaly detection._
     Sensors 25.4757, p. 1-25, [doi: 10.3390/s25154757](https://doi.org/10.3390/s25154757).
+  
+Systematic time-series feature extraction even works for unsupervised problems:
+
+* Abrasaldo, P.M., Zarrouk, S.J., Kempa-Liehr, A.W. (2026).
+  _Feature-Based Time Series Clustering for Efficient Labeling of Geothermal Data._
+  Geothermics 138.103656, p. 1–13, [doi: 10.1016/j.geothermics.2026.103656](https://doi.org/10.1016/j.geothermics.2026.103656)
 
 Due to the fact that tsfresh basically provides time-series feature extraction for free, you can now concentrate on engineering new time-series,
 like e.g. differences of signals from synchronous measurements, which provide even better time-series features:
