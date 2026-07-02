@@ -1321,7 +1321,7 @@ def number_cwt_peaks(x, n):
     """
     Number of different peaks in x.
 
-    To estimamte the numbers of peaks, x is smoothed by a ricker wavelet for widths ranging from 1 to n. This feature
+    To estimate the numbers of peaks, x is smoothed by a ricker wavelet for widths ranging from 1 to n. This feature
     calculator returns the number of peaks that occur at enough width scales and with sufficiently high
     Signal-to-Noise-Ratio (SNR)
 
