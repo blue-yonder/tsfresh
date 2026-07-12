@@ -186,6 +186,25 @@ class TestCalculateRelevanceTable:
         assert relevance_table.loc["relevant_2", "n_significant"] == 2
         assert relevance_table.loc["relevant_0", "n_significant"] == 0
 
+    @pytest.mark.parametrize("y_values", [[0, 1, 1], [0.1, 0.2, 0.1]])
+    def test_ndarray_target_matches_series_target(self, X, y_values):
+        # Issue #966: a numpy.ndarray target is documented ("pandas.Series or
+        # numpy.ndarray"), so it must not raise. Passing it must produce the
+        # same relevance table as passing the equivalent
+        # pandas.Series(y, index=X.index), i.e. the ndarray is aligned to the
+        # rows of X by position. The non-default, unsorted index guards that
+        # the alignment uses X.index and not a fresh RangeIndex.
+        X = X.copy()
+        X.index = [10, 5, 3]
+        y_array = np.array(y_values)
+
+        relevance_table_ndarray = calculate_relevance_table(X, y_array, n_jobs=0)
+        relevance_table_series = calculate_relevance_table(
+            X, pd.Series(y_array, index=X.index), n_jobs=0
+        )
+
+        pd.testing.assert_frame_equal(relevance_table_ndarray, relevance_table_series)
+
 
 class TestCombineRelevanceTables:
     @pytest.fixture()
