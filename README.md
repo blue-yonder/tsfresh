@@ -69,7 +69,7 @@ Normality models simulate how humans detect time-series anomalies:
 * Teh, H.Y., Wang, K.I-K., Kempa-Liehr, A.W. (2025).
     _Feature-based normality models for anomaly detection._
     Sensors 25.4757, p. 1-25, [doi: 10.3390/s25154757](https://doi.org/10.3390/s25154757).
-  
+
 Systematic time-series feature extraction even works for unsupervised problems:
 
 * Abrasaldo, P.M., Zarrouk, S.J., Kempa-Liehr, A.W. (2026).
