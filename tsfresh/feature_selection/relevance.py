@@ -159,6 +159,14 @@ def calculate_relevance_table(
     :rtype: pandas.DataFrame
     """
 
+    # A numpy.ndarray target carries no index, so align it to the rows of X by
+    # position before the index-based operations below (mirrors select_features).
+    # This makes passing y as an ndarray equivalent to passing
+    # pd.Series(y, index=X.index).
+    if isinstance(y, np.ndarray):
+        assert len(X) == len(y), "X and y must contain the same number of samples."
+        y = pd.Series(y, index=X.index)
+
     # Make sure X and y both have the exact same indices
     y = y.sort_index()
     X = X.sort_index()
