@@ -34,6 +34,14 @@ class TestSettingsObject(TestCase):
         for param in params_range_count:
             assert param["min"] < param["max"]
 
+    def test_mean_n_absolute_max_correctly_configured(self):
+        # The parameters used to be written as a single dictionary repeating the
+        # same key, which collapses to only the last entry, so just one feature
+        # was calculated instead of three.
+        fset = ComprehensiveFCParameters()
+        params = fset["mean_n_absolute_max"]
+        self.assertEqual([param["number_of_maxima"] for param in params], [3, 5, 7])
+
     def test_from_column_raises_on_wrong_column_format(self):
 
         self.assertRaises(TypeError, from_columns, 42)

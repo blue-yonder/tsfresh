@@ -269,13 +269,7 @@ class ComprehensiveFCParameters(PickableSettings):
                     {"threshold": 0.98, "feature": f}
                     for f in ["min", "max", "mean", "median", "25", "75"]
                 ],
-                "mean_n_absolute_max": [
-                    {
-                        "number_of_maxima": 3,
-                        "number_of_maxima": 5,
-                        "number_of_maxima": 7,
-                    }
-                ],
+                "mean_n_absolute_max": [{"number_of_maxima": x} for x in [3, 5, 7]],
             }
         )
 
