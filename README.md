@@ -64,7 +64,7 @@ Normality models simulate how humans detect time-series anomalies:
 
 * Teh, H.Y., Wang, K.I-K., Kempa-Liehr, A.W. (2021).
     _Expect the Unexpected: Unsupervised feature selection for automated sensor anomaly detection._
-    IEEE Sensors Journal 15.16, p. 18033-18046, [doi: 10.1109/JSEN.2021.3084970](https://doi.org/10.1109/JSEN.2021.3084970).
+    IEEE Sensors Journal 21.16, p. 18033-18046, [doi: 10.1109/JSEN.2021.3084970](https://doi.org/10.1109/JSEN.2021.3084970).
 
 * Teh, H.Y., Wang, K.I-K., Kempa-Liehr, A.W. (2025).
     _Feature-based normality models for anomaly detection._
