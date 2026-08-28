@@ -69,7 +69,7 @@ There is a matlab package called `hctsa <https://github.com/benfulcher/hctsa>`_ 
 extract features from time series.
 It is also possible to use hctsa from within Python through the `pyopy <https://github.com/strawlab/pyopy>`_
 package.
-Other available packagers are `featuretools <https://www.featuretools.com/>`_, `FATS <http://isadoranun.github.io/tsfeat/>`_ and `cesium <http://cesium-ml.org/>`_.
+Other available packagers are `featuretools <https://featuretools.alteryx.com/>`_, `FATS <http://isadoranun.github.io/tsfeat/>`_ and `cesium <http://cesium-ml.org/>`_.
 
 References
 ----------
@@ -102,5 +102,5 @@ References
           `doi: 10.1016/j.ascom.2021.100460 <https://doi.org/10.1016/j.ascom.2021.100460>`_.
    .. [7] Hui Yie Teh, Kevin I-Kai Wang, and Andreas W. Kempa-Liehr (2021).
           *Expect the Unexpected: Unsupervised feature selection for automated sensor anomaly detection*.
-          IEEE Sensors Journal 15.16, pp. 18033–18046.
+          IEEE Sensors Journal 21.16, pp. 18033–18046.
           `doi: 10.1109/JSEN.2021.3084970 <https://doi.org/10.1109/JSEN.2021.3084970>`_.
