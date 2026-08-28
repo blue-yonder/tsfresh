@@ -414,7 +414,7 @@ class RelevantFeatureAugmenter(BaseEstimator, TransformerMixin):
         :param y: The target vector to define, which features are relevant.
         :type y: pandas.Series or numpy.array
 
-        :return: a data sample with the extraced time series features. If filter_only_tsfresh_features is False
+        :return: a data sample with the extracted time series features. If filter_only_tsfresh_features is False
             the data sample will also include the information in X.
         :rtype: pandas.DataFrame
         """

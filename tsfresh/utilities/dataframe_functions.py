@@ -401,7 +401,7 @@ def roll_time_series(
 
      * This method will create new IDs!
      * The sign of rolling defines the direction of time rolling, a positive value means we are shifting
-       the cut-out window foreward in time. The name of each new sub time series is given by the last time point.
+       the cut-out window forward in time. The name of each new sub time series is given by the last time point.
        This means, the time series named `([id=]4,[timeshift=]5)` with a `max_timeshift` of 3 includes the data
        of the times 3, 4 and 5.
        A negative rolling direction means, you go in negative time direction over your data.

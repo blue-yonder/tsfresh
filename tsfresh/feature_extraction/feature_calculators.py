@@ -1147,7 +1147,7 @@ def fft_aggregated(x, param):
 
         :param y: the discrete distribution from which one wants to calculate the moment
         :type y: pandas.Series or np.array
-        :param moment: the moment one wants to calcalate (choose 1,2,3, ... )
+        :param moment: the moment one wants to calculate (choose 1,2,3, ... )
         :type moment: int
         :return: the moment requested
         :return type: float
