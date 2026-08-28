@@ -647,7 +647,7 @@ def mean_second_derivative_central(x):
 
     .. math::
 
-        \\frac{1}{2(n-2)} \\sum_{i=1,\\ldots, n-1}  \\frac{1}{2} (x_{i+2} - 2 \\cdot x_{i+1} + x_i)
+        \\frac{1}{2(n-2)} \\sum_{i=1,\\ldots, n-2} (x_{i+2} - 2 \\cdot x_{i+1} + x_i)
 
     :param x: the time series to calculate the feature of
     :type x: numpy.ndarray
