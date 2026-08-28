@@ -326,7 +326,7 @@ def _do_extraction_on_chunk(
     :param chunk: A tuple of sample_id, kind, data
     :param default_fc_parameters: A dictionary of feature calculators.
     :param kind_to_fc_parameters: A dictionary of fc_parameters for special kinds or None.
-    :param show_warnings: Surpress warnings (some feature calculators are quite verbose)
+    :param show_warnings: Suppress warnings (some feature calculators are quite verbose)
     :return: A list of calculated features.
     """
     sample_id, kind, data = chunk

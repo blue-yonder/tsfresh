@@ -271,7 +271,7 @@ class IterableDistributorBaseClass(DistributorBaseClass):
 
 class MapDistributor(IterableDistributorBaseClass):
     """
-    Distributor using the python build-in map, which calculates each job sequentially one after the other.
+    Distributor using the python built-in map, which calculates each job sequentially one after the other.
     """
 
     def __init__(

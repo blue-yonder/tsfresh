@@ -26,7 +26,7 @@ class PerColumnImputer(BaseEstimator, TransformerMixin):
 
     This estimator - as most of the sklearn estimators - works in a two step procedure. First, the ``.fit``
     function is called where for each column the min, max and median are computed.
-    Secondly, the ``.transform`` function is called which replaces the occurances of ``NaNs`` and ``infs`` using
+    Secondly, the ``.transform`` function is called which replaces the occurrences of ``NaNs`` and ``infs`` using
     the column-wise computed min, max and median values.
     """
 

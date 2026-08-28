@@ -88,7 +88,7 @@ Alternatively, you can write a combiner feature calculator that returns multiple
         """
         Short description of your feature (should be a one liner as we parse the first line of the description)
 
-        Long detailed description, add somme equations, add some references, what kind of statistics is the feature
+        Long detailed description, add some equations, add some references, what kind of statistics is the feature
         capturing? When should you use it? When not?
 
         :param x: the time series to calculate the feature of
