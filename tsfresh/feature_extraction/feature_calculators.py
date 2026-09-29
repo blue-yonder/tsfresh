@@ -1214,7 +1214,7 @@ def fft_aggregated(x, param):
             get_moment(y, 4)
             - 4 * centroid * get_moment(y, 3)
             + 6 * get_moment(y, 2) * centroid**2
-            - 3 * centroid
+            - 3 * centroid**4
         ) / get_variance(y) ** 2
 
     calculation = {

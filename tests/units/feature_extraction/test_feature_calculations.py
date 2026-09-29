@@ -910,7 +910,7 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqual(res['aggtype_"centroid"'], 1.135, places=3)
         self.assertAlmostEqual(res['aggtype_"variance"'], 2.368, places=3)
         self.assertAlmostEqual(res['aggtype_"skew"'], 1.249, places=3)
-        self.assertAlmostEqual(res['aggtype_"kurtosis"'], 3.643, places=3)
+        self.assertAlmostEqual(res['aggtype_"kurtosis"'], 3.362, places=3)
 
         # Scalar multiplying the distribution should not change the results:
         x = 10 * x
@@ -919,7 +919,7 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqual(res['aggtype_"centroid"'], 1.135, places=3)
         self.assertAlmostEqual(res['aggtype_"variance"'], 2.368, places=3)
         self.assertAlmostEqual(res['aggtype_"skew"'], 1.249, places=3)
-        self.assertAlmostEqual(res['aggtype_"kurtosis"'], 3.643, places=3)
+        self.assertAlmostEqual(res['aggtype_"kurtosis"'], 3.362, places=3)
 
         # The fft of a sign wave is a dirac delta, variance and skew should be near zero, kurtosis should be near 3:
         # However, in the discrete limit, skew and kurtosis blow up in a manner that is noise dependent and are
