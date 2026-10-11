@@ -411,6 +411,68 @@ class FeatureCalculationTestCase(TestCase):
         for index, val in res_attr_error:
             self.assertIsNaN(val)
 
+    def test_integer_energy_features(self):
+        for dtype in [
+            np.int8,
+            np.uint8,
+            np.int16,
+            np.uint16,
+            np.int32,
+            np.uint32,
+            np.int64,
+            np.uint64,
+            np.bool_,
+        ]:
+            if dtype == np.bool_:
+                values = np.array([True, False, True, True], dtype=dtype)
+            else:
+                limits = np.iinfo(dtype)
+                values = np.array(
+                    [limits.min, limits.max, 0, limits.max // 2], dtype=dtype
+                )
+            original = values.copy()
+            expected = float(sum(int(value) ** 2 for value in values))
+            for container in [values, pd.Series(values)]:
+                with self.subTest(dtype=dtype, container=type(container)):
+                    np.testing.assert_allclose(
+                        abs_energy(container), expected, rtol=1e-14
+                    )
+                    np.testing.assert_allclose(
+                        root_mean_square(container),
+                        math.sqrt(expected / len(values)),
+                        rtol=1e-14,
+                    )
+            np.testing.assert_array_equal(values, original)
+
+    def test_integer_chunk_energy_ratios(self):
+        values = np.array([20000, 30000, -20000, -30000, 0], dtype=np.int16)
+        param = [{"num_segments": 3, "segment_focus": index} for index in range(3)]
+        total = sum(int(value) ** 2 for value in values)
+        expected = [
+            sum(int(value) ** 2 for value in chunk) / total
+            for chunk in np.array_split(values, 3)
+        ]
+        result = [value for _, value in energy_ratio_by_chunks(values, param)]
+        np.testing.assert_allclose(result, expected)
+        self.assertAlmostEqual(sum(result), 1.0)
+
+    def test_extract_integer_energy_features(self):
+        from tsfresh import extract_features
+
+        values = np.array([20000, 30000, -20000, -30000], dtype=np.int16)
+        frame = pd.DataFrame({"id": [0] * len(values), "sample": values})
+        result = extract_features(
+            frame,
+            column_id="id",
+            n_jobs=0,
+            disable_progressbar=True,
+            default_fc_parameters={"abs_energy": None, "root_mean_square": None},
+        )
+        self.assertEqual(result.loc[0, "sample__abs_energy"], 2600000000.0)
+        self.assertAlmostEqual(
+            result.loc[0, "sample__root_mean_square"], math.sqrt(650000000.0)
+        )
+
     def test_abs_energy(self):
         self.assertEqualOnAllArrayTypes(abs_energy, [1, 1, 1], 3)
         self.assertEqualOnAllArrayTypes(abs_energy, [1, 2, 3], 14)

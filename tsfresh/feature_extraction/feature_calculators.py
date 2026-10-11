@@ -99,6 +99,15 @@ def _roll(a, shift):
     return np.concatenate([a[-idx:], a[:-idx]])
 
 
+def _promote_integer_input(x):
+    """Avoid integer overflow before arithmetic, preserving floating input dtypes."""
+    if not isinstance(x, (np.ndarray, pd.Series)):
+        x = np.asarray(x)
+    if x.dtype.kind in "biu":
+        x = x.astype(np.float64)
+    return x
+
+
 def _get_length_sequences_where(x):
     """
     This method calculates the length of all sub-sequences where the array x is either True or 1.
@@ -558,8 +567,7 @@ def abs_energy(x):
     :return: the value of this feature
     :return type: float
     """
-    if not isinstance(x, (np.ndarray, pd.Series)):
-        x = np.asarray(x)
+    x = _promote_integer_input(x)
     return np.dot(x, x)
 
 
@@ -789,6 +797,7 @@ def root_mean_square(x):
     :return: the value of this feature
     :return type: float
     """
+    x = _promote_integer_input(x)
     return np.sqrt(np.mean(np.square(x))) if len(x) > 0 else np.nan
 
 
@@ -2244,6 +2253,7 @@ def energy_ratio_by_chunks(x, param):
     :return: the feature values
     :return type: List[Tuple[str, float]]
     """
+    x = _promote_integer_input(x)
     res_data = []
     res_index = []
     full_series_energy = np.sum(x**2)
