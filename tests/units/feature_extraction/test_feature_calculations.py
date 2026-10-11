@@ -418,6 +418,71 @@ class FeatureCalculationTestCase(TestCase):
         self.assertAlmostEqualOnAllArrayTypes(abs_energy, [-1, 1.3], 2.69)
         self.assertEqualOnAllArrayTypes(abs_energy, [1], 1)
 
+    def test_integer_temporal_features(self):
+        samples = [
+            np.array([10, 9, 8, 7], dtype=np.uint8),
+            np.array([-30000, 30000, 0, -30000], dtype=np.int16),
+            np.array([-(2**31), 2**31 - 1, 0], dtype=np.int32),
+            np.array([2**32 - 1, 0, 1], dtype=np.uint32),
+            np.array([2**60 + 3, 2**60 + 1, 2**60 + 2], dtype=np.int64),
+            np.array([2**64 - 1, 0, 2**64 - 2], dtype=np.uint64),
+            np.array([2**64 - 1, 2**64 - 2, 2**64 - 3], dtype=np.uint64),
+            np.array([True, False, False, True]),
+        ]
+        for values in samples:
+            original = values.copy()
+            differences = [int(b) - int(a) for a, b in zip(values, values[1:])]
+            total = sum(abs(value) for value in differences)
+            complexity = math.sqrt(sum(value**2 for value in differences))
+            for container in [values, pd.Series(values)]:
+                with self.subTest(dtype=values.dtype, container=type(container)):
+                    np.testing.assert_allclose(
+                        absolute_sum_of_changes(container), float(total), rtol=1e-14
+                    )
+                    np.testing.assert_allclose(
+                        mean_abs_change(container), total / len(differences), rtol=1e-14
+                    )
+                    np.testing.assert_allclose(
+                        mean_change(container),
+                        sum(differences) / len(differences),
+                        rtol=1e-14,
+                    )
+                    np.testing.assert_allclose(
+                        cid_ce(container, False), complexity, rtol=1e-14
+                    )
+            np.testing.assert_array_equal(values, original)
+
+    def test_integer_change_quantiles(self):
+        values = np.array([10, 9, 8, 7], dtype=np.uint8)
+        self.assertEqual(change_quantiles(values, 0, 1, False, "mean"), -1)
+        self.assertEqual(change_quantiles(values, 0, 1, True, "mean"), 1)
+        self.assertEqual(change_quantiles(values, 0.25, 0.75, False, "mean"), -1)
+
+    def test_extract_integer_temporal_features(self):
+        from tsfresh import extract_features
+
+        frame = pd.DataFrame(
+            {"id": [0] * 4, "sample": np.array([10, 9, 8, 7], dtype=np.uint8)}
+        )
+        result = extract_features(
+            frame,
+            column_id="id",
+            n_jobs=0,
+            disable_progressbar=True,
+            default_fc_parameters={
+                "mean_change": None,
+                "mean_abs_change": None,
+                "absolute_sum_of_changes": None,
+                "cid_ce": [{"normalize": False}],
+            },
+        )
+        self.assertEqual(result.loc[0, "sample__mean_change"], -1)
+        self.assertEqual(result.loc[0, "sample__mean_abs_change"], 1)
+        self.assertEqual(result.loc[0, "sample__absolute_sum_of_changes"], 3)
+        self.assertAlmostEqual(
+            result.loc[0, "sample__cid_ce__normalize_False"], math.sqrt(3)
+        )
+
     def test_cid_ce(self):
         self.assertEqualOnAllArrayTypes(cid_ce, [1, 1, 1], 0, normalize=True)
         self.assertEqualOnAllArrayTypes(cid_ce, [0, 4], 2, normalize=True)

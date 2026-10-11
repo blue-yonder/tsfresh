@@ -128,6 +128,17 @@ def _get_length_sequences_where(x):
     return res if len(res) > 0 else [0]
 
 
+def _get_differences(x):
+    """Compute signed differences without integer overflow or lost low bits."""
+    x = np.asarray(x)
+    if x.dtype.kind in "biu":
+        if x.dtype.itemsize >= 8:
+            # Subtract before converting so adjacent large integers stay distinct.
+            return np.diff(x.astype(object)).astype(np.float64)
+        x = x.astype(np.float64)
+    return np.diff(x)
+
+
 def _estimate_friedrich_coefficients(x, m, r):
     """
     Coefficients of polynomial :math:`h(x)`, which has been fitted to
@@ -596,7 +607,7 @@ def cid_ce(x, normalize):
         else:
             return 0.0
 
-    x = np.diff(x)
+    x = _get_differences(x)
     return np.sqrt(np.dot(x, x))
 
 
@@ -617,7 +628,7 @@ def mean_abs_change(x):
     :return: the value of this feature
     :return type: float
     """
-    return np.mean(np.abs(np.diff(x)))
+    return np.mean(np.abs(_get_differences(x)))
 
 
 @set_property("fctype", "simple")
@@ -637,6 +648,8 @@ def mean_change(x):
     :return type: float
     """
     x = np.asarray(x)
+    if len(x) > 1 and x.dtype.kind in "biu":
+        return (int(x[-1]) - int(x[0])) / (len(x) - 1)
     return (x[-1] - x[0]) / (len(x) - 1) if len(x) > 1 else np.nan
 
 
@@ -806,7 +819,7 @@ def absolute_sum_of_changes(x):
     :return: the value of this feature
     :return type: float
     """
-    return np.sum(np.abs(np.diff(x)))
+    return np.sum(np.abs(_get_differences(x)))
 
 
 @set_property("fctype", "simple")
@@ -1533,7 +1546,7 @@ def change_quantiles(x, ql, qh, isabs, f_agg):
     if ql >= qh:
         return 0.0
 
-    div = np.diff(x)
+    div = _get_differences(x)
     if isabs:
         div = np.abs(div)
     # All values that originate from the corridor between the quantiles ql and qh will have the category 0,
