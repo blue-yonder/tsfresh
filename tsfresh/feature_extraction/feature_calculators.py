@@ -1659,7 +1659,7 @@ def mean_n_absolute_max(x, number_of_maxima):
 
     n_absolute_maximum_values = np.sort(np.absolute(x))[-number_of_maxima:]
 
-    return np.mean(n_absolute_maximum_values) if len(x) > number_of_maxima else np.nan
+    return np.mean(n_absolute_maximum_values) if len(x) >= number_of_maxima else np.nan
 
 
 @set_property("fctype", "simple")

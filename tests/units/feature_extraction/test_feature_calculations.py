@@ -654,6 +654,19 @@ class FeatureCalculationTestCase(TestCase):
         self.assertEqualOnAllArrayTypes(absolute_sum_of_changes, [1], 0)
         self.assertEqualOnAllArrayTypes(absolute_sum_of_changes, [], 0)
 
+    def test_mean_n_absolute_max_all_values(self):
+        self.assertAlmostEqualOnAllArrayTypes(
+            mean_n_absolute_max, [-2, 3, -4], 3.0, number_of_maxima=3
+        )
+        self.assertEqualOnAllArrayTypes(
+            mean_n_absolute_max, [0, 0, 0], 0.0, number_of_maxima=3
+        )
+
+    def test_mean_n_absolute_max_single_value(self):
+        self.assertEqualOnAllArrayTypes(
+            mean_n_absolute_max, [-3], 3.0, number_of_maxima=1
+        )
+
     def test_longest_strike_below_mean(self):
         self.assertEqualOnAllArrayTypes(
             longest_strike_below_mean, [1, 2, 1, 1, 1, 2, 2, 2], 3

@@ -88,6 +88,27 @@ class ExtractionTestCase(DataTestCase):
         )
         assert len(extracted_features) == 2
 
+    def test_extract_mean_n_absolute_max_length_boundary(self):
+        df = pd.DataFrame(
+            {
+                "id": [1] * 3 + [2] * 4 + [3] * 2,
+                "sort": list(range(3)) + list(range(4)) + list(range(2)),
+                "value": [-2.0, 3.0, -4.0, -1.0, -5.0, 4.0, 10.0, 12.0, 3.0],
+            }
+        )
+        features = extract_features(
+            df,
+            column_id="id",
+            column_sort="sort",
+            n_jobs=0,
+            disable_progressbar=True,
+            default_fc_parameters={"mean_n_absolute_max": [{"number_of_maxima": 3}]},
+        )
+        feature = features["value__mean_n_absolute_max__number_of_maxima_3"]
+        self.assertAlmostEqual(feature.loc[1], 3.0)
+        self.assertAlmostEqual(feature.loc[2], 19.0 / 3)
+        self.assertTrue(np.isnan(feature.loc[3]))
+
     def test_extract_features_for_one_time_series(self):
         # todo: implement more methods and test more aspects
         df = self.create_test_data_sample()
