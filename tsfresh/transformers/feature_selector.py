@@ -154,8 +154,8 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
         Extract the information, which of the features are relevant using the given target.
 
         For more information, please see the :func:`~tsfresh.festure_selection.festure_selector.check_fs_sig_bh`
-        function. All columns in the input data sample are treated as feature. The index of all
-        rows in X must be present in y.
+        function. All columns in the input data sample are treated as feature. A pandas Series
+        target is aligned with X by index labels; a numpy array target follows the row order of X.
 
         :param X: data sample with the features, which will be classified as relevant or not
         :type X: pandas.DataFrame or numpy.array
@@ -170,7 +170,7 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
             X = pd.DataFrame(X.copy())
 
         if not isinstance(y, pd.Series):
-            y = pd.Series(y.copy())
+            y = pd.Series(y.copy(), index=X.index)
 
         relevance_table = calculate_relevance_table(
             X,

@@ -7,6 +7,9 @@ from unittest import TestCase
 
 import numpy as np
 import pandas as pd
+from sklearn.model_selection import StratifiedKFold, cross_val_score
+from sklearn.pipeline import make_pipeline
+from sklearn.tree import DecisionTreeClassifier
 
 from tsfresh.transformers.feature_selector import FeatureSelector
 
@@ -104,6 +107,37 @@ class FeatureSelectorTestCase(TestCase):
         self.assertTrue((selected_X_numpy == selected_X.values).all())
 
         self.assertTrue(selected_X_numpy.shape, (1, 1000))
+
+    def test_numpy_target_preserves_dataframe_row_order(self):
+        y = np.tile([0, 1], 30)
+        for index in [np.arange(60) + 100, np.random.RandomState(42).permutation(60)]:
+            with self.subTest(index=index):
+                X = pd.DataFrame(
+                    {"signal": y, "noise": np.tile([0, 0, 1, 1], 15)}, index=index
+                )
+                selector = FeatureSelector(n_jobs=0).fit(X, y)
+                self.assertEqual(selector.relevant_features, ["signal"])
+                pd.testing.assert_frame_equal(selector.transform(X), X[["signal"]])
+
+                # Explicit Series targets retain their label-based alignment.
+                target = pd.Series(y, index=X.index).sort_index()
+                aligned = FeatureSelector(n_jobs=0).fit(X, target)
+                self.assertEqual(aligned.relevant_features, selector.relevant_features)
+                np.testing.assert_array_equal(aligned.p_values, selector.p_values)
+
+    def test_numpy_target_in_cross_validation(self):
+        y = np.tile([0, 1], 30)
+        X = pd.DataFrame(
+            {"signal": y, "noise": np.tile([0, 0, 1, 1], 15)},
+            index=np.arange(60) + 100,
+        )
+        pipeline = make_pipeline(
+            FeatureSelector(n_jobs=0), DecisionTreeClassifier(random_state=0)
+        )
+        scores = cross_val_score(
+            pipeline, X, y, cv=StratifiedKFold(3), n_jobs=1, error_score="raise"
+        )
+        np.testing.assert_array_equal(scores, np.ones(3))
 
     def test_feature_importance(self):
         selector = FeatureSelector()
