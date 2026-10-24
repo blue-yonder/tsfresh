@@ -1694,6 +1694,20 @@ def binned_entropy(x, max_bins):
     return -np.sum(probs * np.log(probs))
 
 
+def _prepare_entropy_input(x):
+    """Preserve signed template distances without overflowing integer inputs."""
+    if x.dtype.kind not in "biu":
+        return x
+    # Within this range, values and pairwise differences are exactly represented
+    # by float64. Use Python integers only for the wider int64/uint64 range.
+    use_object = (
+        x.size
+        and x.dtype.itemsize >= 8
+        and (int(x.min()) < -(2**52) or int(x.max()) > 2**52)
+    )
+    return np.asarray(x).astype(object if use_object else np.float64)
+
+
 # todo - include latex formula
 # todo - check if vectorizable
 @set_property("high_comp_cost", True)
@@ -1723,6 +1737,7 @@ def sample_entropy(x):
     tolerance = 0.2 * np.std(
         x
     )  # 0.2 is a common value for r, according to wikipedia...
+    x = _prepare_entropy_input(x)
 
     # Split time series and save all templates of length m
     # Basically we turn [1, 2, 3, 4] into [1, 2], [2, 3], [3, 4]
@@ -1789,6 +1804,7 @@ def approximate_entropy(x, m, r):
 
     N = x.size
     r *= np.std(x)
+    x = _prepare_entropy_input(x)
     if r < 0:
         raise ValueError("Parameter r must be positive.")
     if N <= m + 1:
