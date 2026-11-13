@@ -1082,6 +1082,40 @@ class CheckForNanTestCase(TestCase):
 
 
 class ImputeTestCase(TestCase):
+    def test_impute_converts_columns_to_float64_in_place(self):
+        for name in ("impute", "impute_dataframe_zero", "impute_dataframe_range"):
+            with self.subTest(function=name):
+                df = pd.DataFrame(
+                    {
+                        "small": np.array([1, np.nan, np.inf], dtype=np.float32),
+                        "count": [1, 2, 3],
+                    }
+                )
+                args = ()
+                if name == "impute_dataframe_range":
+                    args = (
+                        {"small": 3.0, "count": 3.0},
+                        {"small": 1.0, "count": 1.0},
+                        {"small": 2.0, "count": 2.0},
+                    )
+                result = getattr(dataframe_functions, name)(df, *args)
+                self.assertIs(result, df)
+                self.assertTrue(all(dtype == np.float64 for dtype in df.dtypes))
+                self.assertTrue(np.isfinite(df.values).all())
+
+    def test_impute_range_preserves_float64_replacements(self):
+        df = pd.DataFrame(
+            {"value": np.array([np.nan, np.inf, -np.inf], dtype=np.float32)}
+        )
+        median, maximum, minimum = 0.123456789, 1.123456789, -1.123456789
+        result = dataframe_functions.impute_dataframe_range(
+            df, {"value": maximum}, {"value": minimum}, {"value": median}
+        )
+        self.assertIs(result, df)
+        assert_frame_equal(
+            df, pd.DataFrame({"value": [median, maximum, minimum]}), check_exact=True
+        )
+
     def test_impute_zero(self):
         df = pd.DataFrame([{"value": np.nan}])
         dataframe_functions.impute_dataframe_zero(df)
