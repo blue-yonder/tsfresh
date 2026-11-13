@@ -72,8 +72,6 @@ def impute(df_impute):
     col_to_max, col_to_min, col_to_median = get_range_values_per_column(df_impute)
     df_impute = impute_dataframe_range(df_impute, col_to_max, col_to_min, col_to_median)
 
-    # Ensure a type of "np.float64"
-    df_impute.astype(np.float64, copy=False)
     return df_impute
 
 
@@ -91,11 +89,13 @@ def impute_dataframe_zero(df_impute):
     if len(df_impute) == 0:
         return df_impute
 
+    for column, dtype in df_impute.dtypes.items():
+        if dtype != np.float64:
+            df_impute[column] = df_impute[column].astype(np.float64)
+
     df_impute.replace([np.inf, -np.inf], 0, inplace=True)
     df_impute.fillna(0, inplace=True)
 
-    # Ensure a type of "np.float64"
-    df_impute.astype(np.float64, copy=False)
     return df_impute
 
 
@@ -158,6 +158,11 @@ def impute_dataframe_range(df_impute, col_to_max, col_to_min, col_to_median):
             "to replace"
         )
 
+    # Widen before replacement so finite float64 values are not narrowed or rejected.
+    for column, dtype in df_impute.dtypes.items():
+        if dtype != np.float64:
+            df_impute[column] = df_impute[column].astype(np.float64)
+
     # Make the replacement dataframes as large as the real one
     col_to_max = pd.DataFrame([col_to_max] * len(df_impute), index=df_impute.index)
     col_to_min = pd.DataFrame([col_to_min] * len(df_impute), index=df_impute.index)
@@ -169,7 +174,6 @@ def impute_dataframe_range(df_impute, col_to_max, col_to_min, col_to_median):
     df_impute.where(df_impute.values != -np.inf, other=col_to_min, inplace=True)
     df_impute.where(~np.isnan(df_impute.values), other=col_to_median, inplace=True)
 
-    df_impute.astype(np.float64, copy=False)
     return df_impute
 
 
